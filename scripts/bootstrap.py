@@ -2,9 +2,7 @@
 """Bootstrap the Axiom knowledge graph from K semantics."""
 
 import argparse
-import json
 import sys
-from datetime import datetime
 from pathlib import Path
 
 # Add parent to path for imports
@@ -30,8 +28,14 @@ def main() -> int:
     parser.add_argument(
         "--output",
         type=Path,
-        default=Path("knowledge/foundations/c11_axioms.json"),
-        help="Output JSON file for extracted axioms",
+        default=Path("knowledge/foundations/c11_core.toml"),
+        help="Output TOML file for extracted axioms",
+    )
+    parser.add_argument(
+        "--layer",
+        default="c11_core",
+        choices=["c11_core", "c11_stdlib", "cpp_core", "cpp_stdlib"],
+        help="Which layer to extract",
     )
     parser.add_argument(
         "--neo4j-uri",
@@ -65,9 +69,9 @@ def main() -> int:
         help="Skip loading into LanceDB",
     )
     parser.add_argument(
-        "--skip-json",
+        "--skip-toml",
         action="store_true",
-        help="Skip saving to JSON",
+        help="Skip saving to TOML",
     )
 
     args = parser.parse_args()
@@ -79,55 +83,65 @@ def main() -> int:
         print("Did you run: git submodule update --init?")
         return 1
 
-    semantics_dir = k_root / "semantics" / "c"
+    # Determine semantics directory based on layer
+    layer_paths = {
+        "c11_core": k_root / "semantics" / "c" / "language",
+        "c11_stdlib": k_root / "semantics" / "c" / "library",
+        "cpp_core": k_root / "semantics" / "cpp" / "language",
+        "cpp_stdlib": k_root / "semantics" / "cpp" / "library",
+    }
+    semantics_dir = layer_paths[args.layer]
+
     if not semantics_dir.exists():
         print(f"Error: Semantics directory not found: {semantics_dir}")
         return 1
 
     error_codes_csv = k_root / "examples" / "c" / "error-codes" / "Error_Codes.csv"
     if not error_codes_csv.exists():
-        print(f"Error: Error codes CSV not found: {error_codes_csv}")
-        return 1
+        print(f"Warning: Error codes CSV not found: {error_codes_csv}")
+        error_codes_csv = None
 
     print("=" * 60)
-    print("Axiom Knowledge Graph Bootstrap")
+    print(f"Axiom Knowledge Graph Bootstrap - {args.layer}")
     print("=" * 60)
+    print(f"Source: {semantics_dir}")
     print()
 
     # Step 1: Extract axioms from K semantics
     print("Step 1: Extracting axioms from K semantics...")
     extractor = KSemanticsExtractor(semantics_dir)
     axioms = extractor.extract_all()
+    # Set layer on all axioms
+    for axiom in axioms:
+        axiom.layer = args.layer
     print(f"  - Found {len(axioms)} axioms")
 
     # Step 2: Parse error codes CSV
     print("\nStep 2: Parsing error codes CSV...")
-    error_parser = ErrorCodesParser(error_codes_csv)
-    error_codes = error_parser.parse()
-    print(f"  - Parsed {len(error_codes)} error codes")
+    if error_codes_csv:
+        error_parser = ErrorCodesParser(error_codes_csv)
+        error_codes = error_parser.parse()
+        print(f"  - Parsed {len(error_codes)} error codes")
+    else:
+        error_codes = []
+        print("  - Skipped (no CSV found)")
 
     # Step 3: Link axioms to error codes
     print("\nStep 3: Linking axioms to error codes...")
     linker = AxiomLinker()
     collection = linker.link(axioms, error_codes)
+    collection.source = f"kframework/c-semantics/{args.layer}"
 
     linked_count = sum(1 for a in collection.axioms if a.violated_by)
     print(f"  - Linked {linked_count} axioms to error codes")
 
-    # Step 4: Save to JSON
-    if not args.skip_json:
-        print(f"\nStep 4: Saving to JSON ({args.output})...")
-        args.output.parent.mkdir(parents=True, exist_ok=True)
-
-        # Convert to dict and handle datetime serialization
-        collection_dict = collection.model_dump()
-        collection_dict["extracted_at"] = collection_dict["extracted_at"].isoformat()
-
-        with open(args.output, "w") as f:
-            json.dump(collection_dict, f, indent=2, default=str)
+    # Step 4: Save to TOML
+    if not args.skip_toml:
+        print(f"\nStep 4: Saving to TOML ({args.output})...")
+        collection.save_toml(args.output)
         print(f"  - Saved {len(collection.axioms)} axioms to {args.output}")
     else:
-        print("\nStep 4: Skipping JSON save (--skip-json)")
+        print("\nStep 4: Skipping TOML save (--skip-toml)")
 
     # Step 5: Load into Neo4j
     if not args.skip_graph:

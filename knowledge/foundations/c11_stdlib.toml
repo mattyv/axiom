@@ -1,0 +1,4993 @@
+version = "1.0"
+source = "kframework/c-semantics/c11_stdlib"
+extracted_at = "2025-12-26T22:10:12.725153"
+
+[[axioms]]
+id = "c11_libc_stdarg_operation_b943cbe2"
+content = '''Operation requires: allRValueInHeatList(Args).'''
+formal_spec = '''allRValueInHeatList(Args)'''
+layer = "c11_stdlib"
+confidence = 1.0
+source_file = "stdarg.k"
+source_module = "LIBC-STDARG"
+source_line_start = 80
+source_line_end = 82
+
+[[axioms]]
+id = "c11_libc_stdarg_comparison_f94d189f"
+content = '''Comparison requires: either NOT (isOpaque(V)) or NOT ({fromOpaque(V)}:>Int in_keys(VaLists)).'''
+formal_spec = '''notBool isOpaque(V) orBool notBool ({fromOpaque(V)}:>Int in_keys(VaLists))'''
+layer = "c11_stdlib"
+confidence = 1.0
+source_file = "stdarg.k"
+source_module = "LIBC-STDARG"
+source_line_start = 105
+source_line_end = 108
+tags = ['comparison']
+
+[[axioms]]
+id = "c11_libc_stdarg_operation_c5f9adaa"
+content = '''Operation requires: tv(...) :/=K V.'''
+formal_spec = '''tv(...) :/=K V'''
+layer = "c11_stdlib"
+confidence = 1.0
+source_file = "stdarg.k"
+source_module = "LIBC-STDARG"
+source_line_start = 110
+source_line_end = 112
+
+[[axioms]]
+id = "c11_libc_stdarg_comparison_6a88fb49"
+content = '''Comparison requires: variadic in getParams(T), and isLastParamCorrect(T).'''
+formal_spec = '''variadic in getParams(T) andBool isLastParamCorrect(T)'''
+layer = "c11_stdlib"
+confidence = 1.0
+source_file = "stdarg.k"
+source_module = "LIBC-STDARG"
+source_line_start = 191
+source_line_end = 203
+tags = ['comparison']
+
+[[axioms]]
+id = "c11_libc_stdlib_syntax_operation_774154a5"
+content = '''Operation requires: Sz =/=Int 0.'''
+formal_spec = '''Sz =/=Int 0'''
+layer = "c11_stdlib"
+confidence = 1.0
+source_file = "stdlib.k"
+source_module = "LIBC-STDLIB-SYNTAX"
+source_line_start = 69
+source_line_end = 72
+
+[[axioms]]
+id = "c11_libc_stdlib_syntax_comparison_8ad81d8f"
+content = '''Comparison requires: NOT (hasLint), and Sz <=Int cfg:maxHeapBound.'''
+formal_spec = '''notBool hasLint andBool Sz <=Int cfg:maxHeapBound'''
+layer = "c11_stdlib"
+confidence = 1.0
+source_file = "stdlib.k"
+source_module = "LIBC-STDLIB-SYNTAX"
+source_line_start = 77
+source_line_end = 84
+tags = ['comparison']
+
+[[axioms]]
+id = "c11_libc_stdlib_syntax_comparison_5f542db6"
+content = '''Comparison requires: NOT (hasLint), and Sz >Int cfg:maxHeapBound.'''
+formal_spec = '''notBool hasLint andBool Sz >Int cfg:maxHeapBound'''
+layer = "c11_stdlib"
+confidence = 1.0
+source_file = "stdlib.k"
+source_module = "LIBC-STDLIB-SYNTAX"
+source_line_start = 85
+source_line_end = 89
+tags = ['comparison']
+
+[[axioms]]
+id = "c11_libc_stdlib_syntax_comparison_84c63abe"
+content = '''Comparison requires: NOT (hasLint).'''
+formal_spec = '''notBool hasLint'''
+layer = "c11_stdlib"
+confidence = 1.0
+source_file = "stdlib.k"
+source_module = "LIBC-STDLIB-SYNTAX"
+source_line_start = 113
+source_line_end = 123
+tags = ['comparison']
+
+[[axioms]]
+id = "c11_libc_stdlib_syntax_comparison_84c63abe"
+content = '''Comparison requires: NOT (hasLint).'''
+formal_spec = '''notBool hasLint'''
+layer = "c11_stdlib"
+confidence = 1.0
+source_file = "stdlib.k"
+source_module = "LIBC-STDLIB-SYNTAX"
+source_line_start = 148
+source_line_end = 155
+tags = ['comparison']
+
+[[axioms]]
+id = "c11_libc_stdlib_syntax_operation_6154a8b7"
+content = '''Requires: notBool hasLint // Returns a pseudo-random integral number in the range 0 to RAND_MAX // fixme should use RAND_MAX'''
+formal_spec = '''notBool hasLint // Returns a pseudo-random integral number in the range 0 to RAND_MAX // fixme should use RAND_MAX'''
+layer = "c11_stdlib"
+confidence = 1.0
+source_file = "stdlib.k"
+source_module = "LIBC-STDLIB-SYNTAX"
+source_line_start = 163
+source_line_end = 167
+
+[[axioms]]
+id = "c11_libc_stdlib_syntax_comparison_e8247ed0"
+content = '''Comparison requires: NOT (isNull(OldPtr)).'''
+formal_spec = '''notBool isNull(OldPtr)'''
+layer = "c11_stdlib"
+confidence = 1.0
+source_file = "stdlib.k"
+source_module = "LIBC-STDLIB-SYNTAX"
+source_line_start = 216
+source_line_end = 221
+tags = ['comparison']
+
+[[axioms]]
+id = "c11_libc_stdlib_syntax_comparison_e38c0dc3"
+content = '''Comparison requires: isNull(OldPtr).'''
+formal_spec = '''isNull(OldPtr)'''
+layer = "c11_stdlib"
+confidence = 1.0
+source_file = "stdlib.k"
+source_module = "LIBC-STDLIB-SYNTAX"
+source_line_start = 222
+source_line_end = 227
+tags = ['comparison']
+
+[[axioms]]
+id = "c11_libc_setjmp_comparison_23d97cc7"
+content = '''Comparison requires: B in_keys(Mem), and Env[funLabel] =/=K B.'''
+formal_spec = '''B in_keys(Mem) andBool Env[funLabel] =/=K B'''
+layer = "c11_stdlib"
+confidence = 1.0
+source_file = "setjmp.k"
+source_module = "LIBC-SETJMP"
+source_line_start = 127
+source_line_end = 136
+tags = ['comparison']
+
+[[axioms]]
+id = "c11_libc_setjmp_comparison_23d97cc7"
+content = '''Comparison requires: B in_keys(Mem), and Env[funLabel] =/=K B.'''
+formal_spec = '''B in_keys(Mem) andBool Env[funLabel] =/=K B'''
+layer = "c11_stdlib"
+confidence = 1.0
+source_file = "setjmp.k"
+source_module = "LIBC-SETJMP"
+source_line_start = 137
+source_line_end = 159
+tags = ['comparison']
+
+[[axioms]]
+id = "c11_libc_setjmp_comparison_9873e961"
+content = '''Comparison requires: B in_keys(Mem).'''
+formal_spec = '''B in_keys(Mem)'''
+layer = "c11_stdlib"
+confidence = 1.0
+source_file = "setjmp.k"
+source_module = "LIBC-SETJMP"
+source_line_start = 160
+source_line_end = 174
+tags = ['comparison']
+
+[[axioms]]
+id = "c11_libc_ctype_operation_31b75e36"
+content = '''Operation requires: isNativeCTypeFun(F), and either V ==K value(eof or withinRange(V, unsigned-char)).'''
+formal_spec = '''isNativeCTypeFun(F) andBool (V ==K value(eof) orBool withinRange(V, unsigned-char))'''
+layer = "c11_stdlib"
+confidence = 1.0
+source_file = "ctype.k"
+source_module = "LIBC-CTYPE"
+source_line_start = 26
+source_line_end = 30
+
+[[axioms]]
+id = "c11_libc_ctype_operation_8798c32c"
+content = '''Operation requires: isNativeCTypeFun(F), and either NOT (V ==K value(eof) or withinRange(V, unsigned-char)) syntax KItem ::= outsideRange().'''
+formal_spec = '''isNativeCTypeFun(F) andBool notBool (V ==K value(eof) orBool withinRange(V, unsigned-char))  syntax KItem ::= outsideRange()'''
+layer = "c11_stdlib"
+confidence = 1.0
+source_file = "ctype.k"
+source_module = "LIBC-CTYPE"
+source_line_start = 31
+source_line_end = 36
+
+[[axioms]]
+id = "c11_libc_builtin_syntax_comparison_d0e99e3b"
+content = '''Comparison requires: NOT (UseNativeStdLib() in Opts), and F in_keys(builtins).'''
+formal_spec = '''notBool (UseNativeStdLib() in Opts) andBool (F in_keys(builtins))'''
+layer = "c11_stdlib"
+confidence = 1.0
+source_file = "builtin.k"
+source_module = "LIBC-BUILTIN-SYNTAX"
+source_line_start = 62
+source_line_end = 73
+tags = ['comparison']
+
+[[axioms]]
+id = "c11_libc_builtin_syntax_comparison_2479fafe"
+content = '''Comparison requires: either (UseNativeStdLib() in Opts or NOT (F in_keys(builtins))), and F in_keys(nativeDefinedBuiltins).'''
+formal_spec = '''((UseNativeStdLib() in Opts) orBool notBool (F in_keys(builtins))) andBool (F in_keys(nativeDefinedBuiltins))'''
+layer = "c11_stdlib"
+confidence = 1.0
+source_file = "builtin.k"
+source_module = "LIBC-BUILTIN-SYNTAX"
+source_line_start = 74
+source_line_end = 85
+tags = ['comparison']
+
+[[axioms]]
+id = "c11_libc_builtin_syntax_operation_7cf06b34"
+content = '''Operation requires: allRValueInHeatList(Args), and allRValueInHeatList(VarArgs).'''
+formal_spec = '''allRValueInHeatList(Args) andBool allRValueInHeatList(VarArgs)'''
+layer = "c11_stdlib"
+confidence = 1.0
+source_file = "builtin.k"
+source_module = "LIBC-BUILTIN-SYNTAX"
+source_line_start = 101
+source_line_end = 104
+
+[[axioms]]
+id = "c11_libc_builtin_syntax_operation_7cf06b34"
+content = '''Operation requires: allRValueInHeatList(Args), and allRValueInHeatList(VarArgs).'''
+formal_spec = '''allRValueInHeatList(Args) andBool allRValueInHeatList(VarArgs)'''
+layer = "c11_stdlib"
+confidence = 1.0
+source_file = "builtin.k"
+source_module = "LIBC-BUILTIN-SYNTAX"
+source_line_start = 105
+source_line_end = 108
+
+[[axioms]]
+id = "c11_libc_builtin_syntax_operation_3869b969"
+content = '''Operation requires: allRValueInHeatList(VarArgs).'''
+formal_spec = '''allRValueInHeatList(VarArgs)'''
+layer = "c11_stdlib"
+confidence = 1.0
+source_file = "builtin.k"
+source_module = "LIBC-BUILTIN-SYNTAX"
+source_line_start = 142
+source_line_end = 145
+
+[[axioms]]
+id = "c11_libc_builtin_syntax_operation_3869b969"
+content = '''Operation requires: allRValueInHeatList(VarArgs).'''
+formal_spec = '''allRValueInHeatList(VarArgs)'''
+layer = "c11_stdlib"
+confidence = 1.0
+source_file = "builtin.k"
+source_module = "LIBC-BUILTIN-SYNTAX"
+source_line_start = 146
+source_line_end = 150
+
+[[axioms]]
+id = "c11_libc_builtin_syntax_operation_3869b969"
+content = '''Operation requires: allRValueInHeatList(VarArgs).'''
+formal_spec = '''allRValueInHeatList(VarArgs)'''
+layer = "c11_stdlib"
+confidence = 1.0
+source_file = "builtin.k"
+source_module = "LIBC-BUILTIN-SYNTAX"
+source_line_start = 151
+source_line_end = 155
+
+[[axioms]]
+id = "c11_libc_builtin_syntax_operation_5c400bcf"
+content = '''Operation requires: allRValueInHeatList(Args), and size(hListToList(Args)) >Int 6.'''
+formal_spec = '''allRValueInHeatList(Args) andBool size(hListToList(Args)) >Int 6'''
+layer = "c11_stdlib"
+confidence = 1.0
+source_file = "builtin.k"
+source_module = "LIBC-BUILTIN-SYNTAX"
+source_line_start = 157
+source_line_end = 161
+
+[[axioms]]
+id = "c11_libc_builtin_syntax_operation_7cca696a"
+content = '''Operation requires: allRValueInHeatList(Args), allRValueInHeatList(VarArgs), and size(hListToList(Args)) >Int 3.'''
+formal_spec = '''allRValueInHeatList(Args) andBool allRValueInHeatList(VarArgs) andBool size(hListToList(Args)) >Int 3'''
+layer = "c11_stdlib"
+confidence = 1.0
+source_file = "builtin.k"
+source_module = "LIBC-BUILTIN-SYNTAX"
+source_line_start = 162
+source_line_end = 167
+
+[[axioms]]
+id = "c11_libc_signal_syntax_operation_08cee4db"
+content = '''Operation requires: isSpecialHandler(V).'''
+formal_spec = '''isSpecialHandler(V)'''
+layer = "c11_stdlib"
+confidence = 1.0
+source_file = "signal.k"
+source_module = "LIBC-SIGNAL-SYNTAX"
+source_line_start = 41
+source_line_end = 43
+
+[[axioms]]
+id = "c11_libc_signal_syntax_comparison_ca96b306"
+content = '''Comparison requires: NOT (isSpecialHandler(V)), and base(Loc) in_keys(Funs).'''
+formal_spec = '''notBool isSpecialHandler(V) andBool (base(Loc) in_keys(Funs))'''
+layer = "c11_stdlib"
+confidence = 1.0
+source_file = "signal.k"
+source_module = "LIBC-SIGNAL-SYNTAX"
+source_line_start = 44
+source_line_end = 47
+tags = ['comparison']
+
+[[axioms]]
+id = "c11_libc_signal_syntax_operation_12de165e"
+content = '''Operation requires: isNull(V).'''
+formal_spec = '''isNull(V)'''
+layer = "c11_stdlib"
+confidence = 1.0
+source_file = "signal.k"
+source_module = "LIBC-SIGNAL-SYNTAX"
+source_line_start = 56
+source_line_end = 57
+
+[[axioms]]
+id = "c11_libc_signal_syntax_operation_666e9b03"
+content = '''Operation requires: NOT (isNull(V)), isNativeLoc(Loc, and offset(Loc) ==Int 1).'''
+formal_spec = '''notBool isNull(V) andBool (isNativeLoc(Loc) andBool offset(Loc) ==Int 1)'''
+layer = "c11_stdlib"
+confidence = 1.0
+source_file = "signal.k"
+source_module = "LIBC-SIGNAL-SYNTAX"
+source_line_start = 58
+source_line_end = 59
+
+[[axioms]]
+id = "c11_libc_signal_syntax_comparison_ba5623a1"
+content = '''Comparison requires: State =/=K raiseOrAbort.'''
+formal_spec = '''State =/=K raiseOrAbort'''
+layer = "c11_stdlib"
+confidence = 1.0
+source_file = "signal.k"
+source_module = "LIBC-SIGNAL-SYNTAX"
+source_line_start = 69
+source_line_end = 76
+tags = ['comparison']
+
+[[axioms]]
+id = "c11_libc_signal_syntax_operation_55370bd7"
+content = '''Operation requires: NOT (isComputational(Sig)).'''
+formal_spec = '''notBool isComputational(Sig)'''
+layer = "c11_stdlib"
+confidence = 1.0
+source_file = "signal.k"
+source_module = "LIBC-SIGNAL-SYNTAX"
+source_line_start = 101
+source_line_end = 103
+
+[[axioms]]
+id = "c11_libc_locale_comparison_cc3cebcf"
+content = '''Comparison requires: NOT (isNull(OldPtr)).'''
+formal_spec = '''notBool isNull(OldPtr)'''
+layer = "c11_stdlib"
+confidence = 1.0
+source_file = "locale.k"
+source_module = "LIBC-LOCALE"
+source_line_start = 14
+source_line_end = 19
+tags = ['comparison']
+
+[[axioms]]
+id = "c11_libc_locale_comparison_ba197411"
+content = '''Comparison requires: isNull(OldPtr).'''
+formal_spec = '''isNull(OldPtr)'''
+layer = "c11_stdlib"
+confidence = 1.0
+source_file = "locale.k"
+source_module = "LIBC-LOCALE"
+source_line_start = 20
+source_line_end = 25
+tags = ['comparison']
+
+[[axioms]]
+id = "c11_libc_locale_comparison_cc3cebcf"
+content = '''Comparison requires: NOT (isNull(OldPtr)).'''
+formal_spec = '''notBool isNull(OldPtr)'''
+layer = "c11_stdlib"
+confidence = 1.0
+source_file = "locale.k"
+source_module = "LIBC-LOCALE"
+source_line_start = 30
+source_line_end = 35
+tags = ['comparison']
+
+[[axioms]]
+id = "c11_libc_locale_comparison_ba197411"
+content = '''Comparison requires: isNull(OldPtr).'''
+formal_spec = '''isNull(OldPtr)'''
+layer = "c11_stdlib"
+confidence = 1.0
+source_file = "locale.k"
+source_module = "LIBC-LOCALE"
+source_line_start = 36
+source_line_end = 41
+tags = ['comparison']
+
+[[axioms]]
+id = "c11_libc_io_syntax_comparison_3d878b21"
+content = '''Comparison requires: findChar(S', "\n", 0) ==Int -1, NOT ((Op ==K inputOp), and Eof impliesBool (RS =/=String "")).'''
+formal_spec = '''findChar(S', "\n", 0) ==Int -1 andBool notBool (Op ==K inputOp andBool (Eof impliesBool (RS =/=String "")))'''
+layer = "c11_stdlib"
+confidence = 1.0
+source_file = "io.k"
+source_module = "LIBC-IO-SYNTAX"
+source_line_start = 78
+source_line_end = 88
+tags = ['comparison']
+
+[[axioms]]
+id = "c11_libc_io_syntax_comparison_f8494e96"
+content = '''Comparison requires: findChar(S', "\n", 0) =/=Int -1, NOT ((Op ==K inputOp), and Eof impliesBool (RS =/=String "")).'''
+formal_spec = '''findChar(S', "\n", 0) =/=Int -1 andBool notBool (Op ==K inputOp andBool (Eof impliesBool (RS =/=String "")))'''
+layer = "c11_stdlib"
+confidence = 1.0
+source_file = "io.k"
+source_module = "LIBC-IO-SYNTAX"
+source_line_start = 89
+source_line_end = 99
+tags = ['comparison']
+
+[[axioms]]
+id = "c11_libc_io_syntax_comparison_5bb03633"
+content = '''Comparison requires: lengthString(S +String S') <Int N, NOT ((Op ==K inputOp), and Eof impliesBool (RS =/=String "")).'''
+formal_spec = '''lengthString(S +String S') <Int N andBool notBool (Op ==K inputOp andBool (Eof impliesBool (RS =/=String "")))'''
+layer = "c11_stdlib"
+confidence = 1.0
+source_file = "io.k"
+source_module = "LIBC-IO-SYNTAX"
+source_line_start = 101
+source_line_end = 112
+tags = ['comparison']
+
+[[axioms]]
+id = "c11_libc_io_syntax_comparison_4039576a"
+content = '''Comparison requires: lengthString(S +String S') >=Int N, NOT ((Op ==K inputOp), and Eof impliesBool (RS =/=String "")).'''
+formal_spec = '''lengthString(S +String S') >=Int N andBool notBool (Op ==K inputOp andBool (Eof impliesBool (RS =/=String "")))'''
+layer = "c11_stdlib"
+confidence = 1.0
+source_file = "io.k"
+source_module = "LIBC-IO-SYNTAX"
+source_line_start = 113
+source_line_end = 124
+tags = ['comparison']
+
+[[axioms]]
+id = "c11_libc_io_syntax_comparison_74369e53"
+content = '''Comparison requires: NOT ((Op ==K inputOp), and Eof impliesBool (RS =/=String "")).'''
+formal_spec = '''notBool (Op ==K inputOp andBool (Eof impliesBool (RS =/=String "")))'''
+layer = "c11_stdlib"
+confidence = 1.0
+source_file = "io.k"
+source_module = "LIBC-IO-SYNTAX"
+source_line_start = 126
+source_line_end = 135
+tags = ['comparison']
+
+[[axioms]]
+id = "c11_libc_io_syntax_comparison_238fc181"
+content = '''Comparison requires: Mode =/=K noBuf.'''
+formal_spec = '''Mode =/=K noBuf'''
+layer = "c11_stdlib"
+confidence = 1.0
+source_file = "io.k"
+source_module = "LIBC-IO-SYNTAX"
+source_line_start = 158
+source_line_end = 162
+tags = ['comparison']
+
+[[axioms]]
+id = "c11_libc_io_syntax_comparison_f684b9e4"
+content = '''Comparison requires: lengthString(S) >=Int N, and Op =/=K outputOp.'''
+formal_spec = '''lengthString(S) >=Int N andBool Op =/=K outputOp'''
+layer = "c11_stdlib"
+confidence = 1.0
+source_file = "io.k"
+source_module = "LIBC-IO-SYNTAX"
+source_line_start = 165
+source_line_end = 173
+tags = ['comparison']
+
+[[axioms]]
+id = "c11_libc_io_syntax_comparison_341c4455"
+content = '''Comparison requires: lengthString(S) <Int N, either (Eof or Err =/=Int 0), and Op =/=K outputOp.'''
+formal_spec = '''lengthString(S) <Int N andBool (Eof orBool Err =/=Int 0) andBool Op =/=K outputOp'''
+layer = "c11_stdlib"
+confidence = 1.0
+source_file = "io.k"
+source_module = "LIBC-IO-SYNTAX"
+source_line_start = 174
+source_line_end = 184
+tags = ['comparison']
+
+[[axioms]]
+id = "c11_libc_io_syntax_comparison_776970c3"
+content = '''Comparison requires: lengthString(S) <Int N, and Op =/=K outputOp.'''
+formal_spec = '''lengthString(S) <Int N andBool Op =/=K outputOp'''
+layer = "c11_stdlib"
+confidence = 1.0
+source_file = "io.k"
+source_module = "LIBC-IO-SYNTAX"
+source_line_start = 185
+source_line_end = 194
+tags = ['comparison']
+
+[[axioms]]
+id = "c11_libc_io_syntax_comparison_594190e7"
+content = '''Comparison requires: lengthString(S) <Int N.'''
+formal_spec = '''lengthString(S) <Int N'''
+layer = "c11_stdlib"
+confidence = 1.0
+source_file = "io.k"
+source_module = "LIBC-IO-SYNTAX"
+source_line_start = 195
+source_line_end = 201
+tags = ['comparison']
+
+[[axioms]]
+id = "c11_libc_io_syntax_comparison_201b00e1"
+content = '''Comparison requires: Mode =/=K lineBuf.'''
+formal_spec = '''Mode =/=K lineBuf'''
+layer = "c11_stdlib"
+confidence = 1.0
+source_file = "io.k"
+source_module = "LIBC-IO-SYNTAX"
+source_line_start = 214
+source_line_end = 218
+tags = ['comparison']
+
+[[axioms]]
+id = "c11_libc_io_syntax_division_6e0bc220"
+content = '''Integer division requires: Byte =/=Int ordChar("\n"), and Byte =/=Int -1.'''
+formal_spec = '''Byte =/=Int ordChar("\n") andBool Byte =/=Int -1'''
+layer = "c11_stdlib"
+confidence = 1.0
+source_file = "io.k"
+source_module = "LIBC-IO-SYNTAX"
+source_line_start = 231
+source_line_end = 238
+tags = ['division']
+
+[[axioms]]
+id = "c11_libc_io_syntax_comparison_78b35c2e"
+content = '''Comparison requires: Byte ==Int ordChar("\n").'''
+formal_spec = '''Byte ==Int ordChar("\n")'''
+layer = "c11_stdlib"
+confidence = 1.0
+source_file = "io.k"
+source_module = "LIBC-IO-SYNTAX"
+source_line_start = 239
+source_line_end = 245
+tags = ['comparison']
+
+[[axioms]]
+id = "c11_libc_io_syntax_division_ddf173ee"
+content = '''Integer division requires: lengthString(S) +Int 1 <Int N, and Byte =/=Int -1.'''
+formal_spec = '''lengthString(S) +Int 1 <Int N andBool Byte =/=Int -1'''
+layer = "c11_stdlib"
+confidence = 1.0
+source_file = "io.k"
+source_module = "LIBC-IO-SYNTAX"
+source_line_start = 247
+source_line_end = 255
+tags = ['division']
+
+[[axioms]]
+id = "c11_libc_io_syntax_comparison_83105318"
+content = '''Comparison requires: lengthString(S) +Int 1 >=Int N, and Byte =/=Int -1.'''
+formal_spec = '''lengthString(S) +Int 1 >=Int N andBool Byte =/=Int -1'''
+layer = "c11_stdlib"
+confidence = 1.0
+source_file = "io.k"
+source_module = "LIBC-IO-SYNTAX"
+source_line_start = 256
+source_line_end = 264
+tags = ['comparison']
+
+[[axioms]]
+id = "c11_libc_io_syntax_comparison_94fa0d99"
+content = '''Comparison requires: Byte =/=Int -1.'''
+formal_spec = '''Byte =/=Int -1'''
+layer = "c11_stdlib"
+confidence = 1.0
+source_file = "io.k"
+source_module = "LIBC-IO-SYNTAX"
+source_line_start = 266
+source_line_end = 272
+tags = ['comparison']
+
+[[axioms]]
+id = "c11_libc_io_syntax_comparison_58511875"
+content = '''Comparison requires: NOT (FD in_keys(OpenFiles)).'''
+formal_spec = '''notBool (FD in_keys(OpenFiles))'''
+layer = "c11_stdlib"
+confidence = 1.0
+source_file = "io.k"
+source_module = "LIBC-IO-SYNTAX"
+source_line_start = 333
+source_line_end = 336
+tags = ['comparison']
+
+[[axioms]]
+id = "c11_libc_io_syntax_comparison_ba6b4eeb"
+content = '''Comparison requires: lengthString(S) >Int 0, and NOT (NoIO() in Opts).'''
+formal_spec = '''lengthString(S) >Int 0 andBool notBool (NoIO() in Opts)'''
+layer = "c11_stdlib"
+confidence = 1.0
+source_file = "io.k"
+source_module = "LIBC-IO-SYNTAX"
+source_line_start = 345
+source_line_end = 351
+tags = ['comparison']
+
+[[axioms]]
+id = "c11_libc_io_syntax_comparison_0adc147d"
+content = '''Comparison requires: either lengthString(S) <=Int 0 or NoIO() in Opts) syntax KItem ::= sent(Int, String.'''
+formal_spec = '''lengthString(S) <=Int 0 orBool (NoIO() in Opts)  syntax KItem ::= sent(Int, String)'''
+layer = "c11_stdlib"
+confidence = 1.0
+source_file = "io.k"
+source_module = "LIBC-IO-SYNTAX"
+source_line_start = 352
+source_line_end = 357
+tags = ['comparison']
+
+[[axioms]]
+id = "c11_libc_io_syntax_operation_041d511d"
+content = '''Operation requires: N =/=Int 0.'''
+formal_spec = '''N =/=Int 0'''
+layer = "c11_stdlib"
+confidence = 1.0
+source_file = "io.k"
+source_module = "LIBC-IO-SYNTAX"
+source_line_start = 372
+source_line_end = 375
+
+[[axioms]]
+id = "c11_libc_io_syntax_comparison_c9c26311"
+content = '''Comparison requires: C =/=Int 0.'''
+formal_spec = '''C =/=Int 0'''
+layer = "c11_stdlib"
+confidence = 1.0
+source_file = "io.k"
+source_module = "LIBC-IO-SYNTAX"
+source_line_start = 376
+source_line_end = 379
+tags = ['comparison']
+
+[[axioms]]
+id = "c11_libc_io_syntax_operation_e014b1f7"
+content = '''Operation requires: NOT ((N >=Int 0), and N <Int byteSizeofType(type(cfg:wcharut))).'''
+formal_spec = '''notBool (N >=Int 0 andBool N <Int byteSizeofType(type(cfg:wcharut)))'''
+layer = "c11_stdlib"
+confidence = 1.0
+source_file = "io.k"
+source_module = "LIBC-IO-SYNTAX"
+source_line_start = 395
+source_line_end = 398
+error_codes = ['CCV7', 'CCV11', 'CEA2', 'ECL4', 'EFNC1', 'TDG12', 'FD6', 'STDIO1', 'CCV9', 'CEA7', 'CEA8', 'CEA9', 'CEB1', 'CEB5', 'CEB9', 'CEB10', 'CEB11', 'CERL5', 'TEAS2', 'TSE2', 'TTE2', 'TTE3', 'CTI4']
+
+[[axioms]]
+id = "c11_libc_io_syntax_comparison_c9c26311"
+content = '''Comparison requires: C =/=Int 0.'''
+formal_spec = '''C =/=Int 0'''
+layer = "c11_stdlib"
+confidence = 1.0
+source_file = "io.k"
+source_module = "LIBC-IO-SYNTAX"
+source_line_start = 399
+source_line_end = 402
+tags = ['comparison']
+
+[[axioms]]
+id = "c11_libc_io_syntax_operation_03ccb397"
+content = '''Operation requires: N >=Int 0, and N <Int byteSizeofType(type(cfg:wcharut)).'''
+formal_spec = '''N >=Int 0 andBool N <Int byteSizeofType(type(cfg:wcharut))'''
+layer = "c11_stdlib"
+confidence = 1.0
+source_file = "io.k"
+source_module = "LIBC-IO-SYNTAX"
+source_line_start = 406
+source_line_end = 409
+error_codes = ['CCV7', 'CCV11', 'CEA2', 'ECL4', 'EFNC1', 'TDG12', 'FD6', 'STDIO1', 'CCV9', 'CEA7', 'CEA8', 'CEA9', 'CEB1', 'CEB5', 'CEB9', 'CEB10', 'CEB11', 'CERL5', 'TEAS2', 'TSE2', 'TTE2', 'TTE3', 'CTI4']
+
+[[axioms]]
+id = "c11_libc_io_syntax_operation_c2567e89"
+content = '''Operation requires: N >Int 0.'''
+formal_spec = '''N >Int 0'''
+layer = "c11_stdlib"
+confidence = 1.0
+source_file = "io.k"
+source_module = "LIBC-IO-SYNTAX"
+source_line_start = 415
+source_line_end = 418
+
+[[axioms]]
+id = "c11_libc_io_syntax_operation_79695fbd"
+content = '''Operation requires: isCharType(innerType(T)), and NOT (isNull(V)).'''
+formal_spec = '''isCharType(innerType(T)) andBool notBool isNull(V)'''
+layer = "c11_stdlib"
+confidence = 1.0
+source_file = "io.k"
+source_module = "LIBC-IO-SYNTAX"
+source_line_start = 449
+source_line_end = 452
+
+[[axioms]]
+id = "c11_libc_io_syntax_operation_79e24239"
+content = '''Operation requires: NOT (isCharType(innerType(T))), and NOT (isNull(V)).'''
+formal_spec = '''notBool isCharType(innerType(T)) andBool notBool isNull(V)'''
+layer = "c11_stdlib"
+confidence = 1.0
+source_file = "io.k"
+source_module = "LIBC-IO-SYNTAX"
+source_line_start = 456
+source_line_end = 460
+
+[[axioms]]
+id = "c11_libc_io_syntax_operation_b8e82b73"
+content = '''Operation requires: isNull(V).'''
+formal_spec = '''isNull(V)'''
+layer = "c11_stdlib"
+confidence = 1.0
+source_file = "io.k"
+source_module = "LIBC-IO-SYNTAX"
+source_line_start = 461
+source_line_end = 463
+
+[[axioms]]
+id = "c11_libc_stdio_operation_fe53f876"
+content = '''Operation requires: NOT (isNull(FDPtr)).'''
+formal_spec = '''notBool isNull(FDPtr)'''
+layer = "c11_stdlib"
+confidence = 1.0
+source_file = "stdio.k"
+source_module = "LIBC-STDIO"
+source_line_start = 40
+source_line_end = 43
+
+[[axioms]]
+id = "c11_libc_stdio_operation_4626b7b2"
+content = '''Operation requires: isNull(FDPtr).'''
+formal_spec = '''isNull(FDPtr)'''
+layer = "c11_stdlib"
+confidence = 1.0
+source_file = "stdio.k"
+source_module = "LIBC-STDIO"
+source_line_start = 44
+source_line_end = 47
+
+[[axioms]]
+id = "c11_libc_stdio_comparison_569cd15c"
+content = '''Comparison requires: either getFD(V) ==K "" or notBool getFD(V) in_keys(OpenFiles).'''
+formal_spec = '''(getFD(V) ==K "") orBool (notBool getFD(V) in_keys(OpenFiles))'''
+layer = "c11_stdlib"
+confidence = 1.0
+source_file = "stdio.k"
+source_module = "LIBC-STDIO"
+source_line_start = 58
+source_line_end = 62
+tags = ['comparison']
+
+[[axioms]]
+id = "c11_libc_stdio_comparison_1c301b55"
+content = '''Comparison requires: isWritable(Mode), and Op =/=K inputOp.'''
+formal_spec = '''isWritable(Mode) andBool (Op =/=K inputOp)'''
+layer = "c11_stdlib"
+confidence = 1.0
+source_file = "stdio.k"
+source_module = "LIBC-STDIO"
+source_line_start = 81
+source_line_end = 89
+tags = ['comparison']
+
+[[axioms]]
+id = "c11_libc_stdio_comparison_569cd15c"
+content = '''Comparison requires: either getFD(V) ==K "" or notBool getFD(V) in_keys(OpenFiles).'''
+formal_spec = '''(getFD(V) ==K "") orBool (notBool getFD(V) in_keys(OpenFiles))'''
+layer = "c11_stdlib"
+confidence = 1.0
+source_file = "stdio.k"
+source_module = "LIBC-STDIO"
+source_line_start = 90
+source_line_end = 93
+tags = ['comparison']
+
+[[axioms]]
+id = "c11_libc_stdio_comparison_00603046"
+content = '''Comparison requires: FD in_keys(OpenFiles).'''
+formal_spec = '''FD in_keys(OpenFiles)'''
+layer = "c11_stdlib"
+confidence = 1.0
+source_file = "stdio.k"
+source_module = "LIBC-STDIO"
+source_line_start = 143
+source_line_end = 148
+tags = ['comparison']
+
+[[axioms]]
+id = "c11_libc_stdio_comparison_569cd15c"
+content = '''Comparison requires: either getFD(V) ==K "" or notBool getFD(V) in_keys(OpenFiles).'''
+formal_spec = '''(getFD(V) ==K "") orBool (notBool getFD(V) in_keys(OpenFiles))'''
+layer = "c11_stdlib"
+confidence = 1.0
+source_file = "stdio.k"
+source_module = "LIBC-STDIO"
+source_line_start = 149
+source_line_end = 153
+tags = ['comparison']
+
+[[axioms]]
+id = "c11_libc_stdio_comparison_88fbdc40"
+content = '''Comparison requires: isWritable(Mode).'''
+formal_spec = '''isWritable(Mode)'''
+layer = "c11_stdlib"
+confidence = 1.0
+source_file = "stdio.k"
+source_module = "LIBC-STDIO"
+source_line_start = 176
+source_line_end = 183
+tags = ['comparison']
+
+[[axioms]]
+id = "c11_libc_stdio_comparison_569cd15c"
+content = '''Comparison requires: either getFD(V) ==K "" or notBool getFD(V) in_keys(OpenFiles).'''
+formal_spec = '''(getFD(V) ==K "") orBool (notBool getFD(V) in_keys(OpenFiles))'''
+layer = "c11_stdlib"
+confidence = 1.0
+source_file = "stdio.k"
+source_module = "LIBC-STDIO"
+source_line_start = 184
+source_line_end = 188
+tags = ['comparison']
+
+[[axioms]]
+id = "c11_libc_stdio_comparison_a6f33404"
+content = '''Comparison requires: NOT (isWritable(Mode)).'''
+formal_spec = '''notBool isWritable(Mode)'''
+layer = "c11_stdlib"
+confidence = 1.0
+source_file = "stdio.k"
+source_module = "LIBC-STDIO"
+source_line_start = 189
+source_line_end = 196
+tags = ['comparison']
+
+[[axioms]]
+id = "c11_libc_stdio_operation_e025528f"
+content = '''Operation requires: C =/=K value(eof).'''
+formal_spec = '''C =/=K value(eof)'''
+layer = "c11_stdlib"
+confidence = 1.0
+source_file = "stdio.k"
+source_module = "LIBC-STDIO"
+source_line_start = 209
+source_line_end = 212
+
+[[axioms]]
+id = "c11_libc_stdio_operation_a76ff940"
+content = '''Operation requires: C ==K value(eof).'''
+formal_spec = '''C ==K value(eof)'''
+layer = "c11_stdlib"
+confidence = 1.0
+source_file = "stdio.k"
+source_module = "LIBC-STDIO"
+source_line_start = 213
+source_line_end = 216
+
+[[axioms]]
+id = "c11_libc_stdio_comparison_04717146"
+content = '''Comparison requires: isReadable(Mode).'''
+formal_spec = '''isReadable(Mode)'''
+layer = "c11_stdlib"
+confidence = 1.0
+source_file = "stdio.k"
+source_module = "LIBC-STDIO"
+source_line_start = 220
+source_line_end = 226
+tags = ['comparison']
+
+[[axioms]]
+id = "c11_libc_stdio_comparison_569cd15c"
+content = '''Comparison requires: either getFD(V) ==K "" or notBool getFD(V) in_keys(OpenFiles).'''
+formal_spec = '''(getFD(V) ==K "") orBool (notBool getFD(V) in_keys(OpenFiles))'''
+layer = "c11_stdlib"
+confidence = 1.0
+source_file = "stdio.k"
+source_module = "LIBC-STDIO"
+source_line_start = 227
+source_line_end = 231
+tags = ['comparison']
+
+[[axioms]]
+id = "c11_libc_stdio_comparison_8f694147"
+content = '''Comparison requires: NOT (isReadable(Mode)).'''
+formal_spec = '''notBool isReadable(Mode)'''
+layer = "c11_stdlib"
+confidence = 1.0
+source_file = "stdio.k"
+source_module = "LIBC-STDIO"
+source_line_start = 232
+source_line_end = 239
+tags = ['comparison']
+
+[[axioms]]
+id = "c11_libc_stdio_comparison_5777f556"
+content = '''Comparison requires: lengthString(S) >Int 0.'''
+formal_spec = '''lengthString(S) >Int 0'''
+layer = "c11_stdlib"
+confidence = 1.0
+source_file = "stdio.k"
+source_module = "LIBC-STDIO"
+source_line_start = 240
+source_line_end = 243
+tags = ['comparison']
+
+[[axioms]]
+id = "c11_libc_stdio_comparison_00603046"
+content = '''Comparison requires: FD in_keys(OpenFiles).'''
+formal_spec = '''FD in_keys(OpenFiles)'''
+layer = "c11_stdlib"
+confidence = 1.0
+source_file = "stdio.k"
+source_module = "LIBC-STDIO"
+source_line_start = 249
+source_line_end = 256
+tags = ['comparison']
+
+[[axioms]]
+id = "c11_libc_stdio_comparison_569cd15c"
+content = '''Comparison requires: either getFD(V) ==K "" or notBool getFD(V) in_keys(OpenFiles).'''
+formal_spec = '''(getFD(V) ==K "") orBool (notBool getFD(V) in_keys(OpenFiles))'''
+layer = "c11_stdlib"
+confidence = 1.0
+source_file = "stdio.k"
+source_module = "LIBC-STDIO"
+source_line_start = 257
+source_line_end = 261
+tags = ['comparison']
+
+[[axioms]]
+id = "c11_libc_stdio_comparison_d306af59"
+content = '''Comparison requires: NOT ((Buffer ==K ""), and Eof).'''
+formal_spec = '''notBool (Buffer ==K "" andBool Eof)'''
+layer = "c11_stdlib"
+confidence = 1.0
+source_file = "stdio.k"
+source_module = "LIBC-STDIO"
+source_line_start = 277
+source_line_end = 282
+tags = ['comparison']
+
+[[axioms]]
+id = "c11_libc_stdio_comparison_569cd15c"
+content = '''Comparison requires: either getFD(V) ==K "" or notBool getFD(V) in_keys(OpenFiles).'''
+formal_spec = '''(getFD(V) ==K "") orBool (notBool getFD(V) in_keys(OpenFiles))'''
+layer = "c11_stdlib"
+confidence = 1.0
+source_file = "stdio.k"
+source_module = "LIBC-STDIO"
+source_line_start = 283
+source_line_end = 287
+tags = ['comparison']
+
+[[axioms]]
+id = "c11_libc_stdio_comparison_1f1781c5"
+content = '''Comparison requires: Err =/=Int 0.'''
+formal_spec = '''Err =/=Int 0'''
+layer = "c11_stdlib"
+confidence = 1.0
+source_file = "stdio.k"
+source_module = "LIBC-STDIO"
+source_line_start = 291
+source_line_end = 295
+tags = ['comparison']
+
+[[axioms]]
+id = "c11_libc_stdio_comparison_569cd15c"
+content = '''Comparison requires: either getFD(V) ==K "" or notBool getFD(V) in_keys(OpenFiles).'''
+formal_spec = '''(getFD(V) ==K "") orBool (notBool getFD(V) in_keys(OpenFiles))'''
+layer = "c11_stdlib"
+confidence = 1.0
+source_file = "stdio.k"
+source_module = "LIBC-STDIO"
+source_line_start = 300
+source_line_end = 304
+tags = ['comparison']
+
+[[axioms]]
+id = "c11_libc_stdio_comparison_00603046"
+content = '''Comparison requires: FD in_keys(OpenFiles).'''
+formal_spec = '''FD in_keys(OpenFiles)'''
+layer = "c11_stdlib"
+confidence = 1.0
+source_file = "stdio.k"
+source_module = "LIBC-STDIO"
+source_line_start = 308
+source_line_end = 311
+tags = ['comparison']
+
+[[axioms]]
+id = "c11_libc_stdio_comparison_6b25d743"
+content = '''Comparison requires: either getFD(V) ==K "" or NOT (getFD(V) in_keys(OpenFiles)).'''
+formal_spec = '''(getFD(V) ==K "") orBool notBool (getFD(V) in_keys(OpenFiles))'''
+layer = "c11_stdlib"
+confidence = 1.0
+source_file = "stdio.k"
+source_module = "LIBC-STDIO"
+source_line_start = 312
+source_line_end = 316
+tags = ['comparison']
+
+[[axioms]]
+id = "c11_libc_stdio_comparison_6b25d743"
+content = '''Comparison requires: either getFD(V) ==K "" or NOT (getFD(V) in_keys(OpenFiles)).'''
+formal_spec = '''(getFD(V) ==K "") orBool notBool (getFD(V) in_keys(OpenFiles))'''
+layer = "c11_stdlib"
+confidence = 1.0
+source_file = "stdio.k"
+source_module = "LIBC-STDIO"
+source_line_start = 330
+source_line_end = 334
+tags = ['comparison']
+
+[[axioms]]
+id = "c11_libc_stdio_operation_fe53f876"
+content = '''Operation requires: NOT (isNull(FDPtr)).'''
+formal_spec = '''notBool isNull(FDPtr)'''
+layer = "c11_stdlib"
+confidence = 1.0
+source_file = "stdio.k"
+source_module = "LIBC-STDIO"
+source_line_start = 342
+source_line_end = 344
+
+[[axioms]]
+id = "c11_libc_stdio_operation_4626b7b2"
+content = '''Operation requires: isNull(FDPtr).'''
+formal_spec = '''isNull(FDPtr)'''
+layer = "c11_stdlib"
+confidence = 1.0
+source_file = "stdio.k"
+source_module = "LIBC-STDIO"
+source_line_start = 345
+source_line_end = 347
+
+[[axioms]]
+id = "c11_libc_stdio_comparison_00603046"
+content = '''Comparison requires: FD in_keys(OpenFiles).'''
+formal_spec = '''FD in_keys(OpenFiles)'''
+layer = "c11_stdlib"
+confidence = 1.0
+source_file = "stdio.k"
+source_module = "LIBC-STDIO"
+source_line_start = 356
+source_line_end = 363
+tags = ['comparison']
+
+[[axioms]]
+id = "c11_libc_stdio_comparison_cdc6373b"
+content = '''Comparison requires: NOT (FD in_keys(OpenFiles)).'''
+formal_spec = '''notBool (FD in_keys(OpenFiles))'''
+layer = "c11_stdlib"
+confidence = 1.0
+source_file = "stdio.k"
+source_module = "LIBC-STDIO"
+source_line_start = 364
+source_line_end = 367
+tags = ['comparison']
+
+[[axioms]]
+id = "c11_libc_stdio_operation_1643cb22"
+content = '''Operation requires: NOT (isNull(tv(Loc, T))).'''
+formal_spec = '''notBool isNull(tv(Loc, T))'''
+layer = "c11_stdlib"
+confidence = 1.0
+source_file = "stdio.k"
+source_module = "LIBC-STDIO"
+source_line_start = 373
+source_line_end = 376
+
+[[axioms]]
+id = "c11_libc_stdio_operation_4626b7b2"
+content = '''Operation requires: isNull(FDPtr).'''
+formal_spec = '''isNull(FDPtr)'''
+layer = "c11_stdlib"
+confidence = 1.0
+source_file = "stdio.k"
+source_module = "LIBC-STDIO"
+source_line_start = 377
+source_line_end = 380
+
+[[axioms]]
+id = "c11_libc_stdio_operation_8a281bbd"
+content = '''Operation requires: NOT (isNull(Filename)).'''
+formal_spec = '''notBool isNull(Filename)'''
+layer = "c11_stdlib"
+confidence = 1.0
+source_file = "stdio.k"
+source_module = "LIBC-STDIO"
+source_line_start = 398
+source_line_end = 402
+
+[[axioms]]
+id = "c11_libc_stdio_comparison_df1c5d24"
+content = '''Comparison requires: isNull(Filename).'''
+formal_spec = '''isNull(Filename)'''
+layer = "c11_stdlib"
+confidence = 1.0
+source_file = "stdio.k"
+source_module = "LIBC-STDIO"
+source_line_start = 403
+source_line_end = 410
+tags = ['comparison']
+
+[[axioms]]
+id = "c11_libc_stdio_operation_2ee93b8c"
+content = '''Operation requires: either isReadable(Mode) or isWritable(Mode) or isReadWritable(Mode).'''
+formal_spec = '''isReadable(Mode) orBool isWritable(Mode) orBool isReadWritable(Mode)'''
+layer = "c11_stdlib"
+confidence = 1.0
+source_file = "stdio.k"
+source_module = "LIBC-STDIO"
+source_line_start = 413
+source_line_end = 416
+
+[[axioms]]
+id = "c11_libc_stdio_operation_1368450b"
+content = '''Operation requires: NOT (isNull(BufPtr)).'''
+formal_spec = '''notBool isNull(BufPtr)'''
+layer = "c11_stdlib"
+confidence = 1.0
+source_file = "stdio.k"
+source_module = "LIBC-STDIO"
+source_line_start = 449
+source_line_end = 454
+
+[[axioms]]
+id = "c11_libc_stdio_operation_5e0f9297"
+content = '''Operation requires: isNull(BufPtr).'''
+formal_spec = '''isNull(BufPtr)'''
+layer = "c11_stdlib"
+confidence = 1.0
+source_file = "stdio.k"
+source_module = "LIBC-STDIO"
+source_line_start = 455
+source_line_end = 459
+
+[[axioms]]
+id = "c11_libc_stdio_operation_1368450b"
+content = '''Operation requires: NOT (isNull(BufPtr)).'''
+formal_spec = '''notBool isNull(BufPtr)'''
+layer = "c11_stdlib"
+confidence = 1.0
+source_file = "stdio.k"
+source_module = "LIBC-STDIO"
+source_line_start = 460
+source_line_end = 465
+
+[[axioms]]
+id = "c11_libc_stdio_operation_5e0f9297"
+content = '''Operation requires: isNull(BufPtr).'''
+formal_spec = '''isNull(BufPtr)'''
+layer = "c11_stdlib"
+confidence = 1.0
+source_file = "stdio.k"
+source_module = "LIBC-STDIO"
+source_line_start = 466
+source_line_end = 470
+
+[[axioms]]
+id = "c11_libc_stdio_operation_846051d3"
+content = '''Operation requires: NOT (isNull(tv(Loc, utype(pointerType(type(void)))))), and Sz >Int 0.'''
+formal_spec = '''notBool isNull(tv(Loc, utype(pointerType(type(void))))) andBool Sz >Int 0'''
+layer = "c11_stdlib"
+confidence = 1.0
+source_file = "stdio.k"
+source_module = "LIBC-STDIO"
+source_line_start = 489
+source_line_end = 492
+error_codes = ['CCV7', 'CCV11', 'CEA1', 'CEA5', 'CEA2', 'CEE3', 'CER3', 'CER4', 'CERL1', 'CERL2', 'CERL3', 'CERL4', 'CERL6', 'ECL3', 'ECL4', 'CEER1', 'EEA2', 'EEA3', 'EEA4', 'EEA5', 'EFNC1', 'EFNC2', 'STRING1', 'CCV9', 'CEA7', 'CEA8', 'CEA9', 'CER6', 'CERL5', 'TEAS2', 'TSE2', 'TTE2', 'TTE3', 'CCV13', 'CCV13-H', 'CCVE4', 'CEMX4', 'STDLIBE1', 'STDLIBE2', 'STDLIBE3', 'CEE6', 'CER7', 'EXC3', 'TDG12', 'FD6', 'STDIO1', 'CEB1', 'CEB5', 'CEB9', 'CEB10', 'CEB11', 'CTI4']
+
+[[axioms]]
+id = "c11_libc_stdio_comparison_00603046"
+content = '''Comparison requires: FD in_keys(OpenFiles).'''
+formal_spec = '''FD in_keys(OpenFiles)'''
+layer = "c11_stdlib"
+confidence = 1.0
+source_file = "stdio.k"
+source_module = "LIBC-STDIO"
+source_line_start = 497
+source_line_end = 503
+tags = ['comparison']
+
+[[axioms]]
+id = "c11_libc_stdio_comparison_6b25d743"
+content = '''Comparison requires: either getFD(V) ==K "" or NOT (getFD(V) in_keys(OpenFiles)).'''
+formal_spec = '''(getFD(V) ==K "") orBool notBool (getFD(V) in_keys(OpenFiles))'''
+layer = "c11_stdlib"
+confidence = 1.0
+source_file = "stdio.k"
+source_module = "LIBC-STDIO"
+source_line_start = 504
+source_line_end = 508
+tags = ['comparison']
+
+[[axioms]]
+id = "c11_libc_stdio_comparison_e83421a4"
+content = '''Comparison requires: N =/=K 1.'''
+formal_spec = '''N =/=K 1'''
+layer = "c11_stdlib"
+confidence = 1.0
+source_file = "stdio.k"
+source_module = "LIBC-STDIO"
+source_line_start = 518
+source_line_end = 520
+tags = ['comparison']
+
+[[axioms]]
+id = "c11_libc_stdio_comparison_04717146"
+content = '''Comparison requires: isReadable(Mode).'''
+formal_spec = '''isReadable(Mode)'''
+layer = "c11_stdlib"
+confidence = 1.0
+source_file = "stdio.k"
+source_module = "LIBC-STDIO"
+source_line_start = 528
+source_line_end = 534
+tags = ['comparison']
+
+[[axioms]]
+id = "c11_libc_stdio_comparison_8f694147"
+content = '''Comparison requires: NOT (isReadable(Mode)).'''
+formal_spec = '''notBool isReadable(Mode)'''
+layer = "c11_stdlib"
+confidence = 1.0
+source_file = "stdio.k"
+source_module = "LIBC-STDIO"
+source_line_start = 535
+source_line_end = 542
+tags = ['comparison']
+
+[[axioms]]
+id = "c11_libc_stdio_comparison_6b25d743"
+content = '''Comparison requires: either getFD(V) ==K "" or NOT (getFD(V) in_keys(OpenFiles)).'''
+formal_spec = '''(getFD(V) ==K "") orBool notBool (getFD(V) in_keys(OpenFiles))'''
+layer = "c11_stdlib"
+confidence = 1.0
+source_file = "stdio.k"
+source_module = "LIBC-STDIO"
+source_line_start = 543
+source_line_end = 547
+tags = ['comparison']
+
+[[axioms]]
+id = "c11_libc_stdio_operation_63520aae"
+content = '''Operation requires: (lengthString(Read) %Int Size) =/=Int 0.'''
+formal_spec = '''(lengthString(Read) %Int Size) =/=Int 0'''
+layer = "c11_stdlib"
+confidence = 1.0
+source_file = "stdio.k"
+source_module = "LIBC-STDIO"
+source_line_start = 550
+source_line_end = 555
+
+[[axioms]]
+id = "c11_libc_stdio_operation_82acc44c"
+content = '''Operation requires: (lengthString(Read) %Int Size) ==Int 0.'''
+formal_spec = '''(lengthString(Read) %Int Size) ==Int 0'''
+layer = "c11_stdlib"
+confidence = 1.0
+source_file = "stdio.k"
+source_module = "LIBC-STDIO"
+source_line_start = 556
+source_line_end = 560
+
+[[axioms]]
+id = "c11_libc_stdio_operation_b3669d54"
+content = '''Operation requires: NMemb <Int 1.'''
+formal_spec = '''NMemb <Int 1'''
+layer = "c11_stdlib"
+confidence = 1.0
+source_file = "stdio.k"
+source_module = "LIBC-STDIO"
+source_line_start = 564
+source_line_end = 566
+
+[[axioms]]
+id = "c11_libc_stdio_operation_29c2d9f1"
+content = '''Operation requires: NMemb >Int 1.'''
+formal_spec = '''NMemb >Int 1'''
+layer = "c11_stdlib"
+confidence = 1.0
+source_file = "stdio.k"
+source_module = "LIBC-STDIO"
+source_line_start = 571
+source_line_end = 574
+
+[[axioms]]
+id = "c11_libc_stdio_comparison_ce001f23"
+content = '''Comparison requires: V ==K eof, NOT ((Buffer ==K ""), and Eof).'''
+formal_spec = '''V ==K eof andBool notBool (Buffer ==K "" andBool Eof)'''
+layer = "c11_stdlib"
+confidence = 1.0
+source_file = "stdio.k"
+source_module = "LIBC-STDIO"
+source_line_start = 575
+source_line_end = 583
+tags = ['comparison']
+
+[[axioms]]
+id = "c11_libc_stdio_comparison_97e66c06"
+content = '''Comparison requires: V =/=Int 1.'''
+formal_spec = '''V =/=Int 1'''
+layer = "c11_stdlib"
+confidence = 1.0
+source_file = "stdio.k"
+source_module = "LIBC-STDIO"
+source_line_start = 584
+source_line_end = 592
+tags = ['comparison']
+
+[[axioms]]
+id = "c11_libc_stdio_comparison_d306af59"
+content = '''Comparison requires: NOT ((Buffer ==K ""), and Eof).'''
+formal_spec = '''notBool (Buffer ==K "" andBool Eof)'''
+layer = "c11_stdlib"
+confidence = 1.0
+source_file = "stdio.k"
+source_module = "LIBC-STDIO"
+source_line_start = 593
+source_line_end = 598
+tags = ['comparison']
+
+[[axioms]]
+id = "c11_libc_stdio_comparison_717ec562"
+content = '''Comparison requires: lengthString(S) >=Int NMemb -Int 1.'''
+formal_spec = '''lengthString(S) >=Int NMemb -Int 1'''
+layer = "c11_stdlib"
+confidence = 1.0
+source_file = "stdio.k"
+source_module = "LIBC-STDIO"
+source_line_start = 601
+source_line_end = 604
+tags = ['comparison']
+
+[[axioms]]
+id = "c11_libc_stdio_operation_5fac41b8"
+content = '''Operation requires: lengthString(S) <Int NMemb -Int 1.'''
+formal_spec = '''lengthString(S) <Int NMemb -Int 1'''
+layer = "c11_stdlib"
+confidence = 1.0
+source_file = "stdio.k"
+source_module = "LIBC-STDIO"
+source_line_start = 605
+source_line_end = 607
+
+[[axioms]]
+id = "c11_libc_stdio_comparison_88fbdc40"
+content = '''Comparison requires: isWritable(Mode).'''
+formal_spec = '''isWritable(Mode)'''
+layer = "c11_stdlib"
+confidence = 1.0
+source_file = "stdio.k"
+source_module = "LIBC-STDIO"
+source_line_start = 654
+source_line_end = 661
+tags = ['comparison']
+
+[[axioms]]
+id = "c11_libc_stdio_comparison_a6f33404"
+content = '''Comparison requires: NOT (isWritable(Mode)).'''
+formal_spec = '''notBool isWritable(Mode)'''
+layer = "c11_stdlib"
+confidence = 1.0
+source_file = "stdio.k"
+source_module = "LIBC-STDIO"
+source_line_start = 662
+source_line_end = 669
+tags = ['comparison']
+
+[[axioms]]
+id = "c11_libc_stdio_comparison_6b25d743"
+content = '''Comparison requires: either getFD(V) ==K "" or NOT (getFD(V) in_keys(OpenFiles)).'''
+formal_spec = '''(getFD(V) ==K "") orBool notBool (getFD(V) in_keys(OpenFiles))'''
+layer = "c11_stdlib"
+confidence = 1.0
+source_file = "stdio.k"
+source_module = "LIBC-STDIO"
+source_line_start = 670
+source_line_end = 674
+tags = ['comparison']
+
+[[axioms]]
+id = "c11_libc_stdio_comparison_88fbdc40"
+content = '''Comparison requires: isWritable(Mode).'''
+formal_spec = '''isWritable(Mode)'''
+layer = "c11_stdlib"
+confidence = 1.0
+source_file = "stdio.k"
+source_module = "LIBC-STDIO"
+source_line_start = 678
+source_line_end = 685
+tags = ['comparison']
+
+[[axioms]]
+id = "c11_libc_stdio_comparison_a6f33404"
+content = '''Comparison requires: NOT (isWritable(Mode)).'''
+formal_spec = '''notBool isWritable(Mode)'''
+layer = "c11_stdlib"
+confidence = 1.0
+source_file = "stdio.k"
+source_module = "LIBC-STDIO"
+source_line_start = 686
+source_line_end = 693
+tags = ['comparison']
+
+[[axioms]]
+id = "c11_libc_stdio_comparison_6b25d743"
+content = '''Comparison requires: either getFD(V) ==K "" or NOT (getFD(V) in_keys(OpenFiles)).'''
+formal_spec = '''(getFD(V) ==K "") orBool notBool (getFD(V) in_keys(OpenFiles))'''
+layer = "c11_stdlib"
+confidence = 1.0
+source_file = "stdio.k"
+source_module = "LIBC-STDIO"
+source_line_start = 694
+source_line_end = 698
+tags = ['comparison']
+
+[[axioms]]
+id = "c11_libc_stdio_operation_c635e2d1"
+content = '''Operation requires: opaque(...) :/=K V.'''
+formal_spec = '''opaque(...) :/=K V'''
+layer = "c11_stdlib"
+confidence = 1.0
+source_file = "stdio.k"
+source_module = "LIBC-STDIO"
+source_line_start = 710
+source_line_end = 713
+
+[[axioms]]
+id = "c11_libc_stdio_comparison_55b9bc4b"
+content = '''Comparison requires: NOT (VaList in_keys(VaLists)).'''
+formal_spec = '''notBool VaList in_keys(VaLists)'''
+layer = "c11_stdlib"
+confidence = 1.0
+source_file = "stdio.k"
+source_module = "LIBC-STDIO"
+source_line_start = 714
+source_line_end = 719
+tags = ['comparison']
+
+[[axioms]]
+id = "c11_libc_stdio_comparison_e1ddb32f"
+content = '''Comparison requires: isKResult(H).'''
+formal_spec = '''isKResult(H)'''
+layer = "c11_stdlib"
+confidence = 1.0
+source_file = "stdio.k"
+source_module = "LIBC-STDIO"
+source_line_start = 720
+source_line_end = 723
+tags = ['comparison']
+
+[[axioms]]
+id = "c11_libc_stdio_operation_c635e2d1"
+content = '''Operation requires: opaque(...) :/=K V.'''
+formal_spec = '''opaque(...) :/=K V'''
+layer = "c11_stdlib"
+confidence = 1.0
+source_file = "stdio.k"
+source_module = "LIBC-STDIO"
+source_line_start = 734
+source_line_end = 737
+
+[[axioms]]
+id = "c11_libc_stdio_comparison_55b9bc4b"
+content = '''Comparison requires: NOT (VaList in_keys(VaLists)).'''
+formal_spec = '''notBool VaList in_keys(VaLists)'''
+layer = "c11_stdlib"
+confidence = 1.0
+source_file = "stdio.k"
+source_module = "LIBC-STDIO"
+source_line_start = 738
+source_line_end = 743
+tags = ['comparison']
+
+[[axioms]]
+id = "c11_libc_stdio_comparison_e1ddb32f"
+content = '''Comparison requires: isKResult(H).'''
+formal_spec = '''isKResult(H)'''
+layer = "c11_stdlib"
+confidence = 1.0
+source_file = "stdio.k"
+source_module = "LIBC-STDIO"
+source_line_start = 744
+source_line_end = 747
+tags = ['comparison']
+
+[[axioms]]
+id = "c11_libc_stdio_operation_c635e2d1"
+content = '''Operation requires: opaque(...) :/=K V.'''
+formal_spec = '''opaque(...) :/=K V'''
+layer = "c11_stdlib"
+confidence = 1.0
+source_file = "stdio.k"
+source_module = "LIBC-STDIO"
+source_line_start = 775
+source_line_end = 778
+
+[[axioms]]
+id = "c11_libc_stdio_comparison_55b9bc4b"
+content = '''Comparison requires: NOT (VaList in_keys(VaLists)).'''
+formal_spec = '''notBool VaList in_keys(VaLists)'''
+layer = "c11_stdlib"
+confidence = 1.0
+source_file = "stdio.k"
+source_module = "LIBC-STDIO"
+source_line_start = 779
+source_line_end = 784
+tags = ['comparison']
+
+[[axioms]]
+id = "c11_libc_stdio_comparison_e1ddb32f"
+content = '''Comparison requires: isKResult(H).'''
+formal_spec = '''isKResult(H)'''
+layer = "c11_stdlib"
+confidence = 1.0
+source_file = "stdio.k"
+source_module = "LIBC-STDIO"
+source_line_start = 785
+source_line_end = 788
+tags = ['comparison']
+
+[[axioms]]
+id = "c11_libc_stdio_operation_c635e2d1"
+content = '''Operation requires: opaque(...) :/=K V.'''
+formal_spec = '''opaque(...) :/=K V'''
+layer = "c11_stdlib"
+confidence = 1.0
+source_file = "stdio.k"
+source_module = "LIBC-STDIO"
+source_line_start = 795
+source_line_end = 798
+
+[[axioms]]
+id = "c11_libc_stdio_comparison_55b9bc4b"
+content = '''Comparison requires: NOT (VaList in_keys(VaLists)).'''
+formal_spec = '''notBool VaList in_keys(VaLists)'''
+layer = "c11_stdlib"
+confidence = 1.0
+source_file = "stdio.k"
+source_module = "LIBC-STDIO"
+source_line_start = 799
+source_line_end = 804
+tags = ['comparison']
+
+[[axioms]]
+id = "c11_libc_stdio_comparison_e1ddb32f"
+content = '''Comparison requires: isKResult(H).'''
+formal_spec = '''isKResult(H)'''
+layer = "c11_stdlib"
+confidence = 1.0
+source_file = "stdio.k"
+source_module = "LIBC-STDIO"
+source_line_start = 805
+source_line_end = 808
+tags = ['comparison']
+
+[[axioms]]
+id = "c11_libc_stdio_subtraction_9859e9d4"
+content = '''Subtraction requires: Len >Int 0.'''
+formal_spec = '''Len >Int 0'''
+layer = "c11_stdlib"
+confidence = 1.0
+source_file = "stdio.k"
+source_module = "LIBC-STDIO"
+source_line_start = 815
+source_line_end = 820
+tags = ['subtraction']
+
+[[axioms]]
+id = "c11_libc_stdio_operation_c635e2d1"
+content = '''Operation requires: opaque(...) :/=K V.'''
+formal_spec = '''opaque(...) :/=K V'''
+layer = "c11_stdlib"
+confidence = 1.0
+source_file = "stdio.k"
+source_module = "LIBC-STDIO"
+source_line_start = 832
+source_line_end = 835
+
+[[axioms]]
+id = "c11_libc_stdio_comparison_55b9bc4b"
+content = '''Comparison requires: NOT (VaList in_keys(VaLists)).'''
+formal_spec = '''notBool VaList in_keys(VaLists)'''
+layer = "c11_stdlib"
+confidence = 1.0
+source_file = "stdio.k"
+source_module = "LIBC-STDIO"
+source_line_start = 836
+source_line_end = 841
+tags = ['comparison']
+
+[[axioms]]
+id = "c11_libc_stdio_comparison_e1ddb32f"
+content = '''Comparison requires: isKResult(H).'''
+formal_spec = '''isKResult(H)'''
+layer = "c11_stdlib"
+confidence = 1.0
+source_file = "stdio.k"
+source_module = "LIBC-STDIO"
+source_line_start = 842
+source_line_end = 845
+tags = ['comparison']
+
+[[axioms]]
+id = "c11_libc_stdio_comparison_e1ddb32f"
+content = '''Comparison requires: isKResult(H).'''
+formal_spec = '''isKResult(H)'''
+layer = "c11_stdlib"
+confidence = 1.0
+source_file = "stdio.k"
+source_module = "LIBC-STDIO"
+source_line_start = 864
+source_line_end = 867
+tags = ['comparison']
+
+[[axioms]]
+id = "c11_libc_stdio_comparison_e1ddb32f"
+content = '''Comparison requires: isKResult(H).'''
+formal_spec = '''isKResult(H)'''
+layer = "c11_stdlib"
+confidence = 1.0
+source_file = "stdio.k"
+source_module = "LIBC-STDIO"
+source_line_start = 875
+source_line_end = 878
+tags = ['comparison']
+
+[[axioms]]
+id = "c11_libc_stdio_comparison_e1ddb32f"
+content = '''Comparison requires: isKResult(H).'''
+formal_spec = '''isKResult(H)'''
+layer = "c11_stdlib"
+confidence = 1.0
+source_file = "stdio.k"
+source_module = "LIBC-STDIO"
+source_line_start = 891
+source_line_end = 894
+tags = ['comparison']
+
+[[axioms]]
+id = "c11_libc_stdio_comparison_00603046"
+content = '''Comparison requires: FD in_keys(OpenFiles).'''
+formal_spec = '''FD in_keys(OpenFiles)'''
+layer = "c11_stdlib"
+confidence = 1.0
+source_file = "stdio.k"
+source_module = "LIBC-STDIO"
+source_line_start = 898
+source_line_end = 903
+tags = ['comparison']
+
+[[axioms]]
+id = "c11_libc_stdio_comparison_6b25d743"
+content = '''Comparison requires: either getFD(V) ==K "" or NOT (getFD(V) in_keys(OpenFiles)).'''
+formal_spec = '''(getFD(V) ==K "") orBool notBool (getFD(V) in_keys(OpenFiles))'''
+layer = "c11_stdlib"
+confidence = 1.0
+source_file = "stdio.k"
+source_module = "LIBC-STDIO"
+source_line_start = 904
+source_line_end = 908
+tags = ['comparison']
+
+[[axioms]]
+id = "c11_libc_stdio_comparison_6786064a"
+content = '''Comparison requires: isReadable(Mode), NOT (atFieldWidth(Item, D)), NOT ((Buffer ==K ""), and Eof).'''
+formal_spec = '''isReadable(Mode) andBool notBool atFieldWidth(Item, D) andBool notBool (Buffer ==K "" andBool Eof)'''
+layer = "c11_stdlib"
+confidence = 1.0
+source_file = "stdio.k"
+source_module = "LIBC-STDIO"
+source_line_start = 930
+source_line_end = 941
+tags = ['comparison']
+
+[[axioms]]
+id = "c11_libc_stdio_comparison_6242fbb3"
+content = '''Comparison requires: NOT (((Buffer ==K ""), either Eof) or atFieldWidth(Item, D)), Err =/=Int 0, and isReadable(Mode).'''
+formal_spec = '''notBool ((Buffer ==K "" andBool Eof) orBool atFieldWidth(Item, D)) andBool Err =/=Int 0 andBool isReadable(Mode)'''
+layer = "c11_stdlib"
+confidence = 1.0
+source_file = "stdio.k"
+source_module = "LIBC-STDIO"
+source_line_start = 942
+source_line_end = 953
+tags = ['comparison']
+
+[[axioms]]
+id = "c11_libc_stdio_comparison_8f694147"
+content = '''Comparison requires: NOT (isReadable(Mode)).'''
+formal_spec = '''notBool isReadable(Mode)'''
+layer = "c11_stdlib"
+confidence = 1.0
+source_file = "stdio.k"
+source_module = "LIBC-STDIO"
+source_line_start = 954
+source_line_end = 961
+tags = ['comparison']
+
+[[axioms]]
+id = "c11_libc_stdio_comparison_d2d56830"
+content = '''Comparison requires: ((Buffer ==K "", either Eof) or atFieldWidth(Item, D)), isCompleteItem(Item, D), and either (Wr ==K dirWrite or Wr ==K dirAlloc).'''
+formal_spec = '''((Buffer ==K "" andBool Eof) orBool atFieldWidth(Item, D)) andBool isCompleteItem(Item, D) andBool (Wr ==K dirWrite orBool Wr ==K dirAlloc)'''
+layer = "c11_stdlib"
+confidence = 1.0
+source_file = "stdio.k"
+source_module = "LIBC-STDIO"
+source_line_start = 972
+source_line_end = 984
+tags = ['comparison']
+
+[[axioms]]
+id = "c11_libc_stdio_modulus_46edfa7f"
+content = '''Modulus operation requires: ((Buffer ==K "", either Eof) or atFieldWidth(Item, D)), and isCompleteItem(Item, D).'''
+formal_spec = '''((Buffer ==K "" andBool Eof) orBool atFieldWidth(Item, D)) andBool isCompleteItem(Item, D)'''
+layer = "c11_stdlib"
+confidence = 1.0
+source_file = "stdio.k"
+source_module = "LIBC-STDIO"
+source_line_start = 985
+source_line_end = 995
+tags = ['modulus']
+
+[[axioms]]
+id = "c11_libc_stdio_comparison_807e81a2"
+content = '''Comparison requires: ((Buffer ==K "", either Eof) or atFieldWidth(Item, D)), NOT (isCompleteItem(Item, D)), and isReadable(Mode).'''
+formal_spec = '''((Buffer ==K "" andBool Eof) orBool atFieldWidth(Item, D)) andBool notBool isCompleteItem(Item, D) andBool isReadable(Mode)'''
+layer = "c11_stdlib"
+confidence = 1.0
+source_file = "stdio.k"
+source_module = "LIBC-STDIO"
+source_line_start = 996
+source_line_end = 1012
+tags = ['comparison']
+
+[[axioms]]
+id = "c11_libc_stdio_operation_0c4fdd3b"
+content = '''Operation requires: inScanSet(C, D, Item).'''
+formal_spec = '''inScanSet(C, D, Item)'''
+layer = "c11_stdlib"
+confidence = 1.0
+source_file = "stdio.k"
+source_module = "LIBC-STDIO"
+source_line_start = 1022
+source_line_end = 1029
+
+[[axioms]]
+id = "c11_libc_stdio_comparison_b1b7e021"
+content = '''Comparison requires: NOT (inScanSet(C, stringDir(D), Item)), and Item =/=String "".'''
+formal_spec = '''notBool inScanSet(C, stringDir(D), Item) andBool Item =/=String ""'''
+layer = "c11_stdlib"
+confidence = 1.0
+source_file = "stdio.k"
+source_module = "LIBC-STDIO"
+source_line_start = 1030
+source_line_end = 1037
+tags = ['comparison']
+
+[[axioms]]
+id = "c11_libc_stdio_comparison_7ad3e18a"
+content = '''Comparison requires: NOT (isWhitespace(C)).'''
+formal_spec = '''notBool isWhitespace(C)'''
+layer = "c11_stdlib"
+confidence = 1.0
+source_file = "stdio.k"
+source_module = "LIBC-STDIO"
+source_line_start = 1038
+source_line_end = 1045
+tags = ['comparison']
+
+[[axioms]]
+id = "c11_libc_stdio_operation_ca9b5fad"
+content = '''Operation requires: NOT (inScanSet(C, D, Item)), isCompleteItem(Item, D), and either (Wr ==K dirWrite or Wr ==K dirAlloc).'''
+formal_spec = '''notBool inScanSet(C, D, Item) andBool isCompleteItem(Item, D) andBool (Wr ==K dirWrite orBool Wr ==K dirAlloc)'''
+layer = "c11_stdlib"
+confidence = 1.0
+source_file = "stdio.k"
+source_module = "LIBC-STDIO"
+source_line_start = 1046
+source_line_end = 1055
+
+[[axioms]]
+id = "c11_libc_stdio_modulus_c2df4b3d"
+content = '''Modulus operation requires: NOT (inScanSet(C, D, Item)), and isCompleteItem(Item, D).'''
+formal_spec = '''notBool inScanSet(C, D, Item) andBool isCompleteItem(Item, D)'''
+layer = "c11_stdlib"
+confidence = 1.0
+source_file = "stdio.k"
+source_module = "LIBC-STDIO"
+source_line_start = 1056
+source_line_end = 1063
+tags = ['modulus']
+
+[[axioms]]
+id = "c11_libc_stdio_modulus_c2df4b3d"
+content = '''Modulus operation requires: NOT (inScanSet(C, D, Item)), and isCompleteItem(Item, D).'''
+formal_spec = '''notBool inScanSet(C, D, Item) andBool isCompleteItem(Item, D)'''
+layer = "c11_stdlib"
+confidence = 1.0
+source_file = "stdio.k"
+source_module = "LIBC-STDIO"
+source_line_start = 1064
+source_line_end = 1072
+tags = ['modulus']
+
+[[axioms]]
+id = "c11_libc_stdio_comparison_4a80cd9c"
+content = '''Comparison requires: NOT (inScanSet(C, D, Item)), D =/=K whitespace, and NOT (isCompleteItem(Item, D)).'''
+formal_spec = '''notBool inScanSet(C, D, Item) andBool D =/=K whitespace andBool notBool isCompleteItem(Item, D)'''
+layer = "c11_stdlib"
+confidence = 1.0
+source_file = "stdio.k"
+source_module = "LIBC-STDIO"
+source_line_start = 1074
+source_line_end = 1086
+tags = ['comparison']
+
+[[axioms]]
+id = "c11_libc_stdio_modulus_1ec1187f"
+content = '''Modulus operation requires: firstChar(D) ==String "[".'''
+formal_spec = '''firstChar(D) ==String "["'''
+layer = "c11_stdlib"
+confidence = 1.0
+source_file = "stdio.k"
+source_module = "LIBC-STDIO"
+source_line_start = 1118
+source_line_end = 1121
+tags = ['modulus']
+
+[[axioms]]
+id = "c11_libc_stdio_modulus_1ec1187f"
+content = '''Modulus operation requires: firstChar(D) ==String "[".'''
+formal_spec = '''firstChar(D) ==String "["'''
+layer = "c11_stdlib"
+confidence = 1.0
+source_file = "stdio.k"
+source_module = "LIBC-STDIO"
+source_line_start = 1122
+source_line_end = 1126
+tags = ['modulus']
+
+[[axioms]]
+id = "c11_libc_stdio_modulus_1ec1187f"
+content = '''Modulus operation requires: firstChar(D) ==String "[".'''
+formal_spec = '''firstChar(D) ==String "["'''
+layer = "c11_stdlib"
+confidence = 1.0
+source_file = "stdio.k"
+source_module = "LIBC-STDIO"
+source_line_start = 1137
+source_line_end = 1139
+tags = ['modulus']
+
+[[axioms]]
+id = "c11_libc_stdio_modulus_1ec1187f"
+content = '''Modulus operation requires: firstChar(D) ==String "[".'''
+formal_spec = '''firstChar(D) ==String "["'''
+layer = "c11_stdlib"
+confidence = 1.0
+source_file = "stdio.k"
+source_module = "LIBC-STDIO"
+source_line_start = 1140
+source_line_end = 1143
+tags = ['modulus']
+
+[[axioms]]
+id = "c11_libc_stdio_modulus_c954664d"
+content = '''Modulus operation requires: NOT (has0xPrefix(Item)).'''
+formal_spec = '''notBool has0xPrefix(Item)'''
+layer = "c11_stdlib"
+confidence = 1.0
+source_file = "stdio.k"
+source_module = "LIBC-STDIO"
+source_line_start = 1146
+source_line_end = 1148
+tags = ['modulus']
+
+[[axioms]]
+id = "c11_libc_stdio_modulus_269bdb6f"
+content = '''Modulus operation requires: has0xPrefix(Item).'''
+formal_spec = '''has0xPrefix(Item)'''
+layer = "c11_stdlib"
+confidence = 1.0
+source_file = "stdio.k"
+source_module = "LIBC-STDIO"
+source_line_start = 1149
+source_line_end = 1151
+tags = ['modulus']
+
+[[axioms]]
+id = "c11_libc_stdio_modulus_c954664d"
+content = '''Modulus operation requires: NOT (has0xPrefix(Item)).'''
+formal_spec = '''notBool has0xPrefix(Item)'''
+layer = "c11_stdlib"
+confidence = 1.0
+source_file = "stdio.k"
+source_module = "LIBC-STDIO"
+source_line_start = 1156
+source_line_end = 1158
+tags = ['modulus']
+
+[[axioms]]
+id = "c11_libc_stdio_modulus_269bdb6f"
+content = '''Modulus operation requires: has0xPrefix(Item).'''
+formal_spec = '''has0xPrefix(Item)'''
+layer = "c11_stdlib"
+confidence = 1.0
+source_file = "stdio.k"
+source_module = "LIBC-STDIO"
+source_line_start = 1159
+source_line_end = 1162
+tags = ['modulus']
+
+[[axioms]]
+id = "c11_libc_stdio_modulus_fc019bf0"
+content = '''Modulus operation requires: NOT (has0xPrefix(Item)), and toUpperCase(Item) =/=String "(NIL)".'''
+formal_spec = '''notBool has0xPrefix(Item) andBool toUpperCase(Item) =/=String "(NIL)"'''
+layer = "c11_stdlib"
+confidence = 1.0
+source_file = "stdio.k"
+source_module = "LIBC-STDIO"
+source_line_start = 1163
+source_line_end = 1166
+tags = ['modulus']
+
+[[axioms]]
+id = "c11_libc_stdio_modulus_5302b047"
+content = '''Modulus operation requires: has0xPrefix(Item), and toUpperCase(Item) =/=String "(NIL)".'''
+formal_spec = '''has0xPrefix(Item) andBool toUpperCase(Item) =/=String "(NIL)"'''
+layer = "c11_stdlib"
+confidence = 1.0
+source_file = "stdio.k"
+source_module = "LIBC-STDIO"
+source_line_start = 1167
+source_line_end = 1170
+tags = ['modulus']
+
+[[axioms]]
+id = "c11_libc_stdio_modulus_847ecb7f"
+content = '''Modulus operation requires: toUpperCase(Item) ==String "(NIL)".'''
+formal_spec = '''toUpperCase(Item) ==String "(NIL)"'''
+layer = "c11_stdlib"
+confidence = 1.0
+source_file = "stdio.k"
+source_module = "LIBC-STDIO"
+source_line_start = 1171
+source_line_end = 1174
+tags = ['modulus']
+
+[[axioms]]
+id = "c11_libc_stdio_modulus_663350f9"
+content = '''Modulus operation requires: isFloatDirective(D').'''
+formal_spec = '''isFloatDirective(D')'''
+layer = "c11_stdlib"
+confidence = 1.0
+source_file = "stdio.k"
+source_module = "LIBC-STDIO"
+source_line_start = 1175
+source_line_end = 1178
+tags = ['float', 'modulus']
+
+[[axioms]]
+id = "c11_libc_stdio_modulus_e90b259c"
+content = '''Modulus operation requires: isDigit(C, 10).'''
+formal_spec = '''isDigit(C, 10)'''
+layer = "c11_stdlib"
+confidence = 1.0
+source_file = "stdio.k"
+source_module = "LIBC-STDIO"
+source_line_start = 1219
+source_line_end = 1220
+tags = ['modulus']
+
+[[axioms]]
+id = "c11_libc_stdio_modulus_534dc8ae"
+content = '''Modulus operation requires: isSign(C).'''
+formal_spec = '''isSign(C)'''
+layer = "c11_stdlib"
+confidence = 1.0
+source_file = "stdio.k"
+source_module = "LIBC-STDIO"
+source_line_start = 1221
+source_line_end = 1223
+tags = ['modulus']
+
+[[axioms]]
+id = "c11_libc_stdio_modulus_be7d4453"
+content = '''Modulus operation requires: isDigit(C, 16).'''
+formal_spec = '''isDigit(C, 16)'''
+layer = "c11_stdlib"
+confidence = 1.0
+source_file = "stdio.k"
+source_module = "LIBC-STDIO"
+source_line_start = 1224
+source_line_end = 1225
+tags = ['modulus']
+
+[[axioms]]
+id = "c11_libc_stdio_modulus_534dc8ae"
+content = '''Modulus operation requires: isSign(C).'''
+formal_spec = '''isSign(C)'''
+layer = "c11_stdlib"
+confidence = 1.0
+source_file = "stdio.k"
+source_module = "LIBC-STDIO"
+source_line_start = 1226
+source_line_end = 1227
+tags = ['modulus']
+
+[[axioms]]
+id = "c11_libc_stdio_modulus_76607295"
+content = '''Modulus operation requires: isXPrefix(I).'''
+formal_spec = '''isXPrefix(I)'''
+layer = "c11_stdlib"
+confidence = 1.0
+source_file = "stdio.k"
+source_module = "LIBC-STDIO"
+source_line_start = 1228
+source_line_end = 1229
+tags = ['modulus']
+
+[[axioms]]
+id = "c11_libc_stdio_modulus_76607295"
+content = '''Modulus operation requires: isXPrefix(I).'''
+formal_spec = '''isXPrefix(I)'''
+layer = "c11_stdlib"
+confidence = 1.0
+source_file = "stdio.k"
+source_module = "LIBC-STDIO"
+source_line_start = 1230
+source_line_end = 1232
+tags = ['modulus']
+
+[[axioms]]
+id = "c11_libc_stdio_modulus_ef74ade3"
+content = '''Modulus operation requires: isDigit(C, 8).'''
+formal_spec = '''isDigit(C, 8)'''
+layer = "c11_stdlib"
+confidence = 1.0
+source_file = "stdio.k"
+source_module = "LIBC-STDIO"
+source_line_start = 1233
+source_line_end = 1234
+tags = ['modulus']
+
+[[axioms]]
+id = "c11_libc_stdio_modulus_534dc8ae"
+content = '''Modulus operation requires: isSign(C).'''
+formal_spec = '''isSign(C)'''
+layer = "c11_stdlib"
+confidence = 1.0
+source_file = "stdio.k"
+source_module = "LIBC-STDIO"
+source_line_start = 1235
+source_line_end = 1237
+tags = ['modulus']
+
+[[axioms]]
+id = "c11_libc_stdio_modulus_e90b259c"
+content = '''Modulus operation requires: isDigit(C, 10).'''
+formal_spec = '''isDigit(C, 10)'''
+layer = "c11_stdlib"
+confidence = 1.0
+source_file = "stdio.k"
+source_module = "LIBC-STDIO"
+source_line_start = 1238
+source_line_end = 1239
+tags = ['modulus']
+
+[[axioms]]
+id = "c11_libc_stdio_modulus_534dc8ae"
+content = '''Modulus operation requires: isSign(C).'''
+formal_spec = '''isSign(C)'''
+layer = "c11_stdlib"
+confidence = 1.0
+source_file = "stdio.k"
+source_module = "LIBC-STDIO"
+source_line_start = 1240
+source_line_end = 1242
+tags = ['modulus']
+
+[[axioms]]
+id = "c11_libc_stdio_modulus_be7d4453"
+content = '''Modulus operation requires: isDigit(C, 16).'''
+formal_spec = '''isDigit(C, 16)'''
+layer = "c11_stdlib"
+confidence = 1.0
+source_file = "stdio.k"
+source_module = "LIBC-STDIO"
+source_line_start = 1243
+source_line_end = 1244
+tags = ['modulus']
+
+[[axioms]]
+id = "c11_libc_stdio_modulus_534dc8ae"
+content = '''Modulus operation requires: isSign(C).'''
+formal_spec = '''isSign(C)'''
+layer = "c11_stdlib"
+confidence = 1.0
+source_file = "stdio.k"
+source_module = "LIBC-STDIO"
+source_line_start = 1245
+source_line_end = 1246
+tags = ['modulus']
+
+[[axioms]]
+id = "c11_libc_stdio_modulus_76607295"
+content = '''Modulus operation requires: isXPrefix(I).'''
+formal_spec = '''isXPrefix(I)'''
+layer = "c11_stdlib"
+confidence = 1.0
+source_file = "stdio.k"
+source_module = "LIBC-STDIO"
+source_line_start = 1247
+source_line_end = 1248
+tags = ['modulus']
+
+[[axioms]]
+id = "c11_libc_stdio_modulus_76607295"
+content = '''Modulus operation requires: isXPrefix(I).'''
+formal_spec = '''isXPrefix(I)'''
+layer = "c11_stdlib"
+confidence = 1.0
+source_file = "stdio.k"
+source_module = "LIBC-STDIO"
+source_line_start = 1249
+source_line_end = 1251
+tags = ['modulus']
+
+[[axioms]]
+id = "c11_libc_stdio_modulus_be7d4453"
+content = '''Modulus operation requires: isDigit(C, 16).'''
+formal_spec = '''isDigit(C, 16)'''
+layer = "c11_stdlib"
+confidence = 1.0
+source_file = "stdio.k"
+source_module = "LIBC-STDIO"
+source_line_start = 1252
+source_line_end = 1253
+tags = ['modulus']
+
+[[axioms]]
+id = "c11_libc_stdio_modulus_534dc8ae"
+content = '''Modulus operation requires: isSign(C).'''
+formal_spec = '''isSign(C)'''
+layer = "c11_stdlib"
+confidence = 1.0
+source_file = "stdio.k"
+source_module = "LIBC-STDIO"
+source_line_start = 1254
+source_line_end = 1255
+tags = ['modulus']
+
+[[axioms]]
+id = "c11_libc_stdio_modulus_76607295"
+content = '''Modulus operation requires: isXPrefix(I).'''
+formal_spec = '''isXPrefix(I)'''
+layer = "c11_stdlib"
+confidence = 1.0
+source_file = "stdio.k"
+source_module = "LIBC-STDIO"
+source_line_start = 1256
+source_line_end = 1257
+tags = ['modulus']
+
+[[axioms]]
+id = "c11_libc_stdio_modulus_76607295"
+content = '''Modulus operation requires: isXPrefix(I).'''
+formal_spec = '''isXPrefix(I)'''
+layer = "c11_stdlib"
+confidence = 1.0
+source_file = "stdio.k"
+source_module = "LIBC-STDIO"
+source_line_start = 1258
+source_line_end = 1259
+tags = ['modulus']
+
+[[axioms]]
+id = "c11_libc_stdio_modulus_7684a912"
+content = '''Modulus operation requires: inNil(C, I) // Floating point..'''
+formal_spec = '''inNil(C, I)  // Floating point.'''
+layer = "c11_stdlib"
+confidence = 1.0
+source_file = "stdio.k"
+source_module = "LIBC-STDIO"
+source_line_start = 1260
+source_line_end = 1263
+tags = ['modulus']
+error_codes = ['CEMX4', 'CCV3', 'CCV4', 'CCV12', 'CMR1', 'CMR2', 'CCV9']
+
+[[axioms]]
+id = "c11_libc_stdio_operation_88860a7c"
+content = '''Operation requires: isFloatDirective(D), and inInfinity(C, I).'''
+formal_spec = '''isFloatDirective(D) andBool inInfinity(C, I)'''
+layer = "c11_stdlib"
+confidence = 1.0
+source_file = "stdio.k"
+source_module = "LIBC-STDIO"
+source_line_start = 1264
+source_line_end = 1266
+tags = ['float']
+
+[[axioms]]
+id = "c11_libc_stdio_operation_4e894193"
+content = '''Operation requires: isFloatDirective(D), and inNan(C, I).'''
+formal_spec = '''isFloatDirective(D) andBool inNan(C, I)'''
+layer = "c11_stdlib"
+confidence = 1.0
+source_file = "stdio.k"
+source_module = "LIBC-STDIO"
+source_line_start = 1267
+source_line_end = 1269
+tags = ['float']
+
+[[axioms]]
+id = "c11_libc_stdio_operation_ccc7e5b0"
+content = '''Operation requires: isFloatDirective(D), isDigit(C, 10), and NOT (has0xPrefix(I)).'''
+formal_spec = '''isFloatDirective(D) andBool isDigit(C, 10) andBool notBool has0xPrefix(I)'''
+layer = "c11_stdlib"
+confidence = 1.0
+source_file = "stdio.k"
+source_module = "LIBC-STDIO"
+source_line_start = 1270
+source_line_end = 1273
+tags = ['float']
+
+[[axioms]]
+id = "c11_libc_stdio_operation_b1b12096"
+content = '''Operation requires: isFloatDirective(D), isDigit(C, 16), has0xPrefix(I), and NOT (hasRadix(I)).'''
+formal_spec = '''isFloatDirective(D) andBool isDigit(C, 16) andBool has0xPrefix(I) andBool notBool hasRadix(I)'''
+layer = "c11_stdlib"
+confidence = 1.0
+source_file = "stdio.k"
+source_module = "LIBC-STDIO"
+source_line_start = 1274
+source_line_end = 1278
+tags = ['float']
+
+[[axioms]]
+id = "c11_libc_stdio_operation_e6618f0c"
+content = '''Operation requires: isFloatDirective(D), isDigit(C, 2), has0xPrefix(I), and hasRadix(I).'''
+formal_spec = '''isFloatDirective(D) andBool isDigit(C, 2) andBool has0xPrefix(I) andBool hasRadix(I)'''
+layer = "c11_stdlib"
+confidence = 1.0
+source_file = "stdio.k"
+source_module = "LIBC-STDIO"
+source_line_start = 1279
+source_line_end = 1283
+tags = ['float']
+
+[[axioms]]
+id = "c11_libc_stdio_operation_b8562846"
+content = '''Operation requires: isFloatDirective(D), and isSign(C).'''
+formal_spec = '''isFloatDirective(D) andBool isSign(C)'''
+layer = "c11_stdlib"
+confidence = 1.0
+source_file = "stdio.k"
+source_module = "LIBC-STDIO"
+source_line_start = 1284
+source_line_end = 1286
+tags = ['float']
+
+[[axioms]]
+id = "c11_libc_stdio_operation_f24cce44"
+content = '''Operation requires: isFloatDirective(D), isSign(C) // Must both have radix & it's the last char., hasRadix(I), and either (toUpperCase(lastChar(I)) ==String "E" or toUpperCase(lastChar(I)) ==String "P").'''
+formal_spec = '''isFloatDirective(D) andBool isSign(C) // Must both have radix & it's the last char. andBool hasRadix(I) andBool (toUpperCase(lastChar(I)) ==String "E" orBool toUpperCase(lastChar(I)) ==String "P")'''
+layer = "c11_stdlib"
+confidence = 1.0
+source_file = "stdio.k"
+source_module = "LIBC-STDIO"
+source_line_start = 1287
+source_line_end = 1293
+tags = ['float']
+
+[[axioms]]
+id = "c11_libc_stdio_operation_fe229929"
+content = '''Operation requires: isFloatDirective(D), NOT (hasDot(I)), and NOT (hasRadix(I)).'''
+formal_spec = '''isFloatDirective(D) andBool notBool hasDot(I) andBool notBool hasRadix(I)'''
+layer = "c11_stdlib"
+confidence = 1.0
+source_file = "stdio.k"
+source_module = "LIBC-STDIO"
+source_line_start = 1294
+source_line_end = 1297
+tags = ['float']
+
+[[axioms]]
+id = "c11_libc_stdio_operation_22dd2c26"
+content = '''Operation requires: isFloatDirective(D), and isXPrefix(I).'''
+formal_spec = '''isFloatDirective(D) andBool isXPrefix(I)'''
+layer = "c11_stdlib"
+confidence = 1.0
+source_file = "stdio.k"
+source_module = "LIBC-STDIO"
+source_line_start = 1298
+source_line_end = 1300
+tags = ['float']
+
+[[axioms]]
+id = "c11_libc_stdio_operation_22dd2c26"
+content = '''Operation requires: isFloatDirective(D), and isXPrefix(I).'''
+formal_spec = '''isFloatDirective(D) andBool isXPrefix(I)'''
+layer = "c11_stdlib"
+confidence = 1.0
+source_file = "stdio.k"
+source_module = "LIBC-STDIO"
+source_line_start = 1301
+source_line_end = 1303
+tags = ['float']
+
+[[axioms]]
+id = "c11_libc_stdio_operation_297f15d8"
+content = '''Operation requires: isFloatDirective(D), hasRadix(C), NOT (hasRadix(I)), and hasDigit(I) // Scan list (e.g., "[^]abc]")..'''
+formal_spec = '''isFloatDirective(D) andBool hasRadix(C) andBool notBool hasRadix(I) andBool hasDigit(I)  // Scan list (e.g., "[^]abc]").'''
+layer = "c11_stdlib"
+confidence = 1.0
+source_file = "stdio.k"
+source_module = "LIBC-STDIO"
+source_line_start = 1304
+source_line_end = 1309
+tags = ['float']
+
+[[axioms]]
+id = "c11_libc_stdio_modulus_1ec1187f"
+content = '''Modulus operation requires: firstChar(D) ==String "[".'''
+formal_spec = '''firstChar(D) ==String "["'''
+layer = "c11_stdlib"
+confidence = 1.0
+source_file = "stdio.k"
+source_module = "LIBC-STDIO"
+source_line_start = 1310
+source_line_end = 1316
+tags = ['modulus']
+
+[[axioms]]
+id = "c11_libc_stdio_operation_0471a72d"
+content = '''Operation requires: isNumericDirective(D), NOT (hasDigit(strip0xPrefix(Item))), and toUpperCase(Item) =/=String "(NIL)".'''
+formal_spec = '''isNumericDirective(D) andBool notBool hasDigit(strip0xPrefix(Item)) andBool toUpperCase(Item) =/=String "(NIL)"'''
+layer = "c11_stdlib"
+confidence = 1.0
+source_file = "stdio.k"
+source_module = "LIBC-STDIO"
+source_line_start = 1355
+source_line_end = 1357
+
+[[axioms]]
+id = "c11_libc_stdio_operation_c96ae978"
+content = '''Operation requires: isNumericDirective(D), and isSign(lastChar(Item)).'''
+formal_spec = '''isNumericDirective(D) andBool isSign(lastChar(Item))'''
+layer = "c11_stdlib"
+confidence = 1.0
+source_file = "stdio.k"
+source_module = "LIBC-STDIO"
+source_line_start = 1358
+source_line_end = 1359
+
+[[axioms]]
+id = "c11_libc_stdio_modulus_6fb2606a"
+content = '''Modulus operation requires: either toUpperCase(Item) ==String "(" or toUpperCase(Item) ==String "(N" or toUpperCase(Item) ==String "(NI" or toUpperCase(Item) ==String "(NIL".'''
+formal_spec = '''toUpperCase(Item) ==String "(" orBool toUpperCase(Item) ==String "(N" orBool toUpperCase(Item) ==String "(NI" orBool toUpperCase(Item) ==String "(NIL"'''
+layer = "c11_stdlib"
+confidence = 1.0
+source_file = "stdio.k"
+source_module = "LIBC-STDIO"
+source_line_start = 1360
+source_line_end = 1364
+tags = ['modulus']
+
+[[axioms]]
+id = "c11_libc_stdio_operation_48728103"
+content = '''Operation requires: isFloatDirective(D), and either (toUpperCase(stripSign(Item)) ==String "N" or toUpperCase(stripSign(Item)) ==String "NA" or toUpperCase(stripSign(Item)) ==String "I" or toUpperCase(stripSign(Item)) ==String "IN" or toUpperCase(stripSign(Item)) ==String "INFI" or toUpperCase(stripSign(Item)) ==String "INFIN" or toUpperCase(stripSign(Item)) ==String "INFINI" or toUpperCase(stripSign(Item)) ==String "INFINIT").'''
+formal_spec = '''isFloatDirective(D) andBool (toUpperCase(stripSign(Item)) ==String "N" orBool toUpperCase(stripSign(Item)) ==String "NA" orBool toUpperCase(stripSign(Item)) ==String "I" orBool toUpperCase(stripSign(Item)) ==String "IN" orBool toUpperCase(stripSign(Item)) ==String "INFI" orBool toUpperCase(stripSign(Item)) ==String "INFIN" orBool toUpperCase(stripSign(Item)) ==String "INFINI" orBool toUpperCase(stripSign(Item)) ==String "INFINIT")'''
+layer = "c11_stdlib"
+confidence = 1.0
+source_file = "stdio.k"
+source_module = "LIBC-STDIO"
+source_line_start = 1365
+source_line_end = 1374
+tags = ['float']
+
+[[axioms]]
+id = "c11_libc_stdio_modulus_b956c37e"
+content = '''Modulus operation requires: Width >Int 0.'''
+formal_spec = '''Width >Int 0'''
+layer = "c11_stdlib"
+confidence = 1.0
+source_file = "stdio.k"
+source_module = "LIBC-STDIO"
+source_line_start = 1394
+source_line_end = 1396
+tags = ['modulus']
+error_codes = ['CEMX4']
+
+[[axioms]]
+id = "c11_libc_stdio_operation_ca7d4ca8"
+content = '''Operation requires: lengthString(S) >=Int 1.'''
+formal_spec = '''lengthString(S) >=Int 1'''
+layer = "c11_stdlib"
+confidence = 1.0
+source_file = "stdio.k"
+source_module = "LIBC-STDIO"
+source_line_start = 1411
+source_line_end = 1412
+
+[[axioms]]
+id = "c11_libc_stdio_operation_ca7d4ca8"
+content = '''Operation requires: lengthString(S) >=Int 1.'''
+formal_spec = '''lengthString(S) >=Int 1'''
+layer = "c11_stdlib"
+confidence = 1.0
+source_file = "stdio.k"
+source_module = "LIBC-STDIO"
+source_line_start = 1416
+source_line_end = 1417
+
+[[axioms]]
+id = "c11_libc_stdio_operation_4b4e9d21"
+content = '''Operation requires: lengthString(S) >=Int 1, and either isSign(firstChar(S) or isWhitespace(firstChar(S))).'''
+formal_spec = '''lengthString(S) >=Int 1 andBool (isSign(firstChar(S)) orBool isWhitespace(firstChar(S)))'''
+layer = "c11_stdlib"
+confidence = 1.0
+source_file = "stdio.k"
+source_module = "LIBC-STDIO"
+source_line_start = 1421
+source_line_end = 1423
+
+[[axioms]]
+id = "c11_libc_stdio_operation_52e2e2e9"
+content = '''Operation requires: lengthString(stripSign(S)) >=Int 2.'''
+formal_spec = '''lengthString(stripSign(S)) >=Int 2'''
+layer = "c11_stdlib"
+confidence = 1.0
+source_file = "stdio.k"
+source_module = "LIBC-STDIO"
+source_line_start = 1427
+source_line_end = 1428
+
+[[axioms]]
+id = "c11_libc_stdio_operation_d87a774f"
+content = '''Operation requires: has0xPrefix(S), and hasPosSign(S).'''
+formal_spec = '''has0xPrefix(S) andBool hasPosSign(S)'''
+layer = "c11_stdlib"
+confidence = 1.0
+source_file = "stdio.k"
+source_module = "LIBC-STDIO"
+source_line_start = 1432
+source_line_end = 1433
+
+[[axioms]]
+id = "c11_libc_stdio_operation_b7f3f8c0"
+content = '''Operation requires: has0xPrefix(S), and hasNegSign(S).'''
+formal_spec = '''has0xPrefix(S) andBool hasNegSign(S)'''
+layer = "c11_stdlib"
+confidence = 1.0
+source_file = "stdio.k"
+source_module = "LIBC-STDIO"
+source_line_start = 1434
+source_line_end = 1435
+
+[[axioms]]
+id = "c11_libc_stdio_operation_3c8b114e"
+content = '''Operation requires: has0xPrefix(S), and either NOT (hasPosSign(S) or hasNegSign(S)).'''
+formal_spec = '''has0xPrefix(S) andBool notBool (hasPosSign(S) orBool hasNegSign(S))'''
+layer = "c11_stdlib"
+confidence = 1.0
+source_file = "stdio.k"
+source_module = "LIBC-STDIO"
+source_line_start = 1436
+source_line_end = 1437
+
+[[axioms]]
+id = "c11_libc_stdio_operation_b9430a9f"
+content = '''Operation requires: L =/=K .List.'''
+formal_spec = '''L =/=K .List'''
+layer = "c11_stdlib"
+confidence = 1.0
+source_file = "stdio.k"
+source_module = "LIBC-STDIO"
+source_line_start = 1443
+source_line_end = 1444
+
+[[axioms]]
+id = "c11_libc_stdio_operation_9e55a757"
+content = '''Operation requires: isSpaceSkipDirective(D).'''
+formal_spec = '''isSpaceSkipDirective(D)'''
+layer = "c11_stdlib"
+confidence = 1.0
+source_file = "stdio.k"
+source_module = "LIBC-STDIO"
+source_line_start = 1448
+source_line_end = 1450
+
+[[axioms]]
+id = "c11_libc_stdio_operation_9e55a757"
+content = '''Operation requires: isSpaceSkipDirective(D).'''
+formal_spec = '''isSpaceSkipDirective(D)'''
+layer = "c11_stdlib"
+confidence = 1.0
+source_file = "stdio.k"
+source_module = "LIBC-STDIO"
+source_line_start = 1451
+source_line_end = 1453
+
+[[axioms]]
+id = "c11_libc_stdio_operation_33cf0945"
+content = '''Operation requires: NOT (isSpaceSkipDirective(D)).'''
+formal_spec = '''notBool isSpaceSkipDirective(D)'''
+layer = "c11_stdlib"
+confidence = 1.0
+source_file = "stdio.k"
+source_module = "LIBC-STDIO"
+source_line_start = 1454
+source_line_end = 1456
+
+[[axioms]]
+id = "c11_libc_stdio_modulus_1ec1187f"
+content = '''Modulus operation requires: firstChar(D) ==String "[".'''
+formal_spec = '''firstChar(D) ==String "["'''
+layer = "c11_stdlib"
+confidence = 1.0
+source_file = "stdio.k"
+source_module = "LIBC-STDIO"
+source_line_start = 1465
+source_line_end = 1466
+tags = ['modulus']
+
+[[axioms]]
+id = "c11_libc_stdio_operation_cfe9b18a"
+content = '''Operation requires: isWhitespace(C).'''
+formal_spec = '''isWhitespace(C)'''
+layer = "c11_stdlib"
+confidence = 1.0
+source_file = "stdio.k"
+source_module = "LIBC-STDIO"
+source_line_start = 1487
+source_line_end = 1489
+
+[[axioms]]
+id = "c11_libc_stdio_operation_a1f315d9"
+content = '''Operation requires: C =/=String "%", and NOT (isWhitespace(C)).'''
+formal_spec = '''C =/=String "%" andBool notBool isWhitespace(C)'''
+layer = "c11_stdlib"
+confidence = 1.0
+source_file = "stdio.k"
+source_module = "LIBC-STDIO"
+source_line_start = 1490
+source_line_end = 1492
+
+[[axioms]]
+id = "c11_libc_stdio_operation_cee062da"
+content = '''Operation requires: C =/=String "".'''
+formal_spec = '''C =/=String ""'''
+layer = "c11_stdlib"
+confidence = 1.0
+source_file = "stdio.k"
+source_module = "LIBC-STDIO"
+source_line_start = 1519
+source_line_end = 1522
+
+[[axioms]]
+id = "c11_libc_stdio_operation_fc10a419"
+content = '''Operation requires: Base <=Int 10, and C =/=String "".'''
+formal_spec = '''Base <=Int 10 andBool C =/=String ""'''
+layer = "c11_stdlib"
+confidence = 1.0
+source_file = "stdio.k"
+source_module = "LIBC-STDIO"
+source_line_start = 1526
+source_line_end = 1529
+
+[[axioms]]
+id = "c11_libc_stdio_operation_bd86d801"
+content = '''Operation requires: Base >Int 10, and C =/=String "".'''
+formal_spec = '''Base >Int 10 andBool C =/=String ""'''
+layer = "c11_stdlib"
+confidence = 1.0
+source_file = "stdio.k"
+source_module = "LIBC-STDIO"
+source_line_start = 1530
+source_line_end = 1537
+
+[[axioms]]
+id = "c11_libc_stdio_operation_018f42d6"
+content = '''Operation requires: has0xPrefix(S).'''
+formal_spec = '''has0xPrefix(S)'''
+layer = "c11_stdlib"
+confidence = 1.0
+source_file = "stdio.k"
+source_module = "LIBC-STDIO"
+source_line_start = 1560
+source_line_end = 1562
+
+[[axioms]]
+id = "c11_libc_stdio_operation_cfe9b18a"
+content = '''Operation requires: isWhitespace(C).'''
+formal_spec = '''isWhitespace(C)'''
+layer = "c11_stdlib"
+confidence = 1.0
+source_file = "stdio.k"
+source_module = "LIBC-STDIO"
+source_line_start = 1568
+source_line_end = 1570
+
+[[axioms]]
+id = "c11_libc_stdio_operation_cd9cb84e"
+content = '''Operation requires: isDigit(C, 10).'''
+formal_spec = '''isDigit(C, 10)'''
+layer = "c11_stdlib"
+confidence = 1.0
+source_file = "stdio.k"
+source_module = "LIBC-STDIO"
+source_line_start = 1581
+source_line_end = 1583
+
+[[axioms]]
+id = "c11_libc_stdio_operation_3bdb140a"
+content = '''Operation requires: C =/=String S.'''
+formal_spec = '''C =/=String S'''
+layer = "c11_stdlib"
+confidence = 1.0
+source_file = "stdio.k"
+source_module = "LIBC-STDIO"
+source_line_start = 1593
+source_line_end = 1595
+
+[[axioms]]
+id = "c11_libc_stdio_operation_5b5405dc"
+content = '''Operation requires: NOT (atHead("h", L)).'''
+formal_spec = '''notBool atHead("h", L)'''
+layer = "c11_stdlib"
+confidence = 1.0
+source_file = "stdio.k"
+source_module = "LIBC-STDIO"
+source_line_start = 1607
+source_line_end = 1609
+
+[[axioms]]
+id = "c11_libc_stdio_operation_89f4e775"
+content = '''Operation requires: NOT (atHead("l", L)).'''
+formal_spec = '''notBool atHead("l", L)'''
+layer = "c11_stdlib"
+confidence = 1.0
+source_file = "stdio.k"
+source_module = "LIBC-STDIO"
+source_line_start = 1610
+source_line_end = 1612
+
+[[axioms]]
+id = "c11_libc_stdio_operation_ab7eacda"
+content = '''Operation requires: either C ==String "j" or C ==String "z" or C ==String "t" or C ==String "L".'''
+formal_spec = '''C ==String "j" orBool C ==String "z" orBool C ==String "t" orBool C ==String "L"'''
+layer = "c11_stdlib"
+confidence = 1.0
+source_file = "stdio.k"
+source_module = "LIBC-STDIO"
+source_line_start = 1615
+source_line_end = 1620
+
+[[axioms]]
+id = "c11_libc_stdio_operation_c4e86b2d"
+content = '''Operation requires: either C ==String "d" or C ==String "i" or C ==String "o" or C ==String "u" or C ==String "x" or C ==String "X" or C ==String "a" or C ==String "A" or C ==String "e" or C ==String "E" or C ==String "f" or C ==String "F" or C ==String "g" or C ==String "G" or C ==String "c" or C ==String "s" or C ==String "p" or C ==String "n".'''
+formal_spec = '''C ==String "d" orBool C ==String "i" orBool C ==String "o" orBool C ==String "u" orBool C ==String "x" orBool C ==String "X" orBool C ==String "a" orBool C ==String "A" orBool C ==String "e" orBool C ==String "E" orBool C ==String "f" orBool C ==String "F" orBool C ==String "g" orBool C ==String "G" orBool C ==String "c" orBool C ==String "s" orBool C ==String "p" orBool C ==String "n"'''
+layer = "c11_stdlib"
+confidence = 1.0
+source_file = "stdio.k"
+source_module = "LIBC-STDIO"
+source_line_start = 1629
+source_line_end = 1643
+
+[[axioms]]
+id = "c11_libc_stdio_bitwise_26543cb4"
+content = '''Bitwise operation requires: NOT (atHead("]", L)).'''
+formal_spec = '''notBool atHead("]", L)'''
+layer = "c11_stdlib"
+confidence = 1.0
+source_file = "stdio.k"
+source_module = "LIBC-STDIO"
+source_line_start = 1646
+source_line_end = 1648
+tags = ['bitwise']
+
+[[axioms]]
+id = "c11_libc_stdio_operation_02b35e44"
+content = '''Operation requires: NOT (atHead("^", L)), and NOT (atHead("]", L)).'''
+formal_spec = '''notBool atHead("^", L) andBool notBool atHead("]", L)'''
+layer = "c11_stdlib"
+confidence = 1.0
+source_file = "stdio.k"
+source_module = "LIBC-STDIO"
+source_line_start = 1651
+source_line_end = 1653
+
+[[axioms]]
+id = "c11_libc_stdio_operation_913e85df"
+content = '''Operation requires: lengthString(S) >=Int 3.'''
+formal_spec = '''lengthString(S) >=Int 3'''
+layer = "c11_stdlib"
+confidence = 1.0
+source_file = "stdio.k"
+source_module = "LIBC-STDIO"
+source_line_start = 1671
+source_line_end = 1672
+
+[[axioms]]
+id = "c11_libc_stdio_operation_08d02ff1"
+content = '''Operation requires: either C' =/=String "-" or L ==K .List.'''
+formal_spec = '''C' =/=String "-" orBool L ==K .List'''
+layer = "c11_stdlib"
+confidence = 1.0
+source_file = "stdio.k"
+source_module = "LIBC-STDIO"
+source_line_start = 1676
+source_line_end = 1678
+
+[[axioms]]
+id = "c11_libc_stdio_subtraction_8ad6eb0e"
+content = '''Subtraction requires: ordChar(C) <Int (ordChar(End) -Int 1).'''
+formal_spec = '''ordChar(C) <Int (ordChar(End) -Int 1)'''
+layer = "c11_stdlib"
+confidence = 1.0
+source_file = "stdio.k"
+source_module = "LIBC-STDIO"
+source_line_start = 1679
+source_line_end = 1681
+tags = ['subtraction']
+
+[[axioms]]
+id = "c11_libc_stdio_subtraction_93d2dd19"
+content = '''Subtraction requires: ordChar(C) >=Int (ordChar(End) -Int 1), and ordChar(C) <=Int ordChar(End).'''
+formal_spec = '''ordChar(C) >=Int (ordChar(End) -Int 1) andBool ordChar(C) <=Int ordChar(End)'''
+layer = "c11_stdlib"
+confidence = 1.0
+source_file = "stdio.k"
+source_module = "LIBC-STDIO"
+source_line_start = 1682
+source_line_end = 1684
+tags = ['subtraction']
+
+[[axioms]]
+id = "c11_libc_stdio_subtraction_f47ef2fa"
+content = '''Subtraction requires: ordChar(C) >Int ordChar(End).'''
+formal_spec = '''ordChar(C) >Int ordChar(End)'''
+layer = "c11_stdlib"
+confidence = 1.0
+source_file = "stdio.k"
+source_module = "LIBC-STDIO"
+source_line_start = 1685
+source_line_end = 1687
+tags = ['subtraction']
+
+[[axioms]]
+id = "c11_libc_stdio_division_01221912"
+content = '''Integer division requires: S =/=String "%".'''
+formal_spec = '''S =/=String "%"'''
+layer = "c11_stdlib"
+confidence = 1.0
+source_file = "stdio.k"
+source_module = "LIBC-STDIO"
+source_line_start = 1723
+source_line_end = 1729
+tags = ['division']
+
+[[axioms]]
+id = "c11_libc_stdio_division_a7c91d94"
+content = '''Integer division requires: W =/=K "".'''
+formal_spec = '''W =/=K ""'''
+layer = "c11_stdlib"
+confidence = 1.0
+source_file = "stdio.k"
+source_module = "LIBC-STDIO"
+source_line_start = 1847
+source_line_end = 1852
+tags = ['division']
+
+[[axioms]]
+id = "c11_libc_stdio_division_4051f05d"
+content = '''Integer division requires: either isSign(C) or isDigit(C, 10, and C =/=String "0").'''
+formal_spec = '''isSign(C) orBool (isDigit(C, 10) andBool C =/=String "0")'''
+layer = "c11_stdlib"
+confidence = 1.0
+source_file = "stdio.k"
+source_module = "LIBC-STDIO"
+source_line_start = 1853
+source_line_end = 1858
+tags = ['division']
+
+[[axioms]]
+id = "c11_libc_stdio_division_6ad4d600"
+content = '''Integer division requires: isDigit(C, 10).'''
+formal_spec = '''isDigit(C, 10)'''
+layer = "c11_stdlib"
+confidence = 1.0
+source_file = "stdio.k"
+source_module = "LIBC-STDIO"
+source_line_start = 1870
+source_line_end = 1875
+tags = ['division']
+
+[[axioms]]
+id = "c11_libc_stdio_division_f2381c66"
+content = '''Integer division requires: P =/=K "", NOT (isDigit(C, 10)), and C =/=K "*".'''
+formal_spec = '''P =/=K "" andBool notBool isDigit(C, 10) andBool C =/=K "*"'''
+layer = "c11_stdlib"
+confidence = 1.0
+source_file = "stdio.k"
+source_module = "LIBC-STDIO"
+source_line_start = 1876
+source_line_end = 1882
+tags = ['division']
+
+[[axioms]]
+id = "c11_libc_stdio_division_387f60ac"
+content = '''Integer division requires: NOT (isDigit(C, 10)), and C =/=K "*".'''
+formal_spec = '''notBool isDigit(C, 10) andBool C =/=K "*"'''
+layer = "c11_stdlib"
+confidence = 1.0
+source_file = "stdio.k"
+source_module = "LIBC-STDIO"
+source_line_start = 1883
+source_line_end = 1888
+tags = ['division']
+
+[[axioms]]
+id = "c11_libc_stdio_modulus_7a817906"
+content = '''Modulus operation requires: either S ==String "d" or S ==String "i".'''
+formal_spec = '''S ==String "d" orBool S ==String "i"'''
+layer = "c11_stdlib"
+confidence = 1.0
+source_file = "stdio.k"
+source_module = "LIBC-STDIO"
+source_line_start = 1934
+source_line_end = 1941
+tags = ['modulus']
+
+[[axioms]]
+id = "c11_libc_stdio_division_510dbac0"
+content = '''Integer division requires: operand must be a pointer type.'''
+formal_spec = '''notBool isPointerType(getFormatType'(State, ""))'''
+layer = "c11_stdlib"
+confidence = 1.0
+source_file = "stdio.k"
+source_module = "LIBC-STDIO"
+source_line_start = 1943
+source_line_end = 1946
+tags = ['pointer', 'division']
+error_codes = ['CCV7', 'CCV11', 'CEA1', 'CEA5', 'CEA2', 'CEE3', 'CER3', 'CER4', 'CERL1', 'CERL2', 'CERL3', 'CERL4', 'CERL6', 'ECL3', 'ECL4', 'CEER1', 'EEA2', 'EEA3', 'EEA4', 'EEA5', 'EFNC1', 'EFNC2', 'STRING1', 'CCV9', 'CEA7', 'CEA8', 'CEA9', 'CER6', 'CERL5', 'TEAS2', 'TSE2', 'TTE2', 'TTE3', 'CCV13', 'CCV13-H', 'CCVE4', 'CEMX4', 'STDLIBE1', 'STDLIBE2', 'STDLIBE3', 'CEE6', 'CER7', 'EXC3', 'TDG12', 'FD6', 'STDIO1', 'CEB1', 'CEB5', 'CEB9', 'CEB10', 'CEB11', 'CTI4']
+
+[[axioms]]
+id = "c11_libc_stdio_division_510dbac0"
+content = '''Integer division requires: operand must be a pointer type.'''
+formal_spec = '''notBool isPointerType(getFormatType'(State, ""))'''
+layer = "c11_stdlib"
+confidence = 1.0
+source_file = "stdio.k"
+source_module = "LIBC-STDIO"
+source_line_start = 1947
+source_line_end = 1951
+tags = ['pointer', 'division']
+error_codes = ['CCV7', 'CCV11', 'CEA1', 'CEA5', 'CEA2', 'CEE3', 'CER3', 'CER4', 'CERL1', 'CERL2', 'CERL3', 'CERL4', 'CERL6', 'ECL3', 'ECL4', 'CEER1', 'EEA2', 'EEA3', 'EEA4', 'EEA5', 'EFNC1', 'EFNC2', 'STRING1', 'CCV9', 'CEA7', 'CEA8', 'CEA9', 'CER6', 'CERL5', 'TEAS2', 'TSE2', 'TTE2', 'TTE3', 'CCV13', 'CCV13-H', 'CCVE4', 'CEMX4', 'STDLIBE1', 'STDLIBE2', 'STDLIBE3', 'CEE6', 'CER7', 'EXC3', 'TDG12', 'FD6', 'STDIO1', 'CEB1', 'CEB5', 'CEB9', 'CEB10', 'CEB11', 'CTI4']
+
+[[axioms]]
+id = "c11_libc_stdio_modulus_a8e85134"
+content = '''Modulus operation requires: Len =/=String "l".'''
+formal_spec = '''Len =/=String "l"'''
+layer = "c11_stdlib"
+confidence = 1.0
+source_file = "stdio.k"
+source_module = "LIBC-STDIO"
+source_line_start = 2303
+source_line_end = 2314
+tags = ['modulus']
+
+[[axioms]]
+id = "c11_libc_stdio_division_0493a23a"
+content = '''Integer division requires: either Char ==String "l" or Char ==String "h" or Char ==String "j" or Char ==String "z" or Char ==String "t".'''
+formal_spec = '''Char ==String "l" orBool Char ==String "h" orBool Char ==String "j" orBool Char ==String "z" orBool Char ==String "t"'''
+layer = "c11_stdlib"
+confidence = 1.0
+source_file = "stdio.k"
+source_module = "LIBC-STDIO"
+source_line_start = 2397
+source_line_end = 2409
+tags = ['division']
+
+[[axioms]]
+id = "c11_libc_stdio_subtraction_5c2ae269"
+content = '''Subtraction requires: W =/=String "*", and P =/=String "*".'''
+formal_spec = '''W =/=String "*" andBool P =/=String "*"'''
+layer = "c11_stdlib"
+confidence = 1.0
+source_file = "stdio.k"
+source_module = "LIBC-STDIO"
+source_line_start = 2412
+source_line_end = 2418
+tags = ['subtraction']
+
+[[axioms]]
+id = "c11_libc_stdio_subtraction_9774241c"
+content = '''Subtraction requires: W =/=String "*".'''
+formal_spec = '''W =/=String "*"'''
+layer = "c11_stdlib"
+confidence = 1.0
+source_file = "stdio.k"
+source_module = "LIBC-STDIO"
+source_line_start = 2429
+source_line_end = 2435
+tags = ['subtraction']
+
+[[axioms]]
+id = "c11_libc_stdio_comparison_79d7b5cc"
+content = '''Comparison requires: operand must be an integer type, operand types must match, Length ==K "", isPointerToCharType(T'), and operand must be a pointer type.'''
+formal_spec = '''utype(T) ==Type T' orBool (isIntegerType(T) andBool promote(utype(T)) ==Type T') orBool (State ==K "%s" andBool Length ==K "" andBool isPointerToCharType(T') andBool isPointerType(T))'''
+layer = "c11_stdlib"
+confidence = 1.0
+source_file = "stdio.k"
+source_module = "LIBC-STDIO"
+source_line_start = 2457
+source_line_end = 2463
+tags = ['type_compatibility', 'pointer', 'integer', 'comparison']
+error_codes = ['CCV7', 'CCV11', 'CEA1', 'CEA5', 'CEA2', 'CEE3', 'CER3', 'CER4', 'CERL1', 'CERL2', 'CERL3', 'CERL4', 'CERL6', 'ECL3', 'ECL4', 'CEER1', 'EEA2', 'EEA3', 'EEA4', 'EEA5', 'EFNC1', 'EFNC2', 'STRING1', 'CCV9', 'CEA7', 'CEA8', 'CEA9', 'CER6', 'CERL5', 'TEAS2', 'TSE2', 'TTE2', 'TTE3', 'CCV13', 'CCV13-H', 'CCVE4', 'CEMX4', 'STDLIBE1', 'STDLIBE2', 'STDLIBE3', 'CEE6', 'CER7', 'EXC3', 'TDG12', 'FD6', 'STDIO1', 'CEB1', 'CEB5', 'CEB9', 'CEB10', 'CEB11', 'CTI4']
+
+[[axioms]]
+id = "c11_libc_stdio_operation_f9e1af16"
+content = '''Operation requires: lengthString(X) >=Int absInt(W).'''
+formal_spec = '''lengthString(X) >=Int absInt(W)'''
+layer = "c11_stdlib"
+confidence = 1.0
+source_file = "stdio.k"
+source_module = "LIBC-STDIO"
+source_line_start = 2549
+source_line_end = 2550
+
+[[axioms]]
+id = "c11_libc_stdio_operation_4d073955"
+content = '''Operation requires: lengthString(X) <Int absInt(W).'''
+formal_spec = '''lengthString(X) <Int absInt(W)'''
+layer = "c11_stdlib"
+confidence = 1.0
+source_file = "stdio.k"
+source_module = "LIBC-STDIO"
+source_line_start = 2551
+source_line_end = 2554
+
+[[axioms]]
+id = "c11_libc_stdio_operation_81f443ee"
+content = '''Operation requires: W <Int 0.'''
+formal_spec = '''W <Int 0'''
+layer = "c11_stdlib"
+confidence = 1.0
+source_file = "stdio.k"
+source_module = "LIBC-STDIO"
+source_line_start = 2555
+source_line_end = 2556
+
+[[axioms]]
+id = "c11_libc_stdio_operation_0800d697"
+content = '''Operation requires: W >Int 0.'''
+formal_spec = '''W >Int 0'''
+layer = "c11_stdlib"
+confidence = 1.0
+source_file = "stdio.k"
+source_module = "LIBC-STDIO"
+source_line_start = 2557
+source_line_end = 2558
+
+[[axioms]]
+id = "c11_libc_stdio_operation_b7e0d4ab"
+content = '''Requires: W ==Int 0  syntax String ::= "formatPrecisionWidth" "(" String "," Int "," Bool "," String "," Int ")"'''
+formal_spec = '''W ==Int 0  syntax String ::= "formatPrecisionWidth" "(" String "," Int "," Bool "," String "," Int ")"'''
+layer = "c11_stdlib"
+confidence = 1.0
+source_file = "stdio.k"
+source_module = "LIBC-STDIO"
+source_line_start = 2559
+source_line_end = 2565
+
+[[axioms]]
+id = "c11_libc_stdio_operation_7fa1949d"
+content = '''Operation requires: either V =/=String "0" or P =/=Int 0 or Prefix ==String "0".'''
+formal_spec = '''V =/=String "0" orBool P =/=Int 0 orBool Prefix ==String "0"'''
+layer = "c11_stdlib"
+confidence = 1.0
+source_file = "stdio.k"
+source_module = "LIBC-STDIO"
+source_line_start = 2566
+source_line_end = 2568
+
+[[axioms]]
+id = "c11_libc_stdio_operation_77e776b5"
+content = '''Operation requires: Prefix =/=String "0".'''
+formal_spec = '''Prefix =/=String "0"'''
+layer = "c11_stdlib"
+confidence = 1.0
+source_file = "stdio.k"
+source_module = "LIBC-STDIO"
+source_line_start = 2569
+source_line_end = 2572
+
+[[axioms]]
+id = "c11_libc_stdio_operation_376ad759"
+content = '''Operation requires: either ((V ==String "0" or V ==String ""), and either (Prefix ==String "0x" or Prefix ==String "0X")) or Prefix ==String "".'''
+formal_spec = '''((V ==String "0" orBool V ==String "") andBool (Prefix ==String "0x" orBool Prefix ==String "0X")) orBool Prefix ==String ""'''
+layer = "c11_stdlib"
+confidence = 1.0
+source_file = "stdio.k"
+source_module = "LIBC-STDIO"
+source_line_start = 2580
+source_line_end = 2582
+
+[[axioms]]
+id = "c11_libc_stdio_operation_7b2b08ad"
+content = '''Operation requires: V =/=String "0", V =/=String "", and either (Prefix ==String "0x" or Prefix ==String "0X") syntax Int ::= signInt(Int).'''
+formal_spec = '''V =/=String "0" andBool V =/=String "" andBool (Prefix ==String "0x" orBool Prefix ==String "0X")  syntax Int ::= signInt(Int)'''
+layer = "c11_stdlib"
+confidence = 1.0
+source_file = "stdio.k"
+source_module = "LIBC-STDIO"
+source_line_start = 2583
+source_line_end = 2587
+
+[[axioms]]
+id = "c11_libc_stdio_comparison_953e1afc"
+content = '''Comparison requires: NOT (isNoType(getFormatType'(State, Length))).'''
+formal_spec = '''notBool isNoType(getFormatType'(State, Length))'''
+layer = "c11_stdlib"
+confidence = 1.0
+source_file = "stdio.k"
+source_module = "LIBC-STDIO"
+source_line_start = 2595
+source_line_end = 2599
+tags = ['comparison']
+
+[[axioms]]
+id = "c11_libc_stdio_operation_ba249d10"
+content = '''Operation requires: substrString(D, 0, 2) ==String "%[".'''
+formal_spec = '''substrString(D, 0, 2) ==String "%["'''
+layer = "c11_stdlib"
+confidence = 1.0
+source_file = "stdio.k"
+source_module = "LIBC-STDIO"
+source_line_start = 2699
+source_line_end = 2700
+
+[[axioms]]
+id = "c11_libc_stdio_operation_ba249d10"
+content = '''Operation requires: substrString(D, 0, 2) ==String "%[".'''
+formal_spec = '''substrString(D, 0, 2) ==String "%["'''
+layer = "c11_stdlib"
+confidence = 1.0
+source_file = "stdio.k"
+source_module = "LIBC-STDIO"
+source_line_start = 2701
+source_line_end = 2703
+
+[[axioms]]
+id = "c11_c_native_bridge_syntax_operation_5ddcabac"
+content = '''Operation requires: isNativeLoc(Loc) endmodule.'''
+formal_spec = '''isNativeLoc(Loc)  endmodule'''
+layer = "c11_stdlib"
+confidence = 1.0
+source_file = "native.k"
+source_module = "C-NATIVE-BRIDGE-SYNTAX"
+source_line_start = 32
+source_line_end = 36
+
+[[axioms]]
+id = "c11_libc_string_operation_865de454"
+content = '''Operation requires: NOT (isUCharType(type(V))).'''
+formal_spec = '''notBool isUCharType(type(V))'''
+layer = "c11_stdlib"
+confidence = 1.0
+source_file = "string.k"
+source_module = "LIBC-STRING"
+source_line_start = 22
+source_line_end = 25
+
+[[axioms]]
+id = "c11_libc_string_operation_022e9cfe"
+content = '''Operation requires: Dest =/=K NullPointer, and Src =/=K NullPointer.'''
+formal_spec = '''Dest =/=K NullPointer andBool Src =/=K NullPointer'''
+layer = "c11_stdlib"
+confidence = 1.0
+source_file = "string.k"
+source_module = "LIBC-STRING"
+source_line_start = 35
+source_line_end = 40
+error_codes = ['CCV7', 'CCV11', 'CEA1', 'CEA5', 'CEA2', 'CEE3', 'CER3', 'CER4', 'CERL1', 'CERL2', 'CERL3', 'CERL4', 'CERL6', 'ECL3', 'ECL4', 'CEER1', 'EEA2', 'EEA3', 'EEA4', 'EEA5', 'EFNC1', 'EFNC2', 'STRING1', 'CCV9', 'CEA7', 'CEA8', 'CEA9', 'CER6', 'CERL5', 'TEAS2', 'TSE2', 'TTE2', 'TTE3', 'CCV13', 'CCV13-H', 'CCVE4', 'CEMX4', 'STDLIBE1', 'STDLIBE2', 'STDLIBE3', 'CEE6', 'CER7', 'EXC3']
+
+[[axioms]]
+id = "c11_libc_string_operation_32679424"
+content = '''Operation requires: I =/=Int 0.'''
+formal_spec = '''I =/=Int 0'''
+layer = "c11_stdlib"
+confidence = 1.0
+source_file = "string.k"
+source_module = "LIBC-STRING"
+source_line_start = 53
+source_line_end = 56
+
+[[axioms]]
+id = "c11_libc_string_comparison_c674ff15"
+content = '''Comparison requires: NOT (Err in_keys(Errs)).'''
+formal_spec = '''notBool (Err in_keys(Errs))'''
+layer = "c11_stdlib"
+confidence = 1.0
+source_file = "string.k"
+source_module = "LIBC-STRING"
+source_line_start = 66
+source_line_end = 71
+tags = ['comparison']
+
+[[axioms]]
+id = "c11_libc_threads_syntax_subtraction_de09259f"
+content = '''Subtraction requires: NOT (hasLint).'''
+formal_spec = '''notBool hasLint'''
+layer = "c11_stdlib"
+confidence = 1.0
+source_file = "threads.k"
+source_module = "LIBC-THREADS-SYNTAX"
+source_line_start = 51
+source_line_end = 74
+tags = ['subtraction']
+
+[[axioms]]
+id = "c11_libc_threads_syntax_subtraction_f30cc01a"
+content = '''Subtraction requires: T ==K cfg:thrdut.'''
+formal_spec = '''T ==K cfg:thrdut'''
+layer = "c11_stdlib"
+confidence = 1.0
+source_file = "threads.k"
+source_module = "LIBC-THREADS-SYNTAX"
+source_line_start = 85
+source_line_end = 91
+tags = ['subtraction']
+
+[[axioms]]
+id = "c11_libc_threads_syntax_subtraction_e9543986"
+content = '''Subtraction requires: ThId in_keys(Status), Status[ThId] =/=K threadJoined, and ThId =/=K ThisThread.'''
+formal_spec = '''(ThId in_keys(Status)) andBool (Status[ThId] =/=K threadJoined) andBool ThId =/=K ThisThread'''
+layer = "c11_stdlib"
+confidence = 1.0
+source_file = "threads.k"
+source_module = "LIBC-THREADS-SYNTAX"
+source_line_start = 93
+source_line_end = 115
+tags = ['subtraction']
+
+[[axioms]]
+id = "c11_libc_threads_syntax_subtraction_6e24b32a"
+content = '''Subtraction requires: NOT (Loc in_keys(M)), and Type ==Int cfg:mtxPlain.'''
+formal_spec = '''notBool (Loc in_keys(M)) andBool (Type ==Int cfg:mtxPlain)'''
+layer = "c11_stdlib"
+confidence = 1.0
+source_file = "threads.k"
+source_module = "LIBC-THREADS-SYNTAX"
+source_line_start = 128
+source_line_end = 136
+tags = ['subtraction']
+error_codes = ['CCV7', 'CCV11', 'CEA2', 'ECL4', 'EFNC1', 'TDG12', 'FD6', 'STDIO1', 'CCV9', 'CEA7', 'CEA8', 'CEA9', 'CEB1', 'CEB5', 'CEB9', 'CEB10', 'CEB11', 'CERL5', 'TEAS2', 'TSE2', 'TTE2', 'TTE3', 'CTI4']
+
+[[axioms]]
+id = "c11_libc_threads_syntax_subtraction_10221e56"
+content = '''Subtraction requires: notBool (Loc in_keys(M)), and Type ==Int cfg:mtxPlain.'''
+formal_spec = '''(notBool (Loc in_keys(M))) andBool (Type:Int ==Int cfg:mtxPlain)'''
+layer = "c11_stdlib"
+confidence = 1.0
+source_file = "threads.k"
+source_module = "LIBC-THREADS-SYNTAX"
+source_line_start = 138
+source_line_end = 153
+tags = ['subtraction']
+error_codes = ['CCV7', 'CCV11', 'CEA2', 'ECL4', 'EFNC1', 'TDG12', 'FD6', 'STDIO1', 'CCV9', 'CEA7', 'CEA8', 'CEA9', 'CEB1', 'CEB5', 'CEB9', 'CEB10', 'CEB11', 'CERL5', 'TEAS2', 'TSE2', 'TTE2', 'TTE3', 'CTI4']
+
+[[axioms]]
+id = "c11_libc_threads_syntax_subtraction_9c58d14d"
+content = '''Subtraction requires: Type ==Int cfg:mtxPlain.'''
+formal_spec = '''Type:Int ==Int cfg:mtxPlain'''
+layer = "c11_stdlib"
+confidence = 1.0
+source_file = "threads.k"
+source_module = "LIBC-THREADS-SYNTAX"
+source_line_start = 155
+source_line_end = 164
+tags = ['subtraction']
+error_codes = ['CCV7', 'CCV11', 'CEA2', 'ECL4', 'EFNC1', 'TDG12', 'FD6', 'STDIO1', 'CCV9', 'CEA7', 'CEA8', 'CEA9', 'CEB1', 'CEB5', 'CEB9', 'CEB10', 'CEB11', 'CERL5', 'TEAS2', 'TSE2', 'TTE2', 'TTE3', 'CTI4']
+
+[[error_codes]]
+code = "UB-CB1"
+internal_code = "CB1"
+type = "undefined_behavior"
+description = '''Types of function call arguments aren't compatible with declared types after promotions.'''
+c_standard_refs = ['6.5.2.2:6', 'J.2:1 item 39']
+
+[[error_codes]]
+code = "UB-CB2"
+internal_code = "CB2"
+type = "undefined_behavior"
+description = '''Function call has fewer arguments than parameters in function definition.'''
+c_standard_refs = ['6.5.2.2:6', 'J.2:1 item 38']
+
+[[error_codes]]
+code = "UB-CB3"
+internal_code = "CB3"
+type = "undefined_behavior"
+description = '''Function call has more arguments than parameters in function definition.'''
+c_standard_refs = ['6.5.2.2:6', 'J.2:1 item 38']
+
+[[error_codes]]
+code = "UB-CB4"
+internal_code = "CB4"
+type = "undefined_behavior"
+description = '''Function defined with no parameters called with arguments.'''
+c_standard_refs = ['6.5.2.2:6', 'J.2:1 item 38']
+
+[[error_codes]]
+code = "UB-CCV1"
+internal_code = "CCV1"
+type = "undefined_behavior"
+description = '''Signed integer overflow.'''
+c_standard_refs = ['6.5:5', 'J.2:1 item 36']
+
+[[error_codes]]
+code = "UB-CCV3"
+internal_code = "CCV3"
+type = "undefined_behavior"
+description = '''Conversion to integer from float outside the range that can be represented.'''
+c_standard_refs = ['6.3.1.4:1', 'J.2:1 item 17']
+validates_axioms = ['c11_libc_stdio_modulus_7684a912']
+
+[[error_codes]]
+code = "UB-CCV4"
+internal_code = "CCV4"
+type = "undefined_behavior"
+description = '''Floating-point value outside the range of values that can be represented after conversion.'''
+c_standard_refs = ['6.3.1.5:1', 'J.2:1 item 18']
+validates_axioms = ['c11_libc_stdio_modulus_7684a912']
+
+[[error_codes]]
+code = "UB-CCV5"
+internal_code = "CCV5"
+type = "undefined_behavior"
+description = '''Casting empty value to type other than void.'''
+c_standard_refs = ['6.3.2.2:1', 'J.2:1 item 23']
+
+[[error_codes]]
+code = "UB-CCV6"
+internal_code = "CCV6"
+type = "undefined_behavior"
+description = '''Casting void type to non-void type.'''
+c_standard_refs = ['6.3.2.2:1', 'J.2:1 item 23']
+
+[[error_codes]]
+code = "UB-CCV7"
+internal_code = "CCV7"
+type = "undefined_behavior"
+description = '''Conversion from pointer to integer of a value possibly unrepresentable in the integer type.'''
+c_standard_refs = ['6.3.2.3:6', 'J.2:1 item 24']
+validates_axioms = ['c11_libc_io_syntax_operation_e014b1f7', 'c11_libc_io_syntax_operation_03ccb397', 'c11_libc_stdio_operation_846051d3', 'c11_libc_stdio_division_510dbac0', 'c11_libc_stdio_comparison_79d7b5cc', 'c11_libc_string_operation_022e9cfe', 'c11_libc_threads_syntax_subtraction_6e24b32a', 'c11_libc_threads_syntax_subtraction_10221e56', 'c11_libc_threads_syntax_subtraction_9c58d14d']
+
+[[error_codes]]
+code = "UB-CCV11"
+internal_code = "CCV11"
+type = "undefined_behavior"
+description = '''Conversion to a pointer type with a stricter alignment requirement (possibly undefined).'''
+c_standard_refs = ['6.3.2.3:7', 'J.2:1 item 25']
+validates_axioms = ['c11_libc_io_syntax_operation_e014b1f7', 'c11_libc_io_syntax_operation_03ccb397', 'c11_libc_stdio_operation_846051d3', 'c11_libc_stdio_division_510dbac0', 'c11_libc_stdio_comparison_79d7b5cc', 'c11_libc_string_operation_022e9cfe', 'c11_libc_threads_syntax_subtraction_6e24b32a', 'c11_libc_threads_syntax_subtraction_10221e56', 'c11_libc_threads_syntax_subtraction_9c58d14d']
+
+[[error_codes]]
+code = "UB-CCV12"
+internal_code = "CCV12"
+type = "undefined_behavior"
+description = '''Floating-point overflow.'''
+c_standard_refs = ['6.5:5', 'J.2:1 item 36']
+validates_axioms = ['c11_libc_stdio_modulus_7684a912']
+
+[[error_codes]]
+code = "UB-CEA1"
+internal_code = "CEA1"
+type = "undefined_behavior"
+description = '''A pointer (or array subscript) outside the bounds of an object.'''
+c_standard_refs = ['6.5.6:8', 'J.2:1 item 46']
+validates_axioms = ['c11_libc_stdio_operation_846051d3', 'c11_libc_stdio_division_510dbac0', 'c11_libc_stdio_comparison_79d7b5cc', 'c11_libc_string_operation_022e9cfe']
+
+[[error_codes]]
+code = "UB-CEA5"
+internal_code = "CEA5"
+type = "undefined_behavior"
+description = '''Computing pointer difference between two different objects.'''
+c_standard_refs = ['6.5.6:9', 'J.2:1 item 48']
+validates_axioms = ['c11_libc_stdio_operation_846051d3', 'c11_libc_stdio_division_510dbac0', 'c11_libc_stdio_comparison_79d7b5cc', 'c11_libc_string_operation_022e9cfe']
+
+[[error_codes]]
+code = "UB-CEA2"
+internal_code = "CEA2"
+type = "undefined_behavior"
+description = '''Pointer difference outside the range that can be represented by object of type ptrdiff_t.'''
+c_standard_refs = ['6.5.6:9', 'J.2:1 item 50']
+validates_axioms = ['c11_libc_io_syntax_operation_e014b1f7', 'c11_libc_io_syntax_operation_03ccb397', 'c11_libc_stdio_operation_846051d3', 'c11_libc_stdio_division_510dbac0', 'c11_libc_stdio_comparison_79d7b5cc', 'c11_libc_string_operation_022e9cfe', 'c11_libc_threads_syntax_subtraction_6e24b32a', 'c11_libc_threads_syntax_subtraction_10221e56', 'c11_libc_threads_syntax_subtraction_9c58d14d']
+
+[[error_codes]]
+code = "UB-CEB2"
+internal_code = "CEB2"
+type = "undefined_behavior"
+description = '''The right operand in a bitwise shift is negative.'''
+c_standard_refs = ['6.5.7:3', 'J.2:1 item 51']
+
+[[error_codes]]
+code = "UB-CEB3"
+internal_code = "CEB3"
+type = "undefined_behavior"
+description = '''The right operand in a bitwise shift is greater than or equal to the bit width of the left operand.'''
+c_standard_refs = ['6.5.7:3', 'J.2:1 item 51']
+
+[[error_codes]]
+code = "UB-CEB4"
+internal_code = "CEB4"
+type = "undefined_behavior"
+description = '''The left operand in a bitwise left-shift is negative.'''
+c_standard_refs = ['6.5.7:4', 'J.2:1 item 52']
+
+[[error_codes]]
+code = "UB-CEB6"
+internal_code = "CEB6"
+type = "undefined_behavior"
+description = '''The right operand in a bitwise shift is negative.'''
+c_standard_refs = ['6.5.7:3', 'J.2:1 item 51']
+
+[[error_codes]]
+code = "UB-CEB7"
+internal_code = "CEB7"
+type = "undefined_behavior"
+description = '''The right operand in a bitwise shift is greater than or equal to the bit width of the left operand.'''
+c_standard_refs = ['6.5.7:3', 'J.2:1 item 51']
+
+[[error_codes]]
+code = "UB-CEE2"
+internal_code = "CEE2"
+type = "undefined_behavior"
+description = '''Indeterminate value used in an expression.'''
+c_standard_refs = ['6.2.4', '6.7.9', '6.8', 'J.2:1 item 11']
+
+[[error_codes]]
+code = "UB-CEE1"
+internal_code = "CEE1"
+type = "undefined_behavior"
+description = '''Address of an array declared with register storage class used in an expression.'''
+c_standard_refs = ['6.3.2.1:3', 'J.2:1 item 22']
+
+[[error_codes]]
+code = "UB-CEE3"
+internal_code = "CEE3"
+type = "undefined_behavior"
+description = '''Found pointer that refers outside the bounds of an object + 1.'''
+c_standard_refs = ['6.3.2.1:1', 'J.2:1 item 19']
+validates_axioms = ['c11_libc_stdio_operation_846051d3', 'c11_libc_stdio_division_510dbac0', 'c11_libc_stdio_comparison_79d7b5cc', 'c11_libc_string_operation_022e9cfe']
+
+[[error_codes]]
+code = "UB-CEE4"
+internal_code = "CEE4"
+type = "undefined_behavior"
+description = '''Referring to an object outside of its lifetime.'''
+c_standard_refs = ['6.2.4:2', 'J.2:1 item 9']
+
+[[error_codes]]
+code = "UB-CEE5"
+internal_code = "CEE5"
+type = "undefined_behavior"
+description = '''Trying to convert an incomplete lvalue not of array type.'''
+c_standard_refs = ['6.3.2.1:2', 'J.2:1 item 20']
+
+[[error_codes]]
+code = "UB-CEM1"
+internal_code = "CEM1"
+type = "undefined_behavior"
+description = '''Attempting to access a member in an atomic struct.'''
+c_standard_refs = ['6.5.2.3:5', 'J.2:1 item 42']
+
+[[error_codes]]
+code = "UB-CEM2"
+internal_code = "CEM2"
+type = "undefined_behavior"
+description = '''Attempting to access a member in an atomic union.'''
+c_standard_refs = ['6.5.2.3:5', 'J.2:1 item 42']
+
+[[error_codes]]
+code = "UB-CEMX1"
+internal_code = "CEMX1"
+type = "undefined_behavior"
+description = '''Division by 0.'''
+c_standard_refs = ['6.5.5:5', 'J.2:1 item 45']
+
+[[error_codes]]
+code = "UB-CEMX2"
+internal_code = "CEMX2"
+type = "undefined_behavior"
+description = '''Modulus by 0.'''
+c_standard_refs = ['6.5.5:5', 'J.2:1 item 45']
+
+[[error_codes]]
+code = "UB-CEMX3"
+internal_code = "CEMX3"
+type = "undefined_behavior"
+description = '''Signed integer overflow.'''
+c_standard_refs = ['6.5:5', 'J.2:1 item 36']
+
+[[error_codes]]
+code = "UB-CER3"
+internal_code = "CER3"
+type = "undefined_behavior"
+description = '''Dereferencing a null pointer.'''
+c_standard_refs = ['6.5.3.2:4', 'J.2:1 item 43']
+validates_axioms = ['c11_libc_stdio_operation_846051d3', 'c11_libc_stdio_division_510dbac0', 'c11_libc_stdio_comparison_79d7b5cc', 'c11_libc_string_operation_022e9cfe']
+
+[[error_codes]]
+code = "UB-CER4"
+internal_code = "CER4"
+type = "undefined_behavior"
+description = '''Dereferencing a pointer past the end of an array.'''
+c_standard_refs = ['6.5.6:8', 'J.2:1 items 47', '49']
+validates_axioms = ['c11_libc_stdio_operation_846051d3', 'c11_libc_stdio_division_510dbac0', 'c11_libc_stdio_comparison_79d7b5cc', 'c11_libc_string_operation_022e9cfe']
+
+[[error_codes]]
+code = "UB-CERL1"
+internal_code = "CERL1"
+type = "undefined_behavior"
+description = '''Cannot compare pointers with different base objects using '<'.'''
+c_standard_refs = ['6.5.8:5', 'J.2:1 item 53']
+validates_axioms = ['c11_libc_stdio_operation_846051d3', 'c11_libc_stdio_division_510dbac0', 'c11_libc_stdio_comparison_79d7b5cc', 'c11_libc_string_operation_022e9cfe']
+
+[[error_codes]]
+code = "UB-CERL2"
+internal_code = "CERL2"
+type = "undefined_behavior"
+description = '''Cannot compare pointers with different base objects using '<='.'''
+c_standard_refs = ['6.5.8:5', 'J.2:1 item 53']
+validates_axioms = ['c11_libc_stdio_operation_846051d3', 'c11_libc_stdio_division_510dbac0', 'c11_libc_stdio_comparison_79d7b5cc', 'c11_libc_string_operation_022e9cfe']
+
+[[error_codes]]
+code = "UB-CERL3"
+internal_code = "CERL3"
+type = "undefined_behavior"
+description = '''Cannot compare pointers with different base objects using '>'.'''
+c_standard_refs = ['6.5.8:5', 'J.2:1 item 53']
+validates_axioms = ['c11_libc_stdio_operation_846051d3', 'c11_libc_stdio_division_510dbac0', 'c11_libc_stdio_comparison_79d7b5cc', 'c11_libc_string_operation_022e9cfe']
+
+[[error_codes]]
+code = "UB-CERL4"
+internal_code = "CERL4"
+type = "undefined_behavior"
+description = '''Cannot compare pointers with different base objects using '>='.'''
+c_standard_refs = ['6.5.8:5', 'J.2:1 item 53']
+validates_axioms = ['c11_libc_stdio_operation_846051d3', 'c11_libc_stdio_division_510dbac0', 'c11_libc_stdio_comparison_79d7b5cc', 'c11_libc_string_operation_022e9cfe']
+
+[[error_codes]]
+code = "UB-CERL6"
+internal_code = "CERL6"
+type = "undefined_behavior"
+description = '''Ordered comparison of a null pointer.'''
+c_standard_refs = ['6.5.8:5', 'J.2:1 item 53']
+validates_axioms = ['c11_libc_stdio_operation_846051d3', 'c11_libc_stdio_division_510dbac0', 'c11_libc_stdio_comparison_79d7b5cc', 'c11_libc_string_operation_022e9cfe']
+
+[[error_codes]]
+code = "UB-CMW1"
+internal_code = "CMW1"
+type = "undefined_behavior"
+description = '''Trying to modify a string literal.'''
+c_standard_refs = ['6.4.5:7', 'J.2:1 item 33']
+
+[[error_codes]]
+code = "UB-CTM1"
+internal_code = "CTM1"
+type = "undefined_behavior"
+description = '''Variable-length array with length that evaluates to non-positive value at execution.'''
+c_standard_refs = ['6.7.6.2:5', 'J.2:1 item 75']
+
+[[error_codes]]
+code = "UB-ECL3"
+internal_code = "ECL3"
+type = "undefined_behavior"
+description = '''An object which has been modified is accessed through an expression based on a restrict-qualified pointer and another lvalue not also based on said pointer.'''
+c_standard_refs = ['6.7.3.1:4', 'J.2:1 item 68']
+validates_axioms = ['c11_libc_stdio_operation_846051d3', 'c11_libc_stdio_division_510dbac0', 'c11_libc_stdio_comparison_79d7b5cc', 'c11_libc_string_operation_022e9cfe']
+
+[[error_codes]]
+code = "UB-ECL4"
+internal_code = "ECL4"
+type = "undefined_behavior"
+description = '''An object which has been modified is accessed through an expression based on a restrict-qualified pointer to a const-qualified type.'''
+c_standard_refs = ['6.7.3.1:4', 'J.2:1 item 68']
+validates_axioms = ['c11_libc_io_syntax_operation_e014b1f7', 'c11_libc_io_syntax_operation_03ccb397', 'c11_libc_stdio_operation_846051d3', 'c11_libc_stdio_division_510dbac0', 'c11_libc_stdio_comparison_79d7b5cc', 'c11_libc_string_operation_022e9cfe', 'c11_libc_threads_syntax_subtraction_6e24b32a', 'c11_libc_threads_syntax_subtraction_10221e56', 'c11_libc_threads_syntax_subtraction_9c58d14d']
+
+[[error_codes]]
+code = "UB-CEER1"
+internal_code = "CEER1"
+type = "undefined_behavior"
+description = '''Trying to read through a null pointer.'''
+c_standard_refs = ['6.3.2.1:1', 'J.2:1 item 19']
+validates_axioms = ['c11_libc_stdio_operation_846051d3', 'c11_libc_stdio_division_510dbac0', 'c11_libc_stdio_comparison_79d7b5cc', 'c11_libc_string_operation_022e9cfe']
+
+[[error_codes]]
+code = "UB-CEER4"
+internal_code = "CEER4"
+type = "undefined_behavior"
+description = '''Have a read-write datarace.'''
+c_standard_refs = ['5.1.2.4:25', 'J.2:1 item 5']
+
+[[error_codes]]
+code = "UB-CEER5"
+internal_code = "CEER5"
+type = "undefined_behavior"
+description = '''Have a write-write datarace.'''
+c_standard_refs = ['5.1.2.4:25', 'J.2:1 item 5']
+
+[[error_codes]]
+code = "UB-CID2"
+internal_code = "CID2"
+type = "undefined_behavior"
+description = '''No definition found for identifier .'''
+c_standard_refs = ['6.3.2.1:1', 'J.2:1 item 19']
+
+[[error_codes]]
+code = "UB-EEA1"
+internal_code = "EEA1"
+type = "undefined_behavior"
+description = '''Assignment from non-exactly-overlapping overlapping read.'''
+c_standard_refs = ['6.5.16.1:3', 'J.2:1 item 54']
+
+[[error_codes]]
+code = "UB-EEA2"
+internal_code = "EEA2"
+type = "undefined_behavior"
+description = '''Attempt to alias restrict qualified pointers associated with the same block.'''
+c_standard_refs = ['6.7.3.1:4', 'J.2:1 item 69']
+validates_axioms = ['c11_libc_stdio_operation_846051d3', 'c11_libc_stdio_division_510dbac0', 'c11_libc_stdio_comparison_79d7b5cc', 'c11_libc_string_operation_022e9cfe']
+
+[[error_codes]]
+code = "UB-EEA3"
+internal_code = "EEA3"
+type = "undefined_behavior"
+description = '''Attempt to alias restrict qualified pointers associated with incompatible blocks.'''
+c_standard_refs = ['6.7.3.1:4', 'J.2:1 item 69']
+validates_axioms = ['c11_libc_stdio_operation_846051d3', 'c11_libc_stdio_division_510dbac0', 'c11_libc_stdio_comparison_79d7b5cc', 'c11_libc_string_operation_022e9cfe']
+
+[[error_codes]]
+code = "UB-EEA4"
+internal_code = "EEA4"
+type = "undefined_behavior"
+description = '''Passing a pointer not to an array object as a function parameter with a static-qualified array size.'''
+c_standard_refs = ['6.7.6.3:7', 'J.2:1 item 77']
+validates_axioms = ['c11_libc_stdio_operation_846051d3', 'c11_libc_stdio_division_510dbac0', 'c11_libc_stdio_comparison_79d7b5cc', 'c11_libc_string_operation_022e9cfe']
+
+[[error_codes]]
+code = "UB-EEA5"
+internal_code = "EEA5"
+type = "undefined_behavior"
+description = '''Passing a pointer to an array object of fewer elements than required by a function parameter with a static-qualified array size.'''
+c_standard_refs = ['6.7.6.3:7', 'J.2:1 item 77']
+validates_axioms = ['c11_libc_stdio_operation_846051d3', 'c11_libc_stdio_division_510dbac0', 'c11_libc_stdio_comparison_79d7b5cc', 'c11_libc_string_operation_022e9cfe']
+
+[[error_codes]]
+code = "UB-EEC1"
+internal_code = "EEC1"
+type = "undefined_behavior"
+description = '''Incompatible variably modified types in a conditional expression.'''
+c_standard_refs = ['6.7.6.2:6']
+
+[[error_codes]]
+code = "UB-EFNC1"
+internal_code = "EFNC1"
+type = "undefined_behavior"
+description = '''Attempt to call the function through a pointer with incompatible type.'''
+c_standard_refs = ['6.5.2.2:9', 'J.2:1 items 26', '41']
+validates_axioms = ['c11_libc_io_syntax_operation_e014b1f7', 'c11_libc_io_syntax_operation_03ccb397', 'c11_libc_stdio_operation_846051d3', 'c11_libc_stdio_division_510dbac0', 'c11_libc_stdio_comparison_79d7b5cc', 'c11_libc_string_operation_022e9cfe', 'c11_libc_threads_syntax_subtraction_6e24b32a', 'c11_libc_threads_syntax_subtraction_10221e56', 'c11_libc_threads_syntax_subtraction_9c58d14d']
+
+[[error_codes]]
+code = "UB-EFNC2"
+internal_code = "EFNC2"
+type = "undefined_behavior"
+description = '''Invoking a null pointer.'''
+c_standard_refs = ['6.5.2.2']
+validates_axioms = ['c11_libc_stdio_operation_846051d3', 'c11_libc_stdio_division_510dbac0', 'c11_libc_stdio_comparison_79d7b5cc', 'c11_libc_string_operation_022e9cfe']
+
+[[error_codes]]
+code = "UB-EIO8"
+internal_code = "EIO8"
+type = "undefined_behavior"
+description = '''Unsequenced side effect on scalar object with side effect of same object.'''
+c_standard_refs = ['6.5:2', 'J.2:1 item 35']
+
+[[error_codes]]
+code = "UB-EIO2"
+internal_code = "EIO2"
+type = "undefined_behavior"
+description = '''Trying to write outside the bounds of an object.'''
+c_standard_refs = ['6.5.6:8', 'J.2:1 items 47', '49']
+
+[[error_codes]]
+code = "UB-EIO3"
+internal_code = "EIO3"
+type = "undefined_behavior"
+description = '''Trying to modify an object declared with const type.'''
+c_standard_refs = ['6.7.3:6', 'J.2:1 item 64']
+
+[[error_codes]]
+code = "UB-EIO4"
+internal_code = "EIO4"
+type = "undefined_behavior"
+description = '''Trying to modify an object declared with volatile type through a non-volatile lvalue.'''
+c_standard_refs = ['6.7.3:6', 'J.2:1 item 65']
+
+[[error_codes]]
+code = "UB-EIO7"
+internal_code = "EIO7"
+type = "undefined_behavior"
+description = '''Reading outside the bounds of an object.'''
+c_standard_refs = ['6.3.2.1:1', 'J.2:1 item 19']
+
+[[error_codes]]
+code = "UB-EIO9"
+internal_code = "EIO9"
+type = "undefined_behavior"
+description = '''Trying to access an object declared with volatile type through a non-volatile lvalue.'''
+c_standard_refs = ['6.7.3:6', 'J.2:1 item 65']
+
+[[error_codes]]
+code = "UB-EIO10"
+internal_code = "EIO10"
+type = "undefined_behavior"
+description = '''Type of lvalue (<type>) not compatible with the effective type of the object being accessed (<type>).'''
+c_standard_refs = ['6.5:7', 'J.2:1 item 37']
+
+[[error_codes]]
+code = "UB-EIO11"
+internal_code = "EIO11"
+type = "undefined_behavior"
+description = '''Trying to modify an unmodifiable object returned by a library function.'''
+c_standard_refs = ['7.22.4.6:4', '7.11.1.1:8', '7.11.2.1:8', '7.24.6.2:4', 'J.2:1 item 120', 'J.2:1 item 121', 'J.2:1 item 184']
+
+[[error_codes]]
+code = "UB-ESR1"
+internal_code = "ESR1"
+type = "undefined_behavior"
+description = '''Return from a function declared _Noreturn.'''
+c_standard_refs = ['6.7.4', 'J.2:1 item 71']
+
+[[error_codes]]
+code = "UB-TDG6"
+internal_code = "TDG6"
+type = "undefined_behavior"
+description = '''Void parameter appears with a storage class specifier.'''
+c_standard_refs = ['6.7.6.3:10', 'J.2:1 item 78']
+
+[[error_codes]]
+code = "UB-TDG7"
+internal_code = "TDG7"
+type = "undefined_behavior"
+description = '''Void parameter appears with qualifiers.'''
+c_standard_refs = ['6.7.6.3:10', 'J.2:1 item 78']
+
+[[error_codes]]
+code = "UB-TDG11"
+internal_code = "TDG11"
+type = "undefined_behavior"
+description = '''Static declaration of Identifier follows non-static declaration.'''
+c_standard_refs = ['6.2.2:7', 'J.2:1 item 8']
+
+[[error_codes]]
+code = "UB-TDG12"
+internal_code = "TDG12"
+type = "undefined_behavior"
+description = '''Declaration for an object is a tentative definition with internal linkage and has an incomplete type.'''
+c_standard_refs = ['6.9.2:3', 'J.2:1 item 89']
+validates_axioms = ['c11_libc_io_syntax_operation_e014b1f7', 'c11_libc_io_syntax_operation_03ccb397', 'c11_libc_stdio_operation_846051d3', 'c11_libc_stdio_division_510dbac0', 'c11_libc_stdio_comparison_79d7b5cc', 'c11_libc_threads_syntax_subtraction_6e24b32a', 'c11_libc_threads_syntax_subtraction_10221e56', 'c11_libc_threads_syntax_subtraction_9c58d14d']
+
+[[error_codes]]
+code = "UB-CDI1"
+internal_code = "CDI1"
+type = "undefined_behavior"
+description = '''Initializer for scalar contains multiple expressions'''
+c_standard_refs = ['6.7.9:11', 'J.2:1 item 81']
+
+[[error_codes]]
+code = "UB-CDI2"
+internal_code = "CDI2"
+type = "undefined_behavior"
+description = '''Initializer for scalar contains multiple levels of braces.'''
+c_standard_refs = ['6.7.9:11', 'J.2:1 item 81']
+
+[[error_codes]]
+code = "UB-CDI3"
+internal_code = "CDI3"
+type = "undefined_behavior"
+description = '''Invalid initializer for aggregate type.'''
+c_standard_refs = ['6.7.9:16', 'J.2:1 item 83']
+
+[[error_codes]]
+code = "UB-TDL5"
+internal_code = "TDL5"
+type = "undefined_behavior"
+description = '''Declaration of an identifier for an object with no linkage and incomplete type.'''
+c_standard_refs = ['6.7:7', 'J.2:1 item 59']
+
+[[error_codes]]
+code = "UB-CDT1"
+internal_code = "CDT1"
+type = "undefined_behavior"
+description = '''Structs must contain a named member.'''
+c_standard_refs = ['6.7.2.1:8', 'J.2:1 item 61']
+
+[[error_codes]]
+code = "UB-CDT2"
+internal_code = "CDT2"
+type = "undefined_behavior"
+description = '''Unions must contain a named member.'''
+c_standard_refs = ['6.7.2.1', 'J.2:1 item 61']
+
+[[error_codes]]
+code = "UB-TDG1"
+internal_code = "TDG1"
+type = "undefined_behavior"
+description = '''Declaration for the function appears with type qualifiers.'''
+c_standard_refs = ['6.7.3:9', 'J.2:1 item 66']
+
+[[error_codes]]
+code = "UB-TDG3"
+internal_code = "TDG3"
+type = "undefined_behavior"
+description = '''Declaration for identifier appears with invalid storage class specifiers.'''
+c_standard_refs = ['6.7.1:7', 'J.2:1 item 60']
+
+[[error_codes]]
+code = "UB-TEAS4"
+internal_code = "TEAS4"
+type = "undefined_behavior"
+description = '''Void value as right operand in assignment'''
+c_standard_refs = ['6.3.2.2:1', 'J.2:1 item 23']
+
+[[error_codes]]
+code = "UB-TEOFF1"
+internal_code = "TEOFF1"
+type = "undefined_behavior"
+description = '''Offsetof member designator specifies a bit-field.'''
+c_standard_refs = ['7.19:3', 'J.2:1 item 144']
+
+[[error_codes]]
+code = "UB-TDR1"
+internal_code = "TDR1"
+type = "undefined_behavior"
+description = '''Declaration for inline function not defined in the same translation unit.'''
+c_standard_refs = ['6.7.4:7', 'J.2:1 item 70']
+
+[[error_codes]]
+code = "UB-TDR2"
+internal_code = "TDR2"
+type = "undefined_behavior"
+description = '''No definition for symbol with external linkage.'''
+c_standard_refs = ['6.9:5', 'J.2:1 item 84']
+
+[[error_codes]]
+code = "UB-TDR3"
+internal_code = "TDR3"
+type = "undefined_behavior"
+description = '''Main is not a function.'''
+c_standard_refs = ['5.1.2.2.1:1', 'J.2:1 item 4']
+
+[[error_codes]]
+code = "UB-TIN1"
+internal_code = "TIN1"
+type = "undefined_behavior"
+description = '''Identifier declared with incompatible types in different translation units.'''
+c_standard_refs = ['6.2.7:2', 'J.2:1 item 15']
+
+[[error_codes]]
+code = "UB-TIN2"
+internal_code = "TIN2"
+type = "undefined_behavior"
+description = '''Multiple external definitions for Identifier.'''
+c_standard_refs = ['6.9:5', 'J.2:1 item 84']
+
+[[error_codes]]
+code = "UB-FD4"
+internal_code = "FD4"
+type = "undefined_behavior"
+description = '''Definition of main requires a prototype.'''
+c_standard_refs = ['5.1.2.2.1:1', 'J.2:1 item 4']
+
+[[error_codes]]
+code = "UB-FD5"
+internal_code = "FD5"
+type = "undefined_behavior"
+description = '''Function main must return an int.'''
+c_standard_refs = ['5.1.2.2.1:1', 'J.2:1 item 4']
+
+[[error_codes]]
+code = "UB-FD6"
+internal_code = "FD6"
+type = "undefined_behavior"
+description = '''If main has parameters, the type of the first parameter must be equivalent to int.'''
+c_standard_refs = ['5.1.2.2.1:1', 'J.2:1 item 4']
+validates_axioms = ['c11_libc_io_syntax_operation_e014b1f7', 'c11_libc_io_syntax_operation_03ccb397', 'c11_libc_stdio_operation_846051d3', 'c11_libc_stdio_division_510dbac0', 'c11_libc_stdio_comparison_79d7b5cc', 'c11_libc_threads_syntax_subtraction_6e24b32a', 'c11_libc_threads_syntax_subtraction_10221e56', 'c11_libc_threads_syntax_subtraction_9c58d14d']
+
+[[error_codes]]
+code = "UB-FD7"
+internal_code = "FD7"
+type = "undefined_behavior"
+description = '''If main has parameters, the type of the second parameter must be equivalent to char**.'''
+c_standard_refs = ['5.1.2.2.1:1', 'J.2:1 item 4']
+
+[[error_codes]]
+code = "UB-FD8"
+internal_code = "FD8"
+type = "undefined_behavior"
+description = '''Function main must have zero or two parameters.'''
+c_standard_refs = ['5.1.2.2.1:1', 'J.2:1 item 4']
+
+[[error_codes]]
+code = "UB-FD9"
+internal_code = "FD9"
+type = "undefined_behavior"
+description = '''Function main must have zero or two parameters.'''
+c_standard_refs = ['5.1.2.2.1:1', 'J.2:1 item 4']
+
+[[error_codes]]
+code = "UB-IO1"
+internal_code = "IO1"
+type = "undefined_behavior"
+description = '''Stream input operation followed by an output operation without an intervening call to a file positioning function.'''
+c_standard_refs = ['7.21.5.3:7', 'J.2:1 item 151']
+
+[[error_codes]]
+code = "UB-IO2"
+internal_code = "IO2"
+type = "undefined_behavior"
+description = '''Stream output operation followed by an input operation without an intervening call to fflush or a file positioning function.'''
+c_standard_refs = ['7.21.5.3:7', 'J.2:1 item 151']
+
+[[error_codes]]
+code = "UB-CTI1"
+internal_code = "CTI1"
+type = "undefined_behavior"
+description = '''Arrays must have integer length.'''
+c_standard_refs = ['6.6:6', 'J.2:1 item 55']
+
+[[error_codes]]
+code = "UB-CTYPE1"
+internal_code = "CTYPE1"
+type = "undefined_behavior"
+description = '''Argument to outside range representable by unsigned char (and not EOF).'''
+c_standard_refs = ['7.4:1', 'J.2:1 item 114']
+
+[[error_codes]]
+code = "UB-SETJMP1"
+internal_code = "SETJMP1"
+type = "undefined_behavior"
+description = ''''longjmp' invoked to restore a nonexistent environment.'''
+c_standard_refs = ['7.13.2.1:2', 'J.2:1 item 126']
+
+[[error_codes]]
+code = "UB-SETJMP2"
+internal_code = "SETJMP2"
+type = "undefined_behavior"
+description = ''''longjmp' invoked to restore the environment of a function that has since terminated.'''
+c_standard_refs = ['7.13.2.1:2', 'J.2:1 item 126']
+
+[[error_codes]]
+code = "UB-STDARG1"
+internal_code = "STDARG1"
+type = "undefined_behavior"
+description = ''''va_start' used in a function with fixed args.'''
+c_standard_refs = ['6.9.1:8', 'J.2:1 item 87']
+
+[[error_codes]]
+code = "UB-STDARG2"
+internal_code = "STDARG2"
+type = "undefined_behavior"
+description = ''''va_start' or 'va_copy' used to reinitialize a va_list without an intervening call to va_end.'''
+c_standard_refs = ['7.16.1.4:3', 'J.2:1 item 142']
+
+[[error_codes]]
+code = "UB-STDARG3"
+internal_code = "STDARG3"
+type = "undefined_behavior"
+description = ''''va_arg' called on an uninitialized va_list.'''
+c_standard_refs = ['7.16.1.1:2', 'J.2:1 item 136']
+
+[[error_codes]]
+code = "UB-STDARG4"
+internal_code = "STDARG4"
+type = "undefined_behavior"
+description = ''''va_copy' called on an uninitialized source va_list.'''
+c_standard_refs = ['7.16.1.2:2', 'J.2:1 item 136']
+
+[[error_codes]]
+code = "UB-STDARG5"
+internal_code = "STDARG5"
+type = "undefined_behavior"
+description = ''''va_end' called on an uninitialized va_list.'''
+c_standard_refs = ['7.16.1.3:2', 'J.2:1 item 139']
+
+[[error_codes]]
+code = "UB-STDARG6"
+internal_code = "STDARG6"
+type = "undefined_behavior"
+description = ''''va_arg' called with no arguments remaining.'''
+c_standard_refs = ['7.16.1.1:2', 'J.2:1 item 141']
+
+[[error_codes]]
+code = "UB-STDARG9"
+internal_code = "STDARG9"
+type = "undefined_behavior"
+description = '''Function exited without calling 'va_end' after 'va_start' or 'va_copy'.'''
+c_standard_refs = ['7.16.1:1', 'J.2:1 item 139']
+
+[[error_codes]]
+code = "UB-STDARG10"
+internal_code = "STDARG10"
+type = "undefined_behavior"
+description = ''''va_start' called on function whose last fixed argument is declared with the register storage class.'''
+c_standard_refs = ['7.16.1.4:4', 'J.2:1 item 143']
+
+[[error_codes]]
+code = "UB-STDARG11"
+internal_code = "STDARG11"
+type = "undefined_behavior"
+description = ''''va_start' called on function whose last fixed argument is declared with function or array type.'''
+c_standard_refs = ['7.16.1.4:4', 'J.2:1 item 143']
+
+[[error_codes]]
+code = "UB-STDARG12"
+internal_code = "STDARG12"
+type = "undefined_behavior"
+description = ''''va_start' called on function whose last fixed argument is not compatible with type after default argument promotions.'''
+c_standard_refs = ['7.16.1.4:4', 'J.2:1 item 143']
+
+[[error_codes]]
+code = "UB-STDIO1"
+internal_code = "STDIO1"
+type = "undefined_behavior"
+description = ''''printf': Mismatch between the type expected by the conversion specifier <conversion_specifier> and the type of the argument.'''
+c_standard_refs = ['7.21.6.1:9', 'J.2:1 item 153']
+validates_axioms = ['c11_libc_io_syntax_operation_e014b1f7', 'c11_libc_io_syntax_operation_03ccb397', 'c11_libc_stdio_operation_846051d3', 'c11_libc_stdio_division_510dbac0', 'c11_libc_stdio_comparison_79d7b5cc', 'c11_libc_threads_syntax_subtraction_6e24b32a', 'c11_libc_threads_syntax_subtraction_10221e56', 'c11_libc_threads_syntax_subtraction_9c58d14d']
+
+[[error_codes]]
+code = "UB-STDIO3"
+internal_code = "STDIO3"
+type = "undefined_behavior"
+description = ''''v*printf': uninitialized va_list argument.'''
+c_standard_refs = ['7.21.6.10:2', '7.21.6.12:2', '7.21.6.13:2', 'J.2:1 item 169']
+
+[[error_codes]]
+code = "UB-STDIO7"
+internal_code = "STDIO7"
+type = "undefined_behavior"
+description = ''''fflush': called on an input stream or an update stream on which the most recent operation was input.'''
+c_standard_refs = ['7.21.5.2:2', 'J.2:1 item 149']
+
+[[error_codes]]
+code = "UB-STDIO8"
+internal_code = "STDIO8"
+type = "undefined_behavior"
+description = ''''fopen' or 'freopen': invalid open mode <mode>.'''
+c_standard_refs = ['7.21.5.3:3', 'J.2:1 item 150']
+
+[[error_codes]]
+code = "UB-STDIO9"
+internal_code = "STDIO9"
+type = "undefined_behavior"
+description = ''''fsetpos': called to set a position that was not returned by a previous successful call to the fgetpos function on a stream associated with the same file.'''
+c_standard_refs = ['7.21.9.3:2', 'J.2:1 item 175']
+
+[[error_codes]]
+code = "UB-STDIO10"
+internal_code = "STDIO10"
+type = "undefined_behavior"
+description = ''''printf': Invalid conversion specifier with '#' flag.'''
+c_standard_refs = ['7.21.6.1:6', 'J.2:1 item 157']
+
+[[error_codes]]
+code = "UB-STDIO11"
+internal_code = "STDIO11"
+type = "undefined_behavior"
+description = ''''printf': Invalid conversion specifier with '0' flag.'''
+c_standard_refs = ['7.21.6.1:6', 'J.2:1 item 157']
+
+[[error_codes]]
+code = "UB-STDIO12"
+internal_code = "STDIO12"
+type = "undefined_behavior"
+description = '''Insufficient arguments supplied for the format string.'''
+c_standard_refs = ['7.21.6.1:2', 'J.2:1 item 153']
+
+[[error_codes]]
+code = "UB-STDIO13"
+internal_code = "STDIO13"
+type = "undefined_behavior"
+description = '''Invalid length modifier '' for conversion specifier '' in a format string.'''
+c_standard_refs = ['7.21.6.1:7', 'J.2:1 item 158']
+
+[[error_codes]]
+code = "UB-STDLIB1"
+internal_code = "STDLIB1"
+type = "undefined_behavior"
+description = '''Called realloc on memory not allocated by malloc, or already freed.'''
+c_standard_refs = ['7.22.3.5:3', 'J.2:1 item 179']
+
+[[error_codes]]
+code = "UB-STRING1"
+internal_code = "STRING1"
+type = "undefined_behavior"
+description = '''Null pointer passed to strcpy.'''
+c_standard_refs = ['7.1.4:1', 'J.2:1 item 109']
+validates_axioms = ['c11_libc_stdio_operation_846051d3', 'c11_libc_stdio_division_510dbac0', 'c11_libc_stdio_comparison_79d7b5cc', 'c11_libc_string_operation_022e9cfe']
+
+[[error_codes]]
+code = "UB-STDLIB2"
+internal_code = "STDLIB2"
+type = "undefined_behavior"
+description = '''Called free on memory not allocated by malloc, or already freed.'''
+c_standard_refs = ['7.22.3.3:2', 'J.2:1 item 179']
+
+[[error_codes]]
+code = "UB-STDLIB4"
+internal_code = "STDLIB4"
+type = "undefined_behavior"
+description = '''Called the exit function more than once (from a call to atexit).'''
+c_standard_refs = ['7.22.4.4:2', 'J.2:1 item 182']
+
+[[error_codes]]
+code = "UB-STDLIB5"
+internal_code = "STDLIB5"
+type = "undefined_behavior"
+description = '''Called the quick_exit function more than once (from a call to at_quick_exit).'''
+c_standard_refs = ['7.22.4.7:2', 'J.2:1 item 182']
+
+[[error_codes]]
+code = "UB-SIGNAL1"
+internal_code = "SIGNAL1"
+type = "undefined_behavior"
+description = '''The 'signal' function is used in a multi-threaded program.'''
+c_standard_refs = ['7.14.1.1:7', 'J.2:1 item 135']
+
+[[error_codes]]
+code = "UB-SIGNAL2"
+internal_code = "SIGNAL2"
+type = "undefined_behavior"
+description = '''A signal handler for a signal generated from a call to raise or abort calls the raise function.'''
+c_standard_refs = ['7.14.1.1:4', 'J.2:1 item 131']
+
+[[error_codes]]
+code = "UB-SIGNAL3"
+internal_code = "SIGNAL3"
+type = "undefined_behavior"
+description = '''A signal handler returned when the signal corresponded to a computational exception.'''
+c_standard_refs = ['7.14.1.1:3', 'J.2:1 item 129']
+
+[[error_codes]]
+code = "UB-SIGNAL4"
+internal_code = "SIGNAL4"
+type = "undefined_behavior"
+description = '''The 'signal' function is called with an invalid signal handler argument.'''
+c_standard_refs = ['7.14.1.1:2', 'J.2:1 item 128']
+
+[[error_codes]]
+code = "UB-TTE1"
+internal_code = "TTE1"
+type = "undefined_behavior"
+description = '''Program requires the formation of a composite type from a variable length array type whose size is specified by an expression that is not evaluated.'''
+c_standard_refs = ['6.2.7:3', 'J.2:1 item 16']
+
+[[error_codes]]
+code = "UB-THREADS1"
+internal_code = "THREADS1"
+type = "undefined_behavior"
+description = ''''thrd_join' or 'pthread_join' called for an invalid or already-joined thread.'''
+c_standard_refs = ['7.26.5.6:2', 'POSIX 2008 sec. pthread_join']
+
+[[error_codes]]
+code = "UB-PTHREAD1"
+internal_code = "PTHREAD1"
+type = "undefined_behavior"
+description = '''Initializing an already initialized mutex'''
+c_standard_refs = ['POSIX 2008 sec. pthread_mutex_init']
+
+[[error_codes]]
+code = "UB-PTHREAD2"
+internal_code = "PTHREAD2"
+type = "undefined_behavior"
+description = '''Destroying a locked mutex.'''
+c_standard_refs = ['POSIX 2008 sec. pthread_mutex_destroy']
+
+[[error_codes]]
+code = "UB-PTHREAD3"
+internal_code = "PTHREAD3"
+type = "undefined_behavior"
+description = '''Called destroy on an object that was not initialized with pthread_mutex_init.'''
+c_standard_refs = ['POSIX 2008 sec. pthread_mutex_destroy']
+
+[[error_codes]]
+code = "UB-PTHREAD4"
+internal_code = "PTHREAD4"
+type = "undefined_behavior"
+description = '''Attempting to lock a PTHREAD_MUTEX_DEFAULT mutex that is already locked by the current thread.'''
+c_standard_refs = ['POSIX 2008 sec. pthread_mutex_lock']
+
+[[error_codes]]
+code = "UB-PTHREAD5"
+internal_code = "PTHREAD5"
+type = "undefined_behavior"
+description = '''Called lock on an object that was not initialized with pthread_mutex_init.'''
+c_standard_refs = ['POSIX 2008 sec. pthread_mutex_lock']
+
+[[error_codes]]
+code = "UB-PTHREAD6"
+internal_code = "PTHREAD6"
+type = "undefined_behavior"
+description = '''Attempting to unlock a PTHREAD_MUTEX_DEFAULT or PTHREAD_MUTEX_NORMAL mutex which is not robust and which has not been locked by the current thread.'''
+c_standard_refs = ['POSIX 2008 sec. pthread_mutex_lock']
+
+[[error_codes]]
+code = "UB-PTHREAD7"
+internal_code = "PTHREAD7"
+type = "undefined_behavior"
+description = '''Called unlock on an object that was not initialized with pthread_mutex_init.'''
+c_standard_refs = ['POSIX 2008 sec. pthread_mutex_unlock']
+
+[[error_codes]]
+code = "UB-PTHREAD8"
+internal_code = "PTHREAD8"
+type = "undefined_behavior"
+description = '''Called trylock on an object that was not initialized with pthread_mutex_init.'''
+c_standard_refs = ['POSIX 2008 sec. pthread_mutex_trylock']
+
+[[error_codes]]
+code = "UB-PTHREAD10"
+internal_code = "PTHREAD10"
+type = "undefined_behavior"
+description = '''First argument of NULL, but required to be non-NULL'''
+c_standard_refs = ['POSIX 2008']
+
+[[error_codes]]
+code = "UB-PTHREAD12"
+internal_code = "PTHREAD12"
+type = "undefined_behavior"
+description = '''Deleting an uncreated key.'''
+c_standard_refs = ['POSIX 2008 sec. pthread_key_delete']
+
+[[error_codes]]
+code = "UB-PTHREAD13"
+internal_code = "PTHREAD13"
+type = "undefined_behavior"
+description = '''Setting an uncreated key.'''
+c_standard_refs = ['POSIX 2008 sec. pthread_setspecific']
+
+[[error_codes]]
+code = "USP-CEER6"
+internal_code = "CEER6"
+type = "unspecified"
+description = '''Unspecified value returned from main function.'''
+c_standard_refs = ['5.1.2.2.3:1']
+
+[[error_codes]]
+code = "USP-CERL7"
+internal_code = "CERL7"
+type = "unspecified"
+description = '''Comparison of unspecified value.'''
+c_standard_refs = ['6.5.9']
+
+[[error_codes]]
+code = "USP-CMR1"
+internal_code = "CMR1"
+type = "unspecified"
+description = '''Trying to reinterpret integer bytes as floating bytes.'''
+c_standard_refs = ['6.2.6.1:1', 'J.1:1 item 9']
+validates_axioms = ['c11_libc_stdio_modulus_7684a912']
+
+[[error_codes]]
+code = "USP-CMR2"
+internal_code = "CMR2"
+type = "unspecified"
+description = '''Trying to reinterpret floating bytes as integer bytes.'''
+c_standard_refs = ['6.2.6.1:1', 'J.1:1 item 9']
+validates_axioms = ['c11_libc_stdio_modulus_7684a912']
+
+[[error_codes]]
+code = "USP-ESS1"
+internal_code = "ESS1"
+type = "unspecified"
+description = '''Switching on an unspecified controlling expression.'''
+c_standard_refs = ['6.8.4.2:5']
+
+[[error_codes]]
+code = "USP-IO3"
+internal_code = "IO3"
+type = "unspecified"
+description = '''Reading an unspecified value.'''
+c_standard_refs = ['3.19.3:1']
+
+[[error_codes]]
+code = "USP-STDIO2"
+internal_code = "STDIO2"
+type = "unspecified"
+description = '''Printing an unspecified value.'''
+c_standard_refs = ['7.21.6.1:8']
+
+[[error_codes]]
+code = "USP-STDLIB3"
+internal_code = "STDLIB3"
+type = "unspecified"
+description = '''Called the atexit function after normal program termination has begun.'''
+c_standard_refs = ['7.22.4.2:2', 'J.1:1 item 44']
+
+[[error_codes]]
+code = "USP-STDLIB6"
+internal_code = "STDLIB6"
+type = "unspecified"
+description = '''Called the at_quick_exit function after normal program termination has begun.'''
+c_standard_refs = ['7.22.4.3:2', 'J.1:1 item 45']
+
+[[error_codes]]
+code = "CV-CCV9"
+internal_code = "CCV9"
+type = "constraint_violation"
+description = '''Conversion from pointer to floating point type or from floating point type to pointer.'''
+c_standard_refs = ['6.5.4:4']
+validates_axioms = ['c11_libc_io_syntax_operation_e014b1f7', 'c11_libc_io_syntax_operation_03ccb397', 'c11_libc_stdio_operation_846051d3', 'c11_libc_stdio_modulus_7684a912', 'c11_libc_stdio_division_510dbac0', 'c11_libc_stdio_comparison_79d7b5cc', 'c11_libc_string_operation_022e9cfe', 'c11_libc_threads_syntax_subtraction_6e24b32a', 'c11_libc_threads_syntax_subtraction_10221e56', 'c11_libc_threads_syntax_subtraction_9c58d14d']
+
+[[error_codes]]
+code = "CV-CCV10"
+internal_code = "CCV10"
+type = "constraint_violation"
+description = '''Conversion to or from non-scalar type.'''
+c_standard_refs = ['6.5.4:2']
+
+[[error_codes]]
+code = "CV-CDT3"
+internal_code = "CDT3"
+type = "constraint_violation"
+description = '''Field has incomplete type or contains a flexible array member.'''
+c_standard_refs = ['6.7.2.1:3']
+
+[[error_codes]]
+code = "CV-CDT4"
+internal_code = "CDT4"
+type = "constraint_violation"
+description = '''Field has incomplete type.'''
+c_standard_refs = ['6.7.2.1:3']
+
+[[error_codes]]
+code = "CV-CDT5"
+internal_code = "CDT5"
+type = "constraint_violation"
+description = '''Declaration for zero-length bit-field has a declarator.'''
+c_standard_refs = ['6.7.2.1:4']
+
+[[error_codes]]
+code = "CV-CEA7"
+internal_code = "CEA7"
+type = "constraint_violation"
+description = '''Computing pointer addition of a pointer not to a complete object type.'''
+c_standard_refs = ['6.5.6:2']
+validates_axioms = ['c11_libc_io_syntax_operation_e014b1f7', 'c11_libc_io_syntax_operation_03ccb397', 'c11_libc_stdio_operation_846051d3', 'c11_libc_stdio_division_510dbac0', 'c11_libc_stdio_comparison_79d7b5cc', 'c11_libc_string_operation_022e9cfe', 'c11_libc_threads_syntax_subtraction_6e24b32a', 'c11_libc_threads_syntax_subtraction_10221e56', 'c11_libc_threads_syntax_subtraction_9c58d14d']
+
+[[error_codes]]
+code = "CV-CEA8"
+internal_code = "CEA8"
+type = "constraint_violation"
+description = '''Computing pointer minus integer of a pointer not to a complete object type.'''
+c_standard_refs = ['6.5.6:3']
+validates_axioms = ['c11_libc_io_syntax_operation_e014b1f7', 'c11_libc_io_syntax_operation_03ccb397', 'c11_libc_stdio_operation_846051d3', 'c11_libc_stdio_division_510dbac0', 'c11_libc_stdio_comparison_79d7b5cc', 'c11_libc_string_operation_022e9cfe', 'c11_libc_threads_syntax_subtraction_6e24b32a', 'c11_libc_threads_syntax_subtraction_10221e56', 'c11_libc_threads_syntax_subtraction_9c58d14d']
+
+[[error_codes]]
+code = "CV-CEA3"
+internal_code = "CEA3"
+type = "constraint_violation"
+description = '''Invalid operand types to addition.'''
+c_standard_refs = ['6.5.6:2']
+
+[[error_codes]]
+code = "CV-CEA4"
+internal_code = "CEA4"
+type = "constraint_violation"
+description = '''Invalid operand types to subtraction.'''
+c_standard_refs = ['6.5.6:3']
+
+[[error_codes]]
+code = "CV-CEA9"
+internal_code = "CEA9"
+type = "constraint_violation"
+description = '''Computing pointer difference between pointers not to complete object types.'''
+c_standard_refs = ['6.5.6:3']
+validates_axioms = ['c11_libc_io_syntax_operation_e014b1f7', 'c11_libc_io_syntax_operation_03ccb397', 'c11_libc_stdio_operation_846051d3', 'c11_libc_stdio_division_510dbac0', 'c11_libc_stdio_comparison_79d7b5cc', 'c11_libc_string_operation_022e9cfe', 'c11_libc_threads_syntax_subtraction_6e24b32a', 'c11_libc_threads_syntax_subtraction_10221e56', 'c11_libc_threads_syntax_subtraction_9c58d14d']
+
+[[error_codes]]
+code = "CV-CEB1"
+internal_code = "CEB1"
+type = "constraint_violation"
+description = '''Both bitwise shift operands must have integer type.'''
+c_standard_refs = ['6.5.7:2']
+validates_axioms = ['c11_libc_io_syntax_operation_e014b1f7', 'c11_libc_io_syntax_operation_03ccb397', 'c11_libc_stdio_operation_846051d3', 'c11_libc_stdio_division_510dbac0', 'c11_libc_stdio_comparison_79d7b5cc', 'c11_libc_threads_syntax_subtraction_6e24b32a', 'c11_libc_threads_syntax_subtraction_10221e56', 'c11_libc_threads_syntax_subtraction_9c58d14d']
+
+[[error_codes]]
+code = "CV-CEB5"
+internal_code = "CEB5"
+type = "constraint_violation"
+description = '''Both bitwise shift operands must have integer type.'''
+c_standard_refs = ['6.5.7:2']
+validates_axioms = ['c11_libc_io_syntax_operation_e014b1f7', 'c11_libc_io_syntax_operation_03ccb397', 'c11_libc_stdio_operation_846051d3', 'c11_libc_stdio_division_510dbac0', 'c11_libc_stdio_comparison_79d7b5cc', 'c11_libc_threads_syntax_subtraction_6e24b32a', 'c11_libc_threads_syntax_subtraction_10221e56', 'c11_libc_threads_syntax_subtraction_9c58d14d']
+
+[[error_codes]]
+code = "CV-CEB9"
+internal_code = "CEB9"
+type = "constraint_violation"
+description = '''Both bitwise AND operands must have integer type.'''
+c_standard_refs = ['6.5.10:2']
+validates_axioms = ['c11_libc_io_syntax_operation_e014b1f7', 'c11_libc_io_syntax_operation_03ccb397', 'c11_libc_stdio_operation_846051d3', 'c11_libc_stdio_division_510dbac0', 'c11_libc_stdio_comparison_79d7b5cc', 'c11_libc_threads_syntax_subtraction_6e24b32a', 'c11_libc_threads_syntax_subtraction_10221e56', 'c11_libc_threads_syntax_subtraction_9c58d14d']
+
+[[error_codes]]
+code = "CV-CEB10"
+internal_code = "CEB10"
+type = "constraint_violation"
+description = '''Both bitwise exclusive OR operands must have integer type.'''
+c_standard_refs = ['6.5.11:2']
+validates_axioms = ['c11_libc_io_syntax_operation_e014b1f7', 'c11_libc_io_syntax_operation_03ccb397', 'c11_libc_stdio_operation_846051d3', 'c11_libc_stdio_division_510dbac0', 'c11_libc_stdio_comparison_79d7b5cc', 'c11_libc_threads_syntax_subtraction_6e24b32a', 'c11_libc_threads_syntax_subtraction_10221e56', 'c11_libc_threads_syntax_subtraction_9c58d14d']
+
+[[error_codes]]
+code = "CV-CEB11"
+internal_code = "CEB11"
+type = "constraint_violation"
+description = '''Both bitwise inclusive OR operands must have integer type.'''
+c_standard_refs = ['6.5.12:2']
+validates_axioms = ['c11_libc_io_syntax_operation_e014b1f7', 'c11_libc_io_syntax_operation_03ccb397', 'c11_libc_stdio_operation_846051d3', 'c11_libc_stdio_division_510dbac0', 'c11_libc_stdio_comparison_79d7b5cc', 'c11_libc_threads_syntax_subtraction_6e24b32a', 'c11_libc_threads_syntax_subtraction_10221e56', 'c11_libc_threads_syntax_subtraction_9c58d14d']
+
+[[error_codes]]
+code = "CV-CEM3"
+internal_code = "CEM3"
+type = "constraint_violation"
+description = '''Attempting to access member but it does not exist.'''
+c_standard_refs = ['6.5.2.3:1']
+
+[[error_codes]]
+code = "CV-CER1"
+internal_code = "CER1"
+type = "constraint_violation"
+description = '''Unary '&' operator applied to non-lvalue.'''
+c_standard_refs = ['6.5.3.2:1']
+
+[[error_codes]]
+code = "CV-CER2"
+internal_code = "CER2"
+type = "constraint_violation"
+description = '''Unary '&' operator applied to a value with register storage class.'''
+c_standard_refs = ['6.5.3.2:1']
+
+[[error_codes]]
+code = "CV-CER5"
+internal_code = "CER5"
+type = "constraint_violation"
+description = '''Unary '&' operator applied to a bit-field.'''
+c_standard_refs = ['6.5.3.2:1']
+
+[[error_codes]]
+code = "CV-CER6"
+internal_code = "CER6"
+type = "constraint_violation"
+description = '''Unary '*' operator applied to non-pointer.'''
+c_standard_refs = ['6.5.3.2:2']
+validates_axioms = ['c11_libc_stdio_operation_846051d3', 'c11_libc_stdio_division_510dbac0', 'c11_libc_stdio_comparison_79d7b5cc', 'c11_libc_string_operation_022e9cfe']
+
+[[error_codes]]
+code = "CV-CERL5"
+internal_code = "CERL5"
+type = "constraint_violation"
+description = '''Directly comparing an integer type with a pointer type.'''
+c_standard_refs = ['6.5.8:2']
+validates_axioms = ['c11_libc_io_syntax_operation_e014b1f7', 'c11_libc_io_syntax_operation_03ccb397', 'c11_libc_stdio_operation_846051d3', 'c11_libc_stdio_division_510dbac0', 'c11_libc_stdio_comparison_79d7b5cc', 'c11_libc_string_operation_022e9cfe', 'c11_libc_threads_syntax_subtraction_6e24b32a', 'c11_libc_threads_syntax_subtraction_10221e56', 'c11_libc_threads_syntax_subtraction_9c58d14d']
+
+[[error_codes]]
+code = "CV-CERL8"
+internal_code = "CERL8"
+type = "constraint_violation"
+description = '''Invalid operand types to ==.'''
+c_standard_refs = ['6.5.9:2']
+
+[[error_codes]]
+code = "CV-CERL9"
+internal_code = "CERL9"
+type = "constraint_violation"
+description = '''Invalid operand types to !=.'''
+c_standard_refs = ['6.5.9:2']
+
+[[error_codes]]
+code = "CV-CMW2"
+internal_code = "CMW2"
+type = "constraint_violation"
+description = '''Trying to write through a const lvalue.'''
+c_standard_refs = ['6.5.16.1:1']
+
+[[error_codes]]
+code = "CV-TCANON1"
+internal_code = "TCANON1"
+type = "constraint_violation"
+description = '''Alignas attribute specifying an alignment less strict than would otherwise be required.'''
+c_standard_refs = ['6.7.5:4']
+
+[[error_codes]]
+code = "CV-TCANON3"
+internal_code = "TCANON3"
+type = "constraint_violation"
+description = '''Function declared without a return type.'''
+c_standard_refs = ['6.9.1:3']
+
+[[error_codes]]
+code = "CV-TCANON4"
+internal_code = "TCANON4"
+type = "constraint_violation"
+description = '''Declaration with no type specifiers.'''
+c_standard_refs = ['6.7.2:2']
+
+[[error_codes]]
+code = "CV-TAL1"
+internal_code = "TAL1"
+type = "constraint_violation"
+description = '''Trying to compute alignof of a type that is incomplete or a function type.'''
+c_standard_refs = ['6.5.3.4:1']
+
+[[error_codes]]
+code = "CV-TDG2"
+internal_code = "TDG2"
+type = "constraint_violation"
+description = '''Declaration for identifier appears with multiple storage class specifiers.'''
+c_standard_refs = ['6.7.1:2']
+
+[[error_codes]]
+code = "CV-TDG4"
+internal_code = "TDG4"
+type = "constraint_violation"
+description = '''Declaration appears with invalid storage class specifiers.'''
+c_standard_refs = ['6.9:2']
+
+[[error_codes]]
+code = "CV-TDG5"
+internal_code = "TDG5"
+type = "constraint_violation"
+description = '''Function parameter appears with storage class other than register.'''
+c_standard_refs = ['6.7.6.3:2']
+
+[[error_codes]]
+code = "CV-TDG8"
+internal_code = "TDG8"
+type = "constraint_violation"
+description = '''Declaration has initializer but incomplete type.'''
+c_standard_refs = ['6.7.9:3']
+
+[[error_codes]]
+code = "CV-TDG10"
+internal_code = "TDG10"
+type = "constraint_violation"
+description = '''Conflicting types for identifier.'''
+c_standard_refs = ['6.7:4']
+
+[[error_codes]]
+code = "CV-TDG9"
+internal_code = "TDG9"
+type = "constraint_violation"
+description = '''File-scope declaration with a variably-modified type.'''
+c_standard_refs = ['6.7.6.2:2']
+
+[[error_codes]]
+code = "CV-TDG13"
+internal_code = "TDG13"
+type = "constraint_violation"
+description = '''Redefinition of symbol:'''
+c_standard_refs = ['6.9:3']
+
+[[error_codes]]
+code = "CV-TDL1"
+internal_code = "TDL1"
+type = "constraint_violation"
+description = '''Extern declaration follows one with no linkage'''
+c_standard_refs = ['6.7:3']
+
+[[error_codes]]
+code = "CV-TDL2"
+internal_code = "TDL2"
+type = "constraint_violation"
+description = '''Extern declaration appears at block scope with an initializer.'''
+c_standard_refs = ['6.7.9:5']
+
+[[error_codes]]
+code = "CV-TDL3"
+internal_code = "TDL3"
+type = "constraint_violation"
+description = '''Extern declaration with incompatible type'''
+c_standard_refs = ['6.7:4']
+
+[[error_codes]]
+code = "CV-TDL4"
+internal_code = "TDL4"
+type = "constraint_violation"
+description = '''Redeclaration with no linkage'''
+c_standard_refs = ['6.7:3']
+
+[[error_codes]]
+code = "CV-CDI4"
+internal_code = "CDI4"
+type = "constraint_violation"
+description = '''Attempting to initialize nonexistent member.'''
+c_standard_refs = ['6.7.9:2']
+
+[[error_codes]]
+code = "CV-CDI5"
+internal_code = "CDI5"
+type = "constraint_violation"
+description = '''Unexpected compound initializer (possibly attempting to directly initialize an anonymous member).'''
+c_standard_refs = ['6.7.9:2']
+
+[[error_codes]]
+code = "CV-TDG15"
+internal_code = "TDG15"
+type = "constraint_violation"
+description = '''Redefinition of struct, union, or enum'''
+c_standard_refs = ['6.7.2.3:1']
+
+[[error_codes]]
+code = "CV-TDG18"
+internal_code = "TDG18"
+type = "constraint_violation"
+description = '''Declaration for appears with invalid storage class specifiers.'''
+c_standard_refs = ['6.7.1:3']
+
+[[error_codes]]
+code = "CV-CDE1"
+internal_code = "CDE1"
+type = "constraint_violation"
+description = '''Enum initializer not an integer constant expression.'''
+c_standard_refs = ['6.7.2.2:2']
+
+[[error_codes]]
+code = "CV-CDE2"
+internal_code = "CDE2"
+type = "constraint_violation"
+description = '''Enum initializer outside the range representable by int.'''
+c_standard_refs = ['6.7.2.2:2']
+
+[[error_codes]]
+code = "CV-TEAS1"
+internal_code = "TEAS1"
+type = "constraint_violation"
+description = '''Incompatible types in assignment.'''
+c_standard_refs = ['6.5.16.1:1']
+
+[[error_codes]]
+code = "CV-TEAS2"
+internal_code = "TEAS2"
+type = "constraint_violation"
+description = '''Incompatible pointer types in assignment.'''
+c_standard_refs = ['6.5.16.1:1']
+validates_axioms = ['c11_libc_io_syntax_operation_e014b1f7', 'c11_libc_io_syntax_operation_03ccb397', 'c11_libc_stdio_operation_846051d3', 'c11_libc_stdio_division_510dbac0', 'c11_libc_stdio_comparison_79d7b5cc', 'c11_libc_string_operation_022e9cfe', 'c11_libc_threads_syntax_subtraction_6e24b32a', 'c11_libc_threads_syntax_subtraction_10221e56', 'c11_libc_threads_syntax_subtraction_9c58d14d']
+
+[[error_codes]]
+code = "CV-TEAS3"
+internal_code = "TEAS3"
+type = "constraint_violation"
+description = ''''lvalue' required as left operand in assignment.'''
+c_standard_refs = ['6.5.16:2']
+
+[[error_codes]]
+code = "CV-TEAS6"
+internal_code = "TEAS6"
+type = "constraint_violation"
+description = '''Trying to write through a const lvalue.'''
+c_standard_refs = ['6.5.16.1:1']
+
+[[error_codes]]
+code = "CV-TSE1"
+internal_code = "TSE1"
+type = "constraint_violation"
+description = '''Incompatible types in initializer or function call arguments.'''
+c_standard_refs = ['6.5.16.1:1']
+
+[[error_codes]]
+code = "CV-TSE2"
+internal_code = "TSE2"
+type = "constraint_violation"
+description = '''Incompatible pointer types in initializer or function call arguments.'''
+c_standard_refs = ['6.5.16.1:1']
+validates_axioms = ['c11_libc_io_syntax_operation_e014b1f7', 'c11_libc_io_syntax_operation_03ccb397', 'c11_libc_stdio_operation_846051d3', 'c11_libc_stdio_division_510dbac0', 'c11_libc_stdio_comparison_79d7b5cc', 'c11_libc_string_operation_022e9cfe', 'c11_libc_threads_syntax_subtraction_6e24b32a', 'c11_libc_threads_syntax_subtraction_10221e56', 'c11_libc_threads_syntax_subtraction_9c58d14d']
+
+[[error_codes]]
+code = "CV-TSE3"
+internal_code = "TSE3"
+type = "constraint_violation"
+description = '''Non-constant static initializer.'''
+c_standard_refs = ['6.7.9:4']
+
+[[error_codes]]
+code = "CV-TEG1"
+internal_code = "TEG1"
+type = "constraint_violation"
+description = '''Generic selection with a controlling expression compatible with multiple types in the association list.'''
+c_standard_refs = ['6.5.1.1:2']
+
+[[error_codes]]
+code = "CV-TEG2"
+internal_code = "TEG2"
+type = "constraint_violation"
+description = '''Generic selection with a controlling expression not compatible with any type in the association list (with no default).'''
+c_standard_refs = ['6.5.1.1:2']
+
+[[error_codes]]
+code = "CV-TEG3"
+internal_code = "TEG3"
+type = "constraint_violation"
+description = '''Generic selection with multiple defaults.'''
+c_standard_refs = ['6.5.1.1:2']
+
+[[error_codes]]
+code = "CV-TTE2"
+internal_code = "TTE2"
+type = "constraint_violation"
+description = '''If both of a conditional expression's branches have pointer type, they must be compatible, or one must be a pointer to an object and the other must be a pointer to void.'''
+c_standard_refs = ['6.5.15:3']
+validates_axioms = ['c11_libc_io_syntax_operation_e014b1f7', 'c11_libc_io_syntax_operation_03ccb397', 'c11_libc_stdio_operation_846051d3', 'c11_libc_stdio_division_510dbac0', 'c11_libc_stdio_comparison_79d7b5cc', 'c11_libc_string_operation_022e9cfe', 'c11_libc_threads_syntax_subtraction_6e24b32a', 'c11_libc_threads_syntax_subtraction_10221e56', 'c11_libc_threads_syntax_subtraction_9c58d14d']
+
+[[error_codes]]
+code = "CV-TTE3"
+internal_code = "TTE3"
+type = "constraint_violation"
+description = '''If one of a conditional expression's branches has pointer type and the other has integer type, the integer must be a null pointer constant.'''
+c_standard_refs = ['6.5.15:3']
+validates_axioms = ['c11_libc_io_syntax_operation_e014b1f7', 'c11_libc_io_syntax_operation_03ccb397', 'c11_libc_stdio_operation_846051d3', 'c11_libc_stdio_division_510dbac0', 'c11_libc_stdio_comparison_79d7b5cc', 'c11_libc_string_operation_022e9cfe', 'c11_libc_threads_syntax_subtraction_6e24b32a', 'c11_libc_threads_syntax_subtraction_10221e56', 'c11_libc_threads_syntax_subtraction_9c58d14d']
+
+[[error_codes]]
+code = "CV-TTE4"
+internal_code = "TTE4"
+type = "constraint_violation"
+description = '''If one of a conditional expression's branches has void type, the other must also have void type.'''
+c_standard_refs = ['6.5.15:3']
+
+[[error_codes]]
+code = "CV-TTE5"
+internal_code = "TTE5"
+type = "constraint_violation"
+description = '''If one of a conditional expression's branches has struct or union type, the other must have the same type.'''
+c_standard_refs = ['6.5.15:3']
+
+[[error_codes]]
+code = "CV-EFC1"
+internal_code = "EFC1"
+type = "constraint_violation"
+description = '''Function call with incomplete or invalid return type.'''
+c_standard_refs = ['6.5.2.2:2']
+
+[[error_codes]]
+code = "CV-TES1"
+internal_code = "TES1"
+type = "constraint_violation"
+description = '''Trying to compute sizeof of an expression with incomplete or a function type.'''
+c_standard_refs = ['6.5.3.4:1']
+
+[[error_codes]]
+code = "CV-TES2"
+internal_code = "TES2"
+type = "constraint_violation"
+description = '''Trying to compute sizeof of an incomplete or function type.'''
+c_standard_refs = ['6.5.3.4:1']
+
+[[error_codes]]
+code = "CV-FD1"
+internal_code = "FD1"
+type = "constraint_violation"
+description = '''Duplicate parameters in function definition.'''
+c_standard_refs = ['6.7:3']
+
+[[error_codes]]
+code = "CV-FD2"
+internal_code = "FD2"
+type = "constraint_violation"
+description = '''Invalid return type in function definition.'''
+c_standard_refs = ['6.7.6.3:1']
+
+[[error_codes]]
+code = "CV-FD3"
+internal_code = "FD3"
+type = "constraint_violation"
+description = '''Incomplete parameter type in function definition.'''
+c_standard_refs = ['6.7.6.3:4']
+
+[[error_codes]]
+code = "CV-SSA1"
+internal_code = "SSA1"
+type = "constraint_violation"
+description = '''Non-constant expression in static assertion.'''
+c_standard_refs = ['6.7.10:2']
+
+[[error_codes]]
+code = "CV-SSA2"
+internal_code = "SSA2"
+type = "constraint_violation"
+description = '''Static assertion failed:'''
+c_standard_refs = ['6.7.10:2']
+
+[[error_codes]]
+code = "CV-CTI2"
+internal_code = "CTI2"
+type = "constraint_violation"
+description = '''Arrays must have positive length.'''
+c_standard_refs = ['6.7.6.2:1']
+
+[[error_codes]]
+code = "CV-CTI3"
+internal_code = "CTI3"
+type = "constraint_violation"
+description = '''The width of a bit field shall be an integer constant expression.'''
+c_standard_refs = ['6.7.2.1:4']
+
+[[error_codes]]
+code = "CV-CTI5"
+internal_code = "CTI5"
+type = "constraint_violation"
+description = '''Structs containing a flexible array member must not be array elements.'''
+c_standard_refs = ['6.7.2.1:2']
+
+[[error_codes]]
+code = "IMPL-CCV2"
+internal_code = "CCV2"
+type = "implementation_defined"
+description = '''Conversion to signed integer outside the range that can be represented.'''
+c_standard_refs = ['6.3.1.3:3', 'J.3.5:1 item 4']
+
+[[error_codes]]
+code = "IMPL-CCV13"
+internal_code = "CCV13"
+type = "implementation_defined"
+description = '''Conversion from an integer to non-null pointer.'''
+c_standard_refs = ['6.3.2.3:5']
+validates_axioms = ['c11_libc_stdio_operation_846051d3', 'c11_libc_stdio_division_510dbac0', 'c11_libc_stdio_comparison_79d7b5cc', 'c11_libc_string_operation_022e9cfe']
+
+[[error_codes]]
+code = "IMPL-CCV13-H"
+internal_code = "CCV13-H"
+type = "implementation_defined"
+description = '''Conversion from an integer to non-null hardware-dependent pointer.'''
+c_standard_refs = ['6.3.2.3:5']
+validates_axioms = ['c11_libc_stdio_operation_846051d3', 'c11_libc_stdio_division_510dbac0', 'c11_libc_stdio_comparison_79d7b5cc', 'c11_libc_string_operation_022e9cfe']
+
+[[error_codes]]
+code = "IMPL-CCVE4"
+internal_code = "CCVE4"
+type = "implementation_defined"
+description = '''Casting a pointer to an integer.'''
+c_standard_refs = ['6.3.2.3:6']
+validates_axioms = ['c11_libc_stdio_operation_846051d3', 'c11_libc_stdio_division_510dbac0', 'c11_libc_stdio_comparison_79d7b5cc', 'c11_libc_string_operation_022e9cfe']
+
+[[error_codes]]
+code = "IMPL-CEB8"
+internal_code = "CEB8"
+type = "implementation_defined"
+description = '''The left operand in a bitwise right-shift is negative.'''
+c_standard_refs = ['6.5.7:5', 'J.3.5:1 item 5']
+
+[[error_codes]]
+code = "IMPL-CEMX4"
+internal_code = "CEMX4"
+type = "implementation_defined"
+description = '''Modulus operator with a pointer value as an argument.'''
+c_standard_refs = ['6.3.2.3:6', 'J.3.7:1 item 1']
+validates_axioms = ['c11_libc_stdio_operation_846051d3', 'c11_libc_stdio_modulus_7684a912', 'c11_libc_stdio_modulus_b956c37e', 'c11_libc_stdio_division_510dbac0', 'c11_libc_stdio_comparison_79d7b5cc', 'c11_libc_string_operation_022e9cfe']
+
+[[error_codes]]
+code = "IMPL-CTI4"
+internal_code = "CTI4"
+type = "implementation_defined"
+description = '''Bit-field with type other than signed int, unsigned int, or _Bool.'''
+c_standard_refs = ['6.7.2.1:5', 'J.3.9:1 item 2']
+validates_axioms = ['c11_libc_io_syntax_operation_e014b1f7', 'c11_libc_io_syntax_operation_03ccb397', 'c11_libc_stdio_operation_846051d3', 'c11_libc_stdio_division_510dbac0', 'c11_libc_stdio_comparison_79d7b5cc', 'c11_libc_threads_syntax_subtraction_6e24b32a', 'c11_libc_threads_syntax_subtraction_10221e56', 'c11_libc_threads_syntax_subtraction_9c58d14d']
+
+[[error_codes]]
+code = "IMPL-EIO5"
+internal_code = "EIO5"
+type = "implementation_defined"
+description = '''Trying to modify an object with thread or auto storage duration in a thread other than the one in which the object is associated.'''
+c_standard_refs = ['6.2.4:4', '6.2.4:5', 'J.3.13:1 item 2']
+
+[[error_codes]]
+code = "IMPL-EIO6"
+internal_code = "EIO6"
+type = "implementation_defined"
+description = '''Attempting to access an object with thread or auto storage duration in a thread other than the one in which the object is associated.'''
+c_standard_refs = ['6.2.4:4', '6.2.4:5', 'J.3.13:1 item 2']
+
+[[error_codes]]
+code = "IMPL-STDLIB8"
+internal_code = "STDLIB8"
+type = "implementation_defined"
+description = '''Called aligned_alloc with size parameter not an integral multiple of the requested alignment.'''
+c_standard_refs = ['7.22.3.1:2 J.2:1 item 178']
+
+[[error_codes]]
+code = "IMPLUB-CEB12"
+internal_code = "CEB12"
+type = "undefined_behavior"
+description = '''Potential negative zero produced via bitwise operations (this could be a false positive).'''
+c_standard_refs = ['6.2.6.2:4', 'J.2:1 item 14']
+
+[[error_codes]]
+code = "IMPLUB-CEMX5"
+internal_code = "CEMX5"
+type = "undefined_behavior"
+description = '''Division by an implementation-defined or unspecified value.'''
+c_standard_refs = ['6.5.5:5', 'J.2:1 item 45']
+
+[[error_codes]]
+code = "IMPLUB-CEMX6"
+internal_code = "CEMX6"
+type = "undefined_behavior"
+description = '''Modulus by an implementation-defined or unspecified value.'''
+c_standard_refs = ['6.5.5:5', 'J.2:1 item 45']
+
+[[error_codes]]
+code = "UB-PTHREAD99"
+internal_code = "PTHREAD99"
+type = "implementation_defined"
+description = '''Unimplemented pthread function.'''
+c_standard_refs = ['POSIX 2008']
+
+[[error_codes]]
+code = "L-PTHREAD9"
+internal_code = "PTHREAD9"
+type = "undefined_behavior"
+description = '''Terminating a thread while holding lock on mutexes.'''
+
+[[error_codes]]
+code = "L-RESTRICT1"
+internal_code = "RESTRICT1"
+type = "undefined_behavior"
+description = '''Use of the restrict qualifier (a possible source of undefined behavior).'''
+
+[[error_codes]]
+code = "L-STDLIBE1"
+internal_code = "STDLIBE1"
+type = "undefined_behavior"
+description = '''Called free() on a null pointer.'''
+validates_axioms = ['c11_libc_stdio_operation_846051d3', 'c11_libc_stdio_division_510dbac0', 'c11_libc_stdio_comparison_79d7b5cc', 'c11_libc_string_operation_022e9cfe']
+
+[[error_codes]]
+code = "L-STDLIBE2"
+internal_code = "STDLIBE2"
+type = "undefined_behavior"
+description = '''Malloc overflows memory bound, returning null pointer.'''
+validates_axioms = ['c11_libc_stdio_operation_846051d3', 'c11_libc_stdio_division_510dbac0', 'c11_libc_stdio_comparison_79d7b5cc', 'c11_libc_string_operation_022e9cfe']
+
+[[error_codes]]
+code = "L-STDLIBE3"
+internal_code = "STDLIBE3"
+type = "undefined_behavior"
+description = '''Realloc overflows memory bound, returning null pointer.'''
+validates_axioms = ['c11_libc_stdio_operation_846051d3', 'c11_libc_stdio_division_510dbac0', 'c11_libc_stdio_comparison_79d7b5cc', 'c11_libc_string_operation_022e9cfe']
+
+[[error_codes]]
+code = "L-UNISTD1"
+internal_code = "UNISTD1"
+type = "undefined_behavior"
+description = '''Called sleep while holding lock on mutexes.'''
+
+[[error_codes]]
+code = "L-CEE6"
+internal_code = "CEE6"
+type = "undefined_behavior"
+description = '''Dereferencing a pointer to FILE or directly using a FILE object.'''
+validates_axioms = ['c11_libc_stdio_operation_846051d3', 'c11_libc_stdio_division_510dbac0', 'c11_libc_stdio_comparison_79d7b5cc', 'c11_libc_string_operation_022e9cfe']
+
+[[error_codes]]
+code = "L-CEIE1"
+internal_code = "CEIE1"
+type = "undefined_behavior"
+description = '''Memory malloced but never freed.'''
+
+[[error_codes]]
+code = "L-CEIE2"
+internal_code = "CEIE2"
+type = "undefined_behavior"
+description = '''File opened but never closed.'''
+
+[[error_codes]]
+code = "L-CER7"
+internal_code = "CER7"
+type = "undefined_behavior"
+description = '''Dereferencing a native pointer.'''
+validates_axioms = ['c11_libc_stdio_operation_846051d3', 'c11_libc_stdio_division_510dbac0', 'c11_libc_stdio_comparison_79d7b5cc', 'c11_libc_string_operation_022e9cfe']
+
+[[error_codes]]
+code = "L-CCVE1"
+internal_code = "CCVE1"
+type = "undefined_behavior"
+description = '''Unsigned integer overflow.'''
+
+[[error_codes]]
+code = "L-CCVE2"
+internal_code = "CCVE2"
+type = "undefined_behavior"
+description = '''Conversion to unsigned integer outside the range that can be represented.'''
+
+[[error_codes]]
+code = "L-CCVE3"
+internal_code = "CCVE3"
+type = "undefined_behavior"
+description = '''Casting away qualifiers.'''
+
+[[error_codes]]
+code = "L-CMRE1"
+internal_code = "CMRE1"
+type = "undefined_behavior"
+description = '''Reading a struct or union with uninitialized parts.'''
+
+[[error_codes]]
+code = "L-EFNCE1"
+internal_code = "EFNCE1"
+type = "undefined_behavior"
+description = '''Stack might overflow specified bound on some compilers or ABIs.'''
+
+[[error_codes]]
+code = "L-EFNC3"
+internal_code = "EFNC3"
+type = "undefined_behavior"
+description = '''Recursive call to the function .'''
+
+[[error_codes]]
+code = "L-EIOE1"
+internal_code = "EIOE1"
+type = "undefined_behavior"
+description = '''Read a byte from a statically-allocated or thread-storage-allocated object that was initialized implicitly to 0.'''
+
+[[error_codes]]
+code = "L-EXC3"
+internal_code = "EXC3"
+type = "undefined_behavior"
+description = '''Comparing a function pointer to a null pointer constant.'''
+validates_axioms = ['c11_libc_stdio_operation_846051d3', 'c11_libc_stdio_division_510dbac0', 'c11_libc_stdio_comparison_79d7b5cc', 'c11_libc_string_operation_022e9cfe']
+
+[[error_codes]]
+code = "L-TFD1"
+internal_code = "TFD1"
+type = "undefined_behavior"
+description = '''The function contains inline assembly or other language features unsupported by this tool. Using the natively-compiled implementation of this function during execution.'''
+
+[[error_codes]]
+code = "SE-CID1"
+internal_code = "CID1"
+type = "undefined_behavior"
+description = '''Trying to look up identifier , but no such identifier is in scope.'''
+c_standard_refs = ['6.5.1:2']
+
+[[error_codes]]
+code = "SE-TCANON2"
+internal_code = "TCANON2"
+type = "undefined_behavior"
+description = '''Unsupported reserved identifier  (reserved variant of restrict).'''

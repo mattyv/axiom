@@ -1,0 +1,1731 @@
+version = "1.0"
+source = "kframework/c-semantics/cpp_stdlib"
+extracted_at = "2025-12-26T22:10:31.448979"
+
+[[axioms]]
+id = "c11_libcpp_new_comparison_4463afd0"
+content = '''Comparison requires: NOT (hasLint), and Len <=Int cfg:maxHeapBound endmodule.'''
+formal_spec = '''notBool hasLint andBool Len <=Int cfg:maxHeapBound  endmodule'''
+layer = "cpp_stdlib"
+confidence = 1.0
+source_file = "new.k"
+source_module = "LIBCPP-NEW"
+source_line_start = 16
+source_line_end = 24
+tags = ['comparison']
+
+[[error_codes]]
+code = "UB-CB1"
+internal_code = "CB1"
+type = "undefined_behavior"
+description = '''Types of function call arguments aren't compatible with declared types after promotions.'''
+c_standard_refs = ['6.5.2.2:6', 'J.2:1 item 39']
+
+[[error_codes]]
+code = "UB-CB2"
+internal_code = "CB2"
+type = "undefined_behavior"
+description = '''Function call has fewer arguments than parameters in function definition.'''
+c_standard_refs = ['6.5.2.2:6', 'J.2:1 item 38']
+
+[[error_codes]]
+code = "UB-CB3"
+internal_code = "CB3"
+type = "undefined_behavior"
+description = '''Function call has more arguments than parameters in function definition.'''
+c_standard_refs = ['6.5.2.2:6', 'J.2:1 item 38']
+
+[[error_codes]]
+code = "UB-CB4"
+internal_code = "CB4"
+type = "undefined_behavior"
+description = '''Function defined with no parameters called with arguments.'''
+c_standard_refs = ['6.5.2.2:6', 'J.2:1 item 38']
+
+[[error_codes]]
+code = "UB-CCV1"
+internal_code = "CCV1"
+type = "undefined_behavior"
+description = '''Signed integer overflow.'''
+c_standard_refs = ['6.5:5', 'J.2:1 item 36']
+
+[[error_codes]]
+code = "UB-CCV3"
+internal_code = "CCV3"
+type = "undefined_behavior"
+description = '''Conversion to integer from float outside the range that can be represented.'''
+c_standard_refs = ['6.3.1.4:1', 'J.2:1 item 17']
+
+[[error_codes]]
+code = "UB-CCV4"
+internal_code = "CCV4"
+type = "undefined_behavior"
+description = '''Floating-point value outside the range of values that can be represented after conversion.'''
+c_standard_refs = ['6.3.1.5:1', 'J.2:1 item 18']
+
+[[error_codes]]
+code = "UB-CCV5"
+internal_code = "CCV5"
+type = "undefined_behavior"
+description = '''Casting empty value to type other than void.'''
+c_standard_refs = ['6.3.2.2:1', 'J.2:1 item 23']
+
+[[error_codes]]
+code = "UB-CCV6"
+internal_code = "CCV6"
+type = "undefined_behavior"
+description = '''Casting void type to non-void type.'''
+c_standard_refs = ['6.3.2.2:1', 'J.2:1 item 23']
+
+[[error_codes]]
+code = "UB-CCV7"
+internal_code = "CCV7"
+type = "undefined_behavior"
+description = '''Conversion from pointer to integer of a value possibly unrepresentable in the integer type.'''
+c_standard_refs = ['6.3.2.3:6', 'J.2:1 item 24']
+
+[[error_codes]]
+code = "UB-CCV11"
+internal_code = "CCV11"
+type = "undefined_behavior"
+description = '''Conversion to a pointer type with a stricter alignment requirement (possibly undefined).'''
+c_standard_refs = ['6.3.2.3:7', 'J.2:1 item 25']
+
+[[error_codes]]
+code = "UB-CCV12"
+internal_code = "CCV12"
+type = "undefined_behavior"
+description = '''Floating-point overflow.'''
+c_standard_refs = ['6.5:5', 'J.2:1 item 36']
+
+[[error_codes]]
+code = "UB-CEA1"
+internal_code = "CEA1"
+type = "undefined_behavior"
+description = '''A pointer (or array subscript) outside the bounds of an object.'''
+c_standard_refs = ['6.5.6:8', 'J.2:1 item 46']
+
+[[error_codes]]
+code = "UB-CEA5"
+internal_code = "CEA5"
+type = "undefined_behavior"
+description = '''Computing pointer difference between two different objects.'''
+c_standard_refs = ['6.5.6:9', 'J.2:1 item 48']
+
+[[error_codes]]
+code = "UB-CEA2"
+internal_code = "CEA2"
+type = "undefined_behavior"
+description = '''Pointer difference outside the range that can be represented by object of type ptrdiff_t.'''
+c_standard_refs = ['6.5.6:9', 'J.2:1 item 50']
+
+[[error_codes]]
+code = "UB-CEB2"
+internal_code = "CEB2"
+type = "undefined_behavior"
+description = '''The right operand in a bitwise shift is negative.'''
+c_standard_refs = ['6.5.7:3', 'J.2:1 item 51']
+
+[[error_codes]]
+code = "UB-CEB3"
+internal_code = "CEB3"
+type = "undefined_behavior"
+description = '''The right operand in a bitwise shift is greater than or equal to the bit width of the left operand.'''
+c_standard_refs = ['6.5.7:3', 'J.2:1 item 51']
+
+[[error_codes]]
+code = "UB-CEB4"
+internal_code = "CEB4"
+type = "undefined_behavior"
+description = '''The left operand in a bitwise left-shift is negative.'''
+c_standard_refs = ['6.5.7:4', 'J.2:1 item 52']
+
+[[error_codes]]
+code = "UB-CEB6"
+internal_code = "CEB6"
+type = "undefined_behavior"
+description = '''The right operand in a bitwise shift is negative.'''
+c_standard_refs = ['6.5.7:3', 'J.2:1 item 51']
+
+[[error_codes]]
+code = "UB-CEB7"
+internal_code = "CEB7"
+type = "undefined_behavior"
+description = '''The right operand in a bitwise shift is greater than or equal to the bit width of the left operand.'''
+c_standard_refs = ['6.5.7:3', 'J.2:1 item 51']
+
+[[error_codes]]
+code = "UB-CEE2"
+internal_code = "CEE2"
+type = "undefined_behavior"
+description = '''Indeterminate value used in an expression.'''
+c_standard_refs = ['6.2.4', '6.7.9', '6.8', 'J.2:1 item 11']
+
+[[error_codes]]
+code = "UB-CEE1"
+internal_code = "CEE1"
+type = "undefined_behavior"
+description = '''Address of an array declared with register storage class used in an expression.'''
+c_standard_refs = ['6.3.2.1:3', 'J.2:1 item 22']
+
+[[error_codes]]
+code = "UB-CEE3"
+internal_code = "CEE3"
+type = "undefined_behavior"
+description = '''Found pointer that refers outside the bounds of an object + 1.'''
+c_standard_refs = ['6.3.2.1:1', 'J.2:1 item 19']
+
+[[error_codes]]
+code = "UB-CEE4"
+internal_code = "CEE4"
+type = "undefined_behavior"
+description = '''Referring to an object outside of its lifetime.'''
+c_standard_refs = ['6.2.4:2', 'J.2:1 item 9']
+
+[[error_codes]]
+code = "UB-CEE5"
+internal_code = "CEE5"
+type = "undefined_behavior"
+description = '''Trying to convert an incomplete lvalue not of array type.'''
+c_standard_refs = ['6.3.2.1:2', 'J.2:1 item 20']
+
+[[error_codes]]
+code = "UB-CEM1"
+internal_code = "CEM1"
+type = "undefined_behavior"
+description = '''Attempting to access a member in an atomic struct.'''
+c_standard_refs = ['6.5.2.3:5', 'J.2:1 item 42']
+
+[[error_codes]]
+code = "UB-CEM2"
+internal_code = "CEM2"
+type = "undefined_behavior"
+description = '''Attempting to access a member in an atomic union.'''
+c_standard_refs = ['6.5.2.3:5', 'J.2:1 item 42']
+
+[[error_codes]]
+code = "UB-CEMX1"
+internal_code = "CEMX1"
+type = "undefined_behavior"
+description = '''Division by 0.'''
+c_standard_refs = ['6.5.5:5', 'J.2:1 item 45']
+
+[[error_codes]]
+code = "UB-CEMX2"
+internal_code = "CEMX2"
+type = "undefined_behavior"
+description = '''Modulus by 0.'''
+c_standard_refs = ['6.5.5:5', 'J.2:1 item 45']
+
+[[error_codes]]
+code = "UB-CEMX3"
+internal_code = "CEMX3"
+type = "undefined_behavior"
+description = '''Signed integer overflow.'''
+c_standard_refs = ['6.5:5', 'J.2:1 item 36']
+
+[[error_codes]]
+code = "UB-CER3"
+internal_code = "CER3"
+type = "undefined_behavior"
+description = '''Dereferencing a null pointer.'''
+c_standard_refs = ['6.5.3.2:4', 'J.2:1 item 43']
+
+[[error_codes]]
+code = "UB-CER4"
+internal_code = "CER4"
+type = "undefined_behavior"
+description = '''Dereferencing a pointer past the end of an array.'''
+c_standard_refs = ['6.5.6:8', 'J.2:1 items 47', '49']
+
+[[error_codes]]
+code = "UB-CERL1"
+internal_code = "CERL1"
+type = "undefined_behavior"
+description = '''Cannot compare pointers with different base objects using '<'.'''
+c_standard_refs = ['6.5.8:5', 'J.2:1 item 53']
+
+[[error_codes]]
+code = "UB-CERL2"
+internal_code = "CERL2"
+type = "undefined_behavior"
+description = '''Cannot compare pointers with different base objects using '<='.'''
+c_standard_refs = ['6.5.8:5', 'J.2:1 item 53']
+
+[[error_codes]]
+code = "UB-CERL3"
+internal_code = "CERL3"
+type = "undefined_behavior"
+description = '''Cannot compare pointers with different base objects using '>'.'''
+c_standard_refs = ['6.5.8:5', 'J.2:1 item 53']
+
+[[error_codes]]
+code = "UB-CERL4"
+internal_code = "CERL4"
+type = "undefined_behavior"
+description = '''Cannot compare pointers with different base objects using '>='.'''
+c_standard_refs = ['6.5.8:5', 'J.2:1 item 53']
+
+[[error_codes]]
+code = "UB-CERL6"
+internal_code = "CERL6"
+type = "undefined_behavior"
+description = '''Ordered comparison of a null pointer.'''
+c_standard_refs = ['6.5.8:5', 'J.2:1 item 53']
+
+[[error_codes]]
+code = "UB-CMW1"
+internal_code = "CMW1"
+type = "undefined_behavior"
+description = '''Trying to modify a string literal.'''
+c_standard_refs = ['6.4.5:7', 'J.2:1 item 33']
+
+[[error_codes]]
+code = "UB-CTM1"
+internal_code = "CTM1"
+type = "undefined_behavior"
+description = '''Variable-length array with length that evaluates to non-positive value at execution.'''
+c_standard_refs = ['6.7.6.2:5', 'J.2:1 item 75']
+
+[[error_codes]]
+code = "UB-ECL3"
+internal_code = "ECL3"
+type = "undefined_behavior"
+description = '''An object which has been modified is accessed through an expression based on a restrict-qualified pointer and another lvalue not also based on said pointer.'''
+c_standard_refs = ['6.7.3.1:4', 'J.2:1 item 68']
+
+[[error_codes]]
+code = "UB-ECL4"
+internal_code = "ECL4"
+type = "undefined_behavior"
+description = '''An object which has been modified is accessed through an expression based on a restrict-qualified pointer to a const-qualified type.'''
+c_standard_refs = ['6.7.3.1:4', 'J.2:1 item 68']
+
+[[error_codes]]
+code = "UB-CEER1"
+internal_code = "CEER1"
+type = "undefined_behavior"
+description = '''Trying to read through a null pointer.'''
+c_standard_refs = ['6.3.2.1:1', 'J.2:1 item 19']
+
+[[error_codes]]
+code = "UB-CEER4"
+internal_code = "CEER4"
+type = "undefined_behavior"
+description = '''Have a read-write datarace.'''
+c_standard_refs = ['5.1.2.4:25', 'J.2:1 item 5']
+
+[[error_codes]]
+code = "UB-CEER5"
+internal_code = "CEER5"
+type = "undefined_behavior"
+description = '''Have a write-write datarace.'''
+c_standard_refs = ['5.1.2.4:25', 'J.2:1 item 5']
+
+[[error_codes]]
+code = "UB-CID2"
+internal_code = "CID2"
+type = "undefined_behavior"
+description = '''No definition found for identifier .'''
+c_standard_refs = ['6.3.2.1:1', 'J.2:1 item 19']
+
+[[error_codes]]
+code = "UB-EEA1"
+internal_code = "EEA1"
+type = "undefined_behavior"
+description = '''Assignment from non-exactly-overlapping overlapping read.'''
+c_standard_refs = ['6.5.16.1:3', 'J.2:1 item 54']
+
+[[error_codes]]
+code = "UB-EEA2"
+internal_code = "EEA2"
+type = "undefined_behavior"
+description = '''Attempt to alias restrict qualified pointers associated with the same block.'''
+c_standard_refs = ['6.7.3.1:4', 'J.2:1 item 69']
+
+[[error_codes]]
+code = "UB-EEA3"
+internal_code = "EEA3"
+type = "undefined_behavior"
+description = '''Attempt to alias restrict qualified pointers associated with incompatible blocks.'''
+c_standard_refs = ['6.7.3.1:4', 'J.2:1 item 69']
+
+[[error_codes]]
+code = "UB-EEA4"
+internal_code = "EEA4"
+type = "undefined_behavior"
+description = '''Passing a pointer not to an array object as a function parameter with a static-qualified array size.'''
+c_standard_refs = ['6.7.6.3:7', 'J.2:1 item 77']
+
+[[error_codes]]
+code = "UB-EEA5"
+internal_code = "EEA5"
+type = "undefined_behavior"
+description = '''Passing a pointer to an array object of fewer elements than required by a function parameter with a static-qualified array size.'''
+c_standard_refs = ['6.7.6.3:7', 'J.2:1 item 77']
+
+[[error_codes]]
+code = "UB-EEC1"
+internal_code = "EEC1"
+type = "undefined_behavior"
+description = '''Incompatible variably modified types in a conditional expression.'''
+c_standard_refs = ['6.7.6.2:6']
+
+[[error_codes]]
+code = "UB-EFNC1"
+internal_code = "EFNC1"
+type = "undefined_behavior"
+description = '''Attempt to call the function through a pointer with incompatible type.'''
+c_standard_refs = ['6.5.2.2:9', 'J.2:1 items 26', '41']
+
+[[error_codes]]
+code = "UB-EFNC2"
+internal_code = "EFNC2"
+type = "undefined_behavior"
+description = '''Invoking a null pointer.'''
+c_standard_refs = ['6.5.2.2']
+
+[[error_codes]]
+code = "UB-EIO8"
+internal_code = "EIO8"
+type = "undefined_behavior"
+description = '''Unsequenced side effect on scalar object with side effect of same object.'''
+c_standard_refs = ['6.5:2', 'J.2:1 item 35']
+
+[[error_codes]]
+code = "UB-EIO2"
+internal_code = "EIO2"
+type = "undefined_behavior"
+description = '''Trying to write outside the bounds of an object.'''
+c_standard_refs = ['6.5.6:8', 'J.2:1 items 47', '49']
+
+[[error_codes]]
+code = "UB-EIO3"
+internal_code = "EIO3"
+type = "undefined_behavior"
+description = '''Trying to modify an object declared with const type.'''
+c_standard_refs = ['6.7.3:6', 'J.2:1 item 64']
+
+[[error_codes]]
+code = "UB-EIO4"
+internal_code = "EIO4"
+type = "undefined_behavior"
+description = '''Trying to modify an object declared with volatile type through a non-volatile lvalue.'''
+c_standard_refs = ['6.7.3:6', 'J.2:1 item 65']
+
+[[error_codes]]
+code = "UB-EIO7"
+internal_code = "EIO7"
+type = "undefined_behavior"
+description = '''Reading outside the bounds of an object.'''
+c_standard_refs = ['6.3.2.1:1', 'J.2:1 item 19']
+
+[[error_codes]]
+code = "UB-EIO9"
+internal_code = "EIO9"
+type = "undefined_behavior"
+description = '''Trying to access an object declared with volatile type through a non-volatile lvalue.'''
+c_standard_refs = ['6.7.3:6', 'J.2:1 item 65']
+
+[[error_codes]]
+code = "UB-EIO10"
+internal_code = "EIO10"
+type = "undefined_behavior"
+description = '''Type of lvalue (<type>) not compatible with the effective type of the object being accessed (<type>).'''
+c_standard_refs = ['6.5:7', 'J.2:1 item 37']
+
+[[error_codes]]
+code = "UB-EIO11"
+internal_code = "EIO11"
+type = "undefined_behavior"
+description = '''Trying to modify an unmodifiable object returned by a library function.'''
+c_standard_refs = ['7.22.4.6:4', '7.11.1.1:8', '7.11.2.1:8', '7.24.6.2:4', 'J.2:1 item 120', 'J.2:1 item 121', 'J.2:1 item 184']
+
+[[error_codes]]
+code = "UB-ESR1"
+internal_code = "ESR1"
+type = "undefined_behavior"
+description = '''Return from a function declared _Noreturn.'''
+c_standard_refs = ['6.7.4', 'J.2:1 item 71']
+
+[[error_codes]]
+code = "UB-TDG6"
+internal_code = "TDG6"
+type = "undefined_behavior"
+description = '''Void parameter appears with a storage class specifier.'''
+c_standard_refs = ['6.7.6.3:10', 'J.2:1 item 78']
+
+[[error_codes]]
+code = "UB-TDG7"
+internal_code = "TDG7"
+type = "undefined_behavior"
+description = '''Void parameter appears with qualifiers.'''
+c_standard_refs = ['6.7.6.3:10', 'J.2:1 item 78']
+
+[[error_codes]]
+code = "UB-TDG11"
+internal_code = "TDG11"
+type = "undefined_behavior"
+description = '''Static declaration of Identifier follows non-static declaration.'''
+c_standard_refs = ['6.2.2:7', 'J.2:1 item 8']
+
+[[error_codes]]
+code = "UB-TDG12"
+internal_code = "TDG12"
+type = "undefined_behavior"
+description = '''Declaration for an object is a tentative definition with internal linkage and has an incomplete type.'''
+c_standard_refs = ['6.9.2:3', 'J.2:1 item 89']
+
+[[error_codes]]
+code = "UB-CDI1"
+internal_code = "CDI1"
+type = "undefined_behavior"
+description = '''Initializer for scalar contains multiple expressions'''
+c_standard_refs = ['6.7.9:11', 'J.2:1 item 81']
+
+[[error_codes]]
+code = "UB-CDI2"
+internal_code = "CDI2"
+type = "undefined_behavior"
+description = '''Initializer for scalar contains multiple levels of braces.'''
+c_standard_refs = ['6.7.9:11', 'J.2:1 item 81']
+
+[[error_codes]]
+code = "UB-CDI3"
+internal_code = "CDI3"
+type = "undefined_behavior"
+description = '''Invalid initializer for aggregate type.'''
+c_standard_refs = ['6.7.9:16', 'J.2:1 item 83']
+
+[[error_codes]]
+code = "UB-TDL5"
+internal_code = "TDL5"
+type = "undefined_behavior"
+description = '''Declaration of an identifier for an object with no linkage and incomplete type.'''
+c_standard_refs = ['6.7:7', 'J.2:1 item 59']
+
+[[error_codes]]
+code = "UB-CDT1"
+internal_code = "CDT1"
+type = "undefined_behavior"
+description = '''Structs must contain a named member.'''
+c_standard_refs = ['6.7.2.1:8', 'J.2:1 item 61']
+
+[[error_codes]]
+code = "UB-CDT2"
+internal_code = "CDT2"
+type = "undefined_behavior"
+description = '''Unions must contain a named member.'''
+c_standard_refs = ['6.7.2.1', 'J.2:1 item 61']
+
+[[error_codes]]
+code = "UB-TDG1"
+internal_code = "TDG1"
+type = "undefined_behavior"
+description = '''Declaration for the function appears with type qualifiers.'''
+c_standard_refs = ['6.7.3:9', 'J.2:1 item 66']
+
+[[error_codes]]
+code = "UB-TDG3"
+internal_code = "TDG3"
+type = "undefined_behavior"
+description = '''Declaration for identifier appears with invalid storage class specifiers.'''
+c_standard_refs = ['6.7.1:7', 'J.2:1 item 60']
+
+[[error_codes]]
+code = "UB-TEAS4"
+internal_code = "TEAS4"
+type = "undefined_behavior"
+description = '''Void value as right operand in assignment'''
+c_standard_refs = ['6.3.2.2:1', 'J.2:1 item 23']
+
+[[error_codes]]
+code = "UB-TEOFF1"
+internal_code = "TEOFF1"
+type = "undefined_behavior"
+description = '''Offsetof member designator specifies a bit-field.'''
+c_standard_refs = ['7.19:3', 'J.2:1 item 144']
+
+[[error_codes]]
+code = "UB-TDR1"
+internal_code = "TDR1"
+type = "undefined_behavior"
+description = '''Declaration for inline function not defined in the same translation unit.'''
+c_standard_refs = ['6.7.4:7', 'J.2:1 item 70']
+
+[[error_codes]]
+code = "UB-TDR2"
+internal_code = "TDR2"
+type = "undefined_behavior"
+description = '''No definition for symbol with external linkage.'''
+c_standard_refs = ['6.9:5', 'J.2:1 item 84']
+
+[[error_codes]]
+code = "UB-TDR3"
+internal_code = "TDR3"
+type = "undefined_behavior"
+description = '''Main is not a function.'''
+c_standard_refs = ['5.1.2.2.1:1', 'J.2:1 item 4']
+
+[[error_codes]]
+code = "UB-TIN1"
+internal_code = "TIN1"
+type = "undefined_behavior"
+description = '''Identifier declared with incompatible types in different translation units.'''
+c_standard_refs = ['6.2.7:2', 'J.2:1 item 15']
+
+[[error_codes]]
+code = "UB-TIN2"
+internal_code = "TIN2"
+type = "undefined_behavior"
+description = '''Multiple external definitions for Identifier.'''
+c_standard_refs = ['6.9:5', 'J.2:1 item 84']
+
+[[error_codes]]
+code = "UB-FD4"
+internal_code = "FD4"
+type = "undefined_behavior"
+description = '''Definition of main requires a prototype.'''
+c_standard_refs = ['5.1.2.2.1:1', 'J.2:1 item 4']
+
+[[error_codes]]
+code = "UB-FD5"
+internal_code = "FD5"
+type = "undefined_behavior"
+description = '''Function main must return an int.'''
+c_standard_refs = ['5.1.2.2.1:1', 'J.2:1 item 4']
+
+[[error_codes]]
+code = "UB-FD6"
+internal_code = "FD6"
+type = "undefined_behavior"
+description = '''If main has parameters, the type of the first parameter must be equivalent to int.'''
+c_standard_refs = ['5.1.2.2.1:1', 'J.2:1 item 4']
+
+[[error_codes]]
+code = "UB-FD7"
+internal_code = "FD7"
+type = "undefined_behavior"
+description = '''If main has parameters, the type of the second parameter must be equivalent to char**.'''
+c_standard_refs = ['5.1.2.2.1:1', 'J.2:1 item 4']
+
+[[error_codes]]
+code = "UB-FD8"
+internal_code = "FD8"
+type = "undefined_behavior"
+description = '''Function main must have zero or two parameters.'''
+c_standard_refs = ['5.1.2.2.1:1', 'J.2:1 item 4']
+
+[[error_codes]]
+code = "UB-FD9"
+internal_code = "FD9"
+type = "undefined_behavior"
+description = '''Function main must have zero or two parameters.'''
+c_standard_refs = ['5.1.2.2.1:1', 'J.2:1 item 4']
+
+[[error_codes]]
+code = "UB-IO1"
+internal_code = "IO1"
+type = "undefined_behavior"
+description = '''Stream input operation followed by an output operation without an intervening call to a file positioning function.'''
+c_standard_refs = ['7.21.5.3:7', 'J.2:1 item 151']
+
+[[error_codes]]
+code = "UB-IO2"
+internal_code = "IO2"
+type = "undefined_behavior"
+description = '''Stream output operation followed by an input operation without an intervening call to fflush or a file positioning function.'''
+c_standard_refs = ['7.21.5.3:7', 'J.2:1 item 151']
+
+[[error_codes]]
+code = "UB-CTI1"
+internal_code = "CTI1"
+type = "undefined_behavior"
+description = '''Arrays must have integer length.'''
+c_standard_refs = ['6.6:6', 'J.2:1 item 55']
+
+[[error_codes]]
+code = "UB-CTYPE1"
+internal_code = "CTYPE1"
+type = "undefined_behavior"
+description = '''Argument to outside range representable by unsigned char (and not EOF).'''
+c_standard_refs = ['7.4:1', 'J.2:1 item 114']
+
+[[error_codes]]
+code = "UB-SETJMP1"
+internal_code = "SETJMP1"
+type = "undefined_behavior"
+description = ''''longjmp' invoked to restore a nonexistent environment.'''
+c_standard_refs = ['7.13.2.1:2', 'J.2:1 item 126']
+
+[[error_codes]]
+code = "UB-SETJMP2"
+internal_code = "SETJMP2"
+type = "undefined_behavior"
+description = ''''longjmp' invoked to restore the environment of a function that has since terminated.'''
+c_standard_refs = ['7.13.2.1:2', 'J.2:1 item 126']
+
+[[error_codes]]
+code = "UB-STDARG1"
+internal_code = "STDARG1"
+type = "undefined_behavior"
+description = ''''va_start' used in a function with fixed args.'''
+c_standard_refs = ['6.9.1:8', 'J.2:1 item 87']
+
+[[error_codes]]
+code = "UB-STDARG2"
+internal_code = "STDARG2"
+type = "undefined_behavior"
+description = ''''va_start' or 'va_copy' used to reinitialize a va_list without an intervening call to va_end.'''
+c_standard_refs = ['7.16.1.4:3', 'J.2:1 item 142']
+
+[[error_codes]]
+code = "UB-STDARG3"
+internal_code = "STDARG3"
+type = "undefined_behavior"
+description = ''''va_arg' called on an uninitialized va_list.'''
+c_standard_refs = ['7.16.1.1:2', 'J.2:1 item 136']
+
+[[error_codes]]
+code = "UB-STDARG4"
+internal_code = "STDARG4"
+type = "undefined_behavior"
+description = ''''va_copy' called on an uninitialized source va_list.'''
+c_standard_refs = ['7.16.1.2:2', 'J.2:1 item 136']
+
+[[error_codes]]
+code = "UB-STDARG5"
+internal_code = "STDARG5"
+type = "undefined_behavior"
+description = ''''va_end' called on an uninitialized va_list.'''
+c_standard_refs = ['7.16.1.3:2', 'J.2:1 item 139']
+
+[[error_codes]]
+code = "UB-STDARG6"
+internal_code = "STDARG6"
+type = "undefined_behavior"
+description = ''''va_arg' called with no arguments remaining.'''
+c_standard_refs = ['7.16.1.1:2', 'J.2:1 item 141']
+
+[[error_codes]]
+code = "UB-STDARG9"
+internal_code = "STDARG9"
+type = "undefined_behavior"
+description = '''Function exited without calling 'va_end' after 'va_start' or 'va_copy'.'''
+c_standard_refs = ['7.16.1:1', 'J.2:1 item 139']
+
+[[error_codes]]
+code = "UB-STDARG10"
+internal_code = "STDARG10"
+type = "undefined_behavior"
+description = ''''va_start' called on function whose last fixed argument is declared with the register storage class.'''
+c_standard_refs = ['7.16.1.4:4', 'J.2:1 item 143']
+
+[[error_codes]]
+code = "UB-STDARG11"
+internal_code = "STDARG11"
+type = "undefined_behavior"
+description = ''''va_start' called on function whose last fixed argument is declared with function or array type.'''
+c_standard_refs = ['7.16.1.4:4', 'J.2:1 item 143']
+
+[[error_codes]]
+code = "UB-STDARG12"
+internal_code = "STDARG12"
+type = "undefined_behavior"
+description = ''''va_start' called on function whose last fixed argument is not compatible with type after default argument promotions.'''
+c_standard_refs = ['7.16.1.4:4', 'J.2:1 item 143']
+
+[[error_codes]]
+code = "UB-STDIO1"
+internal_code = "STDIO1"
+type = "undefined_behavior"
+description = ''''printf': Mismatch between the type expected by the conversion specifier <conversion_specifier> and the type of the argument.'''
+c_standard_refs = ['7.21.6.1:9', 'J.2:1 item 153']
+
+[[error_codes]]
+code = "UB-STDIO3"
+internal_code = "STDIO3"
+type = "undefined_behavior"
+description = ''''v*printf': uninitialized va_list argument.'''
+c_standard_refs = ['7.21.6.10:2', '7.21.6.12:2', '7.21.6.13:2', 'J.2:1 item 169']
+
+[[error_codes]]
+code = "UB-STDIO7"
+internal_code = "STDIO7"
+type = "undefined_behavior"
+description = ''''fflush': called on an input stream or an update stream on which the most recent operation was input.'''
+c_standard_refs = ['7.21.5.2:2', 'J.2:1 item 149']
+
+[[error_codes]]
+code = "UB-STDIO8"
+internal_code = "STDIO8"
+type = "undefined_behavior"
+description = ''''fopen' or 'freopen': invalid open mode <mode>.'''
+c_standard_refs = ['7.21.5.3:3', 'J.2:1 item 150']
+
+[[error_codes]]
+code = "UB-STDIO9"
+internal_code = "STDIO9"
+type = "undefined_behavior"
+description = ''''fsetpos': called to set a position that was not returned by a previous successful call to the fgetpos function on a stream associated with the same file.'''
+c_standard_refs = ['7.21.9.3:2', 'J.2:1 item 175']
+
+[[error_codes]]
+code = "UB-STDIO10"
+internal_code = "STDIO10"
+type = "undefined_behavior"
+description = ''''printf': Invalid conversion specifier with '#' flag.'''
+c_standard_refs = ['7.21.6.1:6', 'J.2:1 item 157']
+
+[[error_codes]]
+code = "UB-STDIO11"
+internal_code = "STDIO11"
+type = "undefined_behavior"
+description = ''''printf': Invalid conversion specifier with '0' flag.'''
+c_standard_refs = ['7.21.6.1:6', 'J.2:1 item 157']
+
+[[error_codes]]
+code = "UB-STDIO12"
+internal_code = "STDIO12"
+type = "undefined_behavior"
+description = '''Insufficient arguments supplied for the format string.'''
+c_standard_refs = ['7.21.6.1:2', 'J.2:1 item 153']
+
+[[error_codes]]
+code = "UB-STDIO13"
+internal_code = "STDIO13"
+type = "undefined_behavior"
+description = '''Invalid length modifier '' for conversion specifier '' in a format string.'''
+c_standard_refs = ['7.21.6.1:7', 'J.2:1 item 158']
+
+[[error_codes]]
+code = "UB-STDLIB1"
+internal_code = "STDLIB1"
+type = "undefined_behavior"
+description = '''Called realloc on memory not allocated by malloc, or already freed.'''
+c_standard_refs = ['7.22.3.5:3', 'J.2:1 item 179']
+
+[[error_codes]]
+code = "UB-STRING1"
+internal_code = "STRING1"
+type = "undefined_behavior"
+description = '''Null pointer passed to strcpy.'''
+c_standard_refs = ['7.1.4:1', 'J.2:1 item 109']
+
+[[error_codes]]
+code = "UB-STDLIB2"
+internal_code = "STDLIB2"
+type = "undefined_behavior"
+description = '''Called free on memory not allocated by malloc, or already freed.'''
+c_standard_refs = ['7.22.3.3:2', 'J.2:1 item 179']
+
+[[error_codes]]
+code = "UB-STDLIB4"
+internal_code = "STDLIB4"
+type = "undefined_behavior"
+description = '''Called the exit function more than once (from a call to atexit).'''
+c_standard_refs = ['7.22.4.4:2', 'J.2:1 item 182']
+
+[[error_codes]]
+code = "UB-STDLIB5"
+internal_code = "STDLIB5"
+type = "undefined_behavior"
+description = '''Called the quick_exit function more than once (from a call to at_quick_exit).'''
+c_standard_refs = ['7.22.4.7:2', 'J.2:1 item 182']
+
+[[error_codes]]
+code = "UB-SIGNAL1"
+internal_code = "SIGNAL1"
+type = "undefined_behavior"
+description = '''The 'signal' function is used in a multi-threaded program.'''
+c_standard_refs = ['7.14.1.1:7', 'J.2:1 item 135']
+
+[[error_codes]]
+code = "UB-SIGNAL2"
+internal_code = "SIGNAL2"
+type = "undefined_behavior"
+description = '''A signal handler for a signal generated from a call to raise or abort calls the raise function.'''
+c_standard_refs = ['7.14.1.1:4', 'J.2:1 item 131']
+
+[[error_codes]]
+code = "UB-SIGNAL3"
+internal_code = "SIGNAL3"
+type = "undefined_behavior"
+description = '''A signal handler returned when the signal corresponded to a computational exception.'''
+c_standard_refs = ['7.14.1.1:3', 'J.2:1 item 129']
+
+[[error_codes]]
+code = "UB-SIGNAL4"
+internal_code = "SIGNAL4"
+type = "undefined_behavior"
+description = '''The 'signal' function is called with an invalid signal handler argument.'''
+c_standard_refs = ['7.14.1.1:2', 'J.2:1 item 128']
+
+[[error_codes]]
+code = "UB-TTE1"
+internal_code = "TTE1"
+type = "undefined_behavior"
+description = '''Program requires the formation of a composite type from a variable length array type whose size is specified by an expression that is not evaluated.'''
+c_standard_refs = ['6.2.7:3', 'J.2:1 item 16']
+
+[[error_codes]]
+code = "UB-THREADS1"
+internal_code = "THREADS1"
+type = "undefined_behavior"
+description = ''''thrd_join' or 'pthread_join' called for an invalid or already-joined thread.'''
+c_standard_refs = ['7.26.5.6:2', 'POSIX 2008 sec. pthread_join']
+
+[[error_codes]]
+code = "UB-PTHREAD1"
+internal_code = "PTHREAD1"
+type = "undefined_behavior"
+description = '''Initializing an already initialized mutex'''
+c_standard_refs = ['POSIX 2008 sec. pthread_mutex_init']
+
+[[error_codes]]
+code = "UB-PTHREAD2"
+internal_code = "PTHREAD2"
+type = "undefined_behavior"
+description = '''Destroying a locked mutex.'''
+c_standard_refs = ['POSIX 2008 sec. pthread_mutex_destroy']
+
+[[error_codes]]
+code = "UB-PTHREAD3"
+internal_code = "PTHREAD3"
+type = "undefined_behavior"
+description = '''Called destroy on an object that was not initialized with pthread_mutex_init.'''
+c_standard_refs = ['POSIX 2008 sec. pthread_mutex_destroy']
+
+[[error_codes]]
+code = "UB-PTHREAD4"
+internal_code = "PTHREAD4"
+type = "undefined_behavior"
+description = '''Attempting to lock a PTHREAD_MUTEX_DEFAULT mutex that is already locked by the current thread.'''
+c_standard_refs = ['POSIX 2008 sec. pthread_mutex_lock']
+
+[[error_codes]]
+code = "UB-PTHREAD5"
+internal_code = "PTHREAD5"
+type = "undefined_behavior"
+description = '''Called lock on an object that was not initialized with pthread_mutex_init.'''
+c_standard_refs = ['POSIX 2008 sec. pthread_mutex_lock']
+
+[[error_codes]]
+code = "UB-PTHREAD6"
+internal_code = "PTHREAD6"
+type = "undefined_behavior"
+description = '''Attempting to unlock a PTHREAD_MUTEX_DEFAULT or PTHREAD_MUTEX_NORMAL mutex which is not robust and which has not been locked by the current thread.'''
+c_standard_refs = ['POSIX 2008 sec. pthread_mutex_lock']
+
+[[error_codes]]
+code = "UB-PTHREAD7"
+internal_code = "PTHREAD7"
+type = "undefined_behavior"
+description = '''Called unlock on an object that was not initialized with pthread_mutex_init.'''
+c_standard_refs = ['POSIX 2008 sec. pthread_mutex_unlock']
+
+[[error_codes]]
+code = "UB-PTHREAD8"
+internal_code = "PTHREAD8"
+type = "undefined_behavior"
+description = '''Called trylock on an object that was not initialized with pthread_mutex_init.'''
+c_standard_refs = ['POSIX 2008 sec. pthread_mutex_trylock']
+
+[[error_codes]]
+code = "UB-PTHREAD10"
+internal_code = "PTHREAD10"
+type = "undefined_behavior"
+description = '''First argument of NULL, but required to be non-NULL'''
+c_standard_refs = ['POSIX 2008']
+
+[[error_codes]]
+code = "UB-PTHREAD12"
+internal_code = "PTHREAD12"
+type = "undefined_behavior"
+description = '''Deleting an uncreated key.'''
+c_standard_refs = ['POSIX 2008 sec. pthread_key_delete']
+
+[[error_codes]]
+code = "UB-PTHREAD13"
+internal_code = "PTHREAD13"
+type = "undefined_behavior"
+description = '''Setting an uncreated key.'''
+c_standard_refs = ['POSIX 2008 sec. pthread_setspecific']
+
+[[error_codes]]
+code = "USP-CEER6"
+internal_code = "CEER6"
+type = "unspecified"
+description = '''Unspecified value returned from main function.'''
+c_standard_refs = ['5.1.2.2.3:1']
+
+[[error_codes]]
+code = "USP-CERL7"
+internal_code = "CERL7"
+type = "unspecified"
+description = '''Comparison of unspecified value.'''
+c_standard_refs = ['6.5.9']
+
+[[error_codes]]
+code = "USP-CMR1"
+internal_code = "CMR1"
+type = "unspecified"
+description = '''Trying to reinterpret integer bytes as floating bytes.'''
+c_standard_refs = ['6.2.6.1:1', 'J.1:1 item 9']
+
+[[error_codes]]
+code = "USP-CMR2"
+internal_code = "CMR2"
+type = "unspecified"
+description = '''Trying to reinterpret floating bytes as integer bytes.'''
+c_standard_refs = ['6.2.6.1:1', 'J.1:1 item 9']
+
+[[error_codes]]
+code = "USP-ESS1"
+internal_code = "ESS1"
+type = "unspecified"
+description = '''Switching on an unspecified controlling expression.'''
+c_standard_refs = ['6.8.4.2:5']
+
+[[error_codes]]
+code = "USP-IO3"
+internal_code = "IO3"
+type = "unspecified"
+description = '''Reading an unspecified value.'''
+c_standard_refs = ['3.19.3:1']
+
+[[error_codes]]
+code = "USP-STDIO2"
+internal_code = "STDIO2"
+type = "unspecified"
+description = '''Printing an unspecified value.'''
+c_standard_refs = ['7.21.6.1:8']
+
+[[error_codes]]
+code = "USP-STDLIB3"
+internal_code = "STDLIB3"
+type = "unspecified"
+description = '''Called the atexit function after normal program termination has begun.'''
+c_standard_refs = ['7.22.4.2:2', 'J.1:1 item 44']
+
+[[error_codes]]
+code = "USP-STDLIB6"
+internal_code = "STDLIB6"
+type = "unspecified"
+description = '''Called the at_quick_exit function after normal program termination has begun.'''
+c_standard_refs = ['7.22.4.3:2', 'J.1:1 item 45']
+
+[[error_codes]]
+code = "CV-CCV9"
+internal_code = "CCV9"
+type = "constraint_violation"
+description = '''Conversion from pointer to floating point type or from floating point type to pointer.'''
+c_standard_refs = ['6.5.4:4']
+
+[[error_codes]]
+code = "CV-CCV10"
+internal_code = "CCV10"
+type = "constraint_violation"
+description = '''Conversion to or from non-scalar type.'''
+c_standard_refs = ['6.5.4:2']
+
+[[error_codes]]
+code = "CV-CDT3"
+internal_code = "CDT3"
+type = "constraint_violation"
+description = '''Field has incomplete type or contains a flexible array member.'''
+c_standard_refs = ['6.7.2.1:3']
+
+[[error_codes]]
+code = "CV-CDT4"
+internal_code = "CDT4"
+type = "constraint_violation"
+description = '''Field has incomplete type.'''
+c_standard_refs = ['6.7.2.1:3']
+
+[[error_codes]]
+code = "CV-CDT5"
+internal_code = "CDT5"
+type = "constraint_violation"
+description = '''Declaration for zero-length bit-field has a declarator.'''
+c_standard_refs = ['6.7.2.1:4']
+
+[[error_codes]]
+code = "CV-CEA7"
+internal_code = "CEA7"
+type = "constraint_violation"
+description = '''Computing pointer addition of a pointer not to a complete object type.'''
+c_standard_refs = ['6.5.6:2']
+
+[[error_codes]]
+code = "CV-CEA8"
+internal_code = "CEA8"
+type = "constraint_violation"
+description = '''Computing pointer minus integer of a pointer not to a complete object type.'''
+c_standard_refs = ['6.5.6:3']
+
+[[error_codes]]
+code = "CV-CEA3"
+internal_code = "CEA3"
+type = "constraint_violation"
+description = '''Invalid operand types to addition.'''
+c_standard_refs = ['6.5.6:2']
+
+[[error_codes]]
+code = "CV-CEA4"
+internal_code = "CEA4"
+type = "constraint_violation"
+description = '''Invalid operand types to subtraction.'''
+c_standard_refs = ['6.5.6:3']
+
+[[error_codes]]
+code = "CV-CEA9"
+internal_code = "CEA9"
+type = "constraint_violation"
+description = '''Computing pointer difference between pointers not to complete object types.'''
+c_standard_refs = ['6.5.6:3']
+
+[[error_codes]]
+code = "CV-CEB1"
+internal_code = "CEB1"
+type = "constraint_violation"
+description = '''Both bitwise shift operands must have integer type.'''
+c_standard_refs = ['6.5.7:2']
+
+[[error_codes]]
+code = "CV-CEB5"
+internal_code = "CEB5"
+type = "constraint_violation"
+description = '''Both bitwise shift operands must have integer type.'''
+c_standard_refs = ['6.5.7:2']
+
+[[error_codes]]
+code = "CV-CEB9"
+internal_code = "CEB9"
+type = "constraint_violation"
+description = '''Both bitwise AND operands must have integer type.'''
+c_standard_refs = ['6.5.10:2']
+
+[[error_codes]]
+code = "CV-CEB10"
+internal_code = "CEB10"
+type = "constraint_violation"
+description = '''Both bitwise exclusive OR operands must have integer type.'''
+c_standard_refs = ['6.5.11:2']
+
+[[error_codes]]
+code = "CV-CEB11"
+internal_code = "CEB11"
+type = "constraint_violation"
+description = '''Both bitwise inclusive OR operands must have integer type.'''
+c_standard_refs = ['6.5.12:2']
+
+[[error_codes]]
+code = "CV-CEM3"
+internal_code = "CEM3"
+type = "constraint_violation"
+description = '''Attempting to access member but it does not exist.'''
+c_standard_refs = ['6.5.2.3:1']
+
+[[error_codes]]
+code = "CV-CER1"
+internal_code = "CER1"
+type = "constraint_violation"
+description = '''Unary '&' operator applied to non-lvalue.'''
+c_standard_refs = ['6.5.3.2:1']
+
+[[error_codes]]
+code = "CV-CER2"
+internal_code = "CER2"
+type = "constraint_violation"
+description = '''Unary '&' operator applied to a value with register storage class.'''
+c_standard_refs = ['6.5.3.2:1']
+
+[[error_codes]]
+code = "CV-CER5"
+internal_code = "CER5"
+type = "constraint_violation"
+description = '''Unary '&' operator applied to a bit-field.'''
+c_standard_refs = ['6.5.3.2:1']
+
+[[error_codes]]
+code = "CV-CER6"
+internal_code = "CER6"
+type = "constraint_violation"
+description = '''Unary '*' operator applied to non-pointer.'''
+c_standard_refs = ['6.5.3.2:2']
+
+[[error_codes]]
+code = "CV-CERL5"
+internal_code = "CERL5"
+type = "constraint_violation"
+description = '''Directly comparing an integer type with a pointer type.'''
+c_standard_refs = ['6.5.8:2']
+
+[[error_codes]]
+code = "CV-CERL8"
+internal_code = "CERL8"
+type = "constraint_violation"
+description = '''Invalid operand types to ==.'''
+c_standard_refs = ['6.5.9:2']
+
+[[error_codes]]
+code = "CV-CERL9"
+internal_code = "CERL9"
+type = "constraint_violation"
+description = '''Invalid operand types to !=.'''
+c_standard_refs = ['6.5.9:2']
+
+[[error_codes]]
+code = "CV-CMW2"
+internal_code = "CMW2"
+type = "constraint_violation"
+description = '''Trying to write through a const lvalue.'''
+c_standard_refs = ['6.5.16.1:1']
+
+[[error_codes]]
+code = "CV-TCANON1"
+internal_code = "TCANON1"
+type = "constraint_violation"
+description = '''Alignas attribute specifying an alignment less strict than would otherwise be required.'''
+c_standard_refs = ['6.7.5:4']
+
+[[error_codes]]
+code = "CV-TCANON3"
+internal_code = "TCANON3"
+type = "constraint_violation"
+description = '''Function declared without a return type.'''
+c_standard_refs = ['6.9.1:3']
+
+[[error_codes]]
+code = "CV-TCANON4"
+internal_code = "TCANON4"
+type = "constraint_violation"
+description = '''Declaration with no type specifiers.'''
+c_standard_refs = ['6.7.2:2']
+
+[[error_codes]]
+code = "CV-TAL1"
+internal_code = "TAL1"
+type = "constraint_violation"
+description = '''Trying to compute alignof of a type that is incomplete or a function type.'''
+c_standard_refs = ['6.5.3.4:1']
+
+[[error_codes]]
+code = "CV-TDG2"
+internal_code = "TDG2"
+type = "constraint_violation"
+description = '''Declaration for identifier appears with multiple storage class specifiers.'''
+c_standard_refs = ['6.7.1:2']
+
+[[error_codes]]
+code = "CV-TDG4"
+internal_code = "TDG4"
+type = "constraint_violation"
+description = '''Declaration appears with invalid storage class specifiers.'''
+c_standard_refs = ['6.9:2']
+
+[[error_codes]]
+code = "CV-TDG5"
+internal_code = "TDG5"
+type = "constraint_violation"
+description = '''Function parameter appears with storage class other than register.'''
+c_standard_refs = ['6.7.6.3:2']
+
+[[error_codes]]
+code = "CV-TDG8"
+internal_code = "TDG8"
+type = "constraint_violation"
+description = '''Declaration has initializer but incomplete type.'''
+c_standard_refs = ['6.7.9:3']
+
+[[error_codes]]
+code = "CV-TDG10"
+internal_code = "TDG10"
+type = "constraint_violation"
+description = '''Conflicting types for identifier.'''
+c_standard_refs = ['6.7:4']
+
+[[error_codes]]
+code = "CV-TDG9"
+internal_code = "TDG9"
+type = "constraint_violation"
+description = '''File-scope declaration with a variably-modified type.'''
+c_standard_refs = ['6.7.6.2:2']
+
+[[error_codes]]
+code = "CV-TDG13"
+internal_code = "TDG13"
+type = "constraint_violation"
+description = '''Redefinition of symbol:'''
+c_standard_refs = ['6.9:3']
+
+[[error_codes]]
+code = "CV-TDL1"
+internal_code = "TDL1"
+type = "constraint_violation"
+description = '''Extern declaration follows one with no linkage'''
+c_standard_refs = ['6.7:3']
+
+[[error_codes]]
+code = "CV-TDL2"
+internal_code = "TDL2"
+type = "constraint_violation"
+description = '''Extern declaration appears at block scope with an initializer.'''
+c_standard_refs = ['6.7.9:5']
+
+[[error_codes]]
+code = "CV-TDL3"
+internal_code = "TDL3"
+type = "constraint_violation"
+description = '''Extern declaration with incompatible type'''
+c_standard_refs = ['6.7:4']
+
+[[error_codes]]
+code = "CV-TDL4"
+internal_code = "TDL4"
+type = "constraint_violation"
+description = '''Redeclaration with no linkage'''
+c_standard_refs = ['6.7:3']
+
+[[error_codes]]
+code = "CV-CDI4"
+internal_code = "CDI4"
+type = "constraint_violation"
+description = '''Attempting to initialize nonexistent member.'''
+c_standard_refs = ['6.7.9:2']
+
+[[error_codes]]
+code = "CV-CDI5"
+internal_code = "CDI5"
+type = "constraint_violation"
+description = '''Unexpected compound initializer (possibly attempting to directly initialize an anonymous member).'''
+c_standard_refs = ['6.7.9:2']
+
+[[error_codes]]
+code = "CV-TDG15"
+internal_code = "TDG15"
+type = "constraint_violation"
+description = '''Redefinition of struct, union, or enum'''
+c_standard_refs = ['6.7.2.3:1']
+
+[[error_codes]]
+code = "CV-TDG18"
+internal_code = "TDG18"
+type = "constraint_violation"
+description = '''Declaration for appears with invalid storage class specifiers.'''
+c_standard_refs = ['6.7.1:3']
+
+[[error_codes]]
+code = "CV-CDE1"
+internal_code = "CDE1"
+type = "constraint_violation"
+description = '''Enum initializer not an integer constant expression.'''
+c_standard_refs = ['6.7.2.2:2']
+
+[[error_codes]]
+code = "CV-CDE2"
+internal_code = "CDE2"
+type = "constraint_violation"
+description = '''Enum initializer outside the range representable by int.'''
+c_standard_refs = ['6.7.2.2:2']
+
+[[error_codes]]
+code = "CV-TEAS1"
+internal_code = "TEAS1"
+type = "constraint_violation"
+description = '''Incompatible types in assignment.'''
+c_standard_refs = ['6.5.16.1:1']
+
+[[error_codes]]
+code = "CV-TEAS2"
+internal_code = "TEAS2"
+type = "constraint_violation"
+description = '''Incompatible pointer types in assignment.'''
+c_standard_refs = ['6.5.16.1:1']
+
+[[error_codes]]
+code = "CV-TEAS3"
+internal_code = "TEAS3"
+type = "constraint_violation"
+description = ''''lvalue' required as left operand in assignment.'''
+c_standard_refs = ['6.5.16:2']
+
+[[error_codes]]
+code = "CV-TEAS6"
+internal_code = "TEAS6"
+type = "constraint_violation"
+description = '''Trying to write through a const lvalue.'''
+c_standard_refs = ['6.5.16.1:1']
+
+[[error_codes]]
+code = "CV-TSE1"
+internal_code = "TSE1"
+type = "constraint_violation"
+description = '''Incompatible types in initializer or function call arguments.'''
+c_standard_refs = ['6.5.16.1:1']
+
+[[error_codes]]
+code = "CV-TSE2"
+internal_code = "TSE2"
+type = "constraint_violation"
+description = '''Incompatible pointer types in initializer or function call arguments.'''
+c_standard_refs = ['6.5.16.1:1']
+
+[[error_codes]]
+code = "CV-TSE3"
+internal_code = "TSE3"
+type = "constraint_violation"
+description = '''Non-constant static initializer.'''
+c_standard_refs = ['6.7.9:4']
+
+[[error_codes]]
+code = "CV-TEG1"
+internal_code = "TEG1"
+type = "constraint_violation"
+description = '''Generic selection with a controlling expression compatible with multiple types in the association list.'''
+c_standard_refs = ['6.5.1.1:2']
+
+[[error_codes]]
+code = "CV-TEG2"
+internal_code = "TEG2"
+type = "constraint_violation"
+description = '''Generic selection with a controlling expression not compatible with any type in the association list (with no default).'''
+c_standard_refs = ['6.5.1.1:2']
+
+[[error_codes]]
+code = "CV-TEG3"
+internal_code = "TEG3"
+type = "constraint_violation"
+description = '''Generic selection with multiple defaults.'''
+c_standard_refs = ['6.5.1.1:2']
+
+[[error_codes]]
+code = "CV-TTE2"
+internal_code = "TTE2"
+type = "constraint_violation"
+description = '''If both of a conditional expression's branches have pointer type, they must be compatible, or one must be a pointer to an object and the other must be a pointer to void.'''
+c_standard_refs = ['6.5.15:3']
+
+[[error_codes]]
+code = "CV-TTE3"
+internal_code = "TTE3"
+type = "constraint_violation"
+description = '''If one of a conditional expression's branches has pointer type and the other has integer type, the integer must be a null pointer constant.'''
+c_standard_refs = ['6.5.15:3']
+
+[[error_codes]]
+code = "CV-TTE4"
+internal_code = "TTE4"
+type = "constraint_violation"
+description = '''If one of a conditional expression's branches has void type, the other must also have void type.'''
+c_standard_refs = ['6.5.15:3']
+
+[[error_codes]]
+code = "CV-TTE5"
+internal_code = "TTE5"
+type = "constraint_violation"
+description = '''If one of a conditional expression's branches has struct or union type, the other must have the same type.'''
+c_standard_refs = ['6.5.15:3']
+
+[[error_codes]]
+code = "CV-EFC1"
+internal_code = "EFC1"
+type = "constraint_violation"
+description = '''Function call with incomplete or invalid return type.'''
+c_standard_refs = ['6.5.2.2:2']
+
+[[error_codes]]
+code = "CV-TES1"
+internal_code = "TES1"
+type = "constraint_violation"
+description = '''Trying to compute sizeof of an expression with incomplete or a function type.'''
+c_standard_refs = ['6.5.3.4:1']
+
+[[error_codes]]
+code = "CV-TES2"
+internal_code = "TES2"
+type = "constraint_violation"
+description = '''Trying to compute sizeof of an incomplete or function type.'''
+c_standard_refs = ['6.5.3.4:1']
+
+[[error_codes]]
+code = "CV-FD1"
+internal_code = "FD1"
+type = "constraint_violation"
+description = '''Duplicate parameters in function definition.'''
+c_standard_refs = ['6.7:3']
+
+[[error_codes]]
+code = "CV-FD2"
+internal_code = "FD2"
+type = "constraint_violation"
+description = '''Invalid return type in function definition.'''
+c_standard_refs = ['6.7.6.3:1']
+
+[[error_codes]]
+code = "CV-FD3"
+internal_code = "FD3"
+type = "constraint_violation"
+description = '''Incomplete parameter type in function definition.'''
+c_standard_refs = ['6.7.6.3:4']
+
+[[error_codes]]
+code = "CV-SSA1"
+internal_code = "SSA1"
+type = "constraint_violation"
+description = '''Non-constant expression in static assertion.'''
+c_standard_refs = ['6.7.10:2']
+
+[[error_codes]]
+code = "CV-SSA2"
+internal_code = "SSA2"
+type = "constraint_violation"
+description = '''Static assertion failed:'''
+c_standard_refs = ['6.7.10:2']
+
+[[error_codes]]
+code = "CV-CTI2"
+internal_code = "CTI2"
+type = "constraint_violation"
+description = '''Arrays must have positive length.'''
+c_standard_refs = ['6.7.6.2:1']
+
+[[error_codes]]
+code = "CV-CTI3"
+internal_code = "CTI3"
+type = "constraint_violation"
+description = '''The width of a bit field shall be an integer constant expression.'''
+c_standard_refs = ['6.7.2.1:4']
+
+[[error_codes]]
+code = "CV-CTI5"
+internal_code = "CTI5"
+type = "constraint_violation"
+description = '''Structs containing a flexible array member must not be array elements.'''
+c_standard_refs = ['6.7.2.1:2']
+
+[[error_codes]]
+code = "IMPL-CCV2"
+internal_code = "CCV2"
+type = "implementation_defined"
+description = '''Conversion to signed integer outside the range that can be represented.'''
+c_standard_refs = ['6.3.1.3:3', 'J.3.5:1 item 4']
+
+[[error_codes]]
+code = "IMPL-CCV13"
+internal_code = "CCV13"
+type = "implementation_defined"
+description = '''Conversion from an integer to non-null pointer.'''
+c_standard_refs = ['6.3.2.3:5']
+
+[[error_codes]]
+code = "IMPL-CCV13-H"
+internal_code = "CCV13-H"
+type = "implementation_defined"
+description = '''Conversion from an integer to non-null hardware-dependent pointer.'''
+c_standard_refs = ['6.3.2.3:5']
+
+[[error_codes]]
+code = "IMPL-CCVE4"
+internal_code = "CCVE4"
+type = "implementation_defined"
+description = '''Casting a pointer to an integer.'''
+c_standard_refs = ['6.3.2.3:6']
+
+[[error_codes]]
+code = "IMPL-CEB8"
+internal_code = "CEB8"
+type = "implementation_defined"
+description = '''The left operand in a bitwise right-shift is negative.'''
+c_standard_refs = ['6.5.7:5', 'J.3.5:1 item 5']
+
+[[error_codes]]
+code = "IMPL-CEMX4"
+internal_code = "CEMX4"
+type = "implementation_defined"
+description = '''Modulus operator with a pointer value as an argument.'''
+c_standard_refs = ['6.3.2.3:6', 'J.3.7:1 item 1']
+
+[[error_codes]]
+code = "IMPL-CTI4"
+internal_code = "CTI4"
+type = "implementation_defined"
+description = '''Bit-field with type other than signed int, unsigned int, or _Bool.'''
+c_standard_refs = ['6.7.2.1:5', 'J.3.9:1 item 2']
+
+[[error_codes]]
+code = "IMPL-EIO5"
+internal_code = "EIO5"
+type = "implementation_defined"
+description = '''Trying to modify an object with thread or auto storage duration in a thread other than the one in which the object is associated.'''
+c_standard_refs = ['6.2.4:4', '6.2.4:5', 'J.3.13:1 item 2']
+
+[[error_codes]]
+code = "IMPL-EIO6"
+internal_code = "EIO6"
+type = "implementation_defined"
+description = '''Attempting to access an object with thread or auto storage duration in a thread other than the one in which the object is associated.'''
+c_standard_refs = ['6.2.4:4', '6.2.4:5', 'J.3.13:1 item 2']
+
+[[error_codes]]
+code = "IMPL-STDLIB8"
+internal_code = "STDLIB8"
+type = "implementation_defined"
+description = '''Called aligned_alloc with size parameter not an integral multiple of the requested alignment.'''
+c_standard_refs = ['7.22.3.1:2 J.2:1 item 178']
+
+[[error_codes]]
+code = "IMPLUB-CEB12"
+internal_code = "CEB12"
+type = "undefined_behavior"
+description = '''Potential negative zero produced via bitwise operations (this could be a false positive).'''
+c_standard_refs = ['6.2.6.2:4', 'J.2:1 item 14']
+
+[[error_codes]]
+code = "IMPLUB-CEMX5"
+internal_code = "CEMX5"
+type = "undefined_behavior"
+description = '''Division by an implementation-defined or unspecified value.'''
+c_standard_refs = ['6.5.5:5', 'J.2:1 item 45']
+
+[[error_codes]]
+code = "IMPLUB-CEMX6"
+internal_code = "CEMX6"
+type = "undefined_behavior"
+description = '''Modulus by an implementation-defined or unspecified value.'''
+c_standard_refs = ['6.5.5:5', 'J.2:1 item 45']
+
+[[error_codes]]
+code = "UB-PTHREAD99"
+internal_code = "PTHREAD99"
+type = "implementation_defined"
+description = '''Unimplemented pthread function.'''
+c_standard_refs = ['POSIX 2008']
+
+[[error_codes]]
+code = "L-PTHREAD9"
+internal_code = "PTHREAD9"
+type = "undefined_behavior"
+description = '''Terminating a thread while holding lock on mutexes.'''
+
+[[error_codes]]
+code = "L-RESTRICT1"
+internal_code = "RESTRICT1"
+type = "undefined_behavior"
+description = '''Use of the restrict qualifier (a possible source of undefined behavior).'''
+
+[[error_codes]]
+code = "L-STDLIBE1"
+internal_code = "STDLIBE1"
+type = "undefined_behavior"
+description = '''Called free() on a null pointer.'''
+
+[[error_codes]]
+code = "L-STDLIBE2"
+internal_code = "STDLIBE2"
+type = "undefined_behavior"
+description = '''Malloc overflows memory bound, returning null pointer.'''
+
+[[error_codes]]
+code = "L-STDLIBE3"
+internal_code = "STDLIBE3"
+type = "undefined_behavior"
+description = '''Realloc overflows memory bound, returning null pointer.'''
+
+[[error_codes]]
+code = "L-UNISTD1"
+internal_code = "UNISTD1"
+type = "undefined_behavior"
+description = '''Called sleep while holding lock on mutexes.'''
+
+[[error_codes]]
+code = "L-CEE6"
+internal_code = "CEE6"
+type = "undefined_behavior"
+description = '''Dereferencing a pointer to FILE or directly using a FILE object.'''
+
+[[error_codes]]
+code = "L-CEIE1"
+internal_code = "CEIE1"
+type = "undefined_behavior"
+description = '''Memory malloced but never freed.'''
+
+[[error_codes]]
+code = "L-CEIE2"
+internal_code = "CEIE2"
+type = "undefined_behavior"
+description = '''File opened but never closed.'''
+
+[[error_codes]]
+code = "L-CER7"
+internal_code = "CER7"
+type = "undefined_behavior"
+description = '''Dereferencing a native pointer.'''
+
+[[error_codes]]
+code = "L-CCVE1"
+internal_code = "CCVE1"
+type = "undefined_behavior"
+description = '''Unsigned integer overflow.'''
+
+[[error_codes]]
+code = "L-CCVE2"
+internal_code = "CCVE2"
+type = "undefined_behavior"
+description = '''Conversion to unsigned integer outside the range that can be represented.'''
+
+[[error_codes]]
+code = "L-CCVE3"
+internal_code = "CCVE3"
+type = "undefined_behavior"
+description = '''Casting away qualifiers.'''
+
+[[error_codes]]
+code = "L-CMRE1"
+internal_code = "CMRE1"
+type = "undefined_behavior"
+description = '''Reading a struct or union with uninitialized parts.'''
+
+[[error_codes]]
+code = "L-EFNCE1"
+internal_code = "EFNCE1"
+type = "undefined_behavior"
+description = '''Stack might overflow specified bound on some compilers or ABIs.'''
+
+[[error_codes]]
+code = "L-EFNC3"
+internal_code = "EFNC3"
+type = "undefined_behavior"
+description = '''Recursive call to the function .'''
+
+[[error_codes]]
+code = "L-EIOE1"
+internal_code = "EIOE1"
+type = "undefined_behavior"
+description = '''Read a byte from a statically-allocated or thread-storage-allocated object that was initialized implicitly to 0.'''
+
+[[error_codes]]
+code = "L-EXC3"
+internal_code = "EXC3"
+type = "undefined_behavior"
+description = '''Comparing a function pointer to a null pointer constant.'''
+
+[[error_codes]]
+code = "L-TFD1"
+internal_code = "TFD1"
+type = "undefined_behavior"
+description = '''The function contains inline assembly or other language features unsupported by this tool. Using the natively-compiled implementation of this function during execution.'''
+
+[[error_codes]]
+code = "SE-CID1"
+internal_code = "CID1"
+type = "undefined_behavior"
+description = '''Trying to look up identifier , but no such identifier is in scope.'''
+c_standard_refs = ['6.5.1:2']
+
+[[error_codes]]
+code = "SE-TCANON2"
+internal_code = "TCANON2"
+type = "undefined_behavior"
+description = '''Unsupported reserved identifier  (reserved variant of restrict).'''
