@@ -119,6 +119,50 @@ def create_server() -> Server:
                     "properties": {},
                 },
             ),
+            Tool(
+                name="check_duplicates",
+                description=(
+                    "Check if a proposed axiom is a duplicate of existing axioms. "
+                    "Use this BEFORE adding new axioms to avoid duplicates. "
+                    "Returns similar existing axioms for comparison."
+                ),
+                inputSchema={
+                    "type": "object",
+                    "properties": {
+                        "content": {
+                            "type": "string",
+                            "description": "The human-readable content of the proposed axiom",
+                        },
+                        "formal_spec": {
+                            "type": "string",
+                            "description": "The formal specification (optional)",
+                        },
+                        "threshold": {
+                            "type": "number",
+                            "description": "Similarity threshold 0-1 (default: 0.7)",
+                            "default": 0.7,
+                        },
+                    },
+                    "required": ["content"],
+                },
+            ),
+            Tool(
+                name="search_by_section",
+                description=(
+                    "Find all axioms from a specific spec section. "
+                    "Use this to check what axioms already exist for a section before extraction."
+                ),
+                inputSchema={
+                    "type": "object",
+                    "properties": {
+                        "section": {
+                            "type": "string",
+                            "description": "Section reference (e.g., 'basic.life', '[dcl.init]')",
+                        },
+                    },
+                    "required": ["section"],
+                },
+            ),
         ]
 
     @server.call_tool()
@@ -132,6 +176,10 @@ def create_server() -> Server:
             return await _handle_get_axiom(arguments)
         elif name == "get_stats":
             return await _handle_stats(arguments)
+        elif name == "check_duplicates":
+            return await _handle_check_duplicates(arguments)
+        elif name == "search_by_section":
+            return await _handle_search_by_section(arguments)
         else:
             return [TextContent(type="text", text=f"Unknown tool: {name}")]
 
@@ -277,6 +325,116 @@ async def _handle_stats(arguments: dict[str, Any]) -> list[TextContent]:
         f"- **Modules**: {neo4j_counts.get('modules', 0)}",
         f"- **Vector Embeddings**: {vector_count}",
     ]
+
+    return [TextContent(type="text", text="\n".join(lines))]
+
+
+async def _handle_check_duplicates(arguments: dict[str, Any]) -> list[TextContent]:
+    """Handle check_duplicates tool."""
+    content = arguments.get("content", "")
+    formal_spec = arguments.get("formal_spec", "")
+    threshold = arguments.get("threshold", 0.7)
+
+    if not content:
+        return [TextContent(type="text", text="Error: content is required")]
+
+    lance = _get_lance()
+    if not lance:
+        return [TextContent(type="text", text="Error: LanceDB not available")]
+
+    # Search for similar axioms using the content
+    query = content
+    if formal_spec:
+        query = f"{content} {formal_spec}"
+
+    results = lance.search(query, limit=10)
+
+    if not results:
+        return [TextContent(type="text", text="## Duplicate Check: UNIQUE\n\nNo similar axioms found. Safe to add.")]
+
+    # Check similarity scores
+    duplicates = []
+    similar = []
+    for r in results:
+        score = r.get("_distance", 1.0)
+        # LanceDB returns L2 distance, lower is more similar
+        # Convert to similarity: 1 / (1 + distance)
+        similarity = 1 / (1 + score) if score is not None else 0
+
+        if similarity >= 0.9:
+            duplicates.append((r, similarity))
+        elif similarity >= threshold:
+            similar.append((r, similarity))
+
+    lines = ["## Duplicate Check Results", ""]
+
+    if duplicates:
+        lines.append("### LIKELY DUPLICATES (>90% similar)")
+        lines.append("")
+        for r, sim in duplicates:
+            lines.append(f"- **{r['id']}** (similarity: {sim:.2%})")
+            lines.append(f"  Content: {r['content'][:100]}...")
+            lines.append("")
+        lines.append("**Recommendation**: DO NOT ADD - likely duplicate")
+    elif similar:
+        lines.append(f"### SIMILAR AXIOMS (>{threshold:.0%} similar)")
+        lines.append("")
+        for r, sim in similar:
+            lines.append(f"- **{r['id']}** (similarity: {sim:.2%})")
+            lines.append(f"  Content: {r['content'][:100]}...")
+            lines.append("")
+        lines.append("**Recommendation**: Review manually before adding")
+    else:
+        lines.append("### UNIQUE")
+        lines.append("")
+        lines.append("No similar axioms found above threshold. Safe to add.")
+
+    return [TextContent(type="text", text="\n".join(lines))]
+
+
+async def _handle_search_by_section(arguments: dict[str, Any]) -> list[TextContent]:
+    """Handle search_by_section tool."""
+    section = arguments.get("section", "")
+
+    if not section:
+        return [TextContent(type="text", text="Error: section is required")]
+
+    # Clean up section reference
+    section = section.strip("[]")
+
+    neo4j = _get_neo4j()
+    if not neo4j:
+        return [TextContent(type="text", text="Error: Neo4j not available")]
+
+    # Search for axioms with this section in source_file or module
+    with neo4j.driver.session() as session:
+        result = session.run(
+            """
+            MATCH (a:Axiom)
+            WHERE a.source_file CONTAINS $section
+               OR a.module_name CONTAINS $section
+               OR a.id CONTAINS $section
+            RETURN a
+            ORDER BY a.id
+            LIMIT 50
+            """,
+            section=section,
+        )
+        axioms = [dict(record["a"]) for record in result]
+
+    if not axioms:
+        return [TextContent(
+            type="text",
+            text=f"## Section: {section}\n\nNo axioms found for this section."
+        )]
+
+    lines = [f"## Axioms for section: {section}", "", f"Found {len(axioms)} axioms:", ""]
+    for a in axioms:
+        lines.append(f"### {a['id']}")
+        lines.append(f"**Content**: {a.get('content', 'N/A')[:150]}...")
+        if a.get("formal_spec"):
+            lines.append(f"**Formal**: `{a['formal_spec'][:80]}...`")
+        lines.append("")
 
     return [TextContent(type="text", text="\n".join(lines))]
 

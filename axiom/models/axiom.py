@@ -133,7 +133,12 @@ class AxiomCollection(BaseModel):
     @classmethod
     def load_toml(cls, path: Path) -> "AxiomCollection":
         """Load collection from TOML file."""
-        data = tomllib.loads(path.read_text())
+        return cls.load_toml_string(path.read_text())
+
+    @classmethod
+    def load_toml_string(cls, toml_str: str) -> "AxiomCollection":
+        """Load collection from TOML string."""
+        data = tomllib.loads(toml_str)
 
         axioms = []
         for a in data.get("axioms", []):
