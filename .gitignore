@@ -38,6 +38,7 @@ env/
 *.sqlite
 neo4j_data/
 lancedb_data/
+data/
 
 # Logs
 *.log
@@ -57,3 +58,8 @@ Thumbs.db
 knowledge/temp/
 /tmp/
 *.tmp
+
+# K Framework build artifacts
+external/c-semantics/.build/
+*.kore
+*.kompiled
