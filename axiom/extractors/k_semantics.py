@@ -1,11 +1,39 @@
 """K Semantics extractor for parsing .k files."""
 
 import re
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
-from typing import List, Optional
+from typing import Dict, List, Optional
 
-from axiom.models import Axiom, SourceLocation, ViolationRef
+from axiom.models import Axiom, AxiomType, SourceLocation, ViolationRef
+
+# Module name to header file mapping
+MODULE_TO_HEADER: Dict[str, str] = {
+    "LIBC-STDLIB": "stdlib.h",
+    "LIBC-STDLIB-SYNTAX": "stdlib.h",
+    "LIBC-STRING": "string.h",
+    "LIBC-STRING-SYNTAX": "string.h",
+    "LIBC-STDIO": "stdio.h",
+    "LIBC-STDIO-SYNTAX": "stdio.h",
+    "LIBC-MATH": "math.h",
+    "LIBC-MATH-SYNTAX": "math.h",
+    "LIBC-CTYPE": "ctype.h",
+    "LIBC-CTYPE-SYNTAX": "ctype.h",
+    "LIBC-STDARG": "stdarg.h",
+    "LIBC-STDARG-SYNTAX": "stdarg.h",
+    "LIBC-TIME": "time.h",
+    "LIBC-TIME-SYNTAX": "time.h",
+    "LIBC-LOCALE": "locale.h",
+    "LIBC-LOCALE-SYNTAX": "locale.h",
+    "LIBC-SIGNAL": "signal.h",
+    "LIBC-SIGNAL-SYNTAX": "signal.h",
+    "LIBC-SETJMP": "setjmp.h",
+    "LIBC-SETJMP-SYNTAX": "setjmp.h",
+    "LIBC-ASSERT": "assert.h",
+    "LIBC-ASSERT-SYNTAX": "assert.h",
+    "LIBC-ERRNO": "errno.h",
+    "LIBC-ERRNO-SYNTAX": "errno.h",
+}
 
 
 @dataclass
@@ -15,6 +43,16 @@ class ErrorMarker:
     error_type: str  # UNDEF, CV, IMPL, UNSPEC, etc.
     code: str  # e.g., "CEMX1"
     message: str  # e.g., "Division by 0."
+
+
+@dataclass
+class StandardRef:
+    """C standard reference extracted from K comments."""
+
+    source: str  # e.g., "n1570"
+    section: str  # e.g., "7.22.3.4"
+    paragraphs: str  # e.g., "2--3"
+    text: str  # The standard text from the comment
 
 
 @dataclass
@@ -30,6 +68,11 @@ class ParsedRule:
     attributes: List[str]
     line_start: Optional[int] = None
     line_end: Optional[int] = None
+
+    # New K-style fields
+    function: Optional[str] = None  # Extracted from builtin("name", ...)
+    standard_ref: Optional[StandardRef] = None  # C standard citation
+    preceding_comment: Optional[str] = None  # Comment block before rule
 
 
 class KSemanticsExtractor:
@@ -49,6 +92,22 @@ class KSemanticsExtractor:
         r"(UNDEF|CV|IMPL|UNSPEC|SE|IMPLUB)\s*\(\s*\"([^\"]+)\"\s*,\s*\"([^\"]+)\"",
     )
     ATTRIBUTE_PATTERN = re.compile(r"\[([^\]]+)\]")
+
+    # New patterns for K-style extraction
+    # Matches: builtin("malloc", ...) or builtin("free", ...)
+    BUILTIN_PATTERN = re.compile(r'builtin\s*\(\s*"([^"]+)"')
+
+    # Matches: \fromStandard{\source[n1570]{\para{7.22.3.4}{2--3}}}{...}
+    STANDARD_REF_PATTERN = re.compile(
+        r"\\fromStandard\s*\{\s*\\source\s*\[([^\]]+)\]\s*\{\s*\\para\s*\{([^}]+)\}\s*\{([^}]+)\}\s*\}\s*\}\s*\{([^}]+)\}",
+        re.DOTALL,
+    )
+
+    # Simpler pattern for just the paragraph reference: \para{7.22.3.4}{2--3}
+    PARA_PATTERN = re.compile(r"\\para\s*\{([^}]+)\}\s*\{([^}]+)\}")
+
+    # Comment block pattern: /*@ ... */
+    COMMENT_BLOCK_PATTERN = re.compile(r"/\*@(.*?)\*/", re.DOTALL)
 
     def __init__(self, semantics_root: Path) -> None:
         """Initialize extractor with path to semantics directory.
@@ -76,9 +135,9 @@ class KSemanticsExtractor:
         # Split content into rule blocks
         rule_blocks = self._split_into_rules(content)
 
-        for block, line_start in rule_blocks:
+        for block, line_start, preceding_comment in rule_blocks:
             parsed = self._parse_rule_block(
-                block, module_name, source_file, line_start
+                block, module_name, source_file, line_start, preceding_comment
             )
             if parsed:
                 rules.append(parsed)
@@ -96,47 +155,70 @@ class KSemanticsExtractor:
         """Split K file content into individual rule blocks.
 
         Returns:
-            List of (rule_text, line_number) tuples.
+            List of (rule_text, line_number, preceding_comment) tuples.
         """
         rules = []
         lines = content.split("\n")
         current_rule = []
+        current_comment = []
         rule_start = 0
         in_rule = False
+        in_comment = False
+        preceding_for_rule: Optional[str] = None
 
         for i, line in enumerate(lines, 1):
             stripped = line.strip()
 
+            # Track comment blocks (/*@ ... */)
+            if "/*@" in line and not in_rule:
+                in_comment = True
+                current_comment = [line]
+            elif in_comment:
+                current_comment.append(line)
+                if "*/" in line:
+                    in_comment = False
+
             # Detect rule start
             if stripped.startswith("rule ") or (stripped.startswith("rule(") and not in_rule):
                 if current_rule and in_rule:
-                    rules.append(("\n".join(current_rule), rule_start))
+                    # Save the previous rule
+                    rules.append(("\n".join(current_rule), rule_start, preceding_for_rule))
                 current_rule = [line]
                 rule_start = i
                 in_rule = True
+                # Attach the preceding comment to this rule
+                preceding_for_rule = "\n".join(current_comment) if current_comment else None
+                current_comment = []
             elif in_rule:
                 # Continue collecting rule
                 current_rule.append(line)
 
                 # Check for rule end (attribute or next rule or endmodule)
                 if stripped.startswith("[") and stripped.endswith("]"):
-                    rules.append(("\n".join(current_rule), rule_start))
+                    rules.append(("\n".join(current_rule), rule_start, preceding_for_rule))
                     current_rule = []
                     in_rule = False
+                    preceding_for_rule = None
                 elif stripped.startswith("endmodule"):
                     if current_rule:
-                        rules.append(("\n".join(current_rule), rule_start))
+                        rules.append(("\n".join(current_rule), rule_start, preceding_for_rule))
                     current_rule = []
                     in_rule = False
+                    preceding_for_rule = None
 
         # Don't forget last rule
         if current_rule and in_rule:
-            rules.append(("\n".join(current_rule), rule_start))
+            rules.append(("\n".join(current_rule), rule_start, preceding_for_rule))
 
         return rules
 
     def _parse_rule_block(
-        self, block: str, module: str, source_file: str, line_start: int
+        self,
+        block: str,
+        module: str,
+        source_file: str,
+        line_start: int,
+        preceding_comment: Optional[str] = None,
     ) -> Optional[ParsedRule]:
         """Parse a single rule block.
 
@@ -145,6 +227,7 @@ class KSemanticsExtractor:
             module: Module name.
             source_file: Source file name.
             line_start: Starting line number.
+            preceding_comment: Comment block preceding this rule.
 
         Returns:
             ParsedRule if valid, None otherwise.
@@ -171,6 +254,14 @@ class KSemanticsExtractor:
         attr_match = self.ATTRIBUTE_PATTERN.findall(block)
         attributes = attr_match if attr_match else []
 
+        # Extract function name from builtin("name", ...)
+        function = self._extract_function_name(block)
+
+        # Extract standard reference from preceding comment
+        standard_ref = None
+        if preceding_comment:
+            standard_ref = self._extract_standard_ref(preceding_comment)
+
         return ParsedRule(
             lhs=lhs.strip(),
             rhs=rhs.strip() if rhs else "",
@@ -181,6 +272,48 @@ class KSemanticsExtractor:
             attributes=attributes,
             line_start=line_start,
             line_end=line_start + block.count("\n"),
+            function=function,
+            standard_ref=standard_ref,
+            preceding_comment=preceding_comment,
+        )
+
+    def _extract_function_name(self, block: str) -> Optional[str]:
+        """Extract function name from builtin("name", ...) pattern."""
+        match = self.BUILTIN_PATTERN.search(block)
+        if match:
+            return match.group(1)
+        return None
+
+    def _extract_standard_ref(self, comment: str) -> Optional[StandardRef]:
+        """Extract C standard reference from comment block."""
+        # First try to find the paragraph reference
+        para_match = self.PARA_PATTERN.search(comment)
+        if not para_match:
+            return None
+
+        section = para_match.group(1)  # e.g., "7.22.3.4"
+        paragraphs = para_match.group(2)  # e.g., "2--3"
+
+        # Try to find the source (e.g., "n1570")
+        source_match = re.search(r"\\source\s*\[([^\]]+)\]", comment)
+        source = source_match.group(1) if source_match else "unknown"
+
+        # Extract the text between the second-to-last { and the closing }*/
+        # The pattern is: ...}}{<text>}*/
+        text_match = re.search(r"\}\}\s*\{([^}]+(?:\}[^}]+)*)\}\s*\*/", comment, re.DOTALL)
+        if text_match:
+            text = text_match.group(1).strip()
+            # Clean up LaTeX commands like \cinline{...}
+            text = re.sub(r"\\cinline\{([^}]+)\}", r"\1", text)
+            text = re.sub(r"\s+", " ", text)  # Normalize whitespace
+        else:
+            text = ""
+
+        return StandardRef(
+            source=source,
+            section=section,
+            paragraphs=paragraphs,
+            text=text,
         )
 
     def _extract_lhs_rhs(self, block: str) -> tuple:
@@ -225,7 +358,7 @@ class KSemanticsExtractor:
         axioms: List[Axiom] = []
 
         for rule in rules:
-            # Only extract axioms from rules with requires clauses and no error markers
+            # Extract axioms from rules with requires clauses (no error markers)
             if rule.requires and not rule.error_marker:
                 axiom_id = generator.generate_axiom_id(
                     module=rule.module,
@@ -233,10 +366,26 @@ class KSemanticsExtractor:
                     formal_spec=rule.requires,
                 )
 
-                content = generator.generate(
-                    rule.requires,
-                    operation=self._infer_operation(rule.lhs),
-                )
+                # Use standard text as content if available, otherwise generate
+                if rule.standard_ref and rule.standard_ref.text:
+                    content = rule.standard_ref.text
+                else:
+                    content = generator.generate(
+                        rule.requires,
+                        operation=self._infer_operation(rule.lhs),
+                    )
+
+                # Build C standard refs list
+                c_standard_refs: List[str] = []
+                if rule.standard_ref:
+                    ref = f"{rule.standard_ref.section}/{rule.standard_ref.paragraphs}"
+                    c_standard_refs.append(ref)
+
+                # Determine header from module
+                header = MODULE_TO_HEADER.get(rule.module)
+
+                # Infer axiom type (most K rules with requires are preconditions)
+                axiom_type = AxiomType.PRECONDITION
 
                 axiom = Axiom(
                     id=axiom_id,
@@ -251,6 +400,74 @@ class KSemanticsExtractor:
                         line_end=rule.line_end,
                     ),
                     tags=self._infer_tags(rule),
+                    c_standard_refs=c_standard_refs,
+                    # New K-style fields
+                    function=rule.function,
+                    header=header,
+                    axiom_type=axiom_type,
+                )
+                axioms.append(axiom)
+
+            # Also extract axioms from rules with standard refs (even without requires)
+            # These are function definitions from the C standard
+            elif rule.standard_ref and rule.function and not rule.error_marker:
+                axiom_id = generator.generate_axiom_id(
+                    module=rule.module,
+                    operation=rule.function,
+                    formal_spec=rule.standard_ref.text[:100] if rule.standard_ref.text else "",
+                )
+
+                header = MODULE_TO_HEADER.get(rule.module)
+                c_standard_refs = [f"{rule.standard_ref.section}/{rule.standard_ref.paragraphs}"]
+
+                axiom = Axiom(
+                    id=axiom_id,
+                    content=rule.standard_ref.text,
+                    formal_spec=rule.requires or "",
+                    source=SourceLocation(
+                        file=str(k_file.relative_to(self.semantics_root))
+                        if k_file.is_relative_to(self.semantics_root)
+                        else str(k_file),
+                        module=rule.module,
+                        line_start=rule.line_start,
+                        line_end=rule.line_end,
+                    ),
+                    tags=self._infer_tags(rule),
+                    c_standard_refs=c_standard_refs,
+                    function=rule.function,
+                    header=header,
+                    axiom_type=AxiomType.POSTCONDITION,  # These describe what functions do
+                )
+                axioms.append(axiom)
+
+            # Also extract axioms from error rules (they define on_violation behavior)
+            elif rule.error_marker and rule.function:
+                # This is an error case for a function
+                axiom_id = generator.generate_axiom_id(
+                    module=rule.module,
+                    operation=rule.function,
+                    formal_spec=rule.error_marker.message,
+                )
+
+                header = MODULE_TO_HEADER.get(rule.module)
+
+                axiom = Axiom(
+                    id=axiom_id,
+                    content=rule.error_marker.message,
+                    formal_spec=rule.requires or "",
+                    source=SourceLocation(
+                        file=str(k_file.relative_to(self.semantics_root))
+                        if k_file.is_relative_to(self.semantics_root)
+                        else str(k_file),
+                        module=rule.module,
+                        line_start=rule.line_start,
+                        line_end=rule.line_end,
+                    ),
+                    tags=self._infer_tags(rule),
+                    function=rule.function,
+                    header=header,
+                    axiom_type=AxiomType.CONSTRAINT,
+                    on_violation=f"{rule.error_marker.error_type}: {rule.error_marker.code}",
                 )
                 axioms.append(axiom)
 

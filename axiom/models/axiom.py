@@ -36,6 +36,17 @@ class ViolationRef(BaseModel):
     message: str
 
 
+class AxiomType(str, Enum):
+    """Types of axioms (what semantic property they describe)."""
+
+    PRECONDITION = "precondition"  # Must be true before operation
+    POSTCONDITION = "postcondition"  # True after operation completes
+    INVARIANT = "invariant"  # Always true (class/data invariant)
+    EXCEPTION = "exception"  # What can be thrown and when
+    EFFECT = "effect"  # Side effects (modifies state)
+    CONSTRAINT = "constraint"  # Type/value constraints
+
+
 class Axiom(BaseModel):
     """A foundational truth extracted from K semantics."""
 
@@ -48,6 +59,12 @@ class Axiom(BaseModel):
     layer: str = "c11_core"
     confidence: float = 1.0
     tags: List[str] = Field(default_factory=list)
+
+    # New fields for function-centric axioms (K-style)
+    function: Optional[str] = None  # e.g., "malloc", "realloc"
+    header: Optional[str] = None  # e.g., "stdlib.h", "string.h"
+    axiom_type: Optional[AxiomType] = None  # precondition, postcondition, etc.
+    on_violation: Optional[str] = None  # e.g., "undefined behavior", "throws X"
 
 
 class ErrorCode(BaseModel):
@@ -109,6 +126,15 @@ class AxiomCollection(BaseModel):
             if axiom.violated_by:
                 codes = [v.code for v in axiom.violated_by]
                 lines.append(f"error_codes = {codes!r}")
+            # New K-style fields
+            if axiom.function:
+                lines.append(f'function = "{axiom.function}"')
+            if axiom.header:
+                lines.append(f'header = "{axiom.header}"')
+            if axiom.axiom_type:
+                lines.append(f'axiom_type = "{axiom.axiom_type.value}"')
+            if axiom.on_violation:
+                lines.append(f"on_violation = {to_literal(axiom.on_violation)}")
             lines.append("")
 
         for error in self.error_codes:
@@ -161,6 +187,11 @@ class AxiomCollection(BaseModel):
                         ViolationRef(code=c, error_type="UNDEF", message="")
                         for c in a.get("error_codes", [])
                     ],
+                    # New K-style fields
+                    function=a.get("function"),
+                    header=a.get("header"),
+                    axiom_type=AxiomType(a["axiom_type"]) if a.get("axiom_type") else None,
+                    on_violation=a.get("on_violation"),
                 )
             )
 

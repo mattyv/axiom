@@ -1,6 +1,6 @@
 version = "1.0"
 source = "kframework/c-semantics/cpp_stdlib"
-extracted_at = "2025-12-27T00:58:39.076830"
+extracted_at = "2025-12-27T06:00:55.991954"
 
 [[axioms]]
 id = "c11_libcpp_new_comparison_4463afd0"
@@ -13,6 +13,7 @@ source_module = "LIBCPP-NEW"
 source_line_start = 16
 source_line_end = 24
 tags = ['comparison']
+axiom_type = "precondition"
 
 [[error_codes]]
 code = "UB-CB1"
