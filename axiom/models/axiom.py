@@ -45,6 +45,8 @@ class AxiomType(str, Enum):
     EXCEPTION = "exception"  # What can be thrown and when
     EFFECT = "effect"  # Side effects (modifies state)
     CONSTRAINT = "constraint"  # Type/value constraints
+    ANTI_PATTERN = "anti_pattern"  # Common mistakes/warnings to avoid
+    COMPLEXITY = "complexity"  # Big-O performance guarantees
 
 
 class Axiom(BaseModel):

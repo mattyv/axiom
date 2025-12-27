@@ -64,11 +64,15 @@ The function has been parsed into the following operations:
 
 ## Task
 
-For each operation that has semantic requirements:
-
-1. Identify the specific precondition, postcondition, or invariant
-2. Match it to a foundation axiom from the list above
-3. Extract the formal specification using the operands from the subgraph
+Extract ALL semantic axioms from this function, including:
+1. **PRECONDITION**: What must be true before calling this function
+2. **POSTCONDITION**: What is guaranteed after the function returns
+3. **INVARIANT**: What remains true throughout execution
+4. **EFFECT**: Behavioral semantics (what the function does, side effects)
+5. **CONSTRAINT**: Type/value constraints on parameters or results
+6. **EXCEPTION**: What exceptions can be thrown and when
+7. **ANTI_PATTERN**: Common mistakes or patterns to avoid
+8. **COMPLEXITY**: Big-O time/space complexity guarantees
 
 Output ONLY valid TOML with the following structure for each axiom:
 
@@ -77,29 +81,50 @@ Output ONLY valid TOML with the following structure for each axiom:
 id = "<generated_unique_id>"
 function = "{function_name}"
 header = "<header_file>"
-axiom_type = "<precondition|postcondition|invariant|constraint>"
+axiom_type = "<precondition|postcondition|invariant|effect|constraint|exception|anti_pattern|complexity>"
 content = "<human-readable description>"
 formal_spec = "<formal condition using actual operand names>"
 on_violation = "<what happens: undefined behavior, throws, returns error, etc.>"
-depends_on = ["<foundation_axiom_id>"]
+depends_on = ["<foundation_axiom_id_1>", "<foundation_axiom_id_2>"]
 source_operation_id = "<operation_id from subgraph>"
 source_line = <line_number>
 confidence = <0.0-1.0>
 ```
 
-### Guidelines
+### Axiom Type Guidelines
+
+- **PRECONDITION**: Requirements that callers must satisfy (e.g., "divisor != 0")
+- **POSTCONDITION**: Guarantees the function provides (e.g., "returns sorted array")
+- **INVARIANT**: Properties preserved during execution (e.g., "heap property maintained")
+- **EFFECT**: What the function does (e.g., "invokes callback N times", "modifies global state")
+- **CONSTRAINT**: Type or value limits (e.g., "index must be within bounds")
+- **EXCEPTION**: Exception behavior (e.g., "throws std::out_of_range if index invalid")
+- **ANTI_PATTERN**: Common mistakes (e.g., "do not call from signal handler")
+- **COMPLEXITY**: Performance (e.g., "O(n log n) average case")
+
+### Dependency Chain Guidelines
+
+**CRITICAL**: Every axiom should link to foundation axioms via `depends_on`:
+
+- Use ACTUAL axiom IDs from the "Related Foundation Axioms" section above
+- Each axiom can depend on MULTIPLE foundation axioms (1:many relationship)
+- Example: An EFFECT axiom about loop behavior might depend on:
+  `depends_on = ["c11_stmt_for_semantics", "c11_expr_call"]`
+
+This creates a chain from library axioms down to grounded formal semantics.
+
+### Confidence Guidelines
+
+- 1.0: Direct match to foundation axiom, no ambiguity
+- 0.8-0.9: Clear semantic requirement, foundation axiom applies
+- 0.6-0.7: Likely applies but context-dependent
+- <0.6: Uncertain, may need human review
+
+### Other Guidelines
 
 - Use actual variable names from the subgraph operands
 - Include guard conditions if the operation is protected by a check
-- **IMPORTANT**: For `depends_on`, use the ACTUAL axiom IDs from the "Related Foundation Axioms" section above (e.g., `depends_on = ["c11_expr_div_nonzero"]`). This links your extracted axiom to its foundation.
-- Set confidence based on how clearly the axiom applies:
-  - 1.0: Direct match to foundation axiom, no ambiguity
-  - 0.8-0.9: Clear semantic requirement, foundation axiom applies
-  - 0.6-0.7: Likely applies but context-dependent
-  - <0.6: Uncertain, may need human review
-
-If an operation is already guarded (has guard conditions that prevent the hazard),
-note this in the content but still extract the axiom with the guard as the formal_spec.
+- If an operation is already guarded, note this in content but still extract the axiom
 
 Output only the TOML block, no other text.
 """
@@ -390,7 +415,13 @@ MACRO_EXTRACTION_PROMPT = """## Macro to Analyze
 
 ## Task
 
-Analyze this macro and extract axioms for any semantic requirements.
+Extract ALL semantic axioms from this macro, including:
+1. **PRECONDITION**: What must be true before using this macro
+2. **POSTCONDITION**: What is guaranteed after macro expansion
+3. **EFFECT**: Behavioral semantics (side effects, multiple evaluation)
+4. **CONSTRAINT**: Type/value constraints on parameters
+5. **ANTI_PATTERN**: Common mistakes or patterns to avoid
+6. **COMPLEXITY**: Performance implications
 
 For macros, pay special attention to:
 1. **Multiple evaluation**: If an argument appears more than once, side effects are evaluated multiple times
@@ -405,21 +436,28 @@ Output ONLY valid TOML with the following structure for each axiom:
 id = "<generated_unique_id>"
 function = "{macro_name}"  # Use the macro name
 header = "<header_file>"
-axiom_type = "<precondition|postcondition|invariant|constraint|effect>"
+axiom_type = "<precondition|postcondition|invariant|effect|constraint|exception|anti_pattern|complexity>"
 content = "<human-readable description>"
 formal_spec = "<formal condition using parameter names>"
 on_violation = "<what happens: undefined behavior, incorrect result, etc.>"
-depends_on = ["<foundation_axiom_id>"]
+depends_on = ["<foundation_axiom_id_1>", "<foundation_axiom_id_2>"]
 confidence = <0.0-1.0>
 tags = ["macro"]
 ```
 
-### Guidelines
+### Dependency Chain Guidelines
+
+**CRITICAL**: Every axiom should link to foundation axioms via `depends_on`:
+
+- Use ACTUAL axiom IDs from the "Related Foundation Axioms" section above
+- Each axiom can depend on MULTIPLE foundation axioms (1:many relationship)
+- This creates a chain from macro axioms down to grounded formal semantics
+
+### Other Guidelines
 
 - Use parameter names from the macro definition
 - Note if arguments may be evaluated multiple times (use 'effect' axiom_type)
 - Document expected types as constraints
-- **IMPORTANT**: For `depends_on`, use the ACTUAL axiom IDs from the "Related Foundation Axioms" section above (e.g., `depends_on = ["c11_expr_div_nonzero"]`). This links your extracted axiom to its foundation.
 - Include "macro" in tags
 
 If the macro is simple (e.g., just a constant) and has no semantic requirements,

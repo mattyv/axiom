@@ -636,6 +636,7 @@ class AxiomExtractor:
             confidence=data.get("confidence", 0.8),
             c_standard_refs=data.get("c_standard_refs", []),
             tags=data.get("tags", []),
+            depends_on=data.get("depends_on", []),
         )
 
     def _extract_function_source(

@@ -160,6 +160,7 @@ class ReviewSessionManager:
         session_id: Optional[str] = None,
         source_file: str = "",
         items: Optional[List[ReviewItem]] = None,
+        group_by_function: bool = True,
     ) -> ReviewSession:
         """Create a new review session.
 
@@ -168,6 +169,8 @@ class ReviewSessionManager:
             session_id: Optional session ID (auto-generated if not provided).
             source_file: Source file the axioms came from.
             items: Optional list of ReviewItem objects (if provided, axioms is ignored).
+            group_by_function: If True, sort items so axioms from the same function
+                are grouped together (default: True).
 
         Returns:
             New ReviewSession object.
@@ -178,6 +181,10 @@ class ReviewSessionManager:
         if items is None:
             items = [ReviewItem(axiom=axiom) for axiom in (axioms or [])]
 
+        # Group items by function so related axioms are reviewed together
+        if group_by_function and items:
+            items = self._sort_items_by_function(items)
+
         session = ReviewSession(
             session_id=session_id,
             source_file=source_file,
@@ -186,6 +193,35 @@ class ReviewSessionManager:
 
         self.save_session(session)
         return session
+
+    def _sort_items_by_function(self, items: List[ReviewItem]) -> List[ReviewItem]:
+        """Sort review items so axioms from the same function are grouped together.
+
+        Sorting order:
+        1. By source file (axiom.source.file)
+        2. By line number (item.line_start) within each file
+        3. By function name as fallback
+
+        This ensures axioms are reviewed in a logical order that follows
+        the structure of the source code.
+
+        Args:
+            items: List of review items to sort.
+
+        Returns:
+            Sorted list of review items.
+        """
+        def sort_key(item: ReviewItem):
+            axiom = item.axiom
+            # Primary: source file
+            source_file = axiom.source.file if axiom.source else ""
+            # Secondary: line number (use 0 if not available)
+            line_num = item.line_start if item.line_start is not None else 0
+            # Tertiary: function name
+            func_name = axiom.function or ""
+            return (source_file, line_num, func_name)
+
+        return sorted(items, key=sort_key)
 
     def save_session(self, session: ReviewSession) -> None:
         """Save a review session to disk.
@@ -348,6 +384,8 @@ class ReviewSessionManager:
                 axiom_dict["confidence"] = axiom.confidence
             if axiom.reviewed:
                 axiom_dict["reviewed"] = True
+            if axiom.depends_on:
+                axiom_dict["depends_on"] = axiom.depends_on
 
             data["axioms"].append(axiom_dict)
 
@@ -372,6 +410,7 @@ class ReviewSessionManager:
             "c_standard_refs": axiom.c_standard_refs,
             "tags": axiom.tags,
             "reviewed": axiom.reviewed,
+            "depends_on": axiom.depends_on,
         }
 
     @staticmethod
@@ -403,6 +442,7 @@ class ReviewSessionManager:
             c_standard_refs=data.get("c_standard_refs", []),
             tags=data.get("tags", []),
             reviewed=data.get("reviewed", False),
+            depends_on=data.get("depends_on", []),
         )
 
 
@@ -458,7 +498,16 @@ def format_axiom_for_review(item: ReviewItem) -> str:
             "",
         ])
 
-    if item.foundation_axiom_id:
+    # Show depends_on from axiom (1:many relationship)
+    if axiom.depends_on:
+        lines.extend([
+            "Depends On:",
+        ])
+        for dep_id in axiom.depends_on:
+            lines.append(f"  - {dep_id}")
+        lines.append("")
+    elif item.foundation_axiom_id:
+        # Fallback for legacy single dependency
         lines.extend([
             "Depends On:",
             f"  {item.foundation_axiom_id}",

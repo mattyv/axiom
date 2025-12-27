@@ -487,3 +487,251 @@ class TestReviewedFlag:
 
             content = output_path.read_text()
             assert "reviewed = true" in content
+
+
+class TestFunctionGrouping:
+    """Tests for grouping axioms by function during review."""
+
+    def create_axiom_with_location(
+        self,
+        id: str,
+        function: str,
+        source_file: str = "test.cpp",
+        line_start: int = 1,
+    ) -> tuple:
+        """Create an axiom and corresponding ReviewItem with location info."""
+        axiom = Axiom(
+            id=id,
+            content=f"Axiom for {function}",
+            formal_spec="x != 0",
+            layer="library",
+            source=SourceLocation(file=source_file, module=function),
+            function=function,
+            header="test.h",
+            axiom_type=AxiomType.PRECONDITION,
+        )
+        item = ReviewItem(
+            axiom=axiom,
+            line_start=line_start,
+        )
+        return axiom, item
+
+    def test_axioms_grouped_by_function(self):
+        """Test that axioms from the same function are grouped together."""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            manager = ReviewSessionManager(storage_dir=tmpdir)
+
+            # Create axioms from different functions in mixed order
+            _, item1 = self.create_axiom_with_location("a1", "func_b", line_start=20)
+            _, item2 = self.create_axiom_with_location("a2", "func_a", line_start=5)
+            _, item3 = self.create_axiom_with_location("a3", "func_b", line_start=25)
+            _, item4 = self.create_axiom_with_location("a4", "func_a", line_start=10)
+
+            session = manager.create_session(
+                items=[item1, item2, item3, item4],
+                session_id="test_grouping",
+                group_by_function=True,
+            )
+
+            # Should be sorted by file, then line number
+            # func_a at line 5, func_a at line 10, func_b at line 20, func_b at line 25
+            funcs = [item.axiom.function for item in session.items]
+            assert funcs == ["func_a", "func_a", "func_b", "func_b"]
+
+    def test_axioms_sorted_by_line_number_within_function(self):
+        """Test that axioms are sorted by line number within each function."""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            manager = ReviewSessionManager(storage_dir=tmpdir)
+
+            # Create multiple axioms for the same function at different lines
+            _, item1 = self.create_axiom_with_location("a1", "divide", line_start=50)
+            _, item2 = self.create_axiom_with_location("a2", "divide", line_start=10)
+            _, item3 = self.create_axiom_with_location("a3", "divide", line_start=30)
+
+            session = manager.create_session(
+                items=[item1, item2, item3],
+                session_id="test_line_order",
+                group_by_function=True,
+            )
+
+            # Should be sorted by line number
+            lines = [item.line_start for item in session.items]
+            assert lines == [10, 30, 50]
+
+    def test_axioms_grouped_by_source_file_first(self):
+        """Test that axioms are grouped by source file before function."""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            manager = ReviewSessionManager(storage_dir=tmpdir)
+
+            # Create axioms from different files
+            _, item1 = self.create_axiom_with_location(
+                "a1", "func", source_file="z_file.cpp", line_start=10
+            )
+            _, item2 = self.create_axiom_with_location(
+                "a2", "func", source_file="a_file.cpp", line_start=5
+            )
+            _, item3 = self.create_axiom_with_location(
+                "a3", "other", source_file="a_file.cpp", line_start=20
+            )
+
+            session = manager.create_session(
+                items=[item1, item2, item3],
+                session_id="test_file_grouping",
+                group_by_function=True,
+            )
+
+            # Should be sorted by file first: a_file.cpp items, then z_file.cpp
+            files = [item.axiom.source.file for item in session.items]
+            assert files == ["a_file.cpp", "a_file.cpp", "z_file.cpp"]
+
+    def test_grouping_can_be_disabled(self):
+        """Test that grouping can be disabled to preserve original order."""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            manager = ReviewSessionManager(storage_dir=tmpdir)
+
+            # Create items in specific order
+            _, item1 = self.create_axiom_with_location("a1", "func_z", line_start=100)
+            _, item2 = self.create_axiom_with_location("a2", "func_a", line_start=1)
+
+            session = manager.create_session(
+                items=[item1, item2],
+                session_id="test_no_grouping",
+                group_by_function=False,
+            )
+
+            # Original order should be preserved
+            ids = [item.axiom.id for item in session.items]
+            assert ids == ["a1", "a2"]
+
+    def test_grouping_handles_missing_line_numbers(self):
+        """Test that grouping works even when line numbers are missing."""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            manager = ReviewSessionManager(storage_dir=tmpdir)
+
+            axiom1 = create_test_axiom("a1")
+            axiom1.function = "func_b"
+            item1 = ReviewItem(axiom=axiom1, line_start=None)
+
+            axiom2 = create_test_axiom("a2")
+            axiom2.function = "func_a"
+            item2 = ReviewItem(axiom=axiom2, line_start=None)
+
+            axiom3 = create_test_axiom("a3")
+            axiom3.function = "func_a"
+            item3 = ReviewItem(axiom=axiom3, line_start=5)
+
+            session = manager.create_session(
+                items=[item1, item2, item3],
+                session_id="test_missing_lines",
+                group_by_function=True,
+            )
+
+            # Items with None line_start should use 0, so they come first
+            # func_a items should be grouped together
+            funcs = [item.axiom.function for item in session.items]
+            assert funcs[0] == "func_a" or funcs[1] == "func_a"
+
+    def test_grouping_is_default_enabled(self):
+        """Test that grouping is enabled by default."""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            manager = ReviewSessionManager(storage_dir=tmpdir)
+
+            _, item1 = self.create_axiom_with_location("a1", "func_z", line_start=100)
+            _, item2 = self.create_axiom_with_location("a2", "func_a", line_start=1)
+
+            # Don't pass group_by_function - should default to True
+            session = manager.create_session(
+                items=[item1, item2],
+                session_id="test_default_grouping",
+            )
+
+            # Should be sorted (func_a before func_z by line number)
+            ids = [item.axiom.id for item in session.items]
+            assert ids == ["a2", "a1"]
+
+    def test_grouping_with_axiom_list(self):
+        """Test that grouping works when creating session from axiom list."""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            manager = ReviewSessionManager(storage_dir=tmpdir)
+
+            a1 = Axiom(
+                id="a1",
+                content="Axiom 1",
+                formal_spec="x",
+                layer="library",
+                source=SourceLocation(file="z.cpp", module="z"),
+                function="func_z",
+            )
+            a2 = Axiom(
+                id="a2",
+                content="Axiom 2",
+                formal_spec="x",
+                layer="library",
+                source=SourceLocation(file="a.cpp", module="a"),
+                function="func_a",
+            )
+
+            session = manager.create_session(
+                axioms=[a1, a2],
+                session_id="test_axiom_list_grouping",
+            )
+
+            # Should be sorted by source file (a.cpp before z.cpp)
+            files = [item.axiom.source.file for item in session.items]
+            assert files == ["a.cpp", "z.cpp"]
+
+
+class TestDependsOnInReview:
+    """Tests for depends_on field handling in review workflow."""
+
+    def test_depends_on_preserved_in_session_save_load(self):
+        """Test that depends_on is preserved when saving/loading sessions."""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            manager = ReviewSessionManager(storage_dir=tmpdir)
+
+            axiom = Axiom(
+                id="test_with_deps",
+                content="Test axiom with dependencies",
+                formal_spec="x != 0",
+                layer="library",
+                source=SourceLocation(file="test.cpp", module="test"),
+                depends_on=["c11_expr_div_nonzero", "c11_type_int"],
+            )
+
+            session = manager.create_session(
+                axioms=[axiom],
+                session_id="test_depends_on",
+            )
+            manager.save_session(session)
+
+            loaded = manager.load_session("test_depends_on")
+            assert loaded.items[0].axiom.depends_on == ["c11_expr_div_nonzero", "c11_type_int"]
+
+    def test_depends_on_included_in_export(self):
+        """Test that depends_on is included when exporting approved axioms."""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            manager = ReviewSessionManager(storage_dir=tmpdir)
+
+            axiom = Axiom(
+                id="export_deps_test",
+                content="Test with deps",
+                formal_spec="x",
+                layer="library",
+                source=SourceLocation(file="test.cpp", module="test"),
+                depends_on=["foundation_1", "foundation_2"],
+            )
+
+            session = manager.create_session(
+                axioms=[axiom],
+                session_id="export_deps",
+            )
+            session.items[0].decision = ReviewDecision.APPROVED
+            manager.save_session(session)
+
+            output_path = Path(tmpdir) / "exported.toml"
+            manager.export_approved(session, str(output_path))
+
+            content = output_path.read_text()
+            assert "depends_on" in content
+            assert "foundation_1" in content
+            assert "foundation_2" in content

@@ -682,3 +682,369 @@ confidence = 0.9
         assert result.macro is macro
         assert result.macro.name == "TEST"
         assert result.macro.is_function_like is True
+
+
+class TestBehavioralAxiomExtraction:
+    """Tests for extracting behavioral axioms (EFFECT, INVARIANT, etc.).
+
+    These tests verify the axiom-only model where all behavior is described
+    as axioms that chain down via depends_on to foundation axioms.
+    """
+
+    def test_parse_effect_axiom_for_loop_behavior(self):
+        """Test parsing EFFECT axiom that describes loop iteration behavior."""
+        extractor = AxiomExtractor()
+
+        response = '''```toml
+[[axioms]]
+id = "lib_loop_effect"
+function = "process_all"
+axiom_type = "effect"
+content = "body is invoked exactly N times per outer iteration"
+formal_spec = "count(body_calls) == N"
+depends_on = ["c11_stmt_for_semantics", "c11_expr_call"]
+confidence = 0.9
+```'''
+
+        axioms = extractor._parse_llm_response(
+            response, "process_all", "process.h", "process.cpp"
+        )
+
+        assert len(axioms) == 1
+        axiom = axioms[0]
+        assert axiom.axiom_type == AxiomType.EFFECT
+        assert axiom.content == "body is invoked exactly N times per outer iteration"
+        assert "count(body_calls)" in axiom.formal_spec
+
+    def test_parse_invariant_axiom_for_state(self):
+        """Test parsing INVARIANT axiom for data structure state."""
+        extractor = AxiomExtractor()
+
+        response = '''```toml
+[[axioms]]
+id = "lib_sorted_invariant"
+function = "sorted_insert"
+axiom_type = "invariant"
+content = "Array remains sorted throughout operation"
+formal_spec = "forall i in 0..n-1: arr[i] <= arr[i+1]"
+depends_on = ["c11_array_semantics"]
+confidence = 0.85
+```'''
+
+        axioms = extractor._parse_llm_response(
+            response, "sorted_insert", "sort.h", "sort.cpp"
+        )
+
+        assert len(axioms) == 1
+        assert axioms[0].axiom_type == AxiomType.INVARIANT
+        assert "sorted" in axioms[0].content.lower()
+
+    def test_parse_anti_pattern_axiom_for_warning(self):
+        """Test parsing ANTI_PATTERN axiom for common mistakes."""
+        extractor = AxiomExtractor()
+
+        response = '''```toml
+[[axioms]]
+id = "lib_negative_index_warning"
+function = "get_element"
+axiom_type = "anti_pattern"
+content = "Avoid using negative indices with this function"
+formal_spec = "index >= 0"
+on_violation = "undefined behavior or buffer underflow"
+depends_on = ["c11_array_bounds"]
+confidence = 0.9
+```'''
+
+        axioms = extractor._parse_llm_response(
+            response, "get_element", "array.h", "array.cpp"
+        )
+
+        assert len(axioms) == 1
+        assert axioms[0].axiom_type == AxiomType.ANTI_PATTERN
+        assert "negative" in axioms[0].content.lower()
+
+    def test_parse_complexity_axiom_for_performance(self):
+        """Test parsing COMPLEXITY axiom for Big-O guarantees."""
+        extractor = AxiomExtractor()
+
+        response = '''```toml
+[[axioms]]
+id = "lib_sort_complexity"
+function = "quicksort"
+axiom_type = "complexity"
+content = "Average time complexity is O(n log n)"
+formal_spec = "T(n) = O(n * log(n))"
+confidence = 1.0
+```'''
+
+        axioms = extractor._parse_llm_response(
+            response, "quicksort", "sort.h", "sort.cpp"
+        )
+
+        assert len(axioms) == 1
+        assert axioms[0].axiom_type == AxiomType.COMPLEXITY
+        assert "O(n" in axioms[0].content or "O(n" in axioms[0].formal_spec
+
+    def test_parse_multiple_behavioral_axioms(self):
+        """Test parsing multiple behavioral axioms from a function."""
+        extractor = AxiomExtractor()
+
+        response = '''```toml
+[[axioms]]
+id = "lib_ilp_precond"
+function = "ILP_FOR_T"
+axiom_type = "precondition"
+content = "N must be a positive integer"
+formal_spec = "N > 0"
+depends_on = ["c11_type_int"]
+confidence = 1.0
+
+[[axioms]]
+id = "lib_ilp_effect"
+function = "ILP_FOR_T"
+axiom_type = "effect"
+content = "body receives sequential indices from i*N to i*N + N-1"
+formal_spec = "body(i*N + j) for j in 0..N-1"
+depends_on = ["c11_expr_add", "c11_expr_mul", "c11_stmt_for_semantics"]
+confidence = 0.9
+
+[[axioms]]
+id = "lib_ilp_invariant"
+function = "ILP_FOR_T"
+axiom_type = "invariant"
+content = "Iteration order is strictly sequential (j=0, j=1, ...)"
+formal_spec = "sequential_order(j)"
+depends_on = ["c11_stmt_for_semantics"]
+confidence = 0.95
+
+[[axioms]]
+id = "lib_ilp_constraint"
+function = "ILP_FOR_T"
+axiom_type = "constraint"
+content = "body must be a callable accepting a single integer"
+formal_spec = "callable(body, int)"
+depends_on = ["c11_expr_call"]
+confidence = 0.85
+```'''
+
+        axioms = extractor._parse_llm_response(
+            response, "ILP_FOR_T", "ilp.h", "ilp.cpp"
+        )
+
+        assert len(axioms) == 4
+        types = {a.axiom_type for a in axioms}
+        assert types == {
+            AxiomType.PRECONDITION,
+            AxiomType.EFFECT,
+            AxiomType.INVARIANT,
+            AxiomType.CONSTRAINT,
+        }
+
+
+class TestDependsOnChains:
+    """Tests for depends_on field handling in axiom extraction.
+
+    These tests verify that axioms properly chain to foundation axioms
+    via the depends_on field (1:many relationship).
+    """
+
+    def test_parse_axiom_with_single_dependency(self):
+        """Test parsing axiom with single depends_on reference."""
+        extractor = AxiomExtractor()
+
+        response = '''```toml
+[[axioms]]
+id = "lib_div_precond"
+function = "divide"
+axiom_type = "precondition"
+content = "Divisor must be non-zero"
+formal_spec = "b != 0"
+depends_on = ["c11_expr_div_nonzero"]
+confidence = 1.0
+```'''
+
+        axioms = extractor._parse_llm_response(
+            response, "divide", "math.h", "math.cpp"
+        )
+
+        assert len(axioms) == 1
+        assert axioms[0].depends_on == ["c11_expr_div_nonzero"]
+
+    def test_parse_axiom_with_multiple_dependencies(self):
+        """Test parsing axiom with multiple depends_on references (1:many)."""
+        extractor = AxiomExtractor()
+
+        response = '''```toml
+[[axioms]]
+id = "lib_complex_effect"
+function = "transform"
+axiom_type = "effect"
+content = "Applies transformation with bounds checking"
+formal_spec = "output = transform(input) if in_bounds(input)"
+depends_on = ["c11_expr_add", "c11_expr_mul", "c11_array_bounds", "c11_expr_call"]
+confidence = 0.85
+```'''
+
+        axioms = extractor._parse_llm_response(
+            response, "transform", "transform.h", "transform.cpp"
+        )
+
+        assert len(axioms) == 1
+        assert axioms[0].depends_on == ["c11_expr_add", "c11_expr_mul", "c11_array_bounds", "c11_expr_call"]
+        assert len(axioms[0].depends_on) == 4
+
+    def test_parse_axiom_without_depends_on(self):
+        """Test that axioms without depends_on are still valid."""
+        extractor = AxiomExtractor()
+
+        response = '''```toml
+[[axioms]]
+id = "lib_simple"
+function = "add"
+axiom_type = "postcondition"
+content = "Returns sum of inputs"
+formal_spec = "result == a + b"
+confidence = 1.0
+```'''
+
+        axioms = extractor._parse_llm_response(
+            response, "add", "math.h", "math.cpp"
+        )
+
+        assert len(axioms) == 1
+        # depends_on defaults to empty list
+        assert axioms[0].depends_on == []
+
+    def test_axiom_layer_set_to_library(self):
+        """Test that extracted axioms have layer set to 'library'."""
+        extractor = AxiomExtractor()
+
+        response = '''```toml
+[[axioms]]
+id = "lib_test"
+function = "test"
+axiom_type = "precondition"
+content = "Test axiom"
+formal_spec = "true"
+confidence = 0.5
+```'''
+
+        axioms = extractor._parse_llm_response(
+            response, "test", "test.h", "test.cpp"
+        )
+
+        assert len(axioms) == 1
+        assert axioms[0].layer == "library"
+
+
+class TestAllAxiomTypesSupported:
+    """Tests verifying all axiom types are properly handled."""
+
+    def test_all_eight_axiom_types_parse(self):
+        """Test that all 8 axiom types can be parsed from LLM response."""
+        extractor = AxiomExtractor()
+
+        response = '''```toml
+[[axioms]]
+id = "type_precondition"
+function = "f"
+axiom_type = "precondition"
+content = "precondition test"
+
+[[axioms]]
+id = "type_postcondition"
+function = "f"
+axiom_type = "postcondition"
+content = "postcondition test"
+
+[[axioms]]
+id = "type_invariant"
+function = "f"
+axiom_type = "invariant"
+content = "invariant test"
+
+[[axioms]]
+id = "type_exception"
+function = "f"
+axiom_type = "exception"
+content = "exception test"
+
+[[axioms]]
+id = "type_effect"
+function = "f"
+axiom_type = "effect"
+content = "effect test"
+
+[[axioms]]
+id = "type_constraint"
+function = "f"
+axiom_type = "constraint"
+content = "constraint test"
+
+[[axioms]]
+id = "type_anti_pattern"
+function = "f"
+axiom_type = "anti_pattern"
+content = "anti_pattern test"
+
+[[axioms]]
+id = "type_complexity"
+function = "f"
+axiom_type = "complexity"
+content = "complexity test"
+```'''
+
+        axioms = extractor._parse_llm_response(
+            response, "f", "f.h", "f.cpp"
+        )
+
+        assert len(axioms) == 8
+        parsed_types = {a.axiom_type for a in axioms}
+        expected_types = {
+            AxiomType.PRECONDITION,
+            AxiomType.POSTCONDITION,
+            AxiomType.INVARIANT,
+            AxiomType.EXCEPTION,
+            AxiomType.EFFECT,
+            AxiomType.CONSTRAINT,
+            AxiomType.ANTI_PATTERN,
+            AxiomType.COMPLEXITY,
+        }
+        assert parsed_types == expected_types
+
+    def test_unknown_axiom_type_results_in_none(self):
+        """Test that unknown axiom type results in None."""
+        extractor = AxiomExtractor()
+
+        response = '''```toml
+[[axioms]]
+id = "unknown_type"
+function = "f"
+axiom_type = "something_invalid"
+content = "test with invalid type"
+```'''
+
+        axioms = extractor._parse_llm_response(
+            response, "f", "f.h", "f.cpp"
+        )
+
+        assert len(axioms) == 1
+        assert axioms[0].axiom_type is None
+
+    def test_empty_axiom_type_results_in_none(self):
+        """Test that empty axiom type results in None."""
+        extractor = AxiomExtractor()
+
+        response = '''```toml
+[[axioms]]
+id = "no_type"
+function = "f"
+content = "test without type"
+```'''
+
+        axioms = extractor._parse_llm_response(
+            response, "f", "f.h", "f.cpp"
+        )
+
+        assert len(axioms) == 1
+        assert axioms[0].axiom_type is None
