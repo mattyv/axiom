@@ -130,6 +130,7 @@ class AxiomExtractor:
         self,
         file_path: str,
         function_names: Optional[List[str]] = None,
+        progress_callback=None,
     ) -> List[ExtractionResult]:
         """Extract axioms from all functions in a file.
 
@@ -137,6 +138,7 @@ class AxiomExtractor:
             file_path: Path to the source file
             function_names: Optional list of specific functions to extract.
                            If None, extracts from all functions.
+            progress_callback: Optional callback(func_name, current, total) for progress
 
         Returns:
             List of ExtractionResult for each function
@@ -160,7 +162,11 @@ class AxiomExtractor:
         header = self._infer_header(file_path)
 
         results = []
-        for func_name in function_names:
+        total_funcs = len(function_names)
+        for i, func_name in enumerate(function_names):
+            if progress_callback:
+                progress_callback(func_name, i + 1, total_funcs)
+
             result = self.extract_from_source(
                 source_code=source_code,
                 function_name=func_name,
@@ -234,7 +240,11 @@ class AxiomExtractor:
             return ""
 
         # Handle different LLM client types
-        if hasattr(self.llm_client, "messages"):
+        if self.llm_client == "claude-cli":
+            # Use Claude CLI via subprocess
+            return self._call_claude_cli(prompt)
+
+        elif hasattr(self.llm_client, "messages"):
             # Anthropic client
             response = self.llm_client.messages.create(
                 model="claude-sonnet-4-20250514",
@@ -256,6 +266,54 @@ class AxiomExtractor:
             return response.choices[0].message.content
 
         return ""
+
+    def _call_claude_cli(self, prompt: str) -> str:
+        """Call Claude CLI for extraction.
+
+        Args:
+            prompt: The formatted extraction prompt
+
+        Returns:
+            Raw response text from Claude CLI
+        """
+        import subprocess
+
+        # Use --system-prompt for the system prompt and pass user prompt directly
+        try:
+            result = subprocess.run(
+                [
+                    "claude",
+                    "--print",
+                    "--system-prompt", SYSTEM_PROMPT,
+                    "--model", "sonnet",
+                    "--dangerously-skip-permissions",
+                    prompt,
+                ],
+                capture_output=True,
+                text=True,
+                timeout=300,  # 5 minutes for complex extractions
+            )
+
+            if result.returncode != 0:
+                # Log error to stderr but return what we got
+                import sys
+                if result.stderr:
+                    print(f"Claude CLI warning: {result.stderr}", file=sys.stderr)
+
+            return result.stdout
+
+        except subprocess.TimeoutExpired:
+            import sys
+            print("Claude CLI timeout after 5 minutes", file=sys.stderr)
+            return ""
+        except FileNotFoundError:
+            import sys
+            print("Claude CLI not found. Install with: npm install -g @anthropic-ai/claude-code", file=sys.stderr)
+            return ""
+        except Exception as e:
+            import sys
+            print(f"Claude CLI error: {e}", file=sys.stderr)
+            return ""
 
     def _parse_llm_response(
         self,

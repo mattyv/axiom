@@ -37,6 +37,10 @@ class ReviewItem:
     reviewed_at: Optional[datetime] = None
     source_operation_id: Optional[str] = None
     foundation_axiom_id: Optional[str] = None
+    # Function context for review display
+    line_start: Optional[int] = None
+    line_end: Optional[int] = None
+    signature: Optional[str] = None
 
 
 @dataclass
@@ -145,16 +149,18 @@ class ReviewSessionManager:
 
     def create_session(
         self,
-        axioms: List[Axiom],
+        axioms: Optional[List[Axiom]] = None,
         session_id: Optional[str] = None,
         source_file: str = "",
+        items: Optional[List[ReviewItem]] = None,
     ) -> ReviewSession:
         """Create a new review session.
 
         Args:
-            axioms: List of axioms to review.
+            axioms: List of axioms to review (creates ReviewItem for each).
             session_id: Optional session ID (auto-generated if not provided).
             source_file: Source file the axioms came from.
+            items: Optional list of ReviewItem objects (if provided, axioms is ignored).
 
         Returns:
             New ReviewSession object.
@@ -162,7 +168,8 @@ class ReviewSessionManager:
         if session_id is None:
             session_id = datetime.utcnow().strftime("%Y%m%d_%H%M%S")
 
-        items = [ReviewItem(axiom=axiom) for axiom in axioms]
+        if items is None:
+            items = [ReviewItem(axiom=axiom) for axiom in (axioms or [])]
 
         session = ReviewSession(
             session_id=session_id,
@@ -201,6 +208,9 @@ class ReviewSessionManager:
                     ),
                     "source_operation_id": item.source_operation_id,
                     "foundation_axiom_id": item.foundation_axiom_id,
+                    "line_start": item.line_start,
+                    "line_end": item.line_end,
+                    "signature": item.signature,
                 }
                 for item in session.items
             ],
@@ -246,6 +256,9 @@ class ReviewSessionManager:
                     reviewed_at=reviewed_at,
                     source_operation_id=item_data.get("source_operation_id"),
                     foundation_axiom_id=item_data.get("foundation_axiom_id"),
+                    line_start=item_data.get("line_start"),
+                    line_end=item_data.get("line_end"),
+                    signature=item_data.get("signature"),
                 )
             )
 
@@ -397,14 +410,28 @@ def format_axiom_for_review(item: ReviewItem) -> str:
         f"AXIOM: {axiom.id}",
         "=" * 60,
         "",
-        f"Function: {axiom.function or 'N/A'}",
-        f"Header:   {axiom.header or 'N/A'}",
-        f"Type:     {axiom.axiom_type.value if axiom.axiom_type else 'N/A'}",
+    ]
+
+    # Show function signature if available
+    if item.signature:
+        lines.append(f"Signature: {item.signature}")
+    else:
+        lines.append(f"Function:  {axiom.function or 'N/A'}")
+
+    # Show line numbers if available
+    if item.line_start is not None and item.line_end is not None:
+        lines.append(f"Lines:     {item.line_start}-{item.line_end}")
+    elif item.line_start is not None:
+        lines.append(f"Line:      {item.line_start}")
+
+    lines.extend([
+        f"Header:    {axiom.header or 'N/A'}",
+        f"Type:      {axiom.axiom_type.value if axiom.axiom_type else 'N/A'}",
         "",
         "Content:",
         f"  {axiom.content}",
         "",
-    ]
+    ])
 
     if axiom.formal_spec:
         lines.extend([

@@ -1,0 +1,55 @@
+# Example .axignore file for axiom library ingestion
+# Place this as .axignore in your library root
+
+# Build directories
+build/
+cmake-build*/
+out/
+
+# Tests (usually not needed for library knowledge)
+tests/
+test/
+*_test.cpp
+*_test.c
+
+# Third-party dependencies
+third_party/
+vendor/
+external/
+
+# Generated files
+*.generated.cpp
+*.generated.h
+*.pb.cc
+*.pb.h
+
+# IDE/editor
+.vscode/
+.idea/
+*.swp
+*~
+
+# Hidden directories
+.git/
+.github/
+
+# Documentation (extract from source instead)
+docs/
+doc/
+
+# Benchmark code
+benchmarks/
+bench/
+
+# Examples (may want to include these)
+# examples/
+
+# Tools/scripts
+tools/
+scripts/
+
+# Python artifacts
+venv/
+.venv/
+__pycache__/
+*.pyc

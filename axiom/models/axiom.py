@@ -181,8 +181,8 @@ class AxiomCollection(BaseModel):
                     layer=a.get("layer", "c11_core"),
                     confidence=a.get("confidence", 1.0),
                     source=SourceLocation(
-                        file=a["source_file"],
-                        module=a["source_module"],
+                        file=a.get("source_file", ""),
+                        module=a.get("source_module", ""),
                         line_start=a.get("source_line_start"),
                         line_end=a.get("source_line_end"),
                     ),

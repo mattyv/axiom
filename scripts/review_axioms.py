@@ -138,13 +138,14 @@ def review_session(session: ReviewSession, manager: ReviewSessionManager):
         print(f"\nItem {session.current_index + 1} of {session.total_items}")
         print(format_axiom_for_review(item))
 
-        # Get command
+        # Get command (Enter = Approve)
         try:
-            cmd = input("\nCommand [A/R/M/S/N/P/J/Q/?]: ").strip().upper()
+            cmd = input("\nCommand [A/R/M/S/N/P/J/Q/?] (Enter=Approve): ").strip().upper()
         except (EOFError, KeyboardInterrupt):
             cmd = "Q"
 
-        if cmd == "A":
+        # Default to Approve on empty input
+        if cmd == "" or cmd == "A":
             item.decision = ReviewDecision.APPROVED
             item.reviewed_at = datetime.utcnow()
             print("  -> Approved")
@@ -197,7 +198,9 @@ def review_session(session: ReviewSession, manager: ReviewSessionManager):
 
         elif cmd == "Q":
             manager.save_session(session)
-            print("\nSession saved. Goodbye!")
+            print(f"\nSession saved: {session.session_id}")
+            print(f"Progress: {session.reviewed_count}/{session.total_items}")
+            print(f"\nTo resume: python scripts/ingest_library.py --review {session.session_id}")
             break
 
         elif cmd == "?":
@@ -216,22 +219,32 @@ def review_session(session: ReviewSession, manager: ReviewSessionManager):
             print(f"  Skipped:  {session.total_items - session.approved_count - session.rejected_count - session.modified_count}")
             print("=" * 60)
 
-            print("\nExport approved axioms? [y/N]: ", end="")
-            try:
-                export = input().strip().lower()
-            except (EOFError, KeyboardInterrupt):
-                export = "n"
-
-            if export == "y":
-                print("Output file: ", end="")
+            while True:
+                print("\nExport approved axioms? [y/n]: ", end="")
                 try:
-                    output_path = input().strip()
+                    export = input().strip().lower()
                 except (EOFError, KeyboardInterrupt):
-                    output_path = ""
+                    print("\n")
+                    break
 
-                if output_path:
+                if export == "y":
+                    default_file = f"{session.session_id}_approved.toml"
+                    print(f"Output file [{default_file}]: ", end="")
+                    try:
+                        output_path = input().strip()
+                    except (EOFError, KeyboardInterrupt):
+                        output_path = ""
+
+                    if not output_path:
+                        output_path = default_file
+
                     count = manager.export_approved(session, output_path)
                     print(f"Exported {count} axioms to {output_path}")
+                    break
+                elif export == "n":
+                    break
+                else:
+                    print("  Please enter 'y' or 'n'")
 
             break
 
