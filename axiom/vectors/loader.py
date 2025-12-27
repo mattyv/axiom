@@ -59,11 +59,12 @@ class LanceDBLoader:
         if not records:
             return 0
 
-        # Create or overwrite table
+        # Add to existing table or create new one
         if table_name in self.db.table_names():
-            self.db.drop_table(table_name)
-
-        self.db.create_table(table_name, records)
+            table = self.db.open_table(table_name)
+            table.add(records)
+        else:
+            self.db.create_table(table_name, records)
         return len(records)
 
     def load_axiom(

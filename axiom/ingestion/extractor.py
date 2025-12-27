@@ -13,9 +13,16 @@ from typing import List, Optional
 import toml
 
 from axiom.models import Axiom, AxiomType, SourceLocation
-from axiom.models.operation import FunctionSubgraph
+from axiom.models.operation import FunctionSubgraph, MacroDefinition
 
-from .prompts import SYSTEM_PROMPT, build_extraction_prompt, build_search_queries
+from .prompts import (
+    MACRO_SYSTEM_PROMPT,
+    SYSTEM_PROMPT,
+    build_extraction_prompt,
+    build_macro_extraction_prompt,
+    build_macro_search_queries,
+    build_search_queries,
+)
 from .subgraph_builder import SubgraphBuilder
 
 
@@ -29,6 +36,18 @@ class ExtractionResult:
     raw_response: str = ""
     error: Optional[str] = None
     subgraph: Optional[FunctionSubgraph] = None
+
+
+@dataclass
+class MacroExtractionResult:
+    """Result of axiom extraction for a single macro."""
+
+    macro_name: str
+    file_path: str
+    axioms: List[Axiom] = field(default_factory=list)
+    raw_response: str = ""
+    error: Optional[str] = None
+    macro: Optional[MacroDefinition] = None
 
 
 @dataclass
@@ -177,6 +196,203 @@ class AxiomExtractor:
 
         return results
 
+    # =========================================================================
+    # Macro extraction methods
+    # =========================================================================
+
+    def extract_macros_from_source(
+        self,
+        source_code: str,
+        file_path: str = "",
+        header: str = "",
+        only_hazardous: bool = True,
+    ) -> List[MacroExtractionResult]:
+        """Extract axioms from all macros in source code.
+
+        Args:
+            source_code: Complete source code
+            file_path: Path to the source file (for metadata)
+            header: Header file name
+            only_hazardous: If True, only extract from macros with hazardous ops
+
+        Returns:
+            List of MacroExtractionResult for each macro
+        """
+        # Extract all macros
+        macros = self.subgraph_builder.extract_macros(source_code, file_path)
+
+        results = []
+        for macro in macros:
+            # Skip non-hazardous if requested
+            if only_hazardous and not self.subgraph_builder.has_hazardous_macro(macro):
+                continue
+
+            result = self.extract_from_macro(macro, header)
+            results.append(result)
+
+        return results
+
+    def extract_from_macro(
+        self,
+        macro: MacroDefinition,
+        header: str = "",
+    ) -> MacroExtractionResult:
+        """Extract axioms from a single macro.
+
+        Args:
+            macro: The MacroDefinition to extract from
+            header: Header file name
+
+        Returns:
+            MacroExtractionResult with extracted axioms
+        """
+        result = MacroExtractionResult(
+            macro_name=macro.name,
+            file_path=macro.file_path or "",
+            macro=macro,
+        )
+
+        # Query RAG for related axioms
+        related_axioms = self._query_macro_rag(macro)
+
+        # Build prompt
+        prompt = build_macro_extraction_prompt(
+            macro=macro,
+            related_axioms=related_axioms,
+            file_path=macro.file_path or "",
+        )
+
+        # Call LLM
+        raw_response = self._call_macro_llm(prompt)
+        result.raw_response = raw_response
+
+        if raw_response:
+            # Parse response into Axiom objects
+            axioms = self._parse_llm_response(
+                raw_response,
+                macro.name,
+                header or self._infer_header(macro.file_path or ""),
+                macro.file_path or "",
+            )
+            # Add macro tag to all extracted axioms
+            for axiom in axioms:
+                if "macro" not in axiom.tags:
+                    axiom.tags.append("macro")
+            result.axioms = axioms
+
+        return result
+
+    def extract_macros_from_file(
+        self,
+        file_path: str,
+        only_hazardous: bool = True,
+        progress_callback=None,
+    ) -> List[MacroExtractionResult]:
+        """Extract axioms from all macros in a file.
+
+        Args:
+            file_path: Path to the source file
+            only_hazardous: If True, only extract from macros with hazardous ops
+            progress_callback: Optional callback(macro_name, current, total)
+
+        Returns:
+            List of MacroExtractionResult for each macro
+        """
+        path = Path(file_path)
+        if not path.exists():
+            return [MacroExtractionResult(
+                macro_name="",
+                file_path=file_path,
+                error=f"File not found: {file_path}",
+            )]
+
+        source_code = path.read_text()
+        header = self._infer_header(file_path)
+
+        # Extract all macros
+        macros = self.subgraph_builder.extract_macros(source_code, file_path)
+
+        # Filter to hazardous if requested
+        if only_hazardous:
+            macros = [m for m in macros if self.subgraph_builder.has_hazardous_macro(m)]
+
+        results = []
+        total = len(macros)
+        for i, macro in enumerate(macros):
+            if progress_callback:
+                progress_callback(macro.name, i + 1, total)
+
+            result = self.extract_from_macro(macro, header)
+            results.append(result)
+
+        return results
+
+    def _query_macro_rag(self, macro: MacroDefinition) -> List[dict]:
+        """Query RAG for related foundation axioms for a macro.
+
+        Args:
+            macro: The macro definition
+
+        Returns:
+            List of related axiom dicts from vector DB
+        """
+        if self.vector_db is None:
+            return []
+
+        queries = build_macro_search_queries(macro)
+
+        seen_ids = set()
+        results = []
+
+        for query in queries:
+            search_results = self.vector_db.search(query, limit=5)
+            for result in search_results:
+                axiom_id = result.get("id")
+                if axiom_id and axiom_id not in seen_ids:
+                    seen_ids.add(axiom_id)
+                    results.append(result)
+
+        return results
+
+    def _call_macro_llm(self, prompt: str) -> str:
+        """Call the LLM with the macro extraction prompt.
+
+        Args:
+            prompt: The formatted extraction prompt
+
+        Returns:
+            Raw LLM response text
+        """
+        if self.llm_client is None:
+            return ""
+
+        # Handle different LLM client types
+        if self.llm_client == "claude-cli":
+            return self._call_claude_cli(prompt, system_prompt=MACRO_SYSTEM_PROMPT)
+
+        elif hasattr(self.llm_client, "messages"):
+            # Anthropic client
+            response = self.llm_client.messages.create(
+                model="claude-sonnet-4-20250514",
+                max_tokens=4096,
+                system=MACRO_SYSTEM_PROMPT,
+                messages=[{"role": "user", "content": prompt}],
+            )
+            return response.content[0].text
+
+        elif hasattr(self.llm_client, "chat"):
+            # OpenAI-style client
+            response = self.llm_client.chat.completions.create(
+                model="gpt-4",
+                messages=[
+                    {"role": "system", "content": MACRO_SYSTEM_PROMPT},
+                    {"role": "user", "content": prompt},
+                ],
+            )
+            return response.choices[0].message.content
+
+        return ""
+
     def _has_hazardous_ops(self, subgraph: FunctionSubgraph) -> bool:
         """Check if subgraph has operations requiring axioms.
 
@@ -267,16 +483,20 @@ class AxiomExtractor:
 
         return ""
 
-    def _call_claude_cli(self, prompt: str) -> str:
+    def _call_claude_cli(self, prompt: str, system_prompt: str = None) -> str:
         """Call Claude CLI for extraction.
 
         Args:
             prompt: The formatted extraction prompt
+            system_prompt: Optional system prompt (defaults to SYSTEM_PROMPT)
 
         Returns:
             Raw response text from Claude CLI
         """
         import subprocess
+
+        if system_prompt is None:
+            system_prompt = SYSTEM_PROMPT
 
         # Use --system-prompt for the system prompt and pass user prompt directly
         try:
@@ -284,7 +504,7 @@ class AxiomExtractor:
                 [
                     "claude",
                     "--print",
-                    "--system-prompt", SYSTEM_PROMPT,
+                    "--system-prompt", system_prompt,
                     "--model", "sonnet",
                     "--dangerously-skip-permissions",
                     prompt,

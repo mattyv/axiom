@@ -338,3 +338,164 @@ def build_search_queries(subgraph) -> list:
             queries.append(f"{call.function_called} precondition semantics")
 
     return queries
+
+
+# =============================================================================
+# Macro extraction prompts
+# =============================================================================
+
+MACRO_SYSTEM_PROMPT = """You are an expert in C/C++ preprocessor semantics and formal verification.
+Your task is to extract formal axioms from C/C++ macro definitions.
+
+Macros require special attention because:
+1. They perform textual substitution, not function calls
+2. Arguments may be evaluated multiple times (side effects!)
+3. Operator precedence can cause unexpected behavior without parentheses
+4. They can hide hazardous operations behind simple syntax
+
+Focus on extracting axioms for:
+- Macros that perform division or modulo
+- Macros that dereference pointers
+- Macros that cast types
+- Macros with multiple argument evaluation
+- Macros that call functions with preconditions
+"""
+
+MACRO_EXTRACTION_PROMPT = """## Macro to Analyze
+
+**Name**: `{macro_name}`
+**Signature**: `{signature}`
+**File**: `{file_path}`
+**Line**: {line}
+
+## Macro Definition
+
+```cpp
+#define {signature} {body}
+```
+
+## Analysis
+
+- Is function-like: {is_function_like}
+- Parameters: {parameters}
+- Has division: {has_division}
+- Has pointer ops: {has_pointer_ops}
+- Has casts: {has_casts}
+- Function calls: {function_calls}
+- Referenced macros: {referenced_macros}
+
+## Related Foundation Axioms
+
+{related_axioms}
+
+## Task
+
+Analyze this macro and extract axioms for any semantic requirements.
+
+For macros, pay special attention to:
+1. **Multiple evaluation**: If an argument appears more than once, side effects are evaluated multiple times
+2. **Operator precedence**: Without parentheses around arguments, precedence can cause bugs
+3. **Type safety**: Macros don't have type checking - document expected types
+4. **Hazardous operations**: Division, pointer ops, etc. in the expansion
+
+Output ONLY valid TOML with the following structure for each axiom:
+
+```toml
+[[axioms]]
+id = "<generated_unique_id>"
+function = "{macro_name}"  # Use the macro name
+header = "<header_file>"
+axiom_type = "<precondition|postcondition|invariant|constraint|effect>"
+content = "<human-readable description>"
+formal_spec = "<formal condition using parameter names>"
+on_violation = "<what happens: undefined behavior, incorrect result, etc.>"
+depends_on = ["<foundation_axiom_id>"]
+confidence = <0.0-1.0>
+tags = ["macro"]
+```
+
+### Guidelines
+
+- Use parameter names from the macro definition
+- Note if arguments may be evaluated multiple times (use 'effect' axiom_type)
+- Document expected types as constraints
+- Link to foundation axioms for hazardous operations
+- Include "macro" in tags
+
+If the macro is simple (e.g., just a constant) and has no semantic requirements,
+output an empty axioms array:
+
+```toml
+[[axioms]]
+# No axioms needed for this simple macro
+```
+
+Output only the TOML block, no other text.
+"""
+
+
+def build_macro_extraction_prompt(
+    macro,
+    related_axioms: list,
+    file_path: str = "",
+) -> str:
+    """Build the extraction prompt for a macro.
+
+    Args:
+        macro: MacroDefinition object
+        related_axioms: List of related axiom dicts from RAG
+        file_path: Path to the source file
+
+    Returns:
+        Complete prompt string
+    """
+    return MACRO_EXTRACTION_PROMPT.format(
+        macro_name=macro.name,
+        signature=macro.to_signature(),
+        file_path=file_path or macro.file_path or "unknown",
+        line=macro.line_start,
+        body=macro.body,
+        is_function_like="Yes" if macro.is_function_like else "No",
+        parameters=", ".join(macro.parameters) if macro.parameters else "None",
+        has_division="Yes" if macro.has_division else "No",
+        has_pointer_ops="Yes" if macro.has_pointer_ops else "No",
+        has_casts="Yes" if macro.has_casts else "No",
+        function_calls=", ".join(macro.function_calls) if macro.function_calls else "None",
+        referenced_macros=", ".join(macro.referenced_macros) if macro.referenced_macros else "None",
+        related_axioms=format_related_axioms(related_axioms),
+    )
+
+
+def build_macro_search_queries(macro) -> list:
+    """Generate search queries for RAG based on macro content.
+
+    Args:
+        macro: MacroDefinition object
+
+    Returns:
+        List of search query strings
+    """
+    queries = []
+
+    if macro.has_division:
+        queries.append("division by zero undefined behavior macro")
+
+    if macro.has_pointer_ops:
+        queries.append("pointer dereference undefined behavior")
+
+    if macro.has_casts:
+        queries.append("type cast undefined behavior")
+
+    # Search for function semantics
+    for func in macro.function_calls:
+        queries.append(f"{func} precondition semantics")
+
+    # Search for referenced macro semantics
+    for ref in macro.referenced_macros:
+        queries.append(f"{ref} macro semantics")
+
+    # If function-like with multiple parameter uses, search for evaluation
+    if macro.is_function_like and macro.parameters:
+        queries.append("macro argument evaluation side effects")
+
+    return queries

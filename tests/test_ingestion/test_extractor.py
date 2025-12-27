@@ -3,13 +3,17 @@
 import pytest
 
 from axiom.ingestion import AxiomExtractor, ExtractionResult, extract_axioms
+from axiom.ingestion.extractor import MacroExtractionResult
 from axiom.ingestion.prompts import (
     build_extraction_prompt,
+    build_macro_extraction_prompt,
+    build_macro_search_queries,
     build_search_queries,
     format_key_operations,
     format_related_axioms,
 )
 from axiom.models import AxiomType
+from axiom.models.operation import MacroDefinition
 
 
 class TestAxiomExtractor:
@@ -454,3 +458,227 @@ class TestHazardousOperationDetection:
         # Still has no divisions, no pointer ops, but has variable declaration
         # The _has_hazardous_ops checks for divisions, pointers, memory ops, and calls
         assert extractor._has_hazardous_ops(subgraph_no_calls) is False
+
+
+class TestMacroExtraction:
+    """Tests for macro extraction functionality in AxiomExtractor."""
+
+    def test_extract_macros_from_source(self):
+        """Test extracting macros from source code."""
+        code = """
+        #define MAX(a, b) ((a) > (b) ? (a) : (b))
+        #define DIV(a, b) ((a) / (b))
+        #define VERSION 1
+        """
+        extractor = AxiomExtractor()
+        results = extractor.extract_macros_from_source(code, "test.h")
+
+        # Only hazardous macros by default (DIV has division)
+        assert len(results) >= 1
+        macro_names = {r.macro_name for r in results}
+        assert "DIV" in macro_names
+
+    def test_extract_macros_includes_all_when_requested(self):
+        """Test extracting all macros when only_hazardous=False."""
+        code = """
+        #define MAX(a, b) ((a) > (b) ? (a) : (b))
+        #define VERSION 1
+        """
+        extractor = AxiomExtractor()
+        results = extractor.extract_macros_from_source(
+            code, "test.h", only_hazardous=False
+        )
+
+        assert len(results) == 2
+        macro_names = {r.macro_name for r in results}
+        assert macro_names == {"MAX", "VERSION"}
+
+    def test_extract_from_macro_returns_result(self):
+        """Test extracting from a single macro."""
+        macro = MacroDefinition(
+            name="DIV",
+            parameters=["a", "b"],
+            body="((a) / (b))",
+            is_function_like=True,
+            file_path="test.h",
+            line_start=1,
+            line_end=1,
+            has_division=True,
+        )
+
+        extractor = AxiomExtractor()
+        result = extractor.extract_from_macro(macro, "test.h")
+
+        assert isinstance(result, MacroExtractionResult)
+        assert result.macro_name == "DIV"
+        assert result.macro is macro
+
+    def test_macro_extraction_result_structure(self):
+        """Test MacroExtractionResult has expected fields."""
+        result = MacroExtractionResult(
+            macro_name="TEST",
+            file_path="test.h",
+            axioms=[],
+            raw_response="",
+            error=None,
+            macro=None,
+        )
+
+        assert result.macro_name == "TEST"
+        assert result.file_path == "test.h"
+        assert result.axioms == []
+
+    def test_extract_macros_skips_simple_constants(self):
+        """Test that simple constants are skipped by default."""
+        code = """
+        #define PI 3.14159
+        #define E 2.71828
+        #define MAX_SIZE 100
+        """
+        extractor = AxiomExtractor()
+        results = extractor.extract_macros_from_source(code, "test.h")
+
+        # None of these have hazardous operations
+        assert len(results) == 0
+
+
+class TestMacroPromptBuilding:
+    """Tests for macro-specific prompt building."""
+
+    def test_build_macro_extraction_prompt(self):
+        """Test building the macro extraction prompt."""
+        macro = MacroDefinition(
+            name="DIV",
+            parameters=["a", "b"],
+            body="((a) / (b))",
+            is_function_like=True,
+            file_path="test.h",
+            line_start=10,
+            has_division=True,
+        )
+
+        prompt = build_macro_extraction_prompt(macro, [], "test.h")
+
+        assert "DIV" in prompt
+        assert "DIV(a, b)" in prompt
+        assert "test.h" in prompt
+        assert "division" in prompt.lower() or "Yes" in prompt
+
+    def test_build_macro_search_queries_for_division(self):
+        """Test search query generation for division macro."""
+        macro = MacroDefinition(
+            name="DIV",
+            parameters=["a", "b"],
+            body="((a) / (b))",
+            is_function_like=True,
+            has_division=True,
+        )
+
+        queries = build_macro_search_queries(macro)
+
+        assert len(queries) > 0
+        assert any("division" in q.lower() for q in queries)
+
+    def test_build_macro_search_queries_for_pointers(self):
+        """Test search query generation for pointer macro."""
+        macro = MacroDefinition(
+            name="DEREF",
+            parameters=["p"],
+            body="(*p)",
+            is_function_like=True,
+            has_pointer_ops=True,
+        )
+
+        queries = build_macro_search_queries(macro)
+
+        assert len(queries) > 0
+        assert any("pointer" in q.lower() for q in queries)
+
+    def test_build_macro_search_queries_for_casts(self):
+        """Test search query generation for cast macro."""
+        macro = MacroDefinition(
+            name="TO_INT",
+            parameters=["x"],
+            body="((int)(x))",
+            is_function_like=True,
+            has_casts=True,
+        )
+
+        queries = build_macro_search_queries(macro)
+
+        assert len(queries) > 0
+        assert any("cast" in q.lower() for q in queries)
+
+    def test_build_macro_search_queries_for_function_calls(self):
+        """Test search query generation for macro with function calls."""
+        macro = MacroDefinition(
+            name="LOG",
+            parameters=["msg"],
+            body='printf("%s", msg)',
+            is_function_like=True,
+            function_calls=["printf"],
+        )
+
+        queries = build_macro_search_queries(macro)
+
+        assert len(queries) > 0
+        assert any("printf" in q.lower() for q in queries)
+
+    def test_build_macro_search_queries_empty_for_simple(self):
+        """Test search query generation for simple macro."""
+        macro = MacroDefinition(
+            name="VERSION",
+            parameters=[],
+            body="1",
+            is_function_like=False,
+        )
+
+        queries = build_macro_search_queries(macro)
+
+        # Simple constant has no hazardous operations
+        assert len(queries) == 0
+
+
+class TestMacroLLMResponseParsing:
+    """Tests for parsing LLM responses for macros."""
+
+    def test_parse_macro_response_adds_macro_tag(self):
+        """Test that parsed macro axioms get the macro tag."""
+        extractor = AxiomExtractor()
+
+        response = '''```toml
+[[axioms]]
+id = "test_div_macro"
+function = "DIV"
+header = "macros.h"
+axiom_type = "precondition"
+content = "Division macro requires non-zero divisor"
+formal_spec = "b != 0"
+on_violation = "undefined behavior"
+confidence = 0.9
+```'''
+
+        axioms = extractor._parse_llm_response(response, "DIV", "macros.h", "test.h")
+
+        assert len(axioms) == 1
+        # When called via extract_from_macro, the macro tag would be added
+        # Here we're just testing the parsing
+
+    def test_macro_extraction_result_stores_macro(self):
+        """Test that MacroExtractionResult stores the macro definition."""
+        macro = MacroDefinition(
+            name="TEST",
+            parameters=["x"],
+            body="((x) * 2)",
+            is_function_like=True,
+        )
+
+        result = MacroExtractionResult(
+            macro_name="TEST",
+            file_path="test.h",
+            macro=macro,
+        )
+
+        assert result.macro is macro
+        assert result.macro.name == "TEST"
+        assert result.macro.is_function_like is True

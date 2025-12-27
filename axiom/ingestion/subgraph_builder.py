@@ -11,7 +11,7 @@ import tree_sitter_c as tsc
 import tree_sitter_cpp as tscpp
 from tree_sitter import Language, Node, Parser
 
-from axiom.models.operation import FunctionSubgraph, OperationNode, OperationType
+from axiom.models.operation import FunctionSubgraph, MacroDefinition, OperationNode, OperationType
 
 
 class SubgraphBuilder:
@@ -1072,4 +1072,210 @@ class SubgraphBuilder:
             guards=guards.copy(),
             parent_id=parent_id,
             ast_node_type=node.type,
+        )
+
+    # =====================================================================
+    # Macro extraction methods
+    # =====================================================================
+
+    def extract_macros(self, source: str, file_path: str = "") -> List[MacroDefinition]:
+        """Extract all macro definitions from source code.
+
+        Args:
+            source: The complete source code.
+            file_path: Path to the source file (for metadata).
+
+        Returns:
+            List of MacroDefinition objects.
+        """
+        tree = self.parser.parse(bytes(source, "utf8"))
+        macros = []
+
+        self._find_macros(tree.root_node, source, file_path, macros)
+
+        return macros
+
+    def _find_macros(
+        self,
+        node: Node,
+        source: str,
+        file_path: str,
+        macros: List[MacroDefinition],
+    ) -> None:
+        """Recursively find macro definitions in the AST.
+
+        Args:
+            node: Current AST node.
+            source: Original source code.
+            file_path: Source file path.
+            macros: List to append found macros to.
+        """
+        # Function-like macro: #define NAME(params) body
+        if node.type == "preproc_function_def":
+            macro = self._parse_function_macro(node, source, file_path)
+            if macro:
+                macros.append(macro)
+
+        # Object-like macro: #define NAME body
+        elif node.type == "preproc_def":
+            macro = self._parse_object_macro(node, source, file_path)
+            if macro:
+                macros.append(macro)
+
+        # Recurse into children
+        for child in node.children:
+            self._find_macros(child, source, file_path, macros)
+
+    def _parse_function_macro(
+        self, node: Node, source: str, file_path: str
+    ) -> Optional[MacroDefinition]:
+        """Parse a function-like macro definition.
+
+        Args:
+            node: The preproc_function_def node.
+            source: Original source code.
+            file_path: Source file path.
+
+        Returns:
+            MacroDefinition or None if parsing fails.
+        """
+        name = ""
+        parameters = []
+        body = ""
+
+        # Get macro name
+        name_node = node.child_by_field_name("name")
+        if name_node:
+            name = name_node.text.decode("utf8")
+
+        # Get parameters
+        params_node = node.child_by_field_name("parameters")
+        if params_node:
+            for child in params_node.children:
+                if child.type == "identifier":
+                    parameters.append(child.text.decode("utf8"))
+
+        # Get body (value field)
+        value_node = node.child_by_field_name("value")
+        if value_node:
+            body = value_node.text.decode("utf8").strip()
+
+        if not name:
+            return None
+
+        # Analyze body for hazardous operations
+        has_division, has_pointer_ops, has_casts, func_calls, ref_macros = (
+            self._analyze_macro_body(body)
+        )
+
+        return MacroDefinition(
+            name=name,
+            parameters=parameters,
+            body=body,
+            is_function_like=True,
+            file_path=file_path,
+            line_start=node.start_point[0] + 1,
+            line_end=node.end_point[0] + 1,
+            has_division=has_division,
+            has_pointer_ops=has_pointer_ops,
+            has_casts=has_casts,
+            function_calls=func_calls,
+            referenced_macros=ref_macros,
+        )
+
+    def _parse_object_macro(
+        self, node: Node, source: str, file_path: str
+    ) -> Optional[MacroDefinition]:
+        """Parse an object-like macro definition.
+
+        Args:
+            node: The preproc_def node.
+            source: Original source code.
+            file_path: Source file path.
+
+        Returns:
+            MacroDefinition or None if parsing fails.
+        """
+        name = ""
+        body = ""
+
+        # Get macro name
+        name_node = node.child_by_field_name("name")
+        if name_node:
+            name = name_node.text.decode("utf8")
+
+        # Get body (value field)
+        value_node = node.child_by_field_name("value")
+        if value_node:
+            body = value_node.text.decode("utf8").strip()
+
+        if not name:
+            return None
+
+        # Analyze body for hazardous operations
+        has_division, has_pointer_ops, has_casts, func_calls, ref_macros = (
+            self._analyze_macro_body(body)
+        )
+
+        return MacroDefinition(
+            name=name,
+            parameters=[],
+            body=body,
+            is_function_like=False,
+            file_path=file_path,
+            line_start=node.start_point[0] + 1,
+            line_end=node.end_point[0] + 1,
+            has_division=has_division,
+            has_pointer_ops=has_pointer_ops,
+            has_casts=has_casts,
+            function_calls=func_calls,
+            referenced_macros=ref_macros,
+        )
+
+    def _analyze_macro_body(
+        self, body: str
+    ) -> Tuple[bool, bool, bool, List[str], List[str]]:
+        """Analyze macro body for hazardous operations.
+
+        This uses simple pattern matching since the macro body
+        may not be valid standalone C/C++ code.
+
+        Args:
+            body: The macro expansion body.
+
+        Returns:
+            Tuple of (has_division, has_pointer_ops, has_casts,
+                     function_calls, referenced_macros).
+        """
+        import re
+
+        has_division = bool(re.search(r'[^/]/[^/*]|%', body))
+        has_pointer_ops = bool(re.search(r'\*[a-zA-Z_]|&[a-zA-Z_]', body))
+        has_casts = bool(re.search(r'\([a-zA-Z_][a-zA-Z_0-9]*\s*\*?\s*\)', body))
+
+        # Find function calls: identifier followed by (
+        func_calls = re.findall(r'\b([a-z_][a-zA-Z_0-9]*)\s*\(', body)
+        # Filter out common keywords
+        keywords = {'if', 'while', 'for', 'switch', 'sizeof', 'typeof', 'alignof'}
+        func_calls = [f for f in func_calls if f not in keywords]
+
+        # Find potential macro references: UPPERCASE identifiers
+        ref_macros = re.findall(r'\b([A-Z_][A-Z_0-9]{2,})\b', body)
+
+        return has_division, has_pointer_ops, has_casts, func_calls, ref_macros
+
+    def has_hazardous_macro(self, macro: MacroDefinition) -> bool:
+        """Check if a macro has operations that may need axioms.
+
+        Args:
+            macro: The macro definition to check.
+
+        Returns:
+            True if the macro has potentially hazardous operations.
+        """
+        return (
+            macro.has_division
+            or macro.has_pointer_ops
+            or macro.has_casts
+            or bool(macro.function_calls)
         )

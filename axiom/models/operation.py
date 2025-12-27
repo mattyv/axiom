@@ -344,3 +344,78 @@ class FunctionSubgraph(BaseModel):
                 if node.function_called
             ],
         }
+
+
+class MacroDefinition(BaseModel):
+    """Represents a C/C++ macro definition (#define).
+
+    Macros can have semantic implications such as:
+    - Function-like macros that expand to expressions with hazardous operations
+    - Object-like macros that define constants used in semantic constraints
+    - Macros that abstract away low-level operations
+    """
+
+    name: str
+    """The macro name (identifier after #define)."""
+
+    parameters: List[str] = Field(default_factory=list)
+    """Parameter names for function-like macros. Empty for object-like macros."""
+
+    body: str = ""
+    """The macro expansion body (everything after the name/parameters)."""
+
+    is_function_like: bool = False
+    """Whether this is a function-like macro (has parentheses after name)."""
+
+    # Source location
+    file_path: Optional[str] = None
+    """Path to the source file."""
+
+    line_start: int = 0
+    """Starting line of the macro definition."""
+
+    line_end: int = 0
+    """Ending line of the macro definition (for multi-line macros)."""
+
+    # Semantic analysis hints
+    has_division: bool = False
+    """Whether the macro body contains division operations."""
+
+    has_pointer_ops: bool = False
+    """Whether the macro body contains pointer dereference/address-of."""
+
+    has_casts: bool = False
+    """Whether the macro body contains type casts."""
+
+    function_calls: List[str] = Field(default_factory=list)
+    """Function calls found in the macro body."""
+
+    referenced_macros: List[str] = Field(default_factory=list)
+    """Other macros referenced in the body."""
+
+    def to_signature(self) -> str:
+        """Generate a function-like signature for display.
+
+        Returns:
+            Signature string like 'MACRO_NAME(a, b)' or 'MACRO_NAME'.
+        """
+        if self.is_function_like and self.parameters:
+            return f"{self.name}({', '.join(self.parameters)})"
+        return self.name
+
+    def to_summary(self) -> dict:
+        """Generate a summary for LLM prompts.
+
+        Returns:
+            Dict with macro metadata.
+        """
+        return {
+            "name": self.name,
+            "signature": self.to_signature(),
+            "is_function_like": self.is_function_like,
+            "body": self.body,
+            "has_division": self.has_division,
+            "has_pointer_ops": self.has_pointer_ops,
+            "has_casts": self.has_casts,
+            "function_calls": self.function_calls,
+        }

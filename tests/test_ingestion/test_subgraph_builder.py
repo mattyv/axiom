@@ -8,6 +8,7 @@ import pytest
 
 from axiom.ingestion import SubgraphBuilder
 from axiom.models import FunctionSubgraph, OperationNode, OperationType
+from axiom.models.operation import MacroDefinition
 
 
 class TestSubgraphBuilderBasics:
@@ -1234,3 +1235,249 @@ class TestEdgeCases:
         sg = builder.build(code, "many")
 
         assert len(sg.parameters) == 5
+
+
+class TestMacroExtraction:
+    """Tests for macro extraction functionality."""
+
+    def test_extracts_simple_object_macro(self):
+        """Test extraction of simple object-like macro."""
+        code = """
+        #define MAX_SIZE 100
+        """
+        builder = SubgraphBuilder(language="cpp")
+        macros = builder.extract_macros(code, "test.h")
+
+        assert len(macros) == 1
+        assert macros[0].name == "MAX_SIZE"
+        assert macros[0].body == "100"
+        assert macros[0].is_function_like is False
+        assert len(macros[0].parameters) == 0
+
+    def test_extracts_function_like_macro(self):
+        """Test extraction of function-like macro."""
+        code = """
+        #define ADD(a, b) ((a) + (b))
+        """
+        builder = SubgraphBuilder(language="cpp")
+        macros = builder.extract_macros(code, "test.h")
+
+        assert len(macros) == 1
+        assert macros[0].name == "ADD"
+        assert macros[0].is_function_like is True
+        assert macros[0].parameters == ["a", "b"]
+        assert "+" in macros[0].body
+
+    def test_extracts_multiple_macros(self):
+        """Test extraction of multiple macros."""
+        code = """
+        #define PI 3.14159
+        #define DOUBLE(x) ((x) * 2)
+        #define MAX(a, b) ((a) > (b) ? (a) : (b))
+        """
+        builder = SubgraphBuilder(language="cpp")
+        macros = builder.extract_macros(code, "test.h")
+
+        assert len(macros) == 3
+        names = {m.name for m in macros}
+        assert names == {"PI", "DOUBLE", "MAX"}
+
+    def test_detects_division_in_macro(self):
+        """Test detection of division in macro body."""
+        code = """
+        #define DIV(a, b) ((a) / (b))
+        """
+        builder = SubgraphBuilder(language="cpp")
+        macros = builder.extract_macros(code, "test.h")
+
+        assert len(macros) == 1
+        assert macros[0].has_division is True
+
+    def test_detects_modulo_in_macro(self):
+        """Test detection of modulo in macro body."""
+        code = """
+        #define MOD(a, b) ((a) % (b))
+        """
+        builder = SubgraphBuilder(language="cpp")
+        macros = builder.extract_macros(code, "test.h")
+
+        assert len(macros) == 1
+        assert macros[0].has_division is True
+
+    def test_detects_pointer_ops_in_macro(self):
+        """Test detection of pointer operations in macro body."""
+        code = """
+        #define DEREF(p) (*p)
+        """
+        builder = SubgraphBuilder(language="cpp")
+        macros = builder.extract_macros(code, "test.h")
+
+        assert len(macros) == 1
+        assert macros[0].has_pointer_ops is True
+
+    def test_detects_casts_in_macro(self):
+        """Test detection of casts in macro body."""
+        code = """
+        #define TO_INT(x) ((int)(x))
+        """
+        builder = SubgraphBuilder(language="cpp")
+        macros = builder.extract_macros(code, "test.h")
+
+        assert len(macros) == 1
+        assert macros[0].has_casts is True
+
+    def test_detects_function_calls_in_macro(self):
+        """Test detection of function calls in macro body."""
+        code = """
+        #define SAFE_FREE(p) do { free(p); p = NULL; } while(0)
+        """
+        builder = SubgraphBuilder(language="cpp")
+        macros = builder.extract_macros(code, "test.h")
+
+        assert len(macros) == 1
+        assert "free" in macros[0].function_calls
+
+    def test_detects_referenced_macros(self):
+        """Test detection of referenced macros in body."""
+        code = """
+        #define USE_LIMIT(x) ((x) < MAX_VALUE ? (x) : MAX_VALUE)
+        """
+        builder = SubgraphBuilder(language="cpp")
+        macros = builder.extract_macros(code, "test.h")
+
+        assert len(macros) == 1
+        assert "MAX_VALUE" in macros[0].referenced_macros
+
+    def test_has_hazardous_macro_with_division(self):
+        """Test has_hazardous_macro returns True for division."""
+        code = """
+        #define DIV(a, b) ((a) / (b))
+        """
+        builder = SubgraphBuilder(language="cpp")
+        macros = builder.extract_macros(code, "test.h")
+
+        assert len(macros) == 1
+        assert builder.has_hazardous_macro(macros[0]) is True
+
+    def test_has_hazardous_macro_false_for_simple(self):
+        """Test has_hazardous_macro returns False for simple macro."""
+        code = """
+        #define VERSION 1
+        """
+        builder = SubgraphBuilder(language="cpp")
+        macros = builder.extract_macros(code, "test.h")
+
+        assert len(macros) == 1
+        assert builder.has_hazardous_macro(macros[0]) is False
+
+    def test_macro_line_numbers(self):
+        """Test that macro line numbers are captured."""
+        code = """
+        // Comment
+        #define FIRST 1
+        // Another comment
+        #define SECOND 2
+        """
+        builder = SubgraphBuilder(language="cpp")
+        macros = builder.extract_macros(code, "test.h")
+
+        assert len(macros) == 2
+        # Line numbers should be different
+        lines = {m.line_start for m in macros}
+        assert len(lines) == 2
+
+    def test_macro_file_path(self):
+        """Test that file path is stored in macro."""
+        code = "#define TEST 1"
+        builder = SubgraphBuilder(language="cpp")
+        macros = builder.extract_macros(code, "/path/to/header.h")
+
+        assert len(macros) == 1
+        assert macros[0].file_path == "/path/to/header.h"
+
+    def test_macro_signature(self):
+        """Test macro signature generation."""
+        code = """
+        #define SIMPLE 42
+        #define FUNC(x, y, z) ((x) + (y) + (z))
+        """
+        builder = SubgraphBuilder(language="cpp")
+        macros = builder.extract_macros(code, "test.h")
+
+        by_name = {m.name: m for m in macros}
+
+        assert by_name["SIMPLE"].to_signature() == "SIMPLE"
+        assert by_name["FUNC"].to_signature() == "FUNC(x, y, z)"
+
+    def test_macro_summary(self):
+        """Test macro summary generation."""
+        code = """
+        #define DIV(a, b) ((a) / (b))
+        """
+        builder = SubgraphBuilder(language="cpp")
+        macros = builder.extract_macros(code, "test.h")
+
+        summary = macros[0].to_summary()
+        assert summary["name"] == "DIV"
+        assert summary["is_function_like"] is True
+        assert summary["has_division"] is True
+
+    def test_empty_macro_body(self):
+        """Test macro with empty body."""
+        code = """
+        #define EMPTY
+        """
+        builder = SubgraphBuilder(language="cpp")
+        macros = builder.extract_macros(code, "test.h")
+
+        assert len(macros) == 1
+        assert macros[0].name == "EMPTY"
+        assert macros[0].body == ""
+
+    def test_c_language_macros(self):
+        """Test macro extraction works with C language."""
+        code = """
+        #define BUFFER_SIZE 1024
+        #define SQUARE(x) ((x) * (x))
+        """
+        builder = SubgraphBuilder(language="c")
+        macros = builder.extract_macros(code, "test.h")
+
+        assert len(macros) == 2
+
+    def test_real_world_macro_patterns(self):
+        """Test extraction of real-world macro patterns."""
+        code = """
+        #define MIN(a, b) ((a) < (b) ? (a) : (b))
+        #define MAX(a, b) ((a) > (b) ? (a) : (b))
+        #define ABS(x) ((x) < 0 ? -(x) : (x))
+        #define ARRAY_SIZE(arr) (sizeof(arr) / sizeof((arr)[0]))
+        #define UNUSED(x) (void)(x)
+        """
+        builder = SubgraphBuilder(language="cpp")
+        macros = builder.extract_macros(code, "test.h")
+
+        assert len(macros) == 5
+
+        by_name = {m.name: m for m in macros}
+
+        # MIN and MAX should not have division (ternary, not division)
+        assert by_name["MIN"].has_division is False
+        assert by_name["MAX"].has_division is False
+
+        # ABS should not have division
+        assert by_name["ABS"].has_division is False
+
+        # ARRAY_SIZE has division
+        assert by_name["ARRAY_SIZE"].has_division is True
+
+    def test_macro_with_function_calls_multiple(self):
+        """Test macro with multiple function calls."""
+        code = """
+        #define LOG_AND_RETURN(msg, val) do { printf("%s", msg); return val; } while(0)
+        """
+        builder = SubgraphBuilder(language="cpp")
+        macros = builder.extract_macros(code, "test.h")
+
+        assert len(macros) == 1
+        assert "printf" in macros[0].function_calls
