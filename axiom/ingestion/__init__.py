@@ -7,8 +7,13 @@ This package provides tools to:
 4. Review and approve extracted axioms
 """
 
+from .extractor import AxiomExtractor, ExtractionJob, ExtractionResult, extract_axioms
 from .subgraph_builder import SubgraphBuilder
 
 __all__ = [
+    "AxiomExtractor",
+    "ExtractionJob",
+    "ExtractionResult",
     "SubgraphBuilder",
+    "extract_axioms",
 ]
