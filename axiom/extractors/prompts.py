@@ -231,7 +231,7 @@ HIGH_SIGNAL_LIBRARY_SECTIONS = [
 
     # Memory
     "unique.ptr",
-    "shared.ptr",
+    "util.sharedptr",
     "allocator.requirements",
 
     # Utilities

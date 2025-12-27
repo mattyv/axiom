@@ -10,24 +10,16 @@ echo "Installing Axiom MCP server..."
 echo "Project directory: $PROJECT_DIR"
 
 # Detect config file location
-if [[ "$OSTYPE" == "darwin"* ]]; then
+if [[ "$OSTYPE" == "darwin"* ]] && [[ -d "$HOME/Library/Application Support/Claude" ]]; then
     # macOS - Claude Desktop
-    CONFIG_DIR="$HOME/Library/Application Support/Claude"
-    CONFIG_FILE="$CONFIG_DIR/claude_desktop_config.json"
-elif [[ -f "$HOME/.config/claude-code/settings.json" ]]; then
-    # Linux - Claude Code
-    CONFIG_DIR="$HOME/.config/claude-code"
-    CONFIG_FILE="$CONFIG_DIR/settings.json"
+    CONFIG_FILE="$HOME/Library/Application Support/Claude/claude_desktop_config.json"
+    mkdir -p "$(dirname "$CONFIG_FILE")"
 else
-    # Default to Claude Code config
-    CONFIG_DIR="$HOME/.config/claude-code"
-    CONFIG_FILE="$CONFIG_DIR/settings.json"
+    # Claude Code - use .mcp.json in project root
+    CONFIG_FILE="$PROJECT_DIR/.mcp.json"
 fi
 
 echo "Config file: $CONFIG_FILE"
-
-# Create config directory if needed
-mkdir -p "$CONFIG_DIR"
 
 # Check if Python venv exists
 if [[ ! -d "$PROJECT_DIR/.venv" ]]; then
@@ -64,7 +56,7 @@ if 'mcpServers' not in config:
 
 config['mcpServers']['axiom'] = {
     'command': '$MCP_COMMAND',
-    'args': ['$MCP_ARGS'],
+    'args': ['-m', 'axiom.mcp.server'],
     'env': {
         'PYTHONPATH': '$PROJECT_DIR'
     }
@@ -82,7 +74,7 @@ else
   "mcpServers": {
     "axiom": {
       "command": "$MCP_COMMAND",
-      "args": ["$MCP_ARGS"],
+      "args": ["-m", "axiom.mcp.server"],
       "env": {
         "PYTHONPATH": "$PROJECT_DIR"
       }
