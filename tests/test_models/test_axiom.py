@@ -456,3 +456,36 @@ source_module = "test"
 """
         collection = AxiomCollection.load_toml_string(toml_str)
         assert collection.axioms[0].reviewed is False
+
+    def test_to_toml_escapes_quotes_in_function_name(self):
+        """Test that quotes in function names are properly escaped."""
+        from axiom.models import AxiomCollection
+
+        axiom = Axiom(
+            id="test",
+            content="Test",
+            formal_spec="test",
+            source=SourceLocation(file="test.cpp", module="test"),
+            function='operator""sv',  # User-defined literal
+        )
+        collection = AxiomCollection(axioms=[axiom])
+        toml_str = collection.to_toml()
+        # Should be escaped as operator\"\"sv
+        assert 'function = "operator\\"\\"sv"' in toml_str
+
+    def test_roundtrip_function_with_quotes(self):
+        """Test that function names with quotes survive serialization roundtrip."""
+        from axiom.models import AxiomCollection
+
+        axiom = Axiom(
+            id="test_operator",
+            content="Test operator",
+            formal_spec="test",
+            source=SourceLocation(file="test.cpp", module="test"),
+            function='operator""sv',
+        )
+        collection = AxiomCollection(axioms=[axiom])
+        toml_str = collection.to_toml()
+
+        loaded = AxiomCollection.load_toml_string(toml_str)
+        assert loaded.axioms[0].function == 'operator""sv'

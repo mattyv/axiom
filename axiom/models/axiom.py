@@ -166,7 +166,9 @@ class AxiomCollection(BaseModel):
                 lines.append(f"error_codes = {codes!r}")
             # New K-style fields
             if axiom.function:
-                lines.append(f'function = "{axiom.function}"')
+                # Escape quotes in function names (e.g., operator"")
+                escaped_fn = axiom.function.replace('"', '\\"')
+                lines.append(f'function = "{escaped_fn}"')
             if axiom.header:
                 lines.append(f'header = "{axiom.header}"')
             if axiom.axiom_type:

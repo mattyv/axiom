@@ -1,6 +1,6 @@
 version = "1.0"
 source = "kframework/c-semantics/c11_stdlib"
-extracted_at = "2025-12-27T06:00:40.811199"
+extracted_at = "2025-12-27T23:51:34.911871"
 
 [[axioms]]
 id = "c11_libc_stdarg___kcc_va_start_2690c6fb"
@@ -3680,7 +3680,7 @@ source_module = "LIBC-STDIO"
 source_line_start = 2457
 source_line_end = 2463
 tags = ['type_compatibility', 'pointer', 'integer', 'comparison']
-error_codes = ['CCV7', 'CCV11', 'CEA1', 'CEA5', 'CEA2', 'CEE3', 'CER3', 'CER4', 'CERL1', 'CERL2', 'CERL3', 'CERL4', 'CERL6', 'ECL3', 'ECL4', 'CEER1', 'EEA2', 'EEA3', 'EEA4', 'EEA5', 'EFNC1', 'EFNC2', 'STRING1', 'CCV9', 'CEA7', 'CEA8', 'CEA9', 'CER6', 'CERL5', 'TEAS2', 'TSE2', 'TTE2', 'TTE3', 'CCV13', 'CCV13-H', 'CCVE4', 'CEMX4', 'STDLIBE1', 'STDLIBE2', 'STDLIBE3', 'CEE6', 'CER7', 'EXC3', 'TDG12', 'FD6', 'STDIO1', 'CEB1', 'CEB5', 'CEB9', 'CEB10', 'CEB11', 'CTI4']
+error_codes = ['CCV7', 'CCV11', 'CEA2', 'ECL4', 'EFNC1', 'TDG12', 'FD6', 'STDIO1', 'CCV9', 'CEA7', 'CEA8', 'CEA9', 'CEB1', 'CEB5', 'CEB9', 'CEB10', 'CEB11', 'CERL5', 'TEAS2', 'TSE2', 'TTE2', 'TTE3', 'CTI4', 'CEA1', 'CEA5', 'CEE3', 'CER3', 'CER4', 'CERL1', 'CERL2', 'CERL3', 'CERL4', 'CERL6', 'ECL3', 'CEER1', 'EEA2', 'EEA3', 'EEA4', 'EEA5', 'EFNC2', 'STRING1', 'CER6', 'CCV13', 'CCV13-H', 'CCVE4', 'CEMX4', 'STDLIBE1', 'STDLIBE2', 'STDLIBE3', 'CEE6', 'CER7', 'EXC3']
 header = "stdio.h"
 axiom_type = "precondition"
 
