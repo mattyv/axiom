@@ -69,6 +69,39 @@ class Axiom(BaseModel):
     # Dependency tracking (for library -> foundation axiom chains)
     depends_on: List[str] = Field(default_factory=list)  # IDs of foundation axioms this depends on
 
+    # Review status (affects confidence calculation for library axioms)
+    reviewed: bool = False  # True if human-approved during review process
+
+    @property
+    def effective_confidence(self) -> float:
+        """Calculate effective confidence based on review status.
+
+        For library axioms (LLM-extracted), review status affects confidence:
+        - Pending review: ~70% of base confidence
+        - Human-approved (reviewed=True): ~90% of base confidence
+
+        Foundation axioms (from formal specs) retain their original confidence.
+
+        Returns:
+            Adjusted confidence value between 0.0 and 1.0.
+        """
+        # Foundation layers are ground truth - no adjustment
+        GROUNDED_LAYERS = {
+            "c11_core", "c11_stdlib",
+            "cpp_core", "cpp_stdlib",
+            "cpp20_language", "cpp20_stdlib",
+        }
+        if self.layer in GROUNDED_LAYERS:
+            return self.confidence
+
+        # Library axioms get confidence adjusted based on review status
+        if self.reviewed:
+            # Human-approved: 90% of base confidence
+            return min(self.confidence * 0.9, 1.0)
+        else:
+            # Pending review: 70% of base confidence
+            return min(self.confidence * 0.7, 1.0)
+
 
 class ErrorCode(BaseModel):
     """An error code from the C semantics error catalog."""
@@ -140,6 +173,8 @@ class AxiomCollection(BaseModel):
                 lines.append(f"on_violation = {to_literal(axiom.on_violation)}")
             if axiom.depends_on:
                 lines.append(f"depends_on = {axiom.depends_on!r}")
+            if axiom.reviewed:
+                lines.append("reviewed = true")
             lines.append("")
 
         for error in self.error_codes:
@@ -198,6 +233,7 @@ class AxiomCollection(BaseModel):
                     axiom_type=AxiomType(a["axiom_type"]) if a.get("axiom_type") else None,
                     on_violation=a.get("on_violation"),
                     depends_on=a.get("depends_on", []),
+                    reviewed=a.get("reviewed", False),
                 )
             )
 

@@ -375,3 +375,115 @@ class TestReviewDecision:
         assert ReviewDecision.REJECTED.value == "rejected"
         assert ReviewDecision.MODIFIED.value == "modified"
         assert ReviewDecision.SKIPPED.value == "skipped"
+
+
+class TestReviewedFlag:
+    """Tests for the reviewed field and its effect on confidence."""
+
+    def test_approved_axioms_have_reviewed_flag_set(self):
+        """Test that approved axioms get reviewed=True."""
+        axiom = create_test_axiom("a1")
+        assert axiom.reviewed is False
+
+        items = [
+            ReviewItem(axiom=axiom, decision=ReviewDecision.APPROVED),
+        ]
+        session = ReviewSession(session_id="test", items=items)
+
+        approved = session.get_approved_axioms()
+        assert len(approved) == 1
+        assert approved[0].reviewed is True
+
+    def test_modified_axioms_have_reviewed_flag_set(self):
+        """Test that modified axioms get reviewed=True."""
+        original = create_test_axiom("a1")
+        modified = create_test_axiom("a1_modified")
+        assert modified.reviewed is False
+
+        items = [
+            ReviewItem(
+                axiom=original,
+                decision=ReviewDecision.MODIFIED,
+                modified_axiom=modified,
+            ),
+        ]
+        session = ReviewSession(session_id="test", items=items)
+
+        approved = session.get_approved_axioms()
+        assert len(approved) == 1
+        assert approved[0].reviewed is True
+        assert approved[0].id == "a1_modified"
+
+    def test_effective_confidence_for_unreviewed_library_axiom(self):
+        """Test effective confidence for unreviewed library axioms."""
+        axiom = create_test_axiom("a1")
+        axiom.confidence = 1.0
+        axiom.layer = "library"
+        axiom.reviewed = False
+
+        # Unreviewed library axioms get 70% of base confidence
+        assert axiom.effective_confidence == 0.7
+
+    def test_effective_confidence_for_reviewed_library_axiom(self):
+        """Test effective confidence for reviewed library axioms."""
+        axiom = create_test_axiom("a1")
+        axiom.confidence = 1.0
+        axiom.layer = "library"
+        axiom.reviewed = True
+
+        # Reviewed library axioms get 90% of base confidence
+        assert axiom.effective_confidence == 0.9
+
+    def test_effective_confidence_for_grounded_axiom(self):
+        """Test effective confidence for grounded (foundation) axioms."""
+        axiom = create_test_axiom("a1")
+        axiom.confidence = 1.0
+        axiom.layer = "c11_core"
+        axiom.reviewed = False
+
+        # Grounded axioms keep their full confidence regardless of review status
+        assert axiom.effective_confidence == 1.0
+
+    def test_effective_confidence_scales_with_base_confidence(self):
+        """Test that effective confidence scales with base confidence."""
+        axiom = create_test_axiom("a1")
+        axiom.layer = "library"
+        axiom.confidence = 0.8
+        axiom.reviewed = False
+
+        # 70% of 0.8 = 0.56
+        assert axiom.effective_confidence == pytest.approx(0.56)
+
+        axiom.reviewed = True
+        # 90% of 0.8 = 0.72
+        assert axiom.effective_confidence == pytest.approx(0.72)
+
+    def test_reviewed_flag_persists_through_serialization(self):
+        """Test that reviewed flag is saved and loaded correctly."""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            manager = ReviewSessionManager(storage_dir=tmpdir)
+
+            axiom = create_test_axiom("a1")
+            axiom.reviewed = True
+
+            session = manager.create_session([axiom], session_id="test_reviewed")
+            manager.save_session(session)
+
+            loaded = manager.load_session("test_reviewed")
+            assert loaded.items[0].axiom.reviewed is True
+
+    def test_export_approved_includes_reviewed_flag(self):
+        """Test that exported axioms include reviewed=true."""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            manager = ReviewSessionManager(storage_dir=tmpdir)
+
+            axiom = create_test_axiom("a1")
+            session = manager.create_session([axiom], session_id="export_reviewed")
+            session.items[0].decision = ReviewDecision.APPROVED
+            manager.save_session(session)
+
+            output_path = Path(tmpdir) / "exported.toml"
+            manager.export_approved(session, str(output_path))
+
+            content = output_path.read_text()
+            assert "reviewed = true" in content

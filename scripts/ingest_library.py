@@ -2,17 +2,28 @@
 """Ingest axioms from a C/C++ library using Claude CLI.
 
 This script provides end-to-end ingestion of library axioms:
-1. Parse source files and build function subgraphs
+1. Parse source files and build function/macro subgraphs
 2. Extract axioms using Claude CLI + RAG
 3. Create review session for human approval
 4. Export approved axioms to TOML
 
+By default, axioms are extracted from BOTH functions AND macros.
+
 Usage:
-    # Ingest a single file
+    # Ingest a single file (functions + macros)
     python scripts/ingest_library.py path/to/source.cpp
 
-    # Ingest a directory
+    # Ingest a directory recursively (functions + macros)
     python scripts/ingest_library.py path/to/library/ --recursive
+
+    # Only extract from functions (skip macros)
+    python scripts/ingest_library.py path/to/source.cpp --functions-only
+
+    # Only extract from macros (skip functions)
+    python scripts/ingest_library.py path/to/source.cpp --macros-only
+
+    # Only extract from hazardous macros (with division, pointers, casts, calls)
+    python scripts/ingest_library.py path/to/source.cpp --hazardous-only
 
     # Ingest specific functions
     python scripts/ingest_library.py path/to/source.cpp -f malloc -f free
@@ -62,6 +73,7 @@ from axiom.ingestion import (
     ReviewSessionManager,
     SubgraphBuilder,
 )
+from axiom.ingestion.extractor import MacroExtractionResult
 from axiom.ingestion.reviewer import format_axiom_for_review, ReviewItem
 from axiom.models import Axiom
 
@@ -441,6 +453,150 @@ def create_review_session(
     return session.session_id
 
 
+def extract_macros_from_file(
+    source_path: Path,
+    extractor: AxiomExtractor,
+    only_hazardous: bool = True,
+    verbose: bool = False,
+    tracker: Optional[ProgressTracker] = None,
+) -> List[MacroExtractionResult]:
+    """Extract axioms from macros in a source file.
+
+    Args:
+        source_path: Path to source file.
+        extractor: AxiomExtractor instance.
+        only_hazardous: Only extract from hazardous macros.
+        verbose: Print progress.
+        tracker: Optional progress tracker for updates.
+
+    Returns:
+        List of macro extraction results.
+    """
+    # Progress callback for macro-level updates
+    def on_macro_progress(macro_name: str, current: int, total: int):
+        if tracker:
+            tracker.set_function(macro_name, current, total)
+
+    if verbose:
+        print(f"\nProcessing macros: {source_path}")
+
+    results = extractor.extract_macros_from_file(
+        str(source_path),
+        only_hazardous=only_hazardous,
+        progress_callback=on_macro_progress if tracker else None,
+    )
+
+    for result in results:
+        if result.error:
+            if verbose:
+                print(f"  ERROR: {result.macro_name}: {result.error}")
+        elif result.axioms:
+            if verbose:
+                print(f"  {result.macro_name}: {len(result.axioms)} axioms extracted")
+        else:
+            if verbose:
+                print(f"  {result.macro_name}: no axioms needed")
+
+    return results
+
+
+def create_macro_review_session(
+    results: List[MacroExtractionResult],
+    manager: ReviewSessionManager,
+    source_file: str,
+) -> Optional[str]:
+    """Create a review session from macro extraction results.
+
+    Args:
+        results: List of macro extraction results.
+        manager: ReviewSessionManager instance.
+        source_file: Source file path for metadata.
+
+    Returns:
+        Session ID or None if no axioms.
+    """
+    all_items = []
+    for result in results:
+        # Get macro info
+        macro = result.macro
+        line_start = macro.line_start if macro else None
+        line_end = macro.line_end if macro else None
+        signature = macro.to_signature() if macro else result.macro_name
+
+        # Create ReviewItem for each axiom with macro context
+        for axiom in result.axioms:
+            item = ReviewItem(
+                axiom=axiom,
+                line_start=line_start,
+                line_end=line_end,
+                signature=f"#define {signature}",
+            )
+            all_items.append(item)
+
+    if not all_items:
+        return None
+
+    session = manager.create_session(items=all_items, source_file=source_file)
+    return session.session_id
+
+
+def discover_macros(source_path: Path, builder: SubgraphBuilder, only_hazardous: bool = True) -> List[str]:
+    """Discover all macros in a source file.
+
+    Args:
+        source_path: Path to source file.
+        builder: SubgraphBuilder instance.
+        only_hazardous: Only return hazardous macros.
+
+    Returns:
+        List of macro names.
+    """
+    source_code = source_path.read_text()
+    macros = builder.extract_macros(source_code, str(source_path))
+
+    if only_hazardous:
+        macros = [m for m in macros if builder.has_hazardous_macro(m)]
+
+    return [m.name for m in macros]
+
+
+def show_macro(source_path: Path, builder: SubgraphBuilder, macro_name: str):
+    """Display details of a macro.
+
+    Args:
+        source_path: Path to source file.
+        builder: SubgraphBuilder instance.
+        macro_name: Name of the macro.
+    """
+    source_code = source_path.read_text()
+    macros = builder.extract_macros(source_code, str(source_path))
+
+    macro = next((m for m in macros if m.name == macro_name), None)
+
+    if macro is None:
+        print(f"  Macro '{macro_name}' not found")
+        return
+
+    print(f"\n  Macro: {macro.to_signature()}")
+    print(f"  Line: {macro.line_start}")
+    print(f"  Body: {macro.body}")
+    print(f"  Function-like: {macro.is_function_like}")
+
+    if macro.has_division:
+        print("    Has division: Yes")
+    if macro.has_pointer_ops:
+        print("    Has pointer ops: Yes")
+    if macro.has_casts:
+        print("    Has casts: Yes")
+    if macro.function_calls:
+        print(f"    Function calls: {macro.function_calls}")
+    if macro.referenced_macros:
+        print(f"    Referenced macros: {macro.referenced_macros}")
+
+    if not builder.has_hazardous_macro(macro):
+        print("    No hazardous operations detected")
+
+
 def run_review(manager: ReviewSessionManager, session_id: str):
     """Run the interactive review for a session.
 
@@ -509,6 +665,26 @@ def main():
         "--list-functions",
         action="store_true",
         help="List all functions in source files",
+    )
+    parser.add_argument(
+        "--functions-only",
+        action="store_true",
+        help="Only extract axioms from functions (skip macros)",
+    )
+    parser.add_argument(
+        "--macros-only",
+        action="store_true",
+        help="Only extract axioms from macros (skip functions)",
+    )
+    parser.add_argument(
+        "--hazardous-only",
+        action="store_true",
+        help="Only process hazardous macros (division, pointers, casts, function calls)",
+    )
+    parser.add_argument(
+        "--list-macros",
+        action="store_true",
+        help="List all macros in source files",
     )
     parser.add_argument(
         "--review",
@@ -638,6 +814,20 @@ def main():
                 print(f"  {func}")
         return
 
+    # List macros mode
+    if args.list_macros:
+        only_hazardous = args.hazardous_only
+        for f in files:
+            macros = discover_macros(f, builder, only_hazardous=only_hazardous)
+            print(f"\n{f}:")
+            if macros:
+                for macro in macros:
+                    print(f"  {macro}")
+            else:
+                label = "hazardous macros" if args.hazardous_only else "macros"
+                print(f"  (no {label})")
+        return
+
     # Parse-only mode
     if args.parse_only:
         for f in files:
@@ -677,19 +867,39 @@ def main():
         language=args.language,
     )
 
+    # Determine what to extract
+    extract_functions = not args.macros_only
+    extract_macros = not args.functions_only
+    only_hazardous_macros = args.hazardous_only
+
+    # Build description of what we're extracting
+    if extract_functions and extract_macros:
+        extract_desc = "functions and macros"
+    elif extract_functions:
+        extract_desc = "functions"
+    else:
+        extract_desc = "macros"
+
     # Extract axioms with progress indication
-    all_results = []
+    all_function_results = []
+    all_macro_results = []
     total_files = len(files)
 
-    print(f"\nExtracting axioms from {total_files} file(s)...")
+    print(f"\nExtracting axioms from {extract_desc} in {total_files} file(s)...")
     print()
 
     if args.verbose:
         # Verbose mode: no progress bar, detailed output
         for i, f in enumerate(files, 1):
             print(f"[{i}/{total_files}] {f.name}")
-            results = extract_from_file(f, extractor, args.functions, args.verbose)
-            all_results.extend(results)
+            if extract_functions:
+                results = extract_from_file(f, extractor, args.functions, args.verbose)
+                all_function_results.extend(results)
+            if extract_macros:
+                macro_results = extract_macros_from_file(
+                    f, extractor, only_hazardous_macros, args.verbose
+                )
+                all_macro_results.extend(macro_results)
     else:
         # Normal mode: unified progress tracker
         tracker = ProgressTracker(total_files)
@@ -698,8 +908,14 @@ def main():
         try:
             for i, f in enumerate(files):
                 tracker.set_file(i, f.name)
-                results = extract_from_file(f, extractor, args.functions, tracker=tracker)
-                all_results.extend(results)
+                if extract_functions:
+                    results = extract_from_file(f, extractor, args.functions, tracker=tracker)
+                    all_function_results.extend(results)
+                if extract_macros:
+                    macro_results = extract_macros_from_file(
+                        f, extractor, only_hazardous_macros, tracker=tracker
+                    )
+                    all_macro_results.extend(macro_results)
                 tracker.set_file(i + 1, "")  # Update completed count
         finally:
             tracker.stop()
@@ -708,40 +924,83 @@ def main():
         print(f"Completed in {elapsed:.1f}s")
 
     # Count results
-    total_axioms = sum(len(r.axioms) for r in all_results)
-    total_functions = len(all_results)
-    errors = sum(1 for r in all_results if r.error)
+    func_axioms = sum(len(r.axioms) for r in all_function_results)
+    macro_axioms = sum(len(r.axioms) for r in all_macro_results)
+    total_axioms = func_axioms + macro_axioms
+    total_functions = len(all_function_results)
+    total_macros = len(all_macro_results)
+    func_errors = sum(1 for r in all_function_results if r.error)
+    macro_errors = sum(1 for r in all_macro_results if r.error)
+    total_errors = func_errors + macro_errors
 
     print(f"\n{'=' * 60}")
     print("Extraction Summary")
     print("=" * 60)
     print(f"Files processed:     {total_files}")
-    print(f"Functions analyzed:  {total_functions}")
-    print(f"Axioms extracted:    {total_axioms}")
-    print(f"Errors:              {errors}")
+    if extract_functions:
+        print(f"Functions analyzed:  {total_functions} ({func_axioms} axioms)")
+    if extract_macros:
+        print(f"Macros analyzed:     {total_macros} ({macro_axioms} axioms)")
+    print(f"Total axioms:        {total_axioms}")
+    print(f"Errors:              {total_errors}")
 
     if total_axioms == 0:
         print("\nNo axioms extracted. Nothing to review.")
         return
 
+    # Create combined review session with all items
+    all_items = []
+
+    # Add function axioms
+    for result in all_function_results:
+        subgraph = result.subgraph
+        line_start = subgraph.line_start if subgraph else None
+        line_end = subgraph.line_end if subgraph else None
+        signature = subgraph.signature if subgraph else None
+
+        for axiom in result.axioms:
+            item = ReviewItem(
+                axiom=axiom,
+                line_start=line_start,
+                line_end=line_end,
+                signature=signature,
+            )
+            all_items.append(item)
+
+    # Add macro axioms
+    for result in all_macro_results:
+        macro = result.macro
+        line_start = macro.line_start if macro else None
+        line_end = macro.line_end if macro else None
+        signature = f"#define {macro.to_signature()}" if macro else f"#define {result.macro_name}"
+
+        for axiom in result.axioms:
+            item = ReviewItem(
+                axiom=axiom,
+                line_start=line_start,
+                line_end=line_end,
+                signature=signature,
+            )
+            all_items.append(item)
+
     # Create review session
     source_label = str(source_path) if source_path.is_file() else f"{source_path}/"
-    session_id = create_review_session(all_results, manager, source_label)
+    session = manager.create_session(items=all_items, source_file=source_label)
+    session_id = session.session_id
 
-    if session_id:
-        print(f"\nReview session created: {session_id}")
-        print(f"\nTo review axioms:")
-        print(f"  python scripts/ingest_library.py --review {session_id}")
-        print(f"\nTo export approved axioms:")
-        print(f"  python scripts/ingest_library.py --export {session_id} -o approved.toml")
+    print(f"\nReview session created: {session_id}")
+    print(f"\nTo review axioms:")
+    print(f"  python scripts/ingest_library.py --review {session_id}")
+    print(f"\nTo export approved axioms:")
+    print(f"  python scripts/ingest_library.py --export {session_id} -o approved.toml")
 
-        # Ask if user wants to review now
-        try:
-            response = input("\nStart review now? [Y/n]: ").strip().lower()
-            if response in ("", "y", "yes"):
-                run_review(manager, session_id)
-        except (EOFError, KeyboardInterrupt):
-            print("\n\nReview skipped. Use --review to continue later.")
+    # Ask if user wants to review now
+    try:
+        response = input("\nStart review now? [Y/n]: ").strip().lower()
+        if response in ("", "y", "yes"):
+            run_review(manager, session_id)
+    except (EOFError, KeyboardInterrupt):
+        print("\n\nReview skipped. Use --review to continue later.")
 
 
 if __name__ == "__main__":

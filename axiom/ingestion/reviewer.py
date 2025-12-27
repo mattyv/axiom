@@ -125,12 +125,19 @@ class ReviewSession:
         return None
 
     def get_approved_axioms(self) -> List[Axiom]:
-        """Get all approved axioms (including modified ones)."""
+        """Get all approved axioms (including modified ones).
+
+        Sets reviewed=True on all returned axioms to indicate human approval.
+        """
         result = []
         for item in self.items:
             if item.decision == ReviewDecision.APPROVED:
+                # Mark as reviewed for confidence calculation
+                item.axiom.reviewed = True
                 result.append(item.axiom)
             elif item.decision == ReviewDecision.MODIFIED and item.modified_axiom:
+                # Modified axioms are also considered reviewed
+                item.modified_axiom.reviewed = True
                 result.append(item.modified_axiom)
         return result
 
@@ -339,6 +346,8 @@ class ReviewSessionManager:
                 axiom_dict["c_standard_refs"] = axiom.c_standard_refs
             if axiom.confidence != 1.0:
                 axiom_dict["confidence"] = axiom.confidence
+            if axiom.reviewed:
+                axiom_dict["reviewed"] = True
 
             data["axioms"].append(axiom_dict)
 
@@ -362,6 +371,7 @@ class ReviewSessionManager:
             "confidence": axiom.confidence,
             "c_standard_refs": axiom.c_standard_refs,
             "tags": axiom.tags,
+            "reviewed": axiom.reviewed,
         }
 
     @staticmethod
@@ -392,6 +402,7 @@ class ReviewSessionManager:
             confidence=data.get("confidence", 1.0),
             c_standard_refs=data.get("c_standard_refs", []),
             tags=data.get("tags", []),
+            reviewed=data.get("reviewed", False),
         )
 
 
