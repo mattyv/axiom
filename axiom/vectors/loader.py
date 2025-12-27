@@ -276,3 +276,34 @@ class LanceDBLoader:
         table = self.db.open_table(table_name)
         results = table.search().where(f"axiom_type = '{axiom_type}'").to_list()
         return results
+
+    def update_depends_on(
+        self,
+        axiom_id: str,
+        depends_on: List[str],
+        table_name: str = "axioms",
+    ) -> bool:
+        """Update the depends_on field for an axiom.
+
+        Args:
+            axiom_id: ID of the axiom to update.
+            depends_on: List of axiom IDs this axiom depends on.
+            table_name: Name of the LanceDB table.
+
+        Returns:
+            True if update was successful, False otherwise.
+        """
+        if table_name not in self.db.table_names():
+            return False
+
+        table = self.db.open_table(table_name)
+
+        # LanceDB update using pyarrow
+        try:
+            table.update(
+                where=f"id = '{axiom_id}'",
+                values={"depends_on": depends_on},
+            )
+            return True
+        except Exception:
+            return False

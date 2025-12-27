@@ -91,7 +91,7 @@ confidence = <0.0-1.0>
 
 - Use actual variable names from the subgraph operands
 - Include guard conditions if the operation is protected by a check
-- Link to the most specific foundation axiom available
+- **IMPORTANT**: For `depends_on`, use the ACTUAL axiom IDs from the "Related Foundation Axioms" section above (e.g., `depends_on = ["c11_expr_div_nonzero"]`). This links your extracted axiom to its foundation.
 - Set confidence based on how clearly the axiom applies:
   - 1.0: Direct match to foundation axiom, no ambiguity
   - 0.8-0.9: Clear semantic requirement, foundation axiom applies
@@ -419,7 +419,7 @@ tags = ["macro"]
 - Use parameter names from the macro definition
 - Note if arguments may be evaluated multiple times (use 'effect' axiom_type)
 - Document expected types as constraints
-- Link to foundation axioms for hazardous operations
+- **IMPORTANT**: For `depends_on`, use the ACTUAL axiom IDs from the "Related Foundation Axioms" section above (e.g., `depends_on = ["c11_expr_div_nonzero"]`). This links your extracted axiom to its foundation.
 - Include "macro" in tags
 
 If the macro is simple (e.g., just a constant) and has no semantic requirements,
