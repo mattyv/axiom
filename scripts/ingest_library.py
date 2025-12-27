@@ -951,7 +951,8 @@ def main():
     # Create combined review session with all items
     all_items = []
 
-    # Add function axioms
+    # Add function axioms (skip empty content)
+    skipped_empty = 0
     for result in all_function_results:
         subgraph = result.subgraph
         line_start = subgraph.line_start if subgraph else None
@@ -959,6 +960,10 @@ def main():
         signature = subgraph.signature if subgraph else None
 
         for axiom in result.axioms:
+            # Skip axioms with empty or whitespace-only content
+            if not axiom.content or not axiom.content.strip():
+                skipped_empty += 1
+                continue
             item = ReviewItem(
                 axiom=axiom,
                 line_start=line_start,
@@ -967,7 +972,7 @@ def main():
             )
             all_items.append(item)
 
-    # Add macro axioms
+    # Add macro axioms (skip empty content)
     for result in all_macro_results:
         macro = result.macro
         line_start = macro.line_start if macro else None
@@ -975,6 +980,10 @@ def main():
         signature = f"#define {macro.to_signature()}" if macro else f"#define {result.macro_name}"
 
         for axiom in result.axioms:
+            # Skip axioms with empty or whitespace-only content
+            if not axiom.content or not axiom.content.strip():
+                skipped_empty += 1
+                continue
             item = ReviewItem(
                 axiom=axiom,
                 line_start=line_start,
@@ -982,6 +991,13 @@ def main():
                 signature=signature,
             )
             all_items.append(item)
+
+    if skipped_empty > 0:
+        print(f"Skipped {skipped_empty} axiom(s) with empty content")
+
+    if not all_items:
+        print("\nNo valid axioms to review (all had empty content).")
+        return
 
     # Create review session
     source_label = str(source_path) if source_path.is_file() else f"{source_path}/"
