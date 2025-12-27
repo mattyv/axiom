@@ -8,12 +8,22 @@ This package provides tools to:
 """
 
 from .extractor import AxiomExtractor, ExtractionJob, ExtractionResult, extract_axioms
+from .reviewer import (
+    ReviewDecision,
+    ReviewItem,
+    ReviewSession,
+    ReviewSessionManager,
+)
 from .subgraph_builder import SubgraphBuilder
 
 __all__ = [
     "AxiomExtractor",
     "ExtractionJob",
     "ExtractionResult",
+    "ReviewDecision",
+    "ReviewItem",
+    "ReviewSession",
+    "ReviewSessionManager",
     "SubgraphBuilder",
     "extract_axioms",
 ]
