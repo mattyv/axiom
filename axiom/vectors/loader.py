@@ -110,6 +110,12 @@ class LanceDBLoader:
             "c_standard_refs": axiom.c_standard_refs,
             "confidence": axiom.confidence,
             "formal_spec": axiom.formal_spec,
+            # New fields for function-centric axioms
+            "function": axiom.function or "",
+            "header": axiom.header or "",
+            "axiom_type": axiom.axiom_type.value if axiom.axiom_type else "",
+            "on_violation": axiom.on_violation or "",
+            "depends_on": axiom.depends_on,
         }
 
     def _create_embedding_text(self, axiom: Axiom) -> str:
@@ -121,10 +127,19 @@ class LanceDBLoader:
         Returns:
             Combined text for embedding.
         """
-        parts = [
-            axiom.content,
-            f"Module: {axiom.source.module}",
-        ]
+        parts = [axiom.content]
+
+        # Add function and header context for library axioms
+        if axiom.function:
+            parts.append(f"Function: {axiom.function}")
+        if axiom.header:
+            parts.append(f"Header: {axiom.header}")
+        if axiom.axiom_type:
+            parts.append(f"Type: {axiom.axiom_type.value}")
+        if axiom.on_violation:
+            parts.append(f"On violation: {axiom.on_violation}")
+
+        parts.append(f"Module: {axiom.source.module}")
 
         if axiom.tags:
             parts.append(f"Tags: {', '.join(axiom.tags)}")
@@ -197,3 +212,66 @@ class LanceDBLoader:
 
         table = self.db.open_table(table_name)
         return table.count_rows()
+
+    def search_by_function(
+        self,
+        function_name: str,
+        table_name: str = "axioms",
+    ) -> List[dict]:
+        """Search for axioms by function name.
+
+        Args:
+            function_name: Function name to search for.
+            table_name: Name of the LanceDB table.
+
+        Returns:
+            List of matching axiom records.
+        """
+        if table_name not in self.db.table_names():
+            return []
+
+        table = self.db.open_table(table_name)
+        results = table.search().where(f"function = '{function_name}'").to_list()
+        return results
+
+    def search_by_header(
+        self,
+        header: str,
+        table_name: str = "axioms",
+    ) -> List[dict]:
+        """Search for axioms by header file.
+
+        Args:
+            header: Header file name to search for.
+            table_name: Name of the LanceDB table.
+
+        Returns:
+            List of matching axiom records.
+        """
+        if table_name not in self.db.table_names():
+            return []
+
+        table = self.db.open_table(table_name)
+        results = table.search().where(f"header = '{header}'").to_list()
+        return results
+
+    def search_by_axiom_type(
+        self,
+        axiom_type: str,
+        table_name: str = "axioms",
+    ) -> List[dict]:
+        """Search for axioms by axiom type.
+
+        Args:
+            axiom_type: Axiom type (precondition, postcondition, etc.).
+            table_name: Name of the LanceDB table.
+
+        Returns:
+            List of matching axiom records.
+        """
+        if table_name not in self.db.table_names():
+            return []
+
+        table = self.db.open_table(table_name)
+        results = table.search().where(f"axiom_type = '{axiom_type}'").to_list()
+        return results

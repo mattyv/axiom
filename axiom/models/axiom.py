@@ -66,6 +66,9 @@ class Axiom(BaseModel):
     axiom_type: Optional[AxiomType] = None  # precondition, postcondition, etc.
     on_violation: Optional[str] = None  # e.g., "undefined behavior", "throws X"
 
+    # Dependency tracking (for library -> foundation axiom chains)
+    depends_on: List[str] = Field(default_factory=list)  # IDs of foundation axioms this depends on
+
 
 class ErrorCode(BaseModel):
     """An error code from the C semantics error catalog."""
@@ -135,6 +138,8 @@ class AxiomCollection(BaseModel):
                 lines.append(f'axiom_type = "{axiom.axiom_type.value}"')
             if axiom.on_violation:
                 lines.append(f"on_violation = {to_literal(axiom.on_violation)}")
+            if axiom.depends_on:
+                lines.append(f"depends_on = {axiom.depends_on!r}")
             lines.append("")
 
         for error in self.error_codes:
@@ -192,6 +197,7 @@ class AxiomCollection(BaseModel):
                     header=a.get("header"),
                     axiom_type=AxiomType(a["axiom_type"]) if a.get("axiom_type") else None,
                     on_violation=a.get("on_violation"),
+                    depends_on=a.get("depends_on", []),
                 )
             )
 

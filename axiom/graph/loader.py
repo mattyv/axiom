@@ -85,7 +85,12 @@ class Neo4jLoader:
             a.source_file = $source_file,
             a.module_name = $module_name,
             a.tags = $tags,
-            a.c_standard_refs = $c_refs
+            a.c_standard_refs = $c_refs,
+            a.function = $function,
+            a.header = $header,
+            a.axiom_type = $axiom_type,
+            a.on_violation = $on_violation,
+            a.depends_on = $depends_on
 
         MERGE (m:KModule {name: $module_name})
         SET m.file_path = $source_file
@@ -106,6 +111,11 @@ class Neo4jLoader:
             module_name=axiom.source.module,
             tags=axiom.tags,
             c_refs=axiom.c_standard_refs,
+            function=axiom.function,
+            header=axiom.header,
+            axiom_type=axiom.axiom_type.value if axiom.axiom_type else None,
+            on_violation=axiom.on_violation,
+            depends_on=axiom.depends_on,
         )
 
         # Store violated_by codes for later relationship creation
@@ -117,6 +127,19 @@ class Neo4jLoader:
                 """,
                 id=axiom.id,
                 codes=violated_by_codes,
+            )
+
+        # Create DEPENDS_ON relationships to foundation axioms
+        if axiom.depends_on:
+            tx.run(
+                """
+                MATCH (a:Axiom {id: $id})
+                UNWIND $depends_on AS dep_id
+                MATCH (foundation:Axiom {id: dep_id})
+                MERGE (a)-[:DEPENDS_ON]->(foundation)
+                """,
+                id=axiom.id,
+                depends_on=axiom.depends_on,
             )
 
     @staticmethod
@@ -226,3 +249,123 @@ class Neo4jLoader:
                 "error_codes": errors,
                 "modules": modules,
             }
+
+    def get_proof_chain(self, axiom_id: str) -> list:
+        """Get the proof chain (dependency path) from an axiom to foundation.
+
+        Follows DEPENDS_ON relationships to find the grounding axioms
+        in c11_core, cpp_core, etc.
+
+        Args:
+            axiom_id: Starting axiom ID.
+
+        Returns:
+            List of axiom dicts forming the proof chain (deepest foundation first).
+        """
+        with self.driver.session() as session:
+            result = session.run(
+                """
+                MATCH path = (a:Axiom {id: $id})-[:DEPENDS_ON*]->(foundation:Axiom)
+                WHERE foundation.layer IN ['c11_core', 'c11_stdlib', 'cpp_core', 'cpp_stdlib']
+                WITH path, length(path) as depth
+                ORDER BY depth DESC
+                LIMIT 1
+                UNWIND nodes(path) as node
+                RETURN node
+                """,
+                id=axiom_id,
+            )
+            return [dict(record["node"]) for record in result]
+
+    def get_dependencies(self, axiom_id: str) -> list:
+        """Get direct dependencies of an axiom.
+
+        Args:
+            axiom_id: Axiom ID.
+
+        Returns:
+            List of axiom dicts that this axiom depends on.
+        """
+        with self.driver.session() as session:
+            result = session.run(
+                """
+                MATCH (a:Axiom {id: $id})-[:DEPENDS_ON]->(dep:Axiom)
+                RETURN dep
+                """,
+                id=axiom_id,
+            )
+            return [dict(record["dep"]) for record in result]
+
+    def get_dependents(self, axiom_id: str) -> list:
+        """Get axioms that depend on this axiom.
+
+        Args:
+            axiom_id: Axiom ID.
+
+        Returns:
+            List of axiom dicts that depend on this axiom.
+        """
+        with self.driver.session() as session:
+            result = session.run(
+                """
+                MATCH (dependent:Axiom)-[:DEPENDS_ON]->(a:Axiom {id: $id})
+                RETURN dependent
+                """,
+                id=axiom_id,
+            )
+            return [dict(record["dependent"]) for record in result]
+
+    def get_axioms_by_function(self, function_name: str) -> list:
+        """Get all axioms for a specific function.
+
+        Args:
+            function_name: Function name (e.g., "malloc", "memcpy").
+
+        Returns:
+            List of axiom dicts for that function.
+        """
+        with self.driver.session() as session:
+            result = session.run(
+                """
+                MATCH (a:Axiom {function: $function})
+                RETURN a
+                """,
+                function=function_name,
+            )
+            return [dict(record["a"]) for record in result]
+
+    def get_axioms_by_header(self, header: str) -> list:
+        """Get all axioms for a specific header.
+
+        Args:
+            header: Header file name (e.g., "stdlib.h", "string.h").
+
+        Returns:
+            List of axiom dicts from that header.
+        """
+        with self.driver.session() as session:
+            result = session.run(
+                """
+                MATCH (a:Axiom {header: $header})
+                RETURN a
+                """,
+                header=header,
+            )
+            return [dict(record["a"]) for record in result]
+
+    def get_ungrounded_axioms(self) -> list:
+        """Get library axioms without proof chains to foundations.
+
+        Returns:
+            List of axiom dicts that have no DEPENDS_ON path to foundation layers.
+        """
+        with self.driver.session() as session:
+            result = session.run(
+                """
+                MATCH (a:Axiom)
+                WHERE a.layer = 'library'
+                AND NOT (a)-[:DEPENDS_ON*]->(:Axiom)
+                RETURN a
+                """
+            )
+            return [dict(record["a"]) for record in result]
