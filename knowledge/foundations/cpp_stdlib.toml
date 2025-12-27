@@ -1,10 +1,10 @@
 version = "1.0"
 source = "kframework/c-semantics/cpp_stdlib"
-extracted_at = "2025-12-26T22:10:31.448979"
+extracted_at = "2025-12-27T00:58:39.076830"
 
 [[axioms]]
 id = "c11_libcpp_new_comparison_4463afd0"
-content = '''Comparison requires: NOT (hasLint), and Len <=Int cfg:maxHeapBound endmodule.'''
+content = '''Comparison requires: NOT: hasLint, and Len ≤ cfg:maxHeapBound.'''
 formal_spec = '''notBool hasLint andBool Len <=Int cfg:maxHeapBound  endmodule'''
 layer = "cpp_stdlib"
 confidence = 1.0

@@ -1,6 +1,6 @@
 version = "1.0"
 source = "kframework/c-semantics/c11_stdlib"
-extracted_at = "2025-12-26T22:10:12.725153"
+extracted_at = "2025-12-27T00:58:31.661899"
 
 [[axioms]]
 id = "c11_libc_stdarg_operation_b943cbe2"
@@ -15,7 +15,7 @@ source_line_end = 82
 
 [[axioms]]
 id = "c11_libc_stdarg_comparison_f94d189f"
-content = '''Comparison requires: either NOT (isOpaque(V)) or NOT ({fromOpaque(V)}:>Int in_keys(VaLists)).'''
+content = '''Comparison requires: either value must not be opaque or NOT: {fromOpaque(V)}:> in_keys(VaLists).'''
 formal_spec = '''notBool isOpaque(V) orBool notBool ({fromOpaque(V)}:>Int in_keys(VaLists))'''
 layer = "c11_stdlib"
 confidence = 1.0
@@ -61,7 +61,7 @@ source_line_end = 72
 
 [[axioms]]
 id = "c11_libc_stdlib_syntax_comparison_8ad81d8f"
-content = '''Comparison requires: NOT (hasLint), and Sz <=Int cfg:maxHeapBound.'''
+content = '''Comparison requires: NOT: hasLint, and Sz ≤ cfg:maxHeapBound.'''
 formal_spec = '''notBool hasLint andBool Sz <=Int cfg:maxHeapBound'''
 layer = "c11_stdlib"
 confidence = 1.0
@@ -73,7 +73,7 @@ tags = ['comparison']
 
 [[axioms]]
 id = "c11_libc_stdlib_syntax_comparison_5f542db6"
-content = '''Comparison requires: NOT (hasLint), and Sz >Int cfg:maxHeapBound.'''
+content = '''Comparison requires: NOT: hasLint, and Sz > cfg:maxHeapBound.'''
 formal_spec = '''notBool hasLint andBool Sz >Int cfg:maxHeapBound'''
 layer = "c11_stdlib"
 confidence = 1.0
@@ -85,7 +85,7 @@ tags = ['comparison']
 
 [[axioms]]
 id = "c11_libc_stdlib_syntax_comparison_84c63abe"
-content = '''Comparison requires: NOT (hasLint).'''
+content = '''Comparison requires: NOT: hasLint.'''
 formal_spec = '''notBool hasLint'''
 layer = "c11_stdlib"
 confidence = 1.0
@@ -97,7 +97,7 @@ tags = ['comparison']
 
 [[axioms]]
 id = "c11_libc_stdlib_syntax_comparison_84c63abe"
-content = '''Comparison requires: NOT (hasLint).'''
+content = '''Comparison requires: NOT: hasLint.'''
 formal_spec = '''notBool hasLint'''
 layer = "c11_stdlib"
 confidence = 1.0
@@ -109,7 +109,7 @@ tags = ['comparison']
 
 [[axioms]]
 id = "c11_libc_stdlib_syntax_operation_6154a8b7"
-content = '''Requires: notBool hasLint // Returns a pseudo-random integral number in the range 0 to RAND_MAX // fixme should use RAND_MAX'''
+content = '''Operation requires: NOT: hasLint.'''
 formal_spec = '''notBool hasLint // Returns a pseudo-random integral number in the range 0 to RAND_MAX // fixme should use RAND_MAX'''
 layer = "c11_stdlib"
 confidence = 1.0
@@ -120,7 +120,7 @@ source_line_end = 167
 
 [[axioms]]
 id = "c11_libc_stdlib_syntax_comparison_e8247ed0"
-content = '''Comparison requires: NOT (isNull(OldPtr)).'''
+content = '''Comparison requires: NOT: isNull(OldPtr).'''
 formal_spec = '''notBool isNull(OldPtr)'''
 layer = "c11_stdlib"
 confidence = 1.0
@@ -144,7 +144,7 @@ tags = ['comparison']
 
 [[axioms]]
 id = "c11_libc_setjmp_comparison_23d97cc7"
-content = '''Comparison requires: B in_keys(Mem), and Env[funLabel] =/=K B.'''
+content = '''Comparison requires: B in_keys(Mem), and Env[funLabel] ≠ B.'''
 formal_spec = '''B in_keys(Mem) andBool Env[funLabel] =/=K B'''
 layer = "c11_stdlib"
 confidence = 1.0
@@ -156,7 +156,7 @@ tags = ['comparison']
 
 [[axioms]]
 id = "c11_libc_setjmp_comparison_23d97cc7"
-content = '''Comparison requires: B in_keys(Mem), and Env[funLabel] =/=K B.'''
+content = '''Comparison requires: B in_keys(Mem), and Env[funLabel] ≠ B.'''
 formal_spec = '''B in_keys(Mem) andBool Env[funLabel] =/=K B'''
 layer = "c11_stdlib"
 confidence = 1.0
@@ -180,7 +180,7 @@ tags = ['comparison']
 
 [[axioms]]
 id = "c11_libc_ctype_operation_31b75e36"
-content = '''Operation requires: isNativeCTypeFun(F), and either V ==K value(eof or withinRange(V, unsigned-char)).'''
+content = '''Operation requires: isNativeCTypeFun(F), and either V = value(eof) or withinRange(V, unsigned-char).'''
 formal_spec = '''isNativeCTypeFun(F) andBool (V ==K value(eof) orBool withinRange(V, unsigned-char))'''
 layer = "c11_stdlib"
 confidence = 1.0
@@ -191,7 +191,7 @@ source_line_end = 30
 
 [[axioms]]
 id = "c11_libc_ctype_operation_8798c32c"
-content = '''Operation requires: isNativeCTypeFun(F), and either NOT (V ==K value(eof) or withinRange(V, unsigned-char)) syntax KItem ::= outsideRange().'''
+content = '''Operation requires: isNativeCTypeFun(F), and either NOT: V = value(eof or withinRange(V, unsigned-char)).'''
 formal_spec = '''isNativeCTypeFun(F) andBool notBool (V ==K value(eof) orBool withinRange(V, unsigned-char))  syntax KItem ::= outsideRange()'''
 layer = "c11_stdlib"
 confidence = 1.0
@@ -202,7 +202,7 @@ source_line_end = 36
 
 [[axioms]]
 id = "c11_libc_builtin_syntax_comparison_d0e99e3b"
-content = '''Comparison requires: NOT (UseNativeStdLib() in Opts), and F in_keys(builtins).'''
+content = '''Comparison requires: NOT: UseNativeStdLib() in Opts, and F in_keys(builtins).'''
 formal_spec = '''notBool (UseNativeStdLib() in Opts) andBool (F in_keys(builtins))'''
 layer = "c11_stdlib"
 confidence = 1.0
@@ -214,7 +214,7 @@ tags = ['comparison']
 
 [[axioms]]
 id = "c11_libc_builtin_syntax_comparison_2479fafe"
-content = '''Comparison requires: either (UseNativeStdLib() in Opts or NOT (F in_keys(builtins))), and F in_keys(nativeDefinedBuiltins).'''
+content = '''Comparison requires: either UseNativeStdLib() in Opts or NOT: F in_keys(builtins), and F in_keys(nativeDefinedBuiltins).'''
 formal_spec = '''((UseNativeStdLib() in Opts) orBool notBool (F in_keys(builtins))) andBool (F in_keys(nativeDefinedBuiltins))'''
 layer = "c11_stdlib"
 confidence = 1.0
@@ -281,7 +281,7 @@ source_line_end = 155
 
 [[axioms]]
 id = "c11_libc_builtin_syntax_operation_5c400bcf"
-content = '''Operation requires: allRValueInHeatList(Args), and size(hListToList(Args)) >Int 6.'''
+content = '''Operation requires: allRValueInHeatList(Args), and size(hListToList(Args)) > 6.'''
 formal_spec = '''allRValueInHeatList(Args) andBool size(hListToList(Args)) >Int 6'''
 layer = "c11_stdlib"
 confidence = 1.0
@@ -292,7 +292,7 @@ source_line_end = 161
 
 [[axioms]]
 id = "c11_libc_builtin_syntax_operation_7cca696a"
-content = '''Operation requires: allRValueInHeatList(Args), allRValueInHeatList(VarArgs), and size(hListToList(Args)) >Int 3.'''
+content = '''Operation requires: allRValueInHeatList(Args), allRValueInHeatList(VarArgs), and size(hListToList(Args)) > 3.'''
 formal_spec = '''allRValueInHeatList(Args) andBool allRValueInHeatList(VarArgs) andBool size(hListToList(Args)) >Int 3'''
 layer = "c11_stdlib"
 confidence = 1.0
@@ -314,7 +314,7 @@ source_line_end = 43
 
 [[axioms]]
 id = "c11_libc_signal_syntax_comparison_ca96b306"
-content = '''Comparison requires: NOT (isSpecialHandler(V)), and base(Loc) in_keys(Funs).'''
+content = '''Comparison requires: NOT: isSpecialHandler(V), and base(Loc) in_keys(Funs).'''
 formal_spec = '''notBool isSpecialHandler(V) andBool (base(Loc) in_keys(Funs))'''
 layer = "c11_stdlib"
 confidence = 1.0
@@ -337,7 +337,7 @@ source_line_end = 57
 
 [[axioms]]
 id = "c11_libc_signal_syntax_operation_666e9b03"
-content = '''Operation requires: NOT (isNull(V)), isNativeLoc(Loc, and offset(Loc) ==Int 1).'''
+content = '''Operation requires: NOT: isNull(V), isNativeLoc(Loc, and offset(Loc) ==Int 1).'''
 formal_spec = '''notBool isNull(V) andBool (isNativeLoc(Loc) andBool offset(Loc) ==Int 1)'''
 layer = "c11_stdlib"
 confidence = 1.0
@@ -348,7 +348,7 @@ source_line_end = 59
 
 [[axioms]]
 id = "c11_libc_signal_syntax_comparison_ba5623a1"
-content = '''Comparison requires: State =/=K raiseOrAbort.'''
+content = '''Comparison requires: State ≠ raiseOrAbort.'''
 formal_spec = '''State =/=K raiseOrAbort'''
 layer = "c11_stdlib"
 confidence = 1.0
@@ -360,7 +360,7 @@ tags = ['comparison']
 
 [[axioms]]
 id = "c11_libc_signal_syntax_operation_55370bd7"
-content = '''Operation requires: NOT (isComputational(Sig)).'''
+content = '''Operation requires: NOT: isComputational(Sig).'''
 formal_spec = '''notBool isComputational(Sig)'''
 layer = "c11_stdlib"
 confidence = 1.0
@@ -371,7 +371,7 @@ source_line_end = 103
 
 [[axioms]]
 id = "c11_libc_locale_comparison_cc3cebcf"
-content = '''Comparison requires: NOT (isNull(OldPtr)).'''
+content = '''Comparison requires: NOT: isNull(OldPtr).'''
 formal_spec = '''notBool isNull(OldPtr)'''
 layer = "c11_stdlib"
 confidence = 1.0
@@ -395,7 +395,7 @@ tags = ['comparison']
 
 [[axioms]]
 id = "c11_libc_locale_comparison_cc3cebcf"
-content = '''Comparison requires: NOT (isNull(OldPtr)).'''
+content = '''Comparison requires: NOT: isNull(OldPtr).'''
 formal_spec = '''notBool isNull(OldPtr)'''
 layer = "c11_stdlib"
 confidence = 1.0
@@ -419,7 +419,7 @@ tags = ['comparison']
 
 [[axioms]]
 id = "c11_libc_io_syntax_comparison_3d878b21"
-content = '''Comparison requires: findChar(S', "\n", 0) ==Int -1, NOT ((Op ==K inputOp), and Eof impliesBool (RS =/=String "")).'''
+content = '''Comparison requires: findChar(S', "\n", 0) ==Int -1, NOT: (Op = inputOp, and if (Eof then RS =/=String "")).'''
 formal_spec = '''findChar(S', "\n", 0) ==Int -1 andBool notBool (Op ==K inputOp andBool (Eof impliesBool (RS =/=String "")))'''
 layer = "c11_stdlib"
 confidence = 1.0
@@ -431,7 +431,7 @@ tags = ['comparison']
 
 [[axioms]]
 id = "c11_libc_io_syntax_comparison_f8494e96"
-content = '''Comparison requires: findChar(S', "\n", 0) =/=Int -1, NOT ((Op ==K inputOp), and Eof impliesBool (RS =/=String "")).'''
+content = '''Comparison requires: findChar(S', "\n", 0) =/=Int -1, NOT: (Op = inputOp, and if (Eof then RS =/=String "")).'''
 formal_spec = '''findChar(S', "\n", 0) =/=Int -1 andBool notBool (Op ==K inputOp andBool (Eof impliesBool (RS =/=String "")))'''
 layer = "c11_stdlib"
 confidence = 1.0
@@ -443,7 +443,7 @@ tags = ['comparison']
 
 [[axioms]]
 id = "c11_libc_io_syntax_comparison_5bb03633"
-content = '''Comparison requires: lengthString(S +String S') <Int N, NOT ((Op ==K inputOp), and Eof impliesBool (RS =/=String "")).'''
+content = '''Comparison requires: lengthString(S +String S') < N, NOT: (Op = inputOp, and if (Eof then RS =/=String "")).'''
 formal_spec = '''lengthString(S +String S') <Int N andBool notBool (Op ==K inputOp andBool (Eof impliesBool (RS =/=String "")))'''
 layer = "c11_stdlib"
 confidence = 1.0
@@ -455,7 +455,7 @@ tags = ['comparison']
 
 [[axioms]]
 id = "c11_libc_io_syntax_comparison_4039576a"
-content = '''Comparison requires: lengthString(S +String S') >=Int N, NOT ((Op ==K inputOp), and Eof impliesBool (RS =/=String "")).'''
+content = '''Comparison requires: lengthString(S +String S') ≥ N, NOT: (Op = inputOp, and if (Eof then RS =/=String "")).'''
 formal_spec = '''lengthString(S +String S') >=Int N andBool notBool (Op ==K inputOp andBool (Eof impliesBool (RS =/=String "")))'''
 layer = "c11_stdlib"
 confidence = 1.0
@@ -467,7 +467,7 @@ tags = ['comparison']
 
 [[axioms]]
 id = "c11_libc_io_syntax_comparison_74369e53"
-content = '''Comparison requires: NOT ((Op ==K inputOp), and Eof impliesBool (RS =/=String "")).'''
+content = '''Comparison requires: NOT: (Op = inputOp, and if (Eof then RS =/=String "")).'''
 formal_spec = '''notBool (Op ==K inputOp andBool (Eof impliesBool (RS =/=String "")))'''
 layer = "c11_stdlib"
 confidence = 1.0
@@ -479,7 +479,7 @@ tags = ['comparison']
 
 [[axioms]]
 id = "c11_libc_io_syntax_comparison_238fc181"
-content = '''Comparison requires: Mode =/=K noBuf.'''
+content = '''Comparison requires: Mode ≠ noBuf.'''
 formal_spec = '''Mode =/=K noBuf'''
 layer = "c11_stdlib"
 confidence = 1.0
@@ -491,7 +491,7 @@ tags = ['comparison']
 
 [[axioms]]
 id = "c11_libc_io_syntax_comparison_f684b9e4"
-content = '''Comparison requires: lengthString(S) >=Int N, and Op =/=K outputOp.'''
+content = '''Comparison requires: lengthString(S) ≥ N, and Op ≠ outputOp.'''
 formal_spec = '''lengthString(S) >=Int N andBool Op =/=K outputOp'''
 layer = "c11_stdlib"
 confidence = 1.0
@@ -503,7 +503,7 @@ tags = ['comparison']
 
 [[axioms]]
 id = "c11_libc_io_syntax_comparison_341c4455"
-content = '''Comparison requires: lengthString(S) <Int N, either (Eof or Err =/=Int 0), and Op =/=K outputOp.'''
+content = '''Comparison requires: lengthString(S) < N, either Eof or Err =/=Int 0, and Op ≠ outputOp.'''
 formal_spec = '''lengthString(S) <Int N andBool (Eof orBool Err =/=Int 0) andBool Op =/=K outputOp'''
 layer = "c11_stdlib"
 confidence = 1.0
@@ -515,7 +515,7 @@ tags = ['comparison']
 
 [[axioms]]
 id = "c11_libc_io_syntax_comparison_776970c3"
-content = '''Comparison requires: lengthString(S) <Int N, and Op =/=K outputOp.'''
+content = '''Comparison requires: lengthString(S) < N, and Op ≠ outputOp.'''
 formal_spec = '''lengthString(S) <Int N andBool Op =/=K outputOp'''
 layer = "c11_stdlib"
 confidence = 1.0
@@ -527,7 +527,7 @@ tags = ['comparison']
 
 [[axioms]]
 id = "c11_libc_io_syntax_comparison_594190e7"
-content = '''Comparison requires: lengthString(S) <Int N.'''
+content = '''Comparison requires: lengthString(S) < N.'''
 formal_spec = '''lengthString(S) <Int N'''
 layer = "c11_stdlib"
 confidence = 1.0
@@ -539,7 +539,7 @@ tags = ['comparison']
 
 [[axioms]]
 id = "c11_libc_io_syntax_comparison_201b00e1"
-content = '''Comparison requires: Mode =/=K lineBuf.'''
+content = '''Comparison requires: Mode ≠ lineBuf.'''
 formal_spec = '''Mode =/=K lineBuf'''
 layer = "c11_stdlib"
 confidence = 1.0
@@ -575,7 +575,7 @@ tags = ['comparison']
 
 [[axioms]]
 id = "c11_libc_io_syntax_division_ddf173ee"
-content = '''Integer division requires: lengthString(S) +Int 1 <Int N, and Byte =/=Int -1.'''
+content = '''Integer division requires: lengthString(S) +Int 1 < N, and Byte =/=Int -1.'''
 formal_spec = '''lengthString(S) +Int 1 <Int N andBool Byte =/=Int -1'''
 layer = "c11_stdlib"
 confidence = 1.0
@@ -587,7 +587,7 @@ tags = ['division']
 
 [[axioms]]
 id = "c11_libc_io_syntax_comparison_83105318"
-content = '''Comparison requires: lengthString(S) +Int 1 >=Int N, and Byte =/=Int -1.'''
+content = '''Comparison requires: lengthString(S) +Int 1 ≥ N, and Byte =/=Int -1.'''
 formal_spec = '''lengthString(S) +Int 1 >=Int N andBool Byte =/=Int -1'''
 layer = "c11_stdlib"
 confidence = 1.0
@@ -611,7 +611,7 @@ tags = ['comparison']
 
 [[axioms]]
 id = "c11_libc_io_syntax_comparison_58511875"
-content = '''Comparison requires: NOT (FD in_keys(OpenFiles)).'''
+content = '''Comparison requires: NOT: FD in_keys(OpenFiles).'''
 formal_spec = '''notBool (FD in_keys(OpenFiles))'''
 layer = "c11_stdlib"
 confidence = 1.0
@@ -623,7 +623,7 @@ tags = ['comparison']
 
 [[axioms]]
 id = "c11_libc_io_syntax_comparison_ba6b4eeb"
-content = '''Comparison requires: lengthString(S) >Int 0, and NOT (NoIO() in Opts).'''
+content = '''Comparison requires: lengthString(S) > 0, and NOT: NoIO() in Opts.'''
 formal_spec = '''lengthString(S) >Int 0 andBool notBool (NoIO() in Opts)'''
 layer = "c11_stdlib"
 confidence = 1.0
@@ -635,7 +635,7 @@ tags = ['comparison']
 
 [[axioms]]
 id = "c11_libc_io_syntax_comparison_0adc147d"
-content = '''Comparison requires: either lengthString(S) <=Int 0 or NoIO() in Opts) syntax KItem ::= sent(Int, String.'''
+content = '''Comparison requires: either lengthString(S) ≤ 0 or NoIO() in Opts.'''
 formal_spec = '''lengthString(S) <=Int 0 orBool (NoIO() in Opts)  syntax KItem ::= sent(Int, String)'''
 layer = "c11_stdlib"
 confidence = 1.0
@@ -670,7 +670,7 @@ tags = ['comparison']
 
 [[axioms]]
 id = "c11_libc_io_syntax_operation_e014b1f7"
-content = '''Operation requires: NOT ((N >=Int 0), and N <Int byteSizeofType(type(cfg:wcharut))).'''
+content = '''Operation requires: NOT: (N ≥ 0, and N < byteSizeofType(type(cfg:wcharut))).'''
 formal_spec = '''notBool (N >=Int 0 andBool N <Int byteSizeofType(type(cfg:wcharut)))'''
 layer = "c11_stdlib"
 confidence = 1.0
@@ -694,7 +694,7 @@ tags = ['comparison']
 
 [[axioms]]
 id = "c11_libc_io_syntax_operation_03ccb397"
-content = '''Operation requires: N >=Int 0, and N <Int byteSizeofType(type(cfg:wcharut)).'''
+content = '''Operation requires: N ≥ 0, and N < byteSizeofType(type(cfg:wcharut)).'''
 formal_spec = '''N >=Int 0 andBool N <Int byteSizeofType(type(cfg:wcharut))'''
 layer = "c11_stdlib"
 confidence = 1.0
@@ -706,7 +706,7 @@ error_codes = ['CCV7', 'CCV11', 'CEA2', 'ECL4', 'EFNC1', 'TDG12', 'FD6', 'STDIO1
 
 [[axioms]]
 id = "c11_libc_io_syntax_operation_c2567e89"
-content = '''Operation requires: N >Int 0.'''
+content = '''Operation requires: N > 0.'''
 formal_spec = '''N >Int 0'''
 layer = "c11_stdlib"
 confidence = 1.0
@@ -717,7 +717,7 @@ source_line_end = 418
 
 [[axioms]]
 id = "c11_libc_io_syntax_operation_79695fbd"
-content = '''Operation requires: isCharType(innerType(T)), and NOT (isNull(V)).'''
+content = '''Operation requires: operand is a character type, and NOT: isNull(V).'''
 formal_spec = '''isCharType(innerType(T)) andBool notBool isNull(V)'''
 layer = "c11_stdlib"
 confidence = 1.0
@@ -728,7 +728,7 @@ source_line_end = 452
 
 [[axioms]]
 id = "c11_libc_io_syntax_operation_79e24239"
-content = '''Operation requires: NOT (isCharType(innerType(T))), and NOT (isNull(V)).'''
+content = '''Operation requires: operand is a character type, and NOT: isNull(V).'''
 formal_spec = '''notBool isCharType(innerType(T)) andBool notBool isNull(V)'''
 layer = "c11_stdlib"
 confidence = 1.0
@@ -750,7 +750,7 @@ source_line_end = 463
 
 [[axioms]]
 id = "c11_libc_stdio_operation_fe53f876"
-content = '''Operation requires: NOT (isNull(FDPtr)).'''
+content = '''Operation requires: NOT: isNull(FDPtr).'''
 formal_spec = '''notBool isNull(FDPtr)'''
 layer = "c11_stdlib"
 confidence = 1.0
@@ -772,7 +772,7 @@ source_line_end = 47
 
 [[axioms]]
 id = "c11_libc_stdio_comparison_569cd15c"
-content = '''Comparison requires: either getFD(V) ==K "" or notBool getFD(V) in_keys(OpenFiles).'''
+content = '''Comparison requires: either getFD(V) = "" or NOT: getFD(V) in_keys(OpenFiles).'''
 formal_spec = '''(getFD(V) ==K "") orBool (notBool getFD(V) in_keys(OpenFiles))'''
 layer = "c11_stdlib"
 confidence = 1.0
@@ -784,7 +784,7 @@ tags = ['comparison']
 
 [[axioms]]
 id = "c11_libc_stdio_comparison_1c301b55"
-content = '''Comparison requires: isWritable(Mode), and Op =/=K inputOp.'''
+content = '''Comparison requires: isWritable(Mode), and Op ≠ inputOp.'''
 formal_spec = '''isWritable(Mode) andBool (Op =/=K inputOp)'''
 layer = "c11_stdlib"
 confidence = 1.0
@@ -796,7 +796,7 @@ tags = ['comparison']
 
 [[axioms]]
 id = "c11_libc_stdio_comparison_569cd15c"
-content = '''Comparison requires: either getFD(V) ==K "" or notBool getFD(V) in_keys(OpenFiles).'''
+content = '''Comparison requires: either getFD(V) = "" or NOT: getFD(V) in_keys(OpenFiles).'''
 formal_spec = '''(getFD(V) ==K "") orBool (notBool getFD(V) in_keys(OpenFiles))'''
 layer = "c11_stdlib"
 confidence = 1.0
@@ -820,7 +820,7 @@ tags = ['comparison']
 
 [[axioms]]
 id = "c11_libc_stdio_comparison_569cd15c"
-content = '''Comparison requires: either getFD(V) ==K "" or notBool getFD(V) in_keys(OpenFiles).'''
+content = '''Comparison requires: either getFD(V) = "" or NOT: getFD(V) in_keys(OpenFiles).'''
 formal_spec = '''(getFD(V) ==K "") orBool (notBool getFD(V) in_keys(OpenFiles))'''
 layer = "c11_stdlib"
 confidence = 1.0
@@ -844,7 +844,7 @@ tags = ['comparison']
 
 [[axioms]]
 id = "c11_libc_stdio_comparison_569cd15c"
-content = '''Comparison requires: either getFD(V) ==K "" or notBool getFD(V) in_keys(OpenFiles).'''
+content = '''Comparison requires: either getFD(V) = "" or NOT: getFD(V) in_keys(OpenFiles).'''
 formal_spec = '''(getFD(V) ==K "") orBool (notBool getFD(V) in_keys(OpenFiles))'''
 layer = "c11_stdlib"
 confidence = 1.0
@@ -856,7 +856,7 @@ tags = ['comparison']
 
 [[axioms]]
 id = "c11_libc_stdio_comparison_a6f33404"
-content = '''Comparison requires: NOT (isWritable(Mode)).'''
+content = '''Comparison requires: NOT: isWritable(Mode).'''
 formal_spec = '''notBool isWritable(Mode)'''
 layer = "c11_stdlib"
 confidence = 1.0
@@ -868,7 +868,7 @@ tags = ['comparison']
 
 [[axioms]]
 id = "c11_libc_stdio_operation_e025528f"
-content = '''Operation requires: C =/=K value(eof).'''
+content = '''Operation requires: C ≠ value(eof).'''
 formal_spec = '''C =/=K value(eof)'''
 layer = "c11_stdlib"
 confidence = 1.0
@@ -879,7 +879,7 @@ source_line_end = 212
 
 [[axioms]]
 id = "c11_libc_stdio_operation_a76ff940"
-content = '''Operation requires: C ==K value(eof).'''
+content = '''Operation requires: C = value(eof).'''
 formal_spec = '''C ==K value(eof)'''
 layer = "c11_stdlib"
 confidence = 1.0
@@ -902,7 +902,7 @@ tags = ['comparison']
 
 [[axioms]]
 id = "c11_libc_stdio_comparison_569cd15c"
-content = '''Comparison requires: either getFD(V) ==K "" or notBool getFD(V) in_keys(OpenFiles).'''
+content = '''Comparison requires: either getFD(V) = "" or NOT: getFD(V) in_keys(OpenFiles).'''
 formal_spec = '''(getFD(V) ==K "") orBool (notBool getFD(V) in_keys(OpenFiles))'''
 layer = "c11_stdlib"
 confidence = 1.0
@@ -914,7 +914,7 @@ tags = ['comparison']
 
 [[axioms]]
 id = "c11_libc_stdio_comparison_8f694147"
-content = '''Comparison requires: NOT (isReadable(Mode)).'''
+content = '''Comparison requires: NOT: isReadable(Mode).'''
 formal_spec = '''notBool isReadable(Mode)'''
 layer = "c11_stdlib"
 confidence = 1.0
@@ -926,7 +926,7 @@ tags = ['comparison']
 
 [[axioms]]
 id = "c11_libc_stdio_comparison_5777f556"
-content = '''Comparison requires: lengthString(S) >Int 0.'''
+content = '''Comparison requires: lengthString(S) > 0.'''
 formal_spec = '''lengthString(S) >Int 0'''
 layer = "c11_stdlib"
 confidence = 1.0
@@ -950,7 +950,7 @@ tags = ['comparison']
 
 [[axioms]]
 id = "c11_libc_stdio_comparison_569cd15c"
-content = '''Comparison requires: either getFD(V) ==K "" or notBool getFD(V) in_keys(OpenFiles).'''
+content = '''Comparison requires: either getFD(V) = "" or NOT: getFD(V) in_keys(OpenFiles).'''
 formal_spec = '''(getFD(V) ==K "") orBool (notBool getFD(V) in_keys(OpenFiles))'''
 layer = "c11_stdlib"
 confidence = 1.0
@@ -962,7 +962,7 @@ tags = ['comparison']
 
 [[axioms]]
 id = "c11_libc_stdio_comparison_d306af59"
-content = '''Comparison requires: NOT ((Buffer ==K ""), and Eof).'''
+content = '''Comparison requires: NOT: (Buffer = "", and Eof).'''
 formal_spec = '''notBool (Buffer ==K "" andBool Eof)'''
 layer = "c11_stdlib"
 confidence = 1.0
@@ -974,7 +974,7 @@ tags = ['comparison']
 
 [[axioms]]
 id = "c11_libc_stdio_comparison_569cd15c"
-content = '''Comparison requires: either getFD(V) ==K "" or notBool getFD(V) in_keys(OpenFiles).'''
+content = '''Comparison requires: either getFD(V) = "" or NOT: getFD(V) in_keys(OpenFiles).'''
 formal_spec = '''(getFD(V) ==K "") orBool (notBool getFD(V) in_keys(OpenFiles))'''
 layer = "c11_stdlib"
 confidence = 1.0
@@ -998,7 +998,7 @@ tags = ['comparison']
 
 [[axioms]]
 id = "c11_libc_stdio_comparison_569cd15c"
-content = '''Comparison requires: either getFD(V) ==K "" or notBool getFD(V) in_keys(OpenFiles).'''
+content = '''Comparison requires: either getFD(V) = "" or NOT: getFD(V) in_keys(OpenFiles).'''
 formal_spec = '''(getFD(V) ==K "") orBool (notBool getFD(V) in_keys(OpenFiles))'''
 layer = "c11_stdlib"
 confidence = 1.0
@@ -1022,7 +1022,7 @@ tags = ['comparison']
 
 [[axioms]]
 id = "c11_libc_stdio_comparison_6b25d743"
-content = '''Comparison requires: either getFD(V) ==K "" or NOT (getFD(V) in_keys(OpenFiles)).'''
+content = '''Comparison requires: either getFD(V) = "" or NOT: getFD(V) in_keys(OpenFiles).'''
 formal_spec = '''(getFD(V) ==K "") orBool notBool (getFD(V) in_keys(OpenFiles))'''
 layer = "c11_stdlib"
 confidence = 1.0
@@ -1034,7 +1034,7 @@ tags = ['comparison']
 
 [[axioms]]
 id = "c11_libc_stdio_comparison_6b25d743"
-content = '''Comparison requires: either getFD(V) ==K "" or NOT (getFD(V) in_keys(OpenFiles)).'''
+content = '''Comparison requires: either getFD(V) = "" or NOT: getFD(V) in_keys(OpenFiles).'''
 formal_spec = '''(getFD(V) ==K "") orBool notBool (getFD(V) in_keys(OpenFiles))'''
 layer = "c11_stdlib"
 confidence = 1.0
@@ -1046,7 +1046,7 @@ tags = ['comparison']
 
 [[axioms]]
 id = "c11_libc_stdio_operation_fe53f876"
-content = '''Operation requires: NOT (isNull(FDPtr)).'''
+content = '''Operation requires: NOT: isNull(FDPtr).'''
 formal_spec = '''notBool isNull(FDPtr)'''
 layer = "c11_stdlib"
 confidence = 1.0
@@ -1080,7 +1080,7 @@ tags = ['comparison']
 
 [[axioms]]
 id = "c11_libc_stdio_comparison_cdc6373b"
-content = '''Comparison requires: NOT (FD in_keys(OpenFiles)).'''
+content = '''Comparison requires: NOT: FD in_keys(OpenFiles).'''
 formal_spec = '''notBool (FD in_keys(OpenFiles))'''
 layer = "c11_stdlib"
 confidence = 1.0
@@ -1092,7 +1092,7 @@ tags = ['comparison']
 
 [[axioms]]
 id = "c11_libc_stdio_operation_1643cb22"
-content = '''Operation requires: NOT (isNull(tv(Loc, T))).'''
+content = '''Operation requires: NOT: isNull(tv(Loc, T)).'''
 formal_spec = '''notBool isNull(tv(Loc, T))'''
 layer = "c11_stdlib"
 confidence = 1.0
@@ -1114,7 +1114,7 @@ source_line_end = 380
 
 [[axioms]]
 id = "c11_libc_stdio_operation_8a281bbd"
-content = '''Operation requires: NOT (isNull(Filename)).'''
+content = '''Operation requires: NOT: isNull(Filename).'''
 formal_spec = '''notBool isNull(Filename)'''
 layer = "c11_stdlib"
 confidence = 1.0
@@ -1137,7 +1137,7 @@ tags = ['comparison']
 
 [[axioms]]
 id = "c11_libc_stdio_operation_2ee93b8c"
-content = '''Operation requires: either isReadable(Mode) or isWritable(Mode) or isReadWritable(Mode).'''
+content = '''Operation requires: one of: isReadable(Mode), isWritable(Mode), isReadWritable(Mode).'''
 formal_spec = '''isReadable(Mode) orBool isWritable(Mode) orBool isReadWritable(Mode)'''
 layer = "c11_stdlib"
 confidence = 1.0
@@ -1148,7 +1148,7 @@ source_line_end = 416
 
 [[axioms]]
 id = "c11_libc_stdio_operation_1368450b"
-content = '''Operation requires: NOT (isNull(BufPtr)).'''
+content = '''Operation requires: NOT: isNull(BufPtr).'''
 formal_spec = '''notBool isNull(BufPtr)'''
 layer = "c11_stdlib"
 confidence = 1.0
@@ -1170,7 +1170,7 @@ source_line_end = 459
 
 [[axioms]]
 id = "c11_libc_stdio_operation_1368450b"
-content = '''Operation requires: NOT (isNull(BufPtr)).'''
+content = '''Operation requires: NOT: isNull(BufPtr).'''
 formal_spec = '''notBool isNull(BufPtr)'''
 layer = "c11_stdlib"
 confidence = 1.0
@@ -1192,7 +1192,7 @@ source_line_end = 470
 
 [[axioms]]
 id = "c11_libc_stdio_operation_846051d3"
-content = '''Operation requires: NOT (isNull(tv(Loc, utype(pointerType(type(void)))))), and Sz >Int 0.'''
+content = '''Operation requires: NOT: isNull(tv(Loc, utype(pointerType(type(void))))), and Sz > 0.'''
 formal_spec = '''notBool isNull(tv(Loc, utype(pointerType(type(void))))) andBool Sz >Int 0'''
 layer = "c11_stdlib"
 confidence = 1.0
@@ -1200,7 +1200,7 @@ source_file = "stdio.k"
 source_module = "LIBC-STDIO"
 source_line_start = 489
 source_line_end = 492
-error_codes = ['CCV7', 'CCV11', 'CEA1', 'CEA5', 'CEA2', 'CEE3', 'CER3', 'CER4', 'CERL1', 'CERL2', 'CERL3', 'CERL4', 'CERL6', 'ECL3', 'ECL4', 'CEER1', 'EEA2', 'EEA3', 'EEA4', 'EEA5', 'EFNC1', 'EFNC2', 'STRING1', 'CCV9', 'CEA7', 'CEA8', 'CEA9', 'CER6', 'CERL5', 'TEAS2', 'TSE2', 'TTE2', 'TTE3', 'CCV13', 'CCV13-H', 'CCVE4', 'CEMX4', 'STDLIBE1', 'STDLIBE2', 'STDLIBE3', 'CEE6', 'CER7', 'EXC3', 'TDG12', 'FD6', 'STDIO1', 'CEB1', 'CEB5', 'CEB9', 'CEB10', 'CEB11', 'CTI4']
+error_codes = ['CCV7', 'CCV11', 'CEA2', 'ECL4', 'EFNC1', 'TDG12', 'FD6', 'STDIO1', 'CCV9', 'CEA7', 'CEA8', 'CEA9', 'CEB1', 'CEB5', 'CEB9', 'CEB10', 'CEB11', 'CERL5', 'TEAS2', 'TSE2', 'TTE2', 'TTE3', 'CTI4', 'CEA1', 'CEA5', 'CEE3', 'CER3', 'CER4', 'CERL1', 'CERL2', 'CERL3', 'CERL4', 'CERL6', 'ECL3', 'CEER1', 'EEA2', 'EEA3', 'EEA4', 'EEA5', 'EFNC2', 'STRING1', 'CER6', 'CCV13', 'CCV13-H', 'CCVE4', 'CEMX4', 'STDLIBE1', 'STDLIBE2', 'STDLIBE3', 'CEE6', 'CER7', 'EXC3']
 
 [[axioms]]
 id = "c11_libc_stdio_comparison_00603046"
@@ -1216,7 +1216,7 @@ tags = ['comparison']
 
 [[axioms]]
 id = "c11_libc_stdio_comparison_6b25d743"
-content = '''Comparison requires: either getFD(V) ==K "" or NOT (getFD(V) in_keys(OpenFiles)).'''
+content = '''Comparison requires: either getFD(V) = "" or NOT: getFD(V) in_keys(OpenFiles).'''
 formal_spec = '''(getFD(V) ==K "") orBool notBool (getFD(V) in_keys(OpenFiles))'''
 layer = "c11_stdlib"
 confidence = 1.0
@@ -1228,7 +1228,7 @@ tags = ['comparison']
 
 [[axioms]]
 id = "c11_libc_stdio_comparison_e83421a4"
-content = '''Comparison requires: N =/=K 1.'''
+content = '''Comparison requires: N ≠ 1.'''
 formal_spec = '''N =/=K 1'''
 layer = "c11_stdlib"
 confidence = 1.0
@@ -1252,7 +1252,7 @@ tags = ['comparison']
 
 [[axioms]]
 id = "c11_libc_stdio_comparison_8f694147"
-content = '''Comparison requires: NOT (isReadable(Mode)).'''
+content = '''Comparison requires: NOT: isReadable(Mode).'''
 formal_spec = '''notBool isReadable(Mode)'''
 layer = "c11_stdlib"
 confidence = 1.0
@@ -1264,7 +1264,7 @@ tags = ['comparison']
 
 [[axioms]]
 id = "c11_libc_stdio_comparison_6b25d743"
-content = '''Comparison requires: either getFD(V) ==K "" or NOT (getFD(V) in_keys(OpenFiles)).'''
+content = '''Comparison requires: either getFD(V) = "" or NOT: getFD(V) in_keys(OpenFiles).'''
 formal_spec = '''(getFD(V) ==K "") orBool notBool (getFD(V) in_keys(OpenFiles))'''
 layer = "c11_stdlib"
 confidence = 1.0
@@ -1298,7 +1298,7 @@ source_line_end = 560
 
 [[axioms]]
 id = "c11_libc_stdio_operation_b3669d54"
-content = '''Operation requires: NMemb <Int 1.'''
+content = '''Operation requires: NMemb < 1.'''
 formal_spec = '''NMemb <Int 1'''
 layer = "c11_stdlib"
 confidence = 1.0
@@ -1309,7 +1309,7 @@ source_line_end = 566
 
 [[axioms]]
 id = "c11_libc_stdio_operation_29c2d9f1"
-content = '''Operation requires: NMemb >Int 1.'''
+content = '''Operation requires: NMemb > 1.'''
 formal_spec = '''NMemb >Int 1'''
 layer = "c11_stdlib"
 confidence = 1.0
@@ -1320,7 +1320,7 @@ source_line_end = 574
 
 [[axioms]]
 id = "c11_libc_stdio_comparison_ce001f23"
-content = '''Comparison requires: V ==K eof, NOT ((Buffer ==K ""), and Eof).'''
+content = '''Comparison requires: V = eof, NOT: (Buffer = "", and Eof).'''
 formal_spec = '''V ==K eof andBool notBool (Buffer ==K "" andBool Eof)'''
 layer = "c11_stdlib"
 confidence = 1.0
@@ -1344,7 +1344,7 @@ tags = ['comparison']
 
 [[axioms]]
 id = "c11_libc_stdio_comparison_d306af59"
-content = '''Comparison requires: NOT ((Buffer ==K ""), and Eof).'''
+content = '''Comparison requires: NOT: (Buffer = "", and Eof).'''
 formal_spec = '''notBool (Buffer ==K "" andBool Eof)'''
 layer = "c11_stdlib"
 confidence = 1.0
@@ -1356,7 +1356,7 @@ tags = ['comparison']
 
 [[axioms]]
 id = "c11_libc_stdio_comparison_717ec562"
-content = '''Comparison requires: lengthString(S) >=Int NMemb -Int 1.'''
+content = '''Comparison requires: lengthString(S) ≥ NMemb -Int 1.'''
 formal_spec = '''lengthString(S) >=Int NMemb -Int 1'''
 layer = "c11_stdlib"
 confidence = 1.0
@@ -1368,7 +1368,7 @@ tags = ['comparison']
 
 [[axioms]]
 id = "c11_libc_stdio_operation_5fac41b8"
-content = '''Operation requires: lengthString(S) <Int NMemb -Int 1.'''
+content = '''Operation requires: lengthString(S) < NMemb -Int 1.'''
 formal_spec = '''lengthString(S) <Int NMemb -Int 1'''
 layer = "c11_stdlib"
 confidence = 1.0
@@ -1391,7 +1391,7 @@ tags = ['comparison']
 
 [[axioms]]
 id = "c11_libc_stdio_comparison_a6f33404"
-content = '''Comparison requires: NOT (isWritable(Mode)).'''
+content = '''Comparison requires: NOT: isWritable(Mode).'''
 formal_spec = '''notBool isWritable(Mode)'''
 layer = "c11_stdlib"
 confidence = 1.0
@@ -1403,7 +1403,7 @@ tags = ['comparison']
 
 [[axioms]]
 id = "c11_libc_stdio_comparison_6b25d743"
-content = '''Comparison requires: either getFD(V) ==K "" or NOT (getFD(V) in_keys(OpenFiles)).'''
+content = '''Comparison requires: either getFD(V) = "" or NOT: getFD(V) in_keys(OpenFiles).'''
 formal_spec = '''(getFD(V) ==K "") orBool notBool (getFD(V) in_keys(OpenFiles))'''
 layer = "c11_stdlib"
 confidence = 1.0
@@ -1427,7 +1427,7 @@ tags = ['comparison']
 
 [[axioms]]
 id = "c11_libc_stdio_comparison_a6f33404"
-content = '''Comparison requires: NOT (isWritable(Mode)).'''
+content = '''Comparison requires: NOT: isWritable(Mode).'''
 formal_spec = '''notBool isWritable(Mode)'''
 layer = "c11_stdlib"
 confidence = 1.0
@@ -1439,7 +1439,7 @@ tags = ['comparison']
 
 [[axioms]]
 id = "c11_libc_stdio_comparison_6b25d743"
-content = '''Comparison requires: either getFD(V) ==K "" or NOT (getFD(V) in_keys(OpenFiles)).'''
+content = '''Comparison requires: either getFD(V) = "" or NOT: getFD(V) in_keys(OpenFiles).'''
 formal_spec = '''(getFD(V) ==K "") orBool notBool (getFD(V) in_keys(OpenFiles))'''
 layer = "c11_stdlib"
 confidence = 1.0
@@ -1462,7 +1462,7 @@ source_line_end = 713
 
 [[axioms]]
 id = "c11_libc_stdio_comparison_55b9bc4b"
-content = '''Comparison requires: NOT (VaList in_keys(VaLists)).'''
+content = '''Comparison requires: NOT: VaList in_keys(VaLists).'''
 formal_spec = '''notBool VaList in_keys(VaLists)'''
 layer = "c11_stdlib"
 confidence = 1.0
@@ -1474,7 +1474,7 @@ tags = ['comparison']
 
 [[axioms]]
 id = "c11_libc_stdio_comparison_e1ddb32f"
-content = '''Comparison requires: isKResult(H).'''
+content = '''Comparison requires: is a K result.'''
 formal_spec = '''isKResult(H)'''
 layer = "c11_stdlib"
 confidence = 1.0
@@ -1497,7 +1497,7 @@ source_line_end = 737
 
 [[axioms]]
 id = "c11_libc_stdio_comparison_55b9bc4b"
-content = '''Comparison requires: NOT (VaList in_keys(VaLists)).'''
+content = '''Comparison requires: NOT: VaList in_keys(VaLists).'''
 formal_spec = '''notBool VaList in_keys(VaLists)'''
 layer = "c11_stdlib"
 confidence = 1.0
@@ -1509,7 +1509,7 @@ tags = ['comparison']
 
 [[axioms]]
 id = "c11_libc_stdio_comparison_e1ddb32f"
-content = '''Comparison requires: isKResult(H).'''
+content = '''Comparison requires: is a K result.'''
 formal_spec = '''isKResult(H)'''
 layer = "c11_stdlib"
 confidence = 1.0
@@ -1532,7 +1532,7 @@ source_line_end = 778
 
 [[axioms]]
 id = "c11_libc_stdio_comparison_55b9bc4b"
-content = '''Comparison requires: NOT (VaList in_keys(VaLists)).'''
+content = '''Comparison requires: NOT: VaList in_keys(VaLists).'''
 formal_spec = '''notBool VaList in_keys(VaLists)'''
 layer = "c11_stdlib"
 confidence = 1.0
@@ -1544,7 +1544,7 @@ tags = ['comparison']
 
 [[axioms]]
 id = "c11_libc_stdio_comparison_e1ddb32f"
-content = '''Comparison requires: isKResult(H).'''
+content = '''Comparison requires: is a K result.'''
 formal_spec = '''isKResult(H)'''
 layer = "c11_stdlib"
 confidence = 1.0
@@ -1567,7 +1567,7 @@ source_line_end = 798
 
 [[axioms]]
 id = "c11_libc_stdio_comparison_55b9bc4b"
-content = '''Comparison requires: NOT (VaList in_keys(VaLists)).'''
+content = '''Comparison requires: NOT: VaList in_keys(VaLists).'''
 formal_spec = '''notBool VaList in_keys(VaLists)'''
 layer = "c11_stdlib"
 confidence = 1.0
@@ -1579,7 +1579,7 @@ tags = ['comparison']
 
 [[axioms]]
 id = "c11_libc_stdio_comparison_e1ddb32f"
-content = '''Comparison requires: isKResult(H).'''
+content = '''Comparison requires: is a K result.'''
 formal_spec = '''isKResult(H)'''
 layer = "c11_stdlib"
 confidence = 1.0
@@ -1591,7 +1591,7 @@ tags = ['comparison']
 
 [[axioms]]
 id = "c11_libc_stdio_subtraction_9859e9d4"
-content = '''Subtraction requires: Len >Int 0.'''
+content = '''Subtraction requires: Len > 0.'''
 formal_spec = '''Len >Int 0'''
 layer = "c11_stdlib"
 confidence = 1.0
@@ -1614,7 +1614,7 @@ source_line_end = 835
 
 [[axioms]]
 id = "c11_libc_stdio_comparison_55b9bc4b"
-content = '''Comparison requires: NOT (VaList in_keys(VaLists)).'''
+content = '''Comparison requires: NOT: VaList in_keys(VaLists).'''
 formal_spec = '''notBool VaList in_keys(VaLists)'''
 layer = "c11_stdlib"
 confidence = 1.0
@@ -1626,7 +1626,7 @@ tags = ['comparison']
 
 [[axioms]]
 id = "c11_libc_stdio_comparison_e1ddb32f"
-content = '''Comparison requires: isKResult(H).'''
+content = '''Comparison requires: is a K result.'''
 formal_spec = '''isKResult(H)'''
 layer = "c11_stdlib"
 confidence = 1.0
@@ -1638,7 +1638,7 @@ tags = ['comparison']
 
 [[axioms]]
 id = "c11_libc_stdio_comparison_e1ddb32f"
-content = '''Comparison requires: isKResult(H).'''
+content = '''Comparison requires: is a K result.'''
 formal_spec = '''isKResult(H)'''
 layer = "c11_stdlib"
 confidence = 1.0
@@ -1650,7 +1650,7 @@ tags = ['comparison']
 
 [[axioms]]
 id = "c11_libc_stdio_comparison_e1ddb32f"
-content = '''Comparison requires: isKResult(H).'''
+content = '''Comparison requires: is a K result.'''
 formal_spec = '''isKResult(H)'''
 layer = "c11_stdlib"
 confidence = 1.0
@@ -1662,7 +1662,7 @@ tags = ['comparison']
 
 [[axioms]]
 id = "c11_libc_stdio_comparison_e1ddb32f"
-content = '''Comparison requires: isKResult(H).'''
+content = '''Comparison requires: is a K result.'''
 formal_spec = '''isKResult(H)'''
 layer = "c11_stdlib"
 confidence = 1.0
@@ -1686,7 +1686,7 @@ tags = ['comparison']
 
 [[axioms]]
 id = "c11_libc_stdio_comparison_6b25d743"
-content = '''Comparison requires: either getFD(V) ==K "" or NOT (getFD(V) in_keys(OpenFiles)).'''
+content = '''Comparison requires: either getFD(V) = "" or NOT: getFD(V) in_keys(OpenFiles).'''
 formal_spec = '''(getFD(V) ==K "") orBool notBool (getFD(V) in_keys(OpenFiles))'''
 layer = "c11_stdlib"
 confidence = 1.0
@@ -1698,7 +1698,7 @@ tags = ['comparison']
 
 [[axioms]]
 id = "c11_libc_stdio_comparison_6786064a"
-content = '''Comparison requires: isReadable(Mode), NOT (atFieldWidth(Item, D)), NOT ((Buffer ==K ""), and Eof).'''
+content = '''Comparison requires: isReadable(Mode), NOT: atFieldWidth(Item, D), NOT: (Buffer = "", and Eof).'''
 formal_spec = '''isReadable(Mode) andBool notBool atFieldWidth(Item, D) andBool notBool (Buffer ==K "" andBool Eof)'''
 layer = "c11_stdlib"
 confidence = 1.0
@@ -1710,7 +1710,7 @@ tags = ['comparison']
 
 [[axioms]]
 id = "c11_libc_stdio_comparison_6242fbb3"
-content = '''Comparison requires: NOT (((Buffer ==K ""), either Eof) or atFieldWidth(Item, D)), Err =/=Int 0, and isReadable(Mode).'''
+content = '''Comparison requires: NOT: ((Buffer = "", either Eof) or atFieldWidth(Item, D)), Err =/=Int 0, and isReadable(Mode).'''
 formal_spec = '''notBool ((Buffer ==K "" andBool Eof) orBool atFieldWidth(Item, D)) andBool Err =/=Int 0 andBool isReadable(Mode)'''
 layer = "c11_stdlib"
 confidence = 1.0
@@ -1722,7 +1722,7 @@ tags = ['comparison']
 
 [[axioms]]
 id = "c11_libc_stdio_comparison_8f694147"
-content = '''Comparison requires: NOT (isReadable(Mode)).'''
+content = '''Comparison requires: NOT: isReadable(Mode).'''
 formal_spec = '''notBool isReadable(Mode)'''
 layer = "c11_stdlib"
 confidence = 1.0
@@ -1734,7 +1734,7 @@ tags = ['comparison']
 
 [[axioms]]
 id = "c11_libc_stdio_comparison_d2d56830"
-content = '''Comparison requires: ((Buffer ==K "", either Eof) or atFieldWidth(Item, D)), isCompleteItem(Item, D), and either (Wr ==K dirWrite or Wr ==K dirAlloc).'''
+content = '''Comparison requires: ((Buffer = "", either Eof) or atFieldWidth(Item, D)), isCompleteItem(Item, D), and either Wr = dirWrite or Wr = dirAlloc.'''
 formal_spec = '''((Buffer ==K "" andBool Eof) orBool atFieldWidth(Item, D)) andBool isCompleteItem(Item, D) andBool (Wr ==K dirWrite orBool Wr ==K dirAlloc)'''
 layer = "c11_stdlib"
 confidence = 1.0
@@ -1746,7 +1746,7 @@ tags = ['comparison']
 
 [[axioms]]
 id = "c11_libc_stdio_modulus_46edfa7f"
-content = '''Modulus operation requires: ((Buffer ==K "", either Eof) or atFieldWidth(Item, D)), and isCompleteItem(Item, D).'''
+content = '''Modulus operation requires: ((Buffer = "", either Eof) or atFieldWidth(Item, D)), and isCompleteItem(Item, D).'''
 formal_spec = '''((Buffer ==K "" andBool Eof) orBool atFieldWidth(Item, D)) andBool isCompleteItem(Item, D)'''
 layer = "c11_stdlib"
 confidence = 1.0
@@ -1758,7 +1758,7 @@ tags = ['modulus']
 
 [[axioms]]
 id = "c11_libc_stdio_comparison_807e81a2"
-content = '''Comparison requires: ((Buffer ==K "", either Eof) or atFieldWidth(Item, D)), NOT (isCompleteItem(Item, D)), and isReadable(Mode).'''
+content = '''Comparison requires: ((Buffer = "", either Eof) or atFieldWidth(Item, D)), NOT: isCompleteItem(Item, D), and isReadable(Mode).'''
 formal_spec = '''((Buffer ==K "" andBool Eof) orBool atFieldWidth(Item, D)) andBool notBool isCompleteItem(Item, D) andBool isReadable(Mode)'''
 layer = "c11_stdlib"
 confidence = 1.0
@@ -1781,7 +1781,7 @@ source_line_end = 1029
 
 [[axioms]]
 id = "c11_libc_stdio_comparison_b1b7e021"
-content = '''Comparison requires: NOT (inScanSet(C, stringDir(D), Item)), and Item =/=String "".'''
+content = '''Comparison requires: NOT: inScanSet(C, stringDir(D), Item), and Item =/=String "".'''
 formal_spec = '''notBool inScanSet(C, stringDir(D), Item) andBool Item =/=String ""'''
 layer = "c11_stdlib"
 confidence = 1.0
@@ -1793,7 +1793,7 @@ tags = ['comparison']
 
 [[axioms]]
 id = "c11_libc_stdio_comparison_7ad3e18a"
-content = '''Comparison requires: NOT (isWhitespace(C)).'''
+content = '''Comparison requires: NOT: isWhitespace(C).'''
 formal_spec = '''notBool isWhitespace(C)'''
 layer = "c11_stdlib"
 confidence = 1.0
@@ -1805,7 +1805,7 @@ tags = ['comparison']
 
 [[axioms]]
 id = "c11_libc_stdio_operation_ca9b5fad"
-content = '''Operation requires: NOT (inScanSet(C, D, Item)), isCompleteItem(Item, D), and either (Wr ==K dirWrite or Wr ==K dirAlloc).'''
+content = '''Operation requires: NOT: inScanSet(C, D, Item), isCompleteItem(Item, D), and either Wr = dirWrite or Wr = dirAlloc.'''
 formal_spec = '''notBool inScanSet(C, D, Item) andBool isCompleteItem(Item, D) andBool (Wr ==K dirWrite orBool Wr ==K dirAlloc)'''
 layer = "c11_stdlib"
 confidence = 1.0
@@ -1816,7 +1816,7 @@ source_line_end = 1055
 
 [[axioms]]
 id = "c11_libc_stdio_modulus_c2df4b3d"
-content = '''Modulus operation requires: NOT (inScanSet(C, D, Item)), and isCompleteItem(Item, D).'''
+content = '''Modulus operation requires: NOT: inScanSet(C, D, Item), and isCompleteItem(Item, D).'''
 formal_spec = '''notBool inScanSet(C, D, Item) andBool isCompleteItem(Item, D)'''
 layer = "c11_stdlib"
 confidence = 1.0
@@ -1828,7 +1828,7 @@ tags = ['modulus']
 
 [[axioms]]
 id = "c11_libc_stdio_modulus_c2df4b3d"
-content = '''Modulus operation requires: NOT (inScanSet(C, D, Item)), and isCompleteItem(Item, D).'''
+content = '''Modulus operation requires: NOT: inScanSet(C, D, Item), and isCompleteItem(Item, D).'''
 formal_spec = '''notBool inScanSet(C, D, Item) andBool isCompleteItem(Item, D)'''
 layer = "c11_stdlib"
 confidence = 1.0
@@ -1840,7 +1840,7 @@ tags = ['modulus']
 
 [[axioms]]
 id = "c11_libc_stdio_comparison_4a80cd9c"
-content = '''Comparison requires: NOT (inScanSet(C, D, Item)), D =/=K whitespace, and NOT (isCompleteItem(Item, D)).'''
+content = '''Comparison requires: NOT: inScanSet(C, D, Item), D ≠ whitespace, and NOT: isCompleteItem(Item, D).'''
 formal_spec = '''notBool inScanSet(C, D, Item) andBool D =/=K whitespace andBool notBool isCompleteItem(Item, D)'''
 layer = "c11_stdlib"
 confidence = 1.0
@@ -1900,7 +1900,7 @@ tags = ['modulus']
 
 [[axioms]]
 id = "c11_libc_stdio_modulus_c954664d"
-content = '''Modulus operation requires: NOT (has0xPrefix(Item)).'''
+content = '''Modulus operation requires: NOT: has0xPrefix(Item).'''
 formal_spec = '''notBool has0xPrefix(Item)'''
 layer = "c11_stdlib"
 confidence = 1.0
@@ -1924,7 +1924,7 @@ tags = ['modulus']
 
 [[axioms]]
 id = "c11_libc_stdio_modulus_c954664d"
-content = '''Modulus operation requires: NOT (has0xPrefix(Item)).'''
+content = '''Modulus operation requires: NOT: has0xPrefix(Item).'''
 formal_spec = '''notBool has0xPrefix(Item)'''
 layer = "c11_stdlib"
 confidence = 1.0
@@ -1948,7 +1948,7 @@ tags = ['modulus']
 
 [[axioms]]
 id = "c11_libc_stdio_modulus_fc019bf0"
-content = '''Modulus operation requires: NOT (has0xPrefix(Item)), and toUpperCase(Item) =/=String "(NIL)".'''
+content = '''Modulus operation requires: NOT: has0xPrefix(Item), and toUpperCase(Item) =/=String "(NIL)".'''
 formal_spec = '''notBool has0xPrefix(Item) andBool toUpperCase(Item) =/=String "(NIL)"'''
 layer = "c11_stdlib"
 confidence = 1.0
@@ -2212,7 +2212,7 @@ tags = ['modulus']
 
 [[axioms]]
 id = "c11_libc_stdio_modulus_7684a912"
-content = '''Modulus operation requires: inNil(C, I) // Floating point..'''
+content = '''Modulus operation requires: inNil(C, I).'''
 formal_spec = '''inNil(C, I)  // Floating point.'''
 layer = "c11_stdlib"
 confidence = 1.0
@@ -2221,7 +2221,7 @@ source_module = "LIBC-STDIO"
 source_line_start = 1260
 source_line_end = 1263
 tags = ['modulus']
-error_codes = ['CEMX4', 'CCV3', 'CCV4', 'CCV12', 'CMR1', 'CMR2', 'CCV9']
+error_codes = ['CCV3', 'CCV4', 'CCV12', 'CMR1', 'CMR2', 'CCV9', 'CEMX4']
 
 [[axioms]]
 id = "c11_libc_stdio_operation_88860a7c"
@@ -2249,7 +2249,7 @@ tags = ['float']
 
 [[axioms]]
 id = "c11_libc_stdio_operation_ccc7e5b0"
-content = '''Operation requires: isFloatDirective(D), isDigit(C, 10), and NOT (has0xPrefix(I)).'''
+content = '''Operation requires: isFloatDirective(D), isDigit(C, 10), and NOT: has0xPrefix(I).'''
 formal_spec = '''isFloatDirective(D) andBool isDigit(C, 10) andBool notBool has0xPrefix(I)'''
 layer = "c11_stdlib"
 confidence = 1.0
@@ -2261,7 +2261,7 @@ tags = ['float']
 
 [[axioms]]
 id = "c11_libc_stdio_operation_b1b12096"
-content = '''Operation requires: isFloatDirective(D), isDigit(C, 16), has0xPrefix(I), and NOT (hasRadix(I)).'''
+content = '''Operation requires: isFloatDirective(D), isDigit(C, 16), has0xPrefix(I), and NOT: hasRadix(I).'''
 formal_spec = '''isFloatDirective(D) andBool isDigit(C, 16) andBool has0xPrefix(I) andBool notBool hasRadix(I)'''
 layer = "c11_stdlib"
 confidence = 1.0
@@ -2297,7 +2297,7 @@ tags = ['float']
 
 [[axioms]]
 id = "c11_libc_stdio_operation_f24cce44"
-content = '''Operation requires: isFloatDirective(D), isSign(C) // Must both have radix & it's the last char., hasRadix(I), and either (toUpperCase(lastChar(I)) ==String "E" or toUpperCase(lastChar(I)) ==String "P").'''
+content = '''Operation requires: isFloatDirective(D), and isSign(C).'''
 formal_spec = '''isFloatDirective(D) andBool isSign(C) // Must both have radix & it's the last char. andBool hasRadix(I) andBool (toUpperCase(lastChar(I)) ==String "E" orBool toUpperCase(lastChar(I)) ==String "P")'''
 layer = "c11_stdlib"
 confidence = 1.0
@@ -2309,7 +2309,7 @@ tags = ['float']
 
 [[axioms]]
 id = "c11_libc_stdio_operation_fe229929"
-content = '''Operation requires: isFloatDirective(D), NOT (hasDot(I)), and NOT (hasRadix(I)).'''
+content = '''Operation requires: isFloatDirective(D), NOT: hasDot(I), and NOT: hasRadix(I).'''
 formal_spec = '''isFloatDirective(D) andBool notBool hasDot(I) andBool notBool hasRadix(I)'''
 layer = "c11_stdlib"
 confidence = 1.0
@@ -2345,7 +2345,7 @@ tags = ['float']
 
 [[axioms]]
 id = "c11_libc_stdio_operation_297f15d8"
-content = '''Operation requires: isFloatDirective(D), hasRadix(C), NOT (hasRadix(I)), and hasDigit(I) // Scan list (e.g., "[^]abc]")..'''
+content = '''Operation requires: isFloatDirective(D), hasRadix(C), NOT: hasRadix(I), and hasDigit(I).'''
 formal_spec = '''isFloatDirective(D) andBool hasRadix(C) andBool notBool hasRadix(I) andBool hasDigit(I)  // Scan list (e.g., "[^]abc]").'''
 layer = "c11_stdlib"
 confidence = 1.0
@@ -2369,7 +2369,7 @@ tags = ['modulus']
 
 [[axioms]]
 id = "c11_libc_stdio_operation_0471a72d"
-content = '''Operation requires: isNumericDirective(D), NOT (hasDigit(strip0xPrefix(Item))), and toUpperCase(Item) =/=String "(NIL)".'''
+content = '''Operation requires: isNumericDirective(D), NOT: hasDigit(strip0xPrefix(Item)), and toUpperCase(Item) =/=String "(NIL)".'''
 formal_spec = '''isNumericDirective(D) andBool notBool hasDigit(strip0xPrefix(Item)) andBool toUpperCase(Item) =/=String "(NIL)"'''
 layer = "c11_stdlib"
 confidence = 1.0
@@ -2391,7 +2391,7 @@ source_line_end = 1359
 
 [[axioms]]
 id = "c11_libc_stdio_modulus_6fb2606a"
-content = '''Modulus operation requires: either toUpperCase(Item) ==String "(" or toUpperCase(Item) ==String "(N" or toUpperCase(Item) ==String "(NI" or toUpperCase(Item) ==String "(NIL".'''
+content = '''Modulus operation requires: one of: toUpperCase(Item) ==String "(", toUpperCase(Item) ==String "(N", toUpperCase(Item) ==String "(NI", toUpperCase(Item) ==String "(NIL".'''
 formal_spec = '''toUpperCase(Item) ==String "(" orBool toUpperCase(Item) ==String "(N" orBool toUpperCase(Item) ==String "(NI" orBool toUpperCase(Item) ==String "(NIL"'''
 layer = "c11_stdlib"
 confidence = 1.0
@@ -2403,7 +2403,7 @@ tags = ['modulus']
 
 [[axioms]]
 id = "c11_libc_stdio_operation_48728103"
-content = '''Operation requires: isFloatDirective(D), and either (toUpperCase(stripSign(Item)) ==String "N" or toUpperCase(stripSign(Item)) ==String "NA" or toUpperCase(stripSign(Item)) ==String "I" or toUpperCase(stripSign(Item)) ==String "IN" or toUpperCase(stripSign(Item)) ==String "INFI" or toUpperCase(stripSign(Item)) ==String "INFIN" or toUpperCase(stripSign(Item)) ==String "INFINI" or toUpperCase(stripSign(Item)) ==String "INFINIT").'''
+content = '''Operation requires: isFloatDirective(D), and one of: toUpperCase(stripSign(Item)) ==String "N", toUpperCase(stripSign(Item)) ==String "NA", toUpperCase(stripSign(Item)) ==String "I", toUpperCase(stripSign(Item)) ==String "IN", toUpperCase(stripSign(Item)) ==String "INFI", toUpperCase(stripSign(Item)) ==String "INFIN", toUpperCase(stripSign(Item)) ==String "INFINI", toUpperCase(stripSign(Item)) ==String "INFINIT".'''
 formal_spec = '''isFloatDirective(D) andBool (toUpperCase(stripSign(Item)) ==String "N" orBool toUpperCase(stripSign(Item)) ==String "NA" orBool toUpperCase(stripSign(Item)) ==String "I" orBool toUpperCase(stripSign(Item)) ==String "IN" orBool toUpperCase(stripSign(Item)) ==String "INFI" orBool toUpperCase(stripSign(Item)) ==String "INFIN" orBool toUpperCase(stripSign(Item)) ==String "INFINI" orBool toUpperCase(stripSign(Item)) ==String "INFINIT")'''
 layer = "c11_stdlib"
 confidence = 1.0
@@ -2415,7 +2415,7 @@ tags = ['float']
 
 [[axioms]]
 id = "c11_libc_stdio_modulus_b956c37e"
-content = '''Modulus operation requires: Width >Int 0.'''
+content = '''Modulus operation requires: Width > 0.'''
 formal_spec = '''Width >Int 0'''
 layer = "c11_stdlib"
 confidence = 1.0
@@ -2428,7 +2428,7 @@ error_codes = ['CEMX4']
 
 [[axioms]]
 id = "c11_libc_stdio_operation_ca7d4ca8"
-content = '''Operation requires: lengthString(S) >=Int 1.'''
+content = '''Operation requires: lengthString(S) ≥ 1.'''
 formal_spec = '''lengthString(S) >=Int 1'''
 layer = "c11_stdlib"
 confidence = 1.0
@@ -2439,7 +2439,7 @@ source_line_end = 1412
 
 [[axioms]]
 id = "c11_libc_stdio_operation_ca7d4ca8"
-content = '''Operation requires: lengthString(S) >=Int 1.'''
+content = '''Operation requires: lengthString(S) ≥ 1.'''
 formal_spec = '''lengthString(S) >=Int 1'''
 layer = "c11_stdlib"
 confidence = 1.0
@@ -2450,7 +2450,7 @@ source_line_end = 1417
 
 [[axioms]]
 id = "c11_libc_stdio_operation_4b4e9d21"
-content = '''Operation requires: lengthString(S) >=Int 1, and either isSign(firstChar(S) or isWhitespace(firstChar(S))).'''
+content = '''Operation requires: lengthString(S) ≥ 1, and either isSign(firstChar(S)) or isWhitespace(firstChar(S)).'''
 formal_spec = '''lengthString(S) >=Int 1 andBool (isSign(firstChar(S)) orBool isWhitespace(firstChar(S)))'''
 layer = "c11_stdlib"
 confidence = 1.0
@@ -2461,7 +2461,7 @@ source_line_end = 1423
 
 [[axioms]]
 id = "c11_libc_stdio_operation_52e2e2e9"
-content = '''Operation requires: lengthString(stripSign(S)) >=Int 2.'''
+content = '''Operation requires: lengthString(stripSign(S)) ≥ 2.'''
 formal_spec = '''lengthString(stripSign(S)) >=Int 2'''
 layer = "c11_stdlib"
 confidence = 1.0
@@ -2494,7 +2494,7 @@ source_line_end = 1435
 
 [[axioms]]
 id = "c11_libc_stdio_operation_3c8b114e"
-content = '''Operation requires: has0xPrefix(S), and either NOT (hasPosSign(S) or hasNegSign(S)).'''
+content = '''Operation requires: has0xPrefix(S), and either NOT: hasPosSign(S or hasNegSign(S)).'''
 formal_spec = '''has0xPrefix(S) andBool notBool (hasPosSign(S) orBool hasNegSign(S))'''
 layer = "c11_stdlib"
 confidence = 1.0
@@ -2505,7 +2505,7 @@ source_line_end = 1437
 
 [[axioms]]
 id = "c11_libc_stdio_operation_b9430a9f"
-content = '''Operation requires: L =/=K .List.'''
+content = '''Operation requires: L ≠ .List.'''
 formal_spec = '''L =/=K .List'''
 layer = "c11_stdlib"
 confidence = 1.0
@@ -2538,7 +2538,7 @@ source_line_end = 1453
 
 [[axioms]]
 id = "c11_libc_stdio_operation_33cf0945"
-content = '''Operation requires: NOT (isSpaceSkipDirective(D)).'''
+content = '''Operation requires: NOT: isSpaceSkipDirective(D).'''
 formal_spec = '''notBool isSpaceSkipDirective(D)'''
 layer = "c11_stdlib"
 confidence = 1.0
@@ -2572,7 +2572,7 @@ source_line_end = 1489
 
 [[axioms]]
 id = "c11_libc_stdio_operation_a1f315d9"
-content = '''Operation requires: C =/=String "%", and NOT (isWhitespace(C)).'''
+content = '''Operation requires: C =/=String "%", and NOT: isWhitespace(C).'''
 formal_spec = '''C =/=String "%" andBool notBool isWhitespace(C)'''
 layer = "c11_stdlib"
 confidence = 1.0
@@ -2594,7 +2594,7 @@ source_line_end = 1522
 
 [[axioms]]
 id = "c11_libc_stdio_operation_fc10a419"
-content = '''Operation requires: Base <=Int 10, and C =/=String "".'''
+content = '''Operation requires: Base ≤ 10, and C =/=String "".'''
 formal_spec = '''Base <=Int 10 andBool C =/=String ""'''
 layer = "c11_stdlib"
 confidence = 1.0
@@ -2605,7 +2605,7 @@ source_line_end = 1529
 
 [[axioms]]
 id = "c11_libc_stdio_operation_bd86d801"
-content = '''Operation requires: Base >Int 10, and C =/=String "".'''
+content = '''Operation requires: Base > 10, and C =/=String "".'''
 formal_spec = '''Base >Int 10 andBool C =/=String ""'''
 layer = "c11_stdlib"
 confidence = 1.0
@@ -2660,7 +2660,7 @@ source_line_end = 1595
 
 [[axioms]]
 id = "c11_libc_stdio_operation_5b5405dc"
-content = '''Operation requires: NOT (atHead("h", L)).'''
+content = '''Operation requires: NOT: atHead("h", L).'''
 formal_spec = '''notBool atHead("h", L)'''
 layer = "c11_stdlib"
 confidence = 1.0
@@ -2671,7 +2671,7 @@ source_line_end = 1609
 
 [[axioms]]
 id = "c11_libc_stdio_operation_89f4e775"
-content = '''Operation requires: NOT (atHead("l", L)).'''
+content = '''Operation requires: NOT: atHead("l", L).'''
 formal_spec = '''notBool atHead("l", L)'''
 layer = "c11_stdlib"
 confidence = 1.0
@@ -2682,7 +2682,7 @@ source_line_end = 1612
 
 [[axioms]]
 id = "c11_libc_stdio_operation_ab7eacda"
-content = '''Operation requires: either C ==String "j" or C ==String "z" or C ==String "t" or C ==String "L".'''
+content = '''Operation requires: one of: C ==String "j", C ==String "z", C ==String "t", C ==String "L".'''
 formal_spec = '''C ==String "j" orBool C ==String "z" orBool C ==String "t" orBool C ==String "L"'''
 layer = "c11_stdlib"
 confidence = 1.0
@@ -2693,7 +2693,7 @@ source_line_end = 1620
 
 [[axioms]]
 id = "c11_libc_stdio_operation_c4e86b2d"
-content = '''Operation requires: either C ==String "d" or C ==String "i" or C ==String "o" or C ==String "u" or C ==String "x" or C ==String "X" or C ==String "a" or C ==String "A" or C ==String "e" or C ==String "E" or C ==String "f" or C ==String "F" or C ==String "g" or C ==String "G" or C ==String "c" or C ==String "s" or C ==String "p" or C ==String "n".'''
+content = '''Operation requires: one of: C ==String "d", C ==String "i", C ==String "o", C ==String "u", C ==String "x", C ==String "X", C ==String "a", C ==String "A", C ==String "e", C ==String "E", C ==String "f", C ==String "F", C ==String "g", C ==String "G", C ==String "c", C ==String "s", C ==String "p", C ==String "n".'''
 formal_spec = '''C ==String "d" orBool C ==String "i" orBool C ==String "o" orBool C ==String "u" orBool C ==String "x" orBool C ==String "X" orBool C ==String "a" orBool C ==String "A" orBool C ==String "e" orBool C ==String "E" orBool C ==String "f" orBool C ==String "F" orBool C ==String "g" orBool C ==String "G" orBool C ==String "c" orBool C ==String "s" orBool C ==String "p" orBool C ==String "n"'''
 layer = "c11_stdlib"
 confidence = 1.0
@@ -2704,7 +2704,7 @@ source_line_end = 1643
 
 [[axioms]]
 id = "c11_libc_stdio_bitwise_26543cb4"
-content = '''Bitwise operation requires: NOT (atHead("]", L)).'''
+content = '''Bitwise operation requires: NOT: atHead("]", L).'''
 formal_spec = '''notBool atHead("]", L)'''
 layer = "c11_stdlib"
 confidence = 1.0
@@ -2716,7 +2716,7 @@ tags = ['bitwise']
 
 [[axioms]]
 id = "c11_libc_stdio_operation_02b35e44"
-content = '''Operation requires: NOT (atHead("^", L)), and NOT (atHead("]", L)).'''
+content = '''Operation requires: NOT: atHead("^", L), and NOT: atHead("]", L).'''
 formal_spec = '''notBool atHead("^", L) andBool notBool atHead("]", L)'''
 layer = "c11_stdlib"
 confidence = 1.0
@@ -2727,7 +2727,7 @@ source_line_end = 1653
 
 [[axioms]]
 id = "c11_libc_stdio_operation_913e85df"
-content = '''Operation requires: lengthString(S) >=Int 3.'''
+content = '''Operation requires: lengthString(S) ≥ 3.'''
 formal_spec = '''lengthString(S) >=Int 3'''
 layer = "c11_stdlib"
 confidence = 1.0
@@ -2738,7 +2738,7 @@ source_line_end = 1672
 
 [[axioms]]
 id = "c11_libc_stdio_operation_08d02ff1"
-content = '''Operation requires: either C' =/=String "-" or L ==K .List.'''
+content = '''Operation requires: either C' =/=String "-" or L = .List.'''
 formal_spec = '''C' =/=String "-" orBool L ==K .List'''
 layer = "c11_stdlib"
 confidence = 1.0
@@ -2749,7 +2749,7 @@ source_line_end = 1678
 
 [[axioms]]
 id = "c11_libc_stdio_subtraction_8ad6eb0e"
-content = '''Subtraction requires: ordChar(C) <Int (ordChar(End) -Int 1).'''
+content = '''Subtraction requires: ordChar(C) < (ordChar(End) -Int 1).'''
 formal_spec = '''ordChar(C) <Int (ordChar(End) -Int 1)'''
 layer = "c11_stdlib"
 confidence = 1.0
@@ -2761,7 +2761,7 @@ tags = ['subtraction']
 
 [[axioms]]
 id = "c11_libc_stdio_subtraction_93d2dd19"
-content = '''Subtraction requires: ordChar(C) >=Int (ordChar(End) -Int 1), and ordChar(C) <=Int ordChar(End).'''
+content = '''Subtraction requires: ordChar(C) ≥ (ordChar(End) -Int 1), and ordChar(C) ≤ ordChar(End).'''
 formal_spec = '''ordChar(C) >=Int (ordChar(End) -Int 1) andBool ordChar(C) <=Int ordChar(End)'''
 layer = "c11_stdlib"
 confidence = 1.0
@@ -2773,7 +2773,7 @@ tags = ['subtraction']
 
 [[axioms]]
 id = "c11_libc_stdio_subtraction_f47ef2fa"
-content = '''Subtraction requires: ordChar(C) >Int ordChar(End).'''
+content = '''Subtraction requires: ordChar(C) > ordChar(End).'''
 formal_spec = '''ordChar(C) >Int ordChar(End)'''
 layer = "c11_stdlib"
 confidence = 1.0
@@ -2797,7 +2797,7 @@ tags = ['division']
 
 [[axioms]]
 id = "c11_libc_stdio_division_a7c91d94"
-content = '''Integer division requires: W =/=K "".'''
+content = '''Integer division requires: W ≠ "".'''
 formal_spec = '''W =/=K ""'''
 layer = "c11_stdlib"
 confidence = 1.0
@@ -2833,7 +2833,7 @@ tags = ['division']
 
 [[axioms]]
 id = "c11_libc_stdio_division_f2381c66"
-content = '''Integer division requires: P =/=K "", NOT (isDigit(C, 10)), and C =/=K "*".'''
+content = '''Integer division requires: P ≠ "", NOT: isDigit(C, 10), and C ≠ "*".'''
 formal_spec = '''P =/=K "" andBool notBool isDigit(C, 10) andBool C =/=K "*"'''
 layer = "c11_stdlib"
 confidence = 1.0
@@ -2845,7 +2845,7 @@ tags = ['division']
 
 [[axioms]]
 id = "c11_libc_stdio_division_387f60ac"
-content = '''Integer division requires: NOT (isDigit(C, 10)), and C =/=K "*".'''
+content = '''Integer division requires: NOT: isDigit(C, 10), and C ≠ "*".'''
 formal_spec = '''notBool isDigit(C, 10) andBool C =/=K "*"'''
 layer = "c11_stdlib"
 confidence = 1.0
@@ -2869,7 +2869,7 @@ tags = ['modulus']
 
 [[axioms]]
 id = "c11_libc_stdio_division_510dbac0"
-content = '''Integer division requires: operand must be a pointer type.'''
+content = '''Integer division requires: operand is a pointer type.'''
 formal_spec = '''notBool isPointerType(getFormatType'(State, ""))'''
 layer = "c11_stdlib"
 confidence = 1.0
@@ -2878,11 +2878,11 @@ source_module = "LIBC-STDIO"
 source_line_start = 1943
 source_line_end = 1946
 tags = ['pointer', 'division']
-error_codes = ['CCV7', 'CCV11', 'CEA1', 'CEA5', 'CEA2', 'CEE3', 'CER3', 'CER4', 'CERL1', 'CERL2', 'CERL3', 'CERL4', 'CERL6', 'ECL3', 'ECL4', 'CEER1', 'EEA2', 'EEA3', 'EEA4', 'EEA5', 'EFNC1', 'EFNC2', 'STRING1', 'CCV9', 'CEA7', 'CEA8', 'CEA9', 'CER6', 'CERL5', 'TEAS2', 'TSE2', 'TTE2', 'TTE3', 'CCV13', 'CCV13-H', 'CCVE4', 'CEMX4', 'STDLIBE1', 'STDLIBE2', 'STDLIBE3', 'CEE6', 'CER7', 'EXC3', 'TDG12', 'FD6', 'STDIO1', 'CEB1', 'CEB5', 'CEB9', 'CEB10', 'CEB11', 'CTI4']
+error_codes = ['CCV7', 'CCV11', 'CEA2', 'ECL4', 'EFNC1', 'TDG12', 'FD6', 'STDIO1', 'CCV9', 'CEA7', 'CEA8', 'CEA9', 'CEB1', 'CEB5', 'CEB9', 'CEB10', 'CEB11', 'CERL5', 'TEAS2', 'TSE2', 'TTE2', 'TTE3', 'CTI4', 'CEA1', 'CEA5', 'CEE3', 'CER3', 'CER4', 'CERL1', 'CERL2', 'CERL3', 'CERL4', 'CERL6', 'ECL3', 'CEER1', 'EEA2', 'EEA3', 'EEA4', 'EEA5', 'EFNC2', 'STRING1', 'CER6', 'CCV13', 'CCV13-H', 'CCVE4', 'CEMX4', 'STDLIBE1', 'STDLIBE2', 'STDLIBE3', 'CEE6', 'CER7', 'EXC3']
 
 [[axioms]]
 id = "c11_libc_stdio_division_510dbac0"
-content = '''Integer division requires: operand must be a pointer type.'''
+content = '''Integer division requires: operand is a pointer type.'''
 formal_spec = '''notBool isPointerType(getFormatType'(State, ""))'''
 layer = "c11_stdlib"
 confidence = 1.0
@@ -2891,7 +2891,7 @@ source_module = "LIBC-STDIO"
 source_line_start = 1947
 source_line_end = 1951
 tags = ['pointer', 'division']
-error_codes = ['CCV7', 'CCV11', 'CEA1', 'CEA5', 'CEA2', 'CEE3', 'CER3', 'CER4', 'CERL1', 'CERL2', 'CERL3', 'CERL4', 'CERL6', 'ECL3', 'ECL4', 'CEER1', 'EEA2', 'EEA3', 'EEA4', 'EEA5', 'EFNC1', 'EFNC2', 'STRING1', 'CCV9', 'CEA7', 'CEA8', 'CEA9', 'CER6', 'CERL5', 'TEAS2', 'TSE2', 'TTE2', 'TTE3', 'CCV13', 'CCV13-H', 'CCVE4', 'CEMX4', 'STDLIBE1', 'STDLIBE2', 'STDLIBE3', 'CEE6', 'CER7', 'EXC3', 'TDG12', 'FD6', 'STDIO1', 'CEB1', 'CEB5', 'CEB9', 'CEB10', 'CEB11', 'CTI4']
+error_codes = ['CCV7', 'CCV11', 'CEA2', 'ECL4', 'EFNC1', 'TDG12', 'FD6', 'STDIO1', 'CCV9', 'CEA7', 'CEA8', 'CEA9', 'CEB1', 'CEB5', 'CEB9', 'CEB10', 'CEB11', 'CERL5', 'TEAS2', 'TSE2', 'TTE2', 'TTE3', 'CTI4', 'CEA1', 'CEA5', 'CEE3', 'CER3', 'CER4', 'CERL1', 'CERL2', 'CERL3', 'CERL4', 'CERL6', 'ECL3', 'CEER1', 'EEA2', 'EEA3', 'EEA4', 'EEA5', 'EFNC2', 'STRING1', 'CER6', 'CCV13', 'CCV13-H', 'CCVE4', 'CEMX4', 'STDLIBE1', 'STDLIBE2', 'STDLIBE3', 'CEE6', 'CER7', 'EXC3']
 
 [[axioms]]
 id = "c11_libc_stdio_modulus_a8e85134"
@@ -2907,7 +2907,7 @@ tags = ['modulus']
 
 [[axioms]]
 id = "c11_libc_stdio_division_0493a23a"
-content = '''Integer division requires: either Char ==String "l" or Char ==String "h" or Char ==String "j" or Char ==String "z" or Char ==String "t".'''
+content = '''Integer division requires: one of: Char ==String "l", Char ==String "h", Char ==String "j", Char ==String "z", Char ==String "t".'''
 formal_spec = '''Char ==String "l" orBool Char ==String "h" orBool Char ==String "j" orBool Char ==String "z" orBool Char ==String "t"'''
 layer = "c11_stdlib"
 confidence = 1.0
@@ -2943,7 +2943,7 @@ tags = ['subtraction']
 
 [[axioms]]
 id = "c11_libc_stdio_comparison_79d7b5cc"
-content = '''Comparison requires: operand must be an integer type, operand types must match, Length ==K "", isPointerToCharType(T'), and operand must be a pointer type.'''
+content = '''Comparison requires: either operand types must match or operand is an integer type, either operand types must match or (State = "%s", Length = "", isPointerToCharType(T'), and operand is a pointer type.'''
 formal_spec = '''utype(T) ==Type T' orBool (isIntegerType(T) andBool promote(utype(T)) ==Type T') orBool (State ==K "%s" andBool Length ==K "" andBool isPointerToCharType(T') andBool isPointerType(T))'''
 layer = "c11_stdlib"
 confidence = 1.0
@@ -2956,7 +2956,7 @@ error_codes = ['CCV7', 'CCV11', 'CEA1', 'CEA5', 'CEA2', 'CEE3', 'CER3', 'CER4', 
 
 [[axioms]]
 id = "c11_libc_stdio_operation_f9e1af16"
-content = '''Operation requires: lengthString(X) >=Int absInt(W).'''
+content = '''Operation requires: lengthString(X) ≥ absInt(W).'''
 formal_spec = '''lengthString(X) >=Int absInt(W)'''
 layer = "c11_stdlib"
 confidence = 1.0
@@ -2967,7 +2967,7 @@ source_line_end = 2550
 
 [[axioms]]
 id = "c11_libc_stdio_operation_4d073955"
-content = '''Operation requires: lengthString(X) <Int absInt(W).'''
+content = '''Operation requires: lengthString(X) < absInt(W).'''
 formal_spec = '''lengthString(X) <Int absInt(W)'''
 layer = "c11_stdlib"
 confidence = 1.0
@@ -2978,7 +2978,7 @@ source_line_end = 2554
 
 [[axioms]]
 id = "c11_libc_stdio_operation_81f443ee"
-content = '''Operation requires: W <Int 0.'''
+content = '''Operation requires: W < 0.'''
 formal_spec = '''W <Int 0'''
 layer = "c11_stdlib"
 confidence = 1.0
@@ -2989,7 +2989,7 @@ source_line_end = 2556
 
 [[axioms]]
 id = "c11_libc_stdio_operation_0800d697"
-content = '''Operation requires: W >Int 0.'''
+content = '''Operation requires: W > 0.'''
 formal_spec = '''W >Int 0'''
 layer = "c11_stdlib"
 confidence = 1.0
@@ -3000,7 +3000,7 @@ source_line_end = 2558
 
 [[axioms]]
 id = "c11_libc_stdio_operation_b7e0d4ab"
-content = '''Requires: W ==Int 0  syntax String ::= "formatPrecisionWidth" "(" String "," Int "," Bool "," String "," Int ")"'''
+content = '''Operation requires: W ==Int 0.'''
 formal_spec = '''W ==Int 0  syntax String ::= "formatPrecisionWidth" "(" String "," Int "," Bool "," String "," Int ")"'''
 layer = "c11_stdlib"
 confidence = 1.0
@@ -3011,7 +3011,7 @@ source_line_end = 2565
 
 [[axioms]]
 id = "c11_libc_stdio_operation_7fa1949d"
-content = '''Operation requires: either V =/=String "0" or P =/=Int 0 or Prefix ==String "0".'''
+content = '''Operation requires: one of: V =/=String "0", P =/=Int 0, Prefix ==String "0".'''
 formal_spec = '''V =/=String "0" orBool P =/=Int 0 orBool Prefix ==String "0"'''
 layer = "c11_stdlib"
 confidence = 1.0
@@ -3033,7 +3033,7 @@ source_line_end = 2572
 
 [[axioms]]
 id = "c11_libc_stdio_operation_376ad759"
-content = '''Operation requires: either ((V ==String "0" or V ==String ""), and either (Prefix ==String "0x" or Prefix ==String "0X")) or Prefix ==String "".'''
+content = '''Operation requires: either (V ==String "0" or V ==String "", and one of: (Prefix ==String "0x", Prefix ==String "0X")), Prefix ==String "".'''
 formal_spec = '''((V ==String "0" orBool V ==String "") andBool (Prefix ==String "0x" orBool Prefix ==String "0X")) orBool Prefix ==String ""'''
 layer = "c11_stdlib"
 confidence = 1.0
@@ -3044,7 +3044,7 @@ source_line_end = 2582
 
 [[axioms]]
 id = "c11_libc_stdio_operation_7b2b08ad"
-content = '''Operation requires: V =/=String "0", V =/=String "", and either (Prefix ==String "0x" or Prefix ==String "0X") syntax Int ::= signInt(Int).'''
+content = '''Operation requires: V =/=String "0", V =/=String "", and either Prefix ==String "0x" or Prefix ==String "0X".'''
 formal_spec = '''V =/=String "0" andBool V =/=String "" andBool (Prefix ==String "0x" orBool Prefix ==String "0X")  syntax Int ::= signInt(Int)'''
 layer = "c11_stdlib"
 confidence = 1.0
@@ -3055,7 +3055,7 @@ source_line_end = 2587
 
 [[axioms]]
 id = "c11_libc_stdio_comparison_953e1afc"
-content = '''Comparison requires: NOT (isNoType(getFormatType'(State, Length))).'''
+content = '''Comparison requires: NOT: isNoType(getFormatType'(State, Length)).'''
 formal_spec = '''notBool isNoType(getFormatType'(State, Length))'''
 layer = "c11_stdlib"
 confidence = 1.0
@@ -3089,7 +3089,7 @@ source_line_end = 2703
 
 [[axioms]]
 id = "c11_c_native_bridge_syntax_operation_5ddcabac"
-content = '''Operation requires: isNativeLoc(Loc) endmodule.'''
+content = '''Operation requires: isNativeLoc(Loc).'''
 formal_spec = '''isNativeLoc(Loc)  endmodule'''
 layer = "c11_stdlib"
 confidence = 1.0
@@ -3100,7 +3100,7 @@ source_line_end = 36
 
 [[axioms]]
 id = "c11_libc_string_operation_865de454"
-content = '''Operation requires: NOT (isUCharType(type(V))).'''
+content = '''Operation requires: NOT: isUCharType(type(V)).'''
 formal_spec = '''notBool isUCharType(type(V))'''
 layer = "c11_stdlib"
 confidence = 1.0
@@ -3111,7 +3111,7 @@ source_line_end = 25
 
 [[axioms]]
 id = "c11_libc_string_operation_022e9cfe"
-content = '''Operation requires: Dest =/=K NullPointer, and Src =/=K NullPointer.'''
+content = '''Operation requires: must not be a null pointer, and must not be a null pointer.'''
 formal_spec = '''Dest =/=K NullPointer andBool Src =/=K NullPointer'''
 layer = "c11_stdlib"
 confidence = 1.0
@@ -3134,7 +3134,7 @@ source_line_end = 56
 
 [[axioms]]
 id = "c11_libc_string_comparison_c674ff15"
-content = '''Comparison requires: NOT (Err in_keys(Errs)).'''
+content = '''Comparison requires: NOT: Err in_keys(Errs).'''
 formal_spec = '''notBool (Err in_keys(Errs))'''
 layer = "c11_stdlib"
 confidence = 1.0
@@ -3146,7 +3146,7 @@ tags = ['comparison']
 
 [[axioms]]
 id = "c11_libc_threads_syntax_subtraction_de09259f"
-content = '''Subtraction requires: NOT (hasLint).'''
+content = '''Subtraction requires: NOT: hasLint.'''
 formal_spec = '''notBool hasLint'''
 layer = "c11_stdlib"
 confidence = 1.0
@@ -3158,7 +3158,7 @@ tags = ['subtraction']
 
 [[axioms]]
 id = "c11_libc_threads_syntax_subtraction_f30cc01a"
-content = '''Subtraction requires: T ==K cfg:thrdut.'''
+content = '''Subtraction requires: T = cfg:thrdut.'''
 formal_spec = '''T ==K cfg:thrdut'''
 layer = "c11_stdlib"
 confidence = 1.0
@@ -3170,7 +3170,7 @@ tags = ['subtraction']
 
 [[axioms]]
 id = "c11_libc_threads_syntax_subtraction_e9543986"
-content = '''Subtraction requires: ThId in_keys(Status), Status[ThId] =/=K threadJoined, and ThId =/=K ThisThread.'''
+content = '''Subtraction requires: ThId in_keys(Status), Status[ThId] ≠ threadJoined, and ThId ≠ ThisThread.'''
 formal_spec = '''(ThId in_keys(Status)) andBool (Status[ThId] =/=K threadJoined) andBool ThId =/=K ThisThread'''
 layer = "c11_stdlib"
 confidence = 1.0
@@ -3182,7 +3182,7 @@ tags = ['subtraction']
 
 [[axioms]]
 id = "c11_libc_threads_syntax_subtraction_6e24b32a"
-content = '''Subtraction requires: NOT (Loc in_keys(M)), and Type ==Int cfg:mtxPlain.'''
+content = '''Subtraction requires: NOT: Loc in_keys(M), and Type ==Int cfg:mtxPlain.'''
 formal_spec = '''notBool (Loc in_keys(M)) andBool (Type ==Int cfg:mtxPlain)'''
 layer = "c11_stdlib"
 confidence = 1.0
@@ -3195,7 +3195,7 @@ error_codes = ['CCV7', 'CCV11', 'CEA2', 'ECL4', 'EFNC1', 'TDG12', 'FD6', 'STDIO1
 
 [[axioms]]
 id = "c11_libc_threads_syntax_subtraction_10221e56"
-content = '''Subtraction requires: notBool (Loc in_keys(M)), and Type ==Int cfg:mtxPlain.'''
+content = '''Subtraction requires: NOT: Loc in_keys(M), and Type ==Int cfg:mtxPlain.'''
 formal_spec = '''(notBool (Loc in_keys(M))) andBool (Type:Int ==Int cfg:mtxPlain)'''
 layer = "c11_stdlib"
 confidence = 1.0

@@ -218,25 +218,36 @@ class ContradictionDetector:
         return contradictions
 
     def _semantically_contradicts(self, claim: str, axiom: dict) -> bool:
-        """Check if an axiom semantically contradicts a claim."""
+        """Check if an axiom semantically contradicts a claim.
+
+        Key insight: If claim asserts something is SAFE/DEFINED and axiom says
+        it's UNDEFINED/UNSAFE, that's a contradiction.
+
+        But if claim says something IS undefined/UB and axiom confirms it,
+        that's SUPPORT, not contradiction.
+        """
         axiom_content = axiom["content"].lower()
 
-        # Check for semantic opposition
-        opposites = [
-            ("safe", "unsafe"),
-            ("safe", "undefined"),
-            ("defined", "undefined"),
-            ("valid", "invalid"),
-            ("allowed", "not allowed"),
-            ("can", "must not"),
-            ("will", "will not"),
-        ]
+        # Patterns where claim asserts SAFETY and axiom warns DANGER
+        safety_assertions = ["is safe", "is defined", "is valid", "is allowed", "is harmless"]
+        danger_warnings = ["undefined", "unsafe", "invalid", "not allowed", "dangerous"]
 
-        for pos, neg in opposites:
-            if pos in claim and neg in axiom_content:
-                return True
-            if neg in claim and pos in axiom_content:
-                return True
+        # Check if claim asserts safety
+        claim_asserts_safety = any(pat in claim for pat in safety_assertions)
+
+        # Check if axiom warns of danger
+        axiom_warns_danger = any(warn in axiom_content for warn in danger_warnings)
+
+        # Only a contradiction if claim says safe but axiom says dangerous
+        if claim_asserts_safety and axiom_warns_danger:
+            return True
+
+        # Check reverse: claim says "never" but axiom says "may"
+        if "never" in claim and ("may" in axiom_content or "can" in axiom_content):
+            return True
+
+        if "always" in claim and "not always" in axiom_content:
+            return True
 
         return False
 
@@ -249,7 +260,7 @@ class ContradictionDetector:
     ) -> str:
         """Generate explanation for a contradiction."""
         return (
-            f"The claim asserts '{claim_pattern}', but the C11 axiom "
+            f"The claim asserts '{claim_pattern}', but the axiom "
             f"'{axiom['id']}' states that this involves '{axiom_pattern}'. "
             f"Formal specification: {axiom['formal_spec']}"
         )

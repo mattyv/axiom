@@ -93,8 +93,13 @@ class ProofChainGenerator:
             chain.explanation = "No relevant axioms found for this claim."
             return chain
 
-        # Step 2: Build proof chain from most relevant axiom
+        # Step 2: Build proof chain from relevant axioms
+        # Add top 3 matching axioms for stronger evidence
+        added = 0
         for axiom in relevant_axioms:
+            if not self._claim_matches_axiom(claim, axiom):
+                continue
+
             step = ProofStep(
                 axiom_id=axiom["id"],
                 content=axiom["content"],
@@ -102,17 +107,37 @@ class ProofChainGenerator:
                 module=axiom["module"],
                 layer=axiom["layer"],
                 confidence=axiom["confidence"],
-                relationship="SUPPORTS" if self._claim_matches_axiom(claim, axiom) else "RELATED_TO",
+                relationship="SUPPORTS",
+            )
+            chain.add_step(step)
+            added += 1
+
+            if added >= 3:  # Limit to top 3 supporting axioms
+                break
+
+        # If no strong matches, add top result as RELATED_TO
+        if added == 0 and relevant_axioms:
+            axiom = relevant_axioms[0]
+            step = ProofStep(
+                axiom_id=axiom["id"],
+                content=axiom["content"],
+                formal_spec=axiom["formal_spec"],
+                module=axiom["module"],
+                layer=axiom["layer"],
+                confidence=axiom["confidence"],
+                relationship="RELATED_TO",
             )
             chain.add_step(step)
 
-            # For now, just add the top result
-            # Future: traverse graph for deeper chains
-            break
-
         # Step 3: Determine if claim is grounded
+        # All formal semantic layers are considered "grounded"
+        GROUNDED_LAYERS = {
+            "c11_core", "c11_stdlib",
+            "cpp_core", "cpp_stdlib",
+            "cpp20_language", "cpp20_stdlib",
+        }
         if chain.steps:
-            chain.grounded = chain.steps[0].layer == "c11_core"
+            chain.grounded = chain.steps[0].layer in GROUNDED_LAYERS
             chain.explanation = self._generate_explanation(chain)
 
         return chain
@@ -158,16 +183,27 @@ class ProofChainGenerator:
         return contradictions[:limit]
 
     def _claim_matches_axiom(self, claim: str, axiom: dict) -> bool:
-        """Check if a claim matches an axiom's semantics."""
+        """Check if a claim matches an axiom's semantics.
+
+        Uses vector similarity distance from LanceDB search results.
+        Falls back to keyword matching if distance not available.
+        """
+        # Prefer vector similarity if available (from LanceDB search)
+        distance = axiom.get("_distance")
+        if distance is not None:
+            # LanceDB L2 distance: lower = more similar
+            # Convert to similarity: 1 / (1 + distance)
+            similarity = 1 / (1 + distance)
+            return similarity >= 0.4  # Threshold for semantic match
+
+        # Fallback to keyword matching
         claim_lower = claim.lower()
         content_lower = axiom["content"].lower()
 
-        # Simple keyword matching for now
         claim_keywords = set(claim_lower.split())
         content_keywords = set(content_lower.split())
 
         common = claim_keywords & content_keywords
-        # Require at least 2 common keywords
         return len(common) >= 2
 
     def _negate_claim(self, claim: str) -> List[str]:
@@ -202,7 +238,7 @@ class ProofChainGenerator:
         step = chain.steps[0]
         if chain.grounded:
             return (
-                f"This claim is grounded in C11 formal semantics. "
+                f"This claim is grounded in formal semantics ({step.layer}). "
                 f"The axiom '{step.axiom_id}' from module {step.module} states: "
                 f"{step.content}"
             )

@@ -1,7 +1,14 @@
 #!/usr/bin/env python3
-"""Ingest TOML axiom files into Neo4j and LanceDB."""
+"""Ingest TOML axiom files into Neo4j and LanceDB.
+
+Usage:
+    python scripts/ingest.py                         # Load all TOML files
+    python scripts/ingest.py --clear                 # Clear databases first
+    python scripts/ingest.py knowledge/foundations/c11_core.toml  # Load specific file
+"""
 
 import argparse
+import shutil
 import sys
 from pathlib import Path
 
@@ -12,14 +19,30 @@ from axiom.models import AxiomCollection
 from axiom.vectors import LanceDBLoader
 
 
+# Default TOML files to load (in order)
+DEFAULT_TOML_FILES = [
+    "knowledge/foundations/c11_core.toml",
+    "knowledge/foundations/c11_stdlib.toml",
+    "knowledge/foundations/cpp_core.toml",
+    "knowledge/foundations/cpp_stdlib.toml",
+    "knowledge/foundations/cpp20_language.toml",
+    "knowledge/foundations/cpp20_stdlib.toml",
+]
+
+
 def main() -> int:
     """Ingest TOML files into databases."""
     parser = argparse.ArgumentParser(description="Ingest TOML axiom files")
     parser.add_argument(
         "files",
         type=Path,
-        nargs="+",
-        help="TOML files to ingest",
+        nargs="*",
+        help="TOML files to ingest (default: all in knowledge/foundations/)",
+    )
+    parser.add_argument(
+        "--clear",
+        action="store_true",
+        help="Clear databases before loading",
     )
     parser.add_argument(
         "--neo4j-uri",
@@ -55,11 +78,36 @@ def main() -> int:
 
     args = parser.parse_args()
 
+    # Use default files if none specified
+    files_to_load = args.files if args.files else [Path(f) for f in DEFAULT_TOML_FILES]
+
+    # Clear databases if requested
+    if args.clear:
+        print("Clearing databases...")
+        if not args.skip_graph:
+            try:
+                from neo4j import GraphDatabase
+                driver = GraphDatabase.driver(
+                    args.neo4j_uri,
+                    auth=(args.neo4j_user, args.neo4j_password),
+                )
+                with driver.session() as session:
+                    session.run("MATCH (n) DETACH DELETE n")
+                driver.close()
+                print("  Neo4j cleared")
+            except Exception as e:
+                print(f"  Warning: Failed to clear Neo4j: {e}")
+
+        if not args.skip_vectors:
+            if args.lancedb_path.exists():
+                shutil.rmtree(args.lancedb_path)
+                print("  LanceDB cleared")
+
     # Load all TOML files
     all_axioms = []
     all_errors = []
 
-    for toml_file in args.files:
+    for toml_file in files_to_load:
         if not toml_file.exists():
             print(f"Warning: File not found: {toml_file}")
             continue

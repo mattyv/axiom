@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "axiom": {
+      "command": "/home/mvarendorff/Documents/Code/python/axiom/.venv/bin/python",
+      "args": ["-m", "axiom.mcp.server"],
+      "env": {
+        "PYTHONPATH": "/home/mvarendorff/Documents/Code/python/axiom"
+      }
+    }
+  }
+}

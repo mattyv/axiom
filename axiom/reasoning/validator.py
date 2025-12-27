@@ -72,7 +72,12 @@ class AxiomValidator:
         elif proof_chain.grounded:
             confidence = proof_chain.confidence
         else:
-            confidence = 0.5  # Uncertain
+            # Not grounded but may have supporting axioms
+            if proof_chain.steps:
+                # Use proof chain confidence scaled down for ungrounded claims
+                confidence = proof_chain.confidence * 0.8
+            else:
+                confidence = 0.3  # No supporting axioms found
 
         # Generate explanation
         explanation = self._generate_explanation(
@@ -153,19 +158,24 @@ class AxiomValidator:
         if not is_valid and contradictions:
             c = contradictions[0]
             return (
-                f"INVALID: The claim contradicts formal C11 semantics. "
+                f"INVALID: The claim contradicts formal semantics. "
                 f"The axiom '{c.axiom_id}' states: {c.axiom_content}. "
                 f"Contradiction type: {c.contradiction_type}."
             )
         elif is_valid and proof_chain.grounded:
             return (
-                f"VALID: The claim is grounded in formal C11 semantics. "
+                f"VALID: The claim is grounded in formal semantics. "
                 f"{proof_chain.explanation}"
+            )
+        elif is_valid and proof_chain.steps:
+            return (
+                f"LIKELY VALID: Found supporting axioms but claim is not "
+                f"directly grounded. {proof_chain.explanation}"
             )
         elif is_valid:
             return (
-                f"LIKELY VALID: No contradictions found, but claim is not "
-                f"directly grounded in formal axioms. Exercise caution."
+                f"UNCERTAIN: No contradictions found, but no supporting "
+                f"axioms were found either. Exercise caution."
             )
         else:
             return (
