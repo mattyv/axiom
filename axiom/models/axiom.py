@@ -1,3 +1,8 @@
+# Axiom - Grounded truth validation for LLMs
+# Copyright (c) 2025 Matt Varendorff
+# https://github.com/mattyv/axiom
+# SPDX-License-Identifier: BSL-1.0
+
 """Pydantic models for axioms and error codes."""
 
 import tomllib

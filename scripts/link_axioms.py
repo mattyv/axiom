@@ -1,4 +1,9 @@
 #!/usr/bin/env python3
+# Axiom - Grounded truth validation for LLMs
+# Copyright (c) 2025 Matt Varendorff
+# https://github.com/mattyv/axiom
+# SPDX-License-Identifier: BSL-1.0
+
 """Link library axioms to foundation axioms by analyzing content.
 
 This script analyzes existing axioms and populates the depends_on field

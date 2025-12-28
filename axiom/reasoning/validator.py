@@ -1,3 +1,8 @@
+# Axiom - Grounded truth validation for LLMs
+# Copyright (c) 2025 Matt Varendorff
+# https://github.com/mattyv/axiom
+# SPDX-License-Identifier: BSL-1.0
+
 """Validate LLM outputs against formal axioms."""
 
 from dataclasses import dataclass, field

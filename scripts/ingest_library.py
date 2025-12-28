@@ -1,4 +1,9 @@
 #!/usr/bin/env python3
+# Axiom - Grounded truth validation for LLMs
+# Copyright (c) 2025 Matt Varendorff
+# https://github.com/mattyv/axiom
+# SPDX-License-Identifier: BSL-1.0
+
 """Ingest axioms from a C/C++ library using Claude CLI.
 
 This script provides end-to-end ingestion of library axioms:

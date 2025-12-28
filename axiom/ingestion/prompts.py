@@ -1,3 +1,8 @@
+# Axiom - Grounded truth validation for LLMs
+# Copyright (c) 2025 Matt Varendorff
+# https://github.com/mattyv/axiom
+# SPDX-License-Identifier: BSL-1.0
+
 """LLM prompts for axiom extraction from C/C++ functions.
 
 These prompts guide the LLM to extract K-semantic axioms by analyzing

@@ -1,4 +1,9 @@
 #!/usr/bin/env python3
+# Axiom - Grounded truth validation for LLMs
+# Copyright (c) 2025 Matt Varendorff
+# https://github.com/mattyv/axiom
+# SPDX-License-Identifier: BSL-1.0
+
 """Ingest TOML axiom files into Neo4j and LanceDB.
 
 Usage:

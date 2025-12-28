@@ -1,0 +1,2853 @@
+[[axioms]]
+id = "lib_ILP_CPU_PROFILE_0735ca68"
+content = ""
+formal_spec = ""
+layer = "library"
+function = "ILP_CPU_PROFILE"
+header = "ilp_cpu.hpp"
+confidence = 0.8
+reviewed = true
+
+[[axioms]]
+id = "lib_ILP_CPU_PROFILE_0735ca68"
+content = ""
+formal_spec = ""
+layer = "library"
+function = "ILP_CPU_PROFILE"
+header = "ilp_cpu.hpp"
+confidence = 0.8
+reviewed = true
+
+[[axioms]]
+id = "ilp_n_sum_1_macro_expansion_constraint"
+content = "ILP_N_SUM_1 expands to member access ILP_CPU_PROFILE.sum_1, requiring ILP_CPU_PROFILE to be a valid object with sum_1 member"
+formal_spec = "isValidObject(ILP_CPU_PROFILE) && hasMember(ILP_CPU_PROFILE, sum_1)"
+layer = "library"
+function = "ILP_N_SUM_1"
+header = "ilp_for/cpu_profiles/ilp_cpu.hpp"
+axiom_type = "constraint"
+on_violation = "compilation error if ILP_CPU_PROFILE is undefined or lacks sum_1 member; undefined behavior if ILP_CPU_PROFILE is invalid at runtime"
+confidence = 0.95
+reviewed = true
+
+[[axioms]]
+id = "ilp_n_sum_1_macro_context_requirement"
+content = "ILP_CPU_PROFILE macro must be defined and expand to a valid lvalue before ILP_N_SUM_1 is used"
+formal_spec = "isDefined(ILP_CPU_PROFILE) && isLValue(ILP_CPU_PROFILE)"
+layer = "library"
+function = "ILP_N_SUM_1"
+header = "ilp_for/cpu_profiles/ilp_cpu.hpp"
+axiom_type = "precondition"
+on_violation = "compilation error due to undefined macro or invalid member access expression"
+confidence = 0.9
+reviewed = true
+
+[[axioms]]
+id = "macro_ilp_n_sum_2_constraint_member_access"
+content = "ILP_N_SUM_2 expands to ILP_CPU_PROFILE.sum_2, requiring ILP_CPU_PROFILE to be a valid object with a sum_2 member accessible in the current scope"
+formal_spec = "isDefined(ILP_CPU_PROFILE) andBool hasMember(ILP_CPU_PROFILE, sum_2) andBool isAccessible(ILP_CPU_PROFILE.sum_2)"
+layer = "library"
+function = "ILP_N_SUM_2"
+header = "ilp_for/cpu_profiles/ilp_cpu.hpp"
+axiom_type = "constraint"
+on_violation = "compilation error: undefined identifier or member access violation"
+reviewed = true
+
+[[axioms]]
+id = "macro_ilp_n_sum_2_effect_textual_substitution"
+content = "ILP_N_SUM_2 performs textual substitution to ILP_CPU_PROFILE.sum_2; any context where ILP_N_SUM_2 appears must be valid for the expanded member access expression"
+formal_spec = "forall Context. isValidExpr(Context[ILP_N_SUM_2]) <==> isValidExpr(Context[ILP_CPU_PROFILE.sum_2])"
+layer = "library"
+function = "ILP_N_SUM_2"
+header = "ilp_for/cpu_profiles/ilp_cpu.hpp"
+axiom_type = "effect"
+on_violation = "compilation error or unexpected behavior depending on context"
+confidence = 0.95
+reviewed = true
+
+[[axioms]]
+id = "macro_ilp_n_sum_4i_object_member_access_constraint"
+content = "ILP_CPU_PROFILE must be an object or pointer to object with a member named 'sum_4i' accessible in the current scope"
+formal_spec = "∃ ILP_CPU_PROFILE : (isObject(ILP_CPU_PROFILE) ∨ isPointer(ILP_CPU_PROFILE)) ∧ hasMember(ILP_CPU_PROFILE, 'sum_4i')"
+layer = "library"
+function = "ILP_N_SUM_4I"
+header = "ilp_for/cpu_profiles/ilp_cpu.hpp"
+axiom_type = "precondition"
+on_violation = "Compilation error: member access to undefined object or missing member 'sum_4i'"
+confidence = 0.95
+reviewed = true
+
+[[axioms]]
+id = "macro_ilp_n_sum_4i_ilp_cpu_profile_defined"
+content = "ILP_CPU_PROFILE macro or identifier must be defined before ILP_N_SUM_4I is expanded"
+formal_spec = "isDefined(ILP_CPU_PROFILE) = true"
+layer = "library"
+function = "ILP_N_SUM_4I"
+header = "ilp_for/cpu_profiles/ilp_cpu.hpp"
+axiom_type = "precondition"
+on_violation = "Compilation error: 'ILP_CPU_PROFILE' was not declared in this scope"
+reviewed = true
+
+[[axioms]]
+id = "macro_ilp_n_sum_4i_textual_substitution"
+content = "ILP_N_SUM_4I performs textual substitution to 'ILP_CPU_PROFILE.sum_4i'; any side effects in the context where it's used will interact with the expanded form"
+formal_spec = "expand(ILP_N_SUM_4I) ≡ ILP_CPU_PROFILE.sum_4i"
+layer = "library"
+function = "ILP_N_SUM_4I"
+header = "ilp_for/cpu_profiles/ilp_cpu.hpp"
+axiom_type = "effect"
+on_violation = "N/A - this describes the expansion behavior"
+reviewed = true
+
+[[axioms]]
+id = "macro_ilp_n_sum_8i_object_lifetime_requirement"
+content = "ILP_CPU_PROFILE object must be initialized and have accessible sum_8i member before ILP_N_SUM_8I is expanded"
+formal_spec = "isInitialized(ILP_CPU_PROFILE) andBool hasMember(ILP_CPU_PROFILE, sum_8i) andBool isAccessible(ILP_CPU_PROFILE.sum_8i)"
+layer = "library"
+function = "ILP_N_SUM_8I"
+header = "../../cpp/ilp_for/ilp_for/cpu_profiles/ilp_cpu.hpp"
+axiom_type = "precondition"
+on_violation = "undefined behavior - access to uninitialized object or non-existent member"
+confidence = 0.95
+reviewed = true
+
+[[axioms]]
+id = "macro_ilp_n_sum_8i_macro_dependency"
+content = "ILP_CPU_PROFILE macro must be defined and expand to an object with sum_8i member before ILP_N_SUM_8I can be used"
+formal_spec = "isDefined(ILP_CPU_PROFILE) andBool hasMember(macroExpansion(ILP_CPU_PROFILE), sum_8i)"
+layer = "library"
+function = "ILP_N_SUM_8I"
+header = "../../cpp/ilp_for/ilp_for/cpu_profiles/ilp_cpu.hpp"
+axiom_type = "constraint"
+on_violation = "compilation error - undefined macro or member access to non-class type"
+reviewed = true
+
+[[axioms]]
+id = "macro_ilp_n_sum_8i_context_requirement"
+content = "ILP_N_SUM_8I must be used in a context where member access via dot operator is valid for the expansion result"
+formal_spec = "validInContext(ILP_CPU_PROFILE.sum_8i, expansionContext(ILP_N_SUM_8I))"
+layer = "library"
+function = "ILP_N_SUM_8I"
+header = "../../cpp/ilp_for/ilp_for/cpu_profiles/ilp_cpu.hpp"
+axiom_type = "constraint"
+on_violation = "compilation error or unexpected behavior depending on context"
+confidence = 0.9
+reviewed = true
+
+[[axioms]]
+id = "macro_ilp_n_sum_4f_member_access_precondition"
+content = "ILP_CPU_PROFILE must be accessible in the scope where ILP_N_SUM_4F is used, and must have a member named sum_4f"
+formal_spec = "requires(ILP_CPU_PROFILE) && has_member(ILP_CPU_PROFILE, sum_4f)"
+layer = "library"
+function = "ILP_N_SUM_4F"
+header = "../../cpp/ilp_for/ilp_for/cpu_profiles/ilp_cpu.hpp"
+axiom_type = "precondition"
+on_violation = "compilation error: undefined identifier or member access error"
+reviewed = true
+
+[[axioms]]
+id = "macro_ilp_n_sum_4f_lvalue_constraint"
+content = "If ILP_N_SUM_4F is used in a context requiring an lvalue (e.g., assignment target), ILP_CPU_PROFILE.sum_4f must be an lvalue"
+formal_spec = "is_lvalue_context(ILP_N_SUM_4F) -> is_lvalue(ILP_CPU_PROFILE.sum_4f)"
+layer = "library"
+function = "ILP_N_SUM_4F"
+header = "../../cpp/ilp_for/ilp_for/cpu_profiles/ilp_cpu.hpp"
+axiom_type = "constraint"
+on_violation = "compilation error: lvalue required as left operand of assignment"
+confidence = 0.9
+reviewed = true
+
+[[axioms]]
+id = "macro_ilp_n_sum_4f_type_preservation"
+content = "The type and value category of ILP_N_SUM_4F is identical to the type and value category of ILP_CPU_PROFILE.sum_4f"
+formal_spec = "type(ILP_N_SUM_4F) == type(ILP_CPU_PROFILE.sum_4f) && value_category(ILP_N_SUM_4F) == value_category(ILP_CPU_PROFILE.sum_4f)"
+layer = "library"
+function = "ILP_N_SUM_4F"
+header = "../../cpp/ilp_for/ilp_for/cpu_profiles/ilp_cpu.hpp"
+axiom_type = "postcondition"
+on_violation = "type mismatch in expression context"
+reviewed = true
+
+[[axioms]]
+id = "macro_ilp_n_sum_8f_member_access_precondition"
+content = "ILP_CPU_PROFILE must be defined and refer to an object with a valid 'sum_8f' member before this macro is expanded"
+formal_spec = "defined(ILP_CPU_PROFILE) && has_member(ILP_CPU_PROFILE, sum_8f)"
+layer = "library"
+function = "ILP_N_SUM_8F"
+header = "../../cpp/ilp_for/ilp_for/cpu_profiles/ilp_cpu.hpp"
+axiom_type = "precondition"
+on_violation = "Compilation error if ILP_CPU_PROFILE is undefined; undefined behavior if ILP_CPU_PROFILE exists but lacks sum_8f member"
+confidence = 0.95
+reviewed = true
+
+[[axioms]]
+id = "macro_ilp_n_sum_8f_initialization_order"
+content = "ILP_CPU_PROFILE.sum_8f must be initialized before ILP_N_SUM_8F is used in runtime contexts (reading/writing)"
+formal_spec = "is_initialized(ILP_CPU_PROFILE.sum_8f) when ILP_N_SUM_8F is evaluated at runtime"
+layer = "library"
+function = "ILP_N_SUM_8F"
+header = "../../cpp/ilp_for/ilp_for/cpu_profiles/ilp_cpu.hpp"
+axiom_type = "constraint"
+on_violation = "Undefined behavior if sum_8f is accessed before initialization"
+confidence = 0.9
+reviewed = true
+
+[[axioms]]
+id = "macro_ilp_n_sum_8f_lvalue_context"
+content = "When ILP_N_SUM_8F appears in an lvalue context (e.g., assignment target), it modifies ILP_CPU_PROFILE.sum_8f directly"
+formal_spec = "(ILP_N_SUM_8F = value) expands to (ILP_CPU_PROFILE.sum_8f = value), modifying the original object"
+layer = "library"
+function = "ILP_N_SUM_8F"
+header = "../../cpp/ilp_for/ilp_for/cpu_profiles/ilp_cpu.hpp"
+axiom_type = "effect"
+on_violation = "N/A - this documents the aliasing behavior"
+reviewed = true
+
+[[axioms]]
+id = "macro_ilp_n_dotproduct_4_object_member_access"
+content = "ILP_CPU_PROFILE must be a valid object or reference with a member named dotproduct_4"
+formal_spec = "isValidObject(ILP_CPU_PROFILE) && hasMember(ILP_CPU_PROFILE, \"dotproduct_4\")"
+layer = "library"
+function = "ILP_N_DOTPRODUCT_4"
+header = "ilp_for/cpu_profiles/ilp_cpu.hpp"
+axiom_type = "precondition"
+on_violation = "Compilation error if ILP_CPU_PROFILE is not defined or lacks dotproduct_4 member; undefined behavior if ILP_CPU_PROFILE is an invalid reference"
+confidence = 0.95
+reviewed = true
+
+[[axioms]]
+id = "macro_ilp_n_dotproduct_4_textual_substitution"
+content = "Each occurrence of ILP_N_DOTPRODUCT_4 is textually replaced with ILP_CPU_PROFILE.dotproduct_4, causing member access to be evaluated at the expansion site"
+formal_spec = "expand(ILP_N_DOTPRODUCT_4) == textual_substitute(\"ILP_CPU_PROFILE.dotproduct_4\")"
+layer = "library"
+function = "ILP_N_DOTPRODUCT_4"
+header = "ilp_for/cpu_profiles/ilp_cpu.hpp"
+axiom_type = "effect"
+on_violation = "N/A - this is the definition of the macro behavior"
+reviewed = true
+
+[[axioms]]
+id = "macro_ilp_n_dotproduct_4_no_parenthesization"
+content = "The expansion is not parenthesized, so operator precedence at the call site affects interpretation (e.g., &ILP_N_DOTPRODUCT_4 becomes &ILP_CPU_PROFILE.dotproduct_4)"
+formal_spec = "not_parenthesized(expansion(ILP_N_DOTPRODUCT_4)) -> precedence_depends_on_context()"
+layer = "library"
+function = "ILP_N_DOTPRODUCT_4"
+header = "ilp_for/cpu_profiles/ilp_cpu.hpp"
+axiom_type = "constraint"
+on_violation = "Incorrect operator precedence may cause unexpected behavior in certain contexts"
+confidence = 0.85
+reviewed = true
+
+[[axioms]]
+id = "macro_ilp_n_dotproduct_8_struct_member_access"
+content = "ILP_CPU_PROFILE must be a valid object or reference with a member named dotproduct_8"
+formal_spec = "isObjectType(type(ILP_CPU_PROFILE)) orBool isCPPReferenceType(type(ILP_CPU_PROFILE)) andBool hasMember(ILP_CPU_PROFILE, dotproduct_8)"
+layer = "library"
+function = "ILP_N_DOTPRODUCT_8"
+header = "../../cpp/ilp_for/ilp_for/cpu_profiles/ilp_cpu.hpp"
+axiom_type = "precondition"
+on_violation = "compilation error: member access on undefined object or non-existent member"
+confidence = 0.95
+reviewed = true
+
+[[axioms]]
+id = "macro_ilp_n_dotproduct_8_global_definition"
+content = "ILP_CPU_PROFILE macro must be defined before this macro is expanded"
+formal_spec = "isDefined(ILP_CPU_PROFILE)"
+layer = "library"
+function = "ILP_N_DOTPRODUCT_8"
+header = "../../cpp/ilp_for/ilp_for/cpu_profiles/ilp_cpu.hpp"
+axiom_type = "precondition"
+on_violation = "compilation error: ILP_CPU_PROFILE is not defined"
+reviewed = true
+
+[[axioms]]
+id = "macro_ilp_n_dotproduct_8_textual_substitution"
+content = "Every use of ILP_N_DOTPRODUCT_8 is textually replaced with ILP_CPU_PROFILE.dotproduct_8 before compilation"
+formal_spec = "expand(ILP_N_DOTPRODUCT_8) ==Text expand(ILP_CPU_PROFILE) +Text \".dotproduct_8\""
+layer = "library"
+function = "ILP_N_DOTPRODUCT_8"
+header = "../../cpp/ilp_for/ilp_for/cpu_profiles/ilp_cpu.hpp"
+axiom_type = "effect"
+on_violation = "N/A - preprocessing phase behavior"
+reviewed = true
+
+[[axioms]]
+id = "macro_ilp_n_search_1_dependency_d4a2e8f1"
+content = "ILP_CPU_PROFILE must be defined and in scope before using ILP_N_SEARCH_1"
+formal_spec = "requires: defined(ILP_CPU_PROFILE) andBool hasField(ILP_CPU_PROFILE, search_1)"
+layer = "library"
+function = "ILP_N_SEARCH_1"
+header = "ilp_for/cpu_profiles/ilp_cpu.hpp"
+axiom_type = "precondition"
+on_violation = "Compilation error: ILP_CPU_PROFILE or search_1 member not found"
+reviewed = true
+
+[[axioms]]
+id = "macro_ilp_n_search_1_member_access_8c3f4a21"
+content = "ILP_CPU_PROFILE.search_1 must be a valid member access expression at the point of use"
+formal_spec = "requires: isValidMemberAccess(ILP_CPU_PROFILE, search_1) andBool (isObjectType(type(ILP_CPU_PROFILE)) orBool isCPPClassType(type(ILP_CPU_PROFILE)))"
+layer = "library"
+function = "ILP_N_SEARCH_1"
+header = "ilp_for/cpu_profiles/ilp_cpu.hpp"
+axiom_type = "constraint"
+on_violation = "Compilation error: invalid member access or ILP_CPU_PROFILE is not an object/class type"
+confidence = 0.95
+reviewed = true
+
+[[axioms]]
+id = "macro_ilp_n_search_1_initialization_2f7d9e3a"
+content = "ILP_CPU_PROFILE object must be initialized before ILP_N_SEARCH_1 is used"
+formal_spec = "requires: isInitialized(ILP_CPU_PROFILE) andBool hasValue(ILP_CPU_PROFILE.search_1)"
+layer = "library"
+function = "ILP_N_SEARCH_1"
+header = "ilp_for/cpu_profiles/ilp_cpu.hpp"
+axiom_type = "precondition"
+on_violation = "Undefined behavior: accessing uninitialized object member"
+confidence = 0.9
+reviewed = true
+
+[[axioms]]
+id = "macro_ilp_n_search_2_object_member_access_requirement"
+content = "ILP_CPU_PROFILE must be a valid object with a member 'search_2' accessible in the context where ILP_N_SEARCH_2 is expanded"
+formal_spec = "isValidObject(ILP_CPU_PROFILE) && hasMember(ILP_CPU_PROFILE, search_2)"
+layer = "library"
+function = "ILP_N_SEARCH_2"
+header = "../../cpp/ilp_for/ilp_for/cpu_profiles/ilp_cpu.hpp"
+axiom_type = "precondition"
+on_violation = "Compilation error if ILP_CPU_PROFILE is not defined or does not have member search_2"
+reviewed = true
+
+[[axioms]]
+id = "macro_ilp_n_search_2_macro_dependency"
+content = "ILP_CPU_PROFILE macro or identifier must be defined before ILP_N_SEARCH_2 is used"
+formal_spec = "isDefined(ILP_CPU_PROFILE)"
+layer = "library"
+function = "ILP_N_SEARCH_2"
+header = "../../cpp/ilp_for/ilp_for/cpu_profiles/ilp_cpu.hpp"
+axiom_type = "precondition"
+on_violation = "Compilation error due to undefined identifier"
+reviewed = true
+
+[[axioms]]
+id = "macro_ilp_n_search_2_textual_substitution"
+content = "ILP_N_SEARCH_2 performs textual substitution to ILP_CPU_PROFILE.search_2, inheriting all context-dependent semantics of member access"
+formal_spec = "expand(ILP_N_SEARCH_2) == (ILP_CPU_PROFILE.search_2)"
+layer = "library"
+function = "ILP_N_SEARCH_2"
+header = "../../cpp/ilp_for/ilp_for/cpu_profiles/ilp_cpu.hpp"
+axiom_type = "effect"
+on_violation = "N/A - this is the definition"
+reviewed = true
+
+[[axioms]]
+id = "macro_ilp_n_search_4_valid_profile_precondition"
+content = "ILP_CPU_PROFILE must be a valid object with a 'search_4' member accessible at the point of expansion"
+formal_spec = "isDefined(ILP_CPU_PROFILE) andBool hasMember(ILP_CPU_PROFILE, search_4)"
+layer = "library"
+function = "ILP_N_SEARCH_4"
+header = "../../cpp/ilp_for/ilp_for/cpu_profiles/ilp_cpu.hpp"
+axiom_type = "precondition"
+on_violation = "compilation error if ILP_CPU_PROFILE is undefined or lacks search_4 member"
+confidence = 0.95
+reviewed = true
+
+[[axioms]]
+id = "macro_ilp_n_search_4_textual_substitution_effect"
+content = "ILP_N_SEARCH_4 expands to ILP_CPU_PROFILE.search_4 via textual substitution, inheriting all properties and type of search_4 member"
+formal_spec = "expand(ILP_N_SEARCH_4) == ILP_CPU_PROFILE.search_4"
+layer = "library"
+function = "ILP_N_SEARCH_4"
+header = "../../cpp/ilp_for/ilp_for/cpu_profiles/ilp_cpu.hpp"
+axiom_type = "effect"
+on_violation = "N/A - this is the definition"
+reviewed = true
+
+[[axioms]]
+id = "macro_ilp_n_search_4_side_effect_transparency"
+content = "If ILP_CPU_PROFILE.search_4 access has side effects (e.g., via overloaded operator. or property getter), those side effects occur at each use of ILP_N_SEARCH_4"
+formal_spec = "forall use_site: sideEffects(ILP_N_SEARCH_4 @ use_site) == sideEffects(ILP_CPU_PROFILE.search_4 @ use_site)"
+layer = "library"
+function = "ILP_N_SEARCH_4"
+header = "../../cpp/ilp_for/ilp_for/cpu_profiles/ilp_cpu.hpp"
+axiom_type = "constraint"
+on_violation = "unintended side effect repetition if used multiple times in same expression"
+confidence = 0.9
+reviewed = true
+
+[[axioms]]
+id = "macro_ilp_n_search_8_member_access_precondition"
+content = "ILP_CPU_PROFILE must be a valid object or reference with a 'search_8' member accessible in the current scope"
+formal_spec = "is_valid_object(ILP_CPU_PROFILE) && has_member(ILP_CPU_PROFILE, search_8)"
+layer = "library"
+function = "ILP_N_SEARCH_8"
+header = "../../cpp/ilp_for/ilp_for/cpu_profiles/ilp_cpu.hpp"
+axiom_type = "precondition"
+on_violation = "Compilation error if ILP_CPU_PROFILE is not defined or lacks 'search_8' member; undefined behavior if ILP_CPU_PROFILE is invalid at runtime"
+confidence = 0.95
+reviewed = true
+
+[[axioms]]
+id = "macro_ilp_n_search_8_initialization_order"
+content = "ILP_CPU_PROFILE must be initialized before ILP_N_SEARCH_8 is used"
+formal_spec = "is_initialized(ILP_CPU_PROFILE) == true"
+layer = "library"
+function = "ILP_N_SEARCH_8"
+header = "../../cpp/ilp_for/ilp_for/cpu_profiles/ilp_cpu.hpp"
+axiom_type = "precondition"
+on_violation = "Undefined behavior if accessing uninitialized object; potential crash or garbage values"
+confidence = 0.9
+reviewed = true
+
+[[axioms]]
+id = "macro_ilp_n_search_8_type_constraint"
+content = "The type of ILP_CPU_PROFILE.search_8 is determined by the definition of ILP_CPU_PROFILE; users of this macro must handle the actual type correctly"
+formal_spec = "typeof(ILP_N_SEARCH_8) == typeof(ILP_CPU_PROFILE.search_8)"
+layer = "library"
+function = "ILP_N_SEARCH_8"
+header = "../../cpp/ilp_for/ilp_for/cpu_profiles/ilp_cpu.hpp"
+axiom_type = "constraint"
+on_violation = "Type mismatch errors if used in incompatible context"
+reviewed = true
+
+[[axioms]]
+id = "ilp_n_copy_1_member_access_precondition"
+content = "ILP_CPU_PROFILE must be a valid object or reference with a 'copy_1' member accessible in the current scope"
+formal_spec = "exists(ILP_CPU_PROFILE) andBool hasMember(ILP_CPU_PROFILE, copy_1)"
+layer = "library"
+function = "ILP_N_COPY_1"
+header = "../../cpp/ilp_for/ilp_for/cpu_profiles/ilp_cpu.hpp"
+axiom_type = "precondition"
+on_violation = "Compilation error if ILP_CPU_PROFILE is undefined or lacks copy_1 member; undefined behavior if ILP_CPU_PROFILE is uninitialized at runtime"
+confidence = 0.95
+reviewed = true
+
+[[axioms]]
+id = "ilp_n_copy_1_textual_substitution_effect"
+content = "Every occurrence of ILP_N_COPY_1 is replaced with ILP_CPU_PROFILE.copy_1 during preprocessing, inheriting all properties and requirements of that member access expression"
+formal_spec = "forall use_site: ILP_N_COPY_1 => ILP_CPU_PROFILE.copy_1"
+layer = "library"
+function = "ILP_N_COPY_1"
+header = "../../cpp/ilp_for/ilp_for/cpu_profiles/ilp_cpu.hpp"
+axiom_type = "effect"
+on_violation = "N/A - textual substitution is guaranteed by preprocessor"
+reviewed = true
+
+[[axioms]]
+id = "ilp_n_copy_1_context_dependent_validity"
+content = "The validity and type of ILP_N_COPY_1 depends entirely on the context where ILP_CPU_PROFILE is defined; it may be an lvalue, rvalue, or produce different types in different translation units"
+formal_spec = "type(ILP_N_COPY_1) == type(ILP_CPU_PROFILE.copy_1) andBool valueCategory(ILP_N_COPY_1) == valueCategory(ILP_CPU_PROFILE.copy_1)"
+layer = "library"
+function = "ILP_N_COPY_1"
+header = "../../cpp/ilp_for/ilp_for/cpu_profiles/ilp_cpu.hpp"
+axiom_type = "constraint"
+on_violation = "Type mismatch or compilation error if used in incompatible context"
+confidence = 0.9
+reviewed = true
+
+[[axioms]]
+id = "lib_ILP_N_COPY_2_ca433367"
+content = ""
+formal_spec = ""
+layer = "library"
+function = "ILP_N_COPY_2"
+header = "ilp_cpu.hpp"
+confidence = 0.8
+reviewed = true
+
+[[axioms]]
+id = "ilp_n_copy_4_object_access_precondition"
+content = "ILP_CPU_PROFILE must be a valid, initialized object with accessible member 'copy_4'"
+formal_spec = "isObjectType(type(ILP_CPU_PROFILE)) andBool hasMember(ILP_CPU_PROFILE, copy_4)"
+layer = "library"
+function = "ILP_N_COPY_4"
+header = "../../cpp/ilp_for/ilp_for/cpu_profiles/ilp_cpu.hpp"
+axiom_type = "precondition"
+on_violation = "undefined behavior: accessing member of uninitialized or invalid object"
+confidence = 0.95
+reviewed = true
+
+[[axioms]]
+id = "ilp_n_copy_4_substitution_constraint"
+content = "Textual substitution replaces ILP_N_COPY_4 with 'ILP_CPU_PROFILE.copy_4' - context must allow member access expression"
+formal_spec = "validContext(memberAccess) andBool notInStringLiteral(ILP_N_COPY_4)"
+layer = "library"
+function = "ILP_N_COPY_4"
+header = "../../cpp/ilp_for/ilp_for/cpu_profiles/ilp_cpu.hpp"
+axiom_type = "constraint"
+on_violation = "compilation error or incorrect substitution in inappropriate context"
+confidence = 0.9
+reviewed = true
+
+[[axioms]]
+id = "ilp_n_copy_8_requires_cpu_profile_initialized"
+content = "ILP_CPU_PROFILE must be initialized and accessible before ILP_N_COPY_8 is used"
+formal_spec = "isDefined(ILP_CPU_PROFILE) andBool hasValidMember(ILP_CPU_PROFILE, copy_8)"
+layer = "library"
+function = "ILP_N_COPY_8"
+header = "../../cpp/ilp_for/ilp_for/cpu_profiles/ilp_cpu.hpp"
+axiom_type = "precondition"
+on_violation = "undefined behavior: accessing uninitialized or invalid object member"
+confidence = 0.95
+reviewed = true
+
+[[axioms]]
+id = "ilp_n_copy_8_value_type_constraint"
+content = "ILP_CPU_PROFILE.copy_8 must have a valid type that can be used in the context where ILP_N_COPY_8 appears"
+formal_spec = "isValidType(typeOf(ILP_CPU_PROFILE.copy_8))"
+layer = "library"
+function = "ILP_N_COPY_8"
+header = "../../cpp/ilp_for/ilp_for/cpu_profiles/ilp_cpu.hpp"
+axiom_type = "constraint"
+on_violation = "compilation error or type mismatch in usage context"
+confidence = 0.9
+reviewed = true
+
+[[axioms]]
+id = "lib_ILP_N_TRANSFORM_1_ea356407"
+content = ""
+formal_spec = ""
+layer = "library"
+function = "ILP_N_TRANSFORM_1"
+header = "ilp_cpu.hpp"
+confidence = 0.8
+reviewed = true
+
+[[axioms]]
+id = "macro_ilp_n_transform_2_object_exists_precondition"
+content = "ILP_CPU_PROFILE object must be defined and initialized before ILP_N_TRANSFORM_2 is used"
+formal_spec = "isDefined(ILP_CPU_PROFILE) andBool hasAccessibleMember(ILP_CPU_PROFILE, transform_2)"
+layer = "library"
+function = "ILP_N_TRANSFORM_2"
+header = "../../cpp/ilp_for/ilp_for/cpu_profiles/ilp_cpu.hpp"
+axiom_type = "precondition"
+on_violation = "undefined behavior: reference to undefined object or inaccessible member"
+confidence = 0.95
+reviewed = true
+
+[[axioms]]
+id = "macro_ilp_n_transform_2_member_accessible_precondition"
+content = "ILP_CPU_PROFILE.transform_2 must be an accessible member with appropriate type for the usage context"
+formal_spec = "isAccessible(memberOf(ILP_CPU_PROFILE, transform_2)) andBool isValidType(typeof(ILP_CPU_PROFILE.transform_2), usageContext)"
+layer = "library"
+function = "ILP_N_TRANSFORM_2"
+header = "../../cpp/ilp_for/ilp_for/cpu_profiles/ilp_cpu.hpp"
+axiom_type = "precondition"
+on_violation = "compilation error: inaccessible or non-existent member, or type mismatch in usage"
+confidence = 0.9
+reviewed = true
+
+[[axioms]]
+id = "macro_ilp_n_transform_2_scope_constraint"
+content = "ILP_CPU_PROFILE must be in scope at the point where ILP_N_TRANSFORM_2 is expanded"
+formal_spec = "inScope(ILP_CPU_PROFILE, expansionPoint(ILP_N_TRANSFORM_2))"
+layer = "library"
+function = "ILP_N_TRANSFORM_2"
+header = "../../cpp/ilp_for/ilp_for/cpu_profiles/ilp_cpu.hpp"
+axiom_type = "constraint"
+on_violation = "compilation error: ILP_CPU_PROFILE not declared in this scope"
+reviewed = true
+
+[[axioms]]
+id = "macro_ilp_n_transform_4_access_precondition"
+content = "ILP_CPU_PROFILE must be initialized and accessible in the current scope before ILP_N_TRANSFORM_4 is used"
+formal_spec = "isDefined(ILP_CPU_PROFILE) andBool hasField(ILP_CPU_PROFILE, transform_4)"
+layer = "library"
+function = "ILP_N_TRANSFORM_4"
+header = "../../cpp/ilp_for/ilp_for/cpu_profiles/ilp_cpu.hpp"
+axiom_type = "precondition"
+on_violation = "Compilation error if ILP_CPU_PROFILE is undefined; undefined behavior if ILP_CPU_PROFILE is uninitialized"
+confidence = 0.95
+reviewed = true
+
+[[axioms]]
+id = "macro_ilp_n_transform_4_type_constraint"
+content = "ILP_CPU_PROFILE must be a struct/class type with a member named transform_4"
+formal_spec = "isClassType(type(ILP_CPU_PROFILE)) andBool hasMember(type(ILP_CPU_PROFILE), transform_4)"
+layer = "library"
+function = "ILP_N_TRANSFORM_4"
+header = "../../cpp/ilp_for/ilp_for/cpu_profiles/ilp_cpu.hpp"
+axiom_type = "constraint"
+on_violation = "Compilation error if ILP_CPU_PROFILE does not have a transform_4 member"
+confidence = 0.95
+reviewed = true
+
+[[axioms]]
+id = "macro_ilp_n_transform_8_struct_member_access"
+content = "ILP_CPU_PROFILE must be a valid struct/object with a transform_8 member accessible at the point of macro expansion"
+formal_spec = "isDefined(ILP_CPU_PROFILE) && hasMember(ILP_CPU_PROFILE, transform_8)"
+layer = "library"
+function = "ILP_N_TRANSFORM_8"
+header = "ilp_for/cpu_profiles/ilp_cpu.hpp"
+axiom_type = "precondition"
+on_violation = "Compilation error if ILP_CPU_PROFILE is not defined or does not have transform_8 member"
+reviewed = true
+
+[[axioms]]
+id = "macro_ilp_n_transform_8_textual_substitution"
+content = "Textual substitution replaces ILP_N_TRANSFORM_8 with ILP_CPU_PROFILE.transform_8 during preprocessing; all operations on the result are actually performed on ILP_CPU_PROFILE.transform_8"
+formal_spec = "substitute(ILP_N_TRANSFORM_8) == ILP_CPU_PROFILE.transform_8"
+layer = "library"
+function = "ILP_N_TRANSFORM_8"
+header = "ilp_for/cpu_profiles/ilp_cpu.hpp"
+axiom_type = "effect"
+on_violation = "N/A - this is the defined behavior of the macro"
+reviewed = true
+
+[[axioms]]
+id = "macro_ilp_n_transform_8_no_side_effect_protection"
+content = "If ILP_CPU_PROFILE itself is a macro or expression with side effects, those side effects occur each time ILP_N_TRANSFORM_8 is used"
+formal_spec = "forall use: sideEffects(ILP_N_TRANSFORM_8) == sideEffects(ILP_CPU_PROFILE.transform_8)"
+layer = "library"
+function = "ILP_N_TRANSFORM_8"
+header = "ilp_for/cpu_profiles/ilp_cpu.hpp"
+axiom_type = "constraint"
+on_violation = "Potential multiple evaluation of side effects if ILP_CPU_PROFILE has side effects"
+confidence = 0.9
+reviewed = true
+
+[[axioms]]
+id = "ilp_n_multiply_4f_macro_member_access_precondition_a8f1b2c3"
+content = "ILP_CPU_PROFILE must be defined and initialized before ILP_N_MULTIPLY_4F is used"
+formal_spec = "exists(ILP_CPU_PROFILE) && has_member(ILP_CPU_PROFILE, multiply_4f)"
+layer = "library"
+function = "ILP_N_MULTIPLY_4F"
+header = "ilp_for/cpu_profiles/ilp_cpu.hpp"
+axiom_type = "precondition"
+on_violation = "compilation error if ILP_CPU_PROFILE undefined, undefined behavior if not initialized"
+confidence = 0.95
+reviewed = true
+
+[[axioms]]
+id = "ilp_n_multiply_4f_macro_type_constraint_d4e2f1a8"
+content = "ILP_CPU_PROFILE.multiply_4f must be a valid lvalue that can be used in expressions where ILP_N_MULTIPLY_4F appears"
+formal_spec = "is_lvalue(ILP_CPU_PROFILE.multiply_4f) || is_rvalue(ILP_CPU_PROFILE.multiply_4f)"
+layer = "library"
+function = "ILP_N_MULTIPLY_4F"
+header = "ilp_for/cpu_profiles/ilp_cpu.hpp"
+axiom_type = "constraint"
+on_violation = "compilation error if multiply_4f member does not exist or is inaccessible"
+confidence = 0.9
+reviewed = true
+
+[[axioms]]
+id = "macro_ilp_n_multiply_8f_requires_init_c3f8a901"
+content = "ILP_CPU_PROFILE must be initialized and contain a valid multiply_8f member before ILP_N_MULTIPLY_8F is used"
+formal_spec = "initialized(ILP_CPU_PROFILE) && has_member(ILP_CPU_PROFILE, multiply_8f)"
+layer = "library"
+function = "ILP_N_MULTIPLY_8F"
+header = "../../cpp/ilp_for/ilp_for/cpu_profiles/ilp_cpu.hpp"
+axiom_type = "precondition"
+on_violation = "undefined behavior: accessing uninitialized or invalid member"
+confidence = 0.95
+reviewed = true
+
+[[axioms]]
+id = "macro_ilp_n_multiply_8f_type_constraint_7b2e4f19"
+content = "ILP_CPU_PROFILE.multiply_8f must have a type compatible with the context where ILP_N_MULTIPLY_8F is used (likely a numeric type or function pointer)"
+formal_spec = "type(ILP_CPU_PROFILE.multiply_8f) compatible_with context_expected_type"
+layer = "library"
+function = "ILP_N_MULTIPLY_8F"
+header = "../../cpp/ilp_for/ilp_for/cpu_profiles/ilp_cpu.hpp"
+axiom_type = "constraint"
+on_violation = "compilation error or type mismatch"
+confidence = 0.9
+reviewed = true
+
+[[axioms]]
+id = "macro_ilp_n_multiply_8f_lvalue_context_8d4f3e2a"
+content = "If ILP_N_MULTIPLY_8F is used in an lvalue context (e.g., assignment target), ILP_CPU_PROFILE.multiply_8f must be a modifiable lvalue"
+formal_spec = "lvalue_context(ILP_N_MULTIPLY_8F) implies is_modifiable_lvalue(ILP_CPU_PROFILE.multiply_8f)"
+layer = "library"
+function = "ILP_N_MULTIPLY_8F"
+header = "../../cpp/ilp_for/ilp_for/cpu_profiles/ilp_cpu.hpp"
+axiom_type = "constraint"
+on_violation = "compilation error: cannot assign to non-lvalue"
+confidence = 0.85
+reviewed = true
+
+[[axioms]]
+id = "ilp_n_multiply_4i_object_requirement"
+content = "ILP_CPU_PROFILE must be initialized and multiply_4i member must be accessible before ILP_N_MULTIPLY_4I is used"
+formal_spec = "isDefined(ILP_CPU_PROFILE) andBool hasMember(ILP_CPU_PROFILE, multiply_4i)"
+layer = "library"
+function = "ILP_N_MULTIPLY_4I"
+header = "../../cpp/ilp_for/ilp_for/cpu_profiles/ilp_cpu.hpp"
+axiom_type = "precondition"
+on_violation = "Undefined behavior: accessing member of uninitialized or undefined object"
+confidence = 0.95
+reviewed = true
+
+[[axioms]]
+id = "ilp_n_multiply_4i_scope_requirement"
+content = "ILP_CPU_PROFILE must be in scope when ILP_N_MULTIPLY_4I is expanded"
+formal_spec = "isInScope(ILP_CPU_PROFILE)"
+layer = "library"
+function = "ILP_N_MULTIPLY_4I"
+header = "../../cpp/ilp_for/ilp_for/cpu_profiles/ilp_cpu.hpp"
+axiom_type = "constraint"
+on_violation = "Compilation error: ILP_CPU_PROFILE not declared in this scope"
+reviewed = true
+
+[[axioms]]
+id = "macro_ilp_n_multiply_8i_type_constraint_a1b2c3d4"
+content = "ILP_N_MULTIPLY_8I expands to ILP_CPU_PROFILE.multiply_8i, which must be a valid lvalue or rvalue expression. The macro requires ILP_CPU_PROFILE to be defined and have a multiply_8i member accessible in the current scope."
+formal_spec = "isDefined(ILP_CPU_PROFILE) andBool hasMember(ILP_CPU_PROFILE, multiply_8i)"
+layer = "library"
+function = "ILP_N_MULTIPLY_8I"
+header = "../../cpp/ilp_for/ilp_for/cpu_profiles/ilp_cpu.hpp"
+axiom_type = "constraint"
+on_violation = "Compilation error due to undefined identifier or member access violation"
+reviewed = true
+
+[[axioms]]
+id = "macro_ilp_n_multiply_8i_scope_requirement_e4f5g6h7"
+content = "Before using ILP_N_MULTIPLY_8I, the ILP_CPU_PROFILE object must be in scope and initialized. This is a simple textual substitution macro that provides no encapsulation or type safety."
+formal_spec = "inScope(ILP_CPU_PROFILE) andBool isInitialized(ILP_CPU_PROFILE)"
+layer = "library"
+function = "ILP_N_MULTIPLY_8I"
+header = "../../cpp/ilp_for/ilp_for/cpu_profiles/ilp_cpu.hpp"
+axiom_type = "precondition"
+on_violation = "Undefined behavior if ILP_CPU_PROFILE is uninitialized; compilation error if not in scope"
+confidence = 0.95
+reviewed = true
+
+[[axioms]]
+id = "macro_ilp_n_divide_4f_structure_member_access"
+content = "ILP_CPU_PROFILE must be a valid object with a 'divide_4f' member accessible in the current scope"
+formal_spec = "exists(ILP_CPU_PROFILE) && has_member(ILP_CPU_PROFILE, divide_4f)"
+layer = "library"
+function = "ILP_N_DIVIDE_4F"
+header = "../../cpp/ilp_for/ilp_for/cpu_profiles/ilp_cpu.hpp"
+axiom_type = "precondition"
+on_violation = "Compilation error: undefined symbol or member access violation"
+reviewed = true
+
+[[axioms]]
+id = "macro_ilp_n_divide_4f_expansion_context"
+content = "The macro expands to a member access expression 'ILP_CPU_PROFILE.divide_4f', which inherits the type and value of that member"
+formal_spec = "type(ILP_N_DIVIDE_4F) == type(ILP_CPU_PROFILE.divide_4f) && value(ILP_N_DIVIDE_4F) == value(ILP_CPU_PROFILE.divide_4f)"
+layer = "library"
+function = "ILP_N_DIVIDE_4F"
+header = "../../cpp/ilp_for/ilp_for/cpu_profiles/ilp_cpu.hpp"
+axiom_type = "constraint"
+on_violation = "Type mismatch or incorrect value in contexts expecting specific types"
+reviewed = true
+
+[[axioms]]
+id = "macro_ilp_n_divide_4f_evaluation_timing"
+content = "Each use of ILP_N_DIVIDE_4F accesses ILP_CPU_PROFILE.divide_4f at the point of expansion; if ILP_CPU_PROFILE is modified between uses, different values may be observed"
+formal_spec = "evaluation_time(ILP_N_DIVIDE_4F) == expansion_time && value(ILP_N_DIVIDE_4F) == value(ILP_CPU_PROFILE.divide_4f) at expansion_time"
+layer = "library"
+function = "ILP_N_DIVIDE_4F"
+header = "../../cpp/ilp_for/ilp_for/cpu_profiles/ilp_cpu.hpp"
+axiom_type = "effect"
+on_violation = "Potential race conditions or unexpected values if ILP_CPU_PROFILE is mutable"
+confidence = 0.9
+reviewed = true
+
+[[axioms]]
+id = "macro_ilp_n_divide_8f_member_access_precondition"
+content = "ILP_CPU_PROFILE must be a valid object with accessible member 'divide_8f'"
+formal_spec = "isValidObject(ILP_CPU_PROFILE) && hasMember(ILP_CPU_PROFILE, 'divide_8f')"
+layer = "library"
+function = "ILP_N_DIVIDE_8F"
+header = "../../cpp/ilp_for/ilp_for/cpu_profiles/ilp_cpu.hpp"
+axiom_type = "precondition"
+on_violation = "Compilation error if ILP_CPU_PROFILE is undefined or lacks 'divide_8f' member; undefined behavior if ILP_CPU_PROFILE is an invalid object at runtime"
+confidence = 0.95
+reviewed = true
+
+[[axioms]]
+id = "macro_ilp_n_divide_8f_context_dependency"
+content = "The macro expansion depends on the current definition of ILP_CPU_PROFILE at the point of use (textual substitution)"
+formal_spec = "expansion(ILP_N_DIVIDE_8F) == currentDefinition(ILP_CPU_PROFILE).divide_8f"
+layer = "library"
+function = "ILP_N_DIVIDE_8F"
+header = "../../cpp/ilp_for/ilp_for/cpu_profiles/ilp_cpu.hpp"
+axiom_type = "constraint"
+on_violation = "Incorrect value accessed if ILP_CPU_PROFILE changes meaning between macro definition and use"
+reviewed = true
+
+[[axioms]]
+id = "macro_ilp_n_divide_8f_evaluation_semantics"
+content = "Each use of ILP_N_DIVIDE_8F evaluates ILP_CPU_PROFILE.divide_8f, potentially invoking member access operations each time"
+formal_spec = "forall use: evaluates(ILP_CPU_PROFILE) && evaluates(memberAccess(ILP_CPU_PROFILE, 'divide_8f'))"
+layer = "library"
+function = "ILP_N_DIVIDE_8F"
+header = "../../cpp/ilp_for/ilp_for/cpu_profiles/ilp_cpu.hpp"
+axiom_type = "effect"
+on_violation = "If ILP_CPU_PROFILE has side effects in evaluation or divide_8f is a property with getter side effects, multiple uses cause multiple evaluations"
+confidence = 0.9
+reviewed = true
+
+[[axioms]]
+id = "macro_ilp_n_sqrt_4f_struct_member_access_precondition"
+content = "ILP_CPU_PROFILE must be a valid object with a member 'sqrt_4f' accessible at the point of macro expansion"
+formal_spec = "isObjectType(type(ILP_CPU_PROFILE)) && hasMember(ILP_CPU_PROFILE, sqrt_4f)"
+layer = "library"
+function = "ILP_N_SQRT_4F"
+header = "ilp_for/cpu_profiles/ilp_cpu.hpp"
+axiom_type = "precondition"
+on_violation = "Compilation error if ILP_CPU_PROFILE is not defined or does not have sqrt_4f member"
+confidence = 0.95
+reviewed = true
+
+[[axioms]]
+id = "macro_ilp_n_sqrt_4f_type_preservation"
+content = "The macro expands to an expression with the same type as ILP_CPU_PROFILE.sqrt_4f"
+formal_spec = "type(ILP_N_SQRT_4F) == type(ILP_CPU_PROFILE.sqrt_4f)"
+layer = "library"
+function = "ILP_N_SQRT_4F"
+header = "ilp_for/cpu_profiles/ilp_cpu.hpp"
+axiom_type = "postcondition"
+on_violation = "Type mismatch in contexts expecting specific type from sqrt_4f member"
+reviewed = true
+
+[[axioms]]
+id = "macro_ilp_n_sqrt_4f_value_semantics"
+content = "Each use of ILP_N_SQRT_4F accesses ILP_CPU_PROFILE.sqrt_4f; if used multiple times in an expression, accesses occur multiple times (observable if sqrt_4f is a volatile member or property)"
+formal_spec = "forall uses: ILP_N_SQRT_4F -> access(ILP_CPU_PROFILE.sqrt_4f)"
+layer = "library"
+function = "ILP_N_SQRT_4F"
+header = "ilp_for/cpu_profiles/ilp_cpu.hpp"
+axiom_type = "effect"
+on_violation = "Unexpected behavior if sqrt_4f has side effects on access or is volatile"
+confidence = 0.85
+reviewed = true
+
+[[axioms]]
+id = "macro_ilp_n_sqrt_8f_precondition_initialized"
+content = "ILP_CPU_PROFILE must be initialized and accessible before ILP_N_SQRT_8F is used"
+formal_spec = "isDefined(ILP_CPU_PROFILE) andBool hasValidMember(ILP_CPU_PROFILE, sqrt_8f)"
+layer = "library"
+function = "ILP_N_SQRT_8F"
+header = "../../cpp/ilp_for/ilp_for/cpu_profiles/ilp_cpu.hpp"
+axiom_type = "precondition"
+on_violation = "Undefined behavior or compilation error if ILP_CPU_PROFILE is not defined or does not have sqrt_8f member"
+confidence = 0.95
+reviewed = true
+
+[[axioms]]
+id = "macro_ilp_n_sqrt_8f_constraint_type"
+content = "ILP_CPU_PROFILE.sqrt_8f should be a value compatible with the expected usage context (likely numeric type representing CPU profile data)"
+formal_spec = "isObjectType(type(ILP_CPU_PROFILE.sqrt_8f))"
+layer = "library"
+function = "ILP_N_SQRT_8F"
+header = "../../cpp/ilp_for/ilp_for/cpu_profiles/ilp_cpu.hpp"
+axiom_type = "constraint"
+on_violation = "Type mismatch errors at usage site if sqrt_8f is not an appropriate type"
+confidence = 0.85
+reviewed = true
+
+[[axioms]]
+id = "macro_ilp_n_minmax_1_member_access_8f3c21a9"
+content = "ILP_CPU_PROFILE must be defined and must be an object with a member named minmax_1"
+formal_spec = "isDefined(ILP_CPU_PROFILE) andBool hasMember(ILP_CPU_PROFILE, minmax_1)"
+layer = "library"
+function = "ILP_N_MINMAX_1"
+header = "../../cpp/ilp_for/ilp_for/cpu_profiles/ilp_cpu.hpp"
+axiom_type = "precondition"
+on_violation = "compilation error: undefined identifier or member access error"
+reviewed = true
+
+[[axioms]]
+id = "macro_ilp_n_minmax_1_expansion_context_2d4b8c3e"
+content = "The expansion ILP_CPU_PROFILE.minmax_1 must be valid in the context where ILP_N_MINMAX_1 is used"
+formal_spec = "validInContext(ILP_CPU_PROFILE.minmax_1, expansionContext(ILP_N_MINMAX_1))"
+layer = "library"
+function = "ILP_N_MINMAX_1"
+header = "../../cpp/ilp_for/ilp_for/cpu_profiles/ilp_cpu.hpp"
+axiom_type = "constraint"
+on_violation = "type error, lvalue/rvalue category mismatch, or access violation depending on usage context"
+confidence = 0.95
+reviewed = true
+
+[[axioms]]
+id = "lib_ILP_N_MINMAX_2_24a363b3"
+content = ""
+formal_spec = ""
+layer = "library"
+function = "ILP_N_MINMAX_2"
+header = "ilp_cpu.hpp"
+confidence = 0.8
+reviewed = true
+
+[[axioms]]
+id = "ilp_n_minmax_4i_macro_type_requirement_a9f2c1d8"
+content = "ILP_CPU_PROFILE must be a valid object with a member 'minmax_4i' accessible in the current scope"
+formal_spec = "exists(ILP_CPU_PROFILE) && has_member(ILP_CPU_PROFILE, minmax_4i)"
+layer = "library"
+function = "ILP_N_MINMAX_4I"
+header = "ilp_for/cpu_profiles/ilp_cpu.hpp"
+axiom_type = "constraint"
+on_violation = "Compilation error: ILP_CPU_PROFILE is undefined or does not have member minmax_4i"
+reviewed = true
+
+[[axioms]]
+id = "ilp_n_minmax_4i_macro_expansion_invariant_3c8f5e21"
+content = "Macro expands to a member access expression; if used in contexts requiring an lvalue, ILP_CPU_PROFILE.minmax_4i must be an lvalue"
+formal_spec = "is_lvalue_context(usage) implies is_lvalue(ILP_CPU_PROFILE.minmax_4i)"
+layer = "library"
+function = "ILP_N_MINMAX_4I"
+header = "ilp_for/cpu_profiles/ilp_cpu.hpp"
+axiom_type = "invariant"
+on_violation = "Compilation error: cannot modify rvalue or bind to non-const reference"
+confidence = 0.95
+reviewed = true
+
+[[axioms]]
+id = "ilp_n_minmax_4i_macro_side_effect_61e4da2f"
+content = "ILP_CPU_PROFILE is evaluated each time the macro is expanded; if ILP_CPU_PROFILE involves side effects (e.g., function call), those effects occur on each expansion"
+formal_spec = "side_effects(ILP_CPU_PROFILE) are executed on each macro expansion"
+layer = "library"
+function = "ILP_N_MINMAX_4I"
+header = "ilp_for/cpu_profiles/ilp_cpu.hpp"
+axiom_type = "effect"
+on_violation = "Unexpected behavior: side effects may execute multiple times or in unexpected order"
+confidence = 0.9
+reviewed = true
+
+[[axioms]]
+id = "macro_ilp_n_minmax_8i_object_access_b4f9c2a1"
+content = "ILP_CPU_PROFILE must be initialized and accessible in the current scope before ILP_N_MINMAX_8I is used"
+formal_spec = "isDefined(ILP_CPU_PROFILE) andBool hasValidObject(ILP_CPU_PROFILE)"
+layer = "library"
+function = "ILP_N_MINMAX_8I"
+header = "../../cpp/ilp_for/ilp_for/cpu_profiles/ilp_cpu.hpp"
+axiom_type = "precondition"
+on_violation = "Compilation error if ILP_CPU_PROFILE is not defined; undefined behavior if ILP_CPU_PROFILE is uninitialized"
+confidence = 0.95
+reviewed = true
+
+[[axioms]]
+id = "macro_ilp_n_minmax_8i_member_exists_7e3d8f42"
+content = "The type of ILP_CPU_PROFILE must have a member named 'minmax_8i'"
+formal_spec = "hasMember(typeof(ILP_CPU_PROFILE), minmax_8i)"
+layer = "library"
+function = "ILP_N_MINMAX_8I"
+header = "../../cpp/ilp_for/ilp_for/cpu_profiles/ilp_cpu.hpp"
+axiom_type = "constraint"
+on_violation = "Compilation error if ILP_CPU_PROFILE's type does not have a minmax_8i member"
+reviewed = true
+
+[[axioms]]
+id = "macro_ilp_n_minmax_8i_expansion_type_9a2b5c33"
+content = "The macro expands to an lvalue or rvalue of the same type as ILP_CPU_PROFILE.minmax_8i, preserving its value category"
+formal_spec = "typeof(ILP_N_MINMAX_8I) ==Type typeof(ILP_CPU_PROFILE.minmax_8i) andBool valueCategory(ILP_N_MINMAX_8I) ==ValueCategory valueCategory(ILP_CPU_PROFILE.minmax_8i)"
+layer = "library"
+function = "ILP_N_MINMAX_8I"
+header = "../../cpp/ilp_for/ilp_for/cpu_profiles/ilp_cpu.hpp"
+axiom_type = "postcondition"
+on_violation = "N/A - guaranteed by textual substitution"
+reviewed = true
+
+[[axioms]]
+id = "macro_ilp_n_minmax_4f_member_access_c8f3a21e"
+content = "ILP_CPU_PROFILE must be a valid object with accessible member 'minmax_4f'"
+formal_spec = "isObjectType(type(ILP_CPU_PROFILE)) andBool hasMember(type(ILP_CPU_PROFILE), minmax_4f)"
+layer = "library"
+function = "ILP_N_MINMAX_4F"
+header = "ilp_for/cpu_profiles/ilp_cpu.hpp"
+axiom_type = "precondition"
+on_violation = "Compilation error if ILP_CPU_PROFILE is not defined or lacks minmax_4f member; runtime crash if ILP_CPU_PROFILE is invalid"
+confidence = 0.95
+reviewed = true
+
+[[axioms]]
+id = "macro_ilp_n_minmax_4f_textual_substitution_7b2e4d9a"
+content = "Expands to 'ILP_CPU_PROFILE.minmax_4f' at each use site; if ILP_CPU_PROFILE is an expression with side effects, those side effects occur at expansion"
+formal_spec = "expansion(ILP_N_MINMAX_4F) == memberAccess(ILP_CPU_PROFILE, minmax_4f)"
+layer = "library"
+function = "ILP_N_MINMAX_4F"
+header = "ilp_for/cpu_profiles/ilp_cpu.hpp"
+axiom_type = "effect"
+on_violation = "N/A - textual substitution always occurs"
+reviewed = true
+
+[[axioms]]
+id = "macro_ilp_n_minmax_8f_struct_dependency_a1b2c3d4"
+content = "ILP_CPU_PROFILE must be initialized before ILP_N_MINMAX_8F is used"
+formal_spec = "exists(ILP_CPU_PROFILE) && has_member(ILP_CPU_PROFILE, minmax_8f)"
+layer = "library"
+function = "ILP_N_MINMAX_8F"
+header = "ilp_for/cpu_profiles/ilp_cpu.hpp"
+axiom_type = "precondition"
+on_violation = "undefined behavior: accessing uninitialized or non-existent member"
+confidence = 0.95
+reviewed = true
+
+[[axioms]]
+id = "macro_ilp_n_minmax_8f_type_constraint_e5f6g7h8"
+content = "ILP_CPU_PROFILE.minmax_8f must be a valid member accessible in the context where ILP_N_MINMAX_8F is expanded"
+formal_spec = "isValidMemberAccess(ILP_CPU_PROFILE, minmax_8f)"
+layer = "library"
+function = "ILP_N_MINMAX_8F"
+header = "ilp_for/cpu_profiles/ilp_cpu.hpp"
+axiom_type = "constraint"
+on_violation = "compilation error: member access to non-existent or inaccessible field"
+confidence = 0.9
+reviewed = true
+
+[[axioms]]
+id = "macro_ilp_n_bitwise_1_member_access_precondition"
+content = "ILP_CPU_PROFILE must be defined and accessible in the scope where ILP_N_BITWISE_1 is used"
+formal_spec = "defined(ILP_CPU_PROFILE) andBool hasField(ILP_CPU_PROFILE, bitwise_1)"
+layer = "library"
+function = "ILP_N_BITWISE_1"
+header = "../../cpp/ilp_for/ilp_for/cpu_profiles/ilp_cpu.hpp"
+axiom_type = "precondition"
+on_violation = "Compilation error: undefined identifier or member access violation"
+reviewed = true
+
+[[axioms]]
+id = "macro_ilp_n_bitwise_1_type_constraint"
+content = "ILP_CPU_PROFILE.bitwise_1 must have a type compatible with the context where ILP_N_BITWISE_1 is expanded"
+formal_spec = "isObjectType(type(ILP_CPU_PROFILE.bitwise_1))"
+layer = "library"
+function = "ILP_N_BITWISE_1"
+header = "../../cpp/ilp_for/ilp_for/cpu_profiles/ilp_cpu.hpp"
+axiom_type = "constraint"
+on_violation = "Type mismatch or compilation error depending on usage context"
+confidence = 0.95
+reviewed = true
+
+[[axioms]]
+id = "macro_ilp_n_bitwise_1_expansion_effect"
+content = "Each use of ILP_N_BITWISE_1 accesses ILP_CPU_PROFILE.bitwise_1, which may have side effects if bitwise_1 is a property with getter semantics"
+formal_spec = "expansion(ILP_N_BITWISE_1) ==K ILP_CPU_PROFILE.bitwise_1"
+layer = "library"
+function = "ILP_N_BITWISE_1"
+header = "../../cpp/ilp_for/ilp_for/cpu_profiles/ilp_cpu.hpp"
+axiom_type = "effect"
+on_violation = "N/A - this is a description of behavior"
+reviewed = true
+
+[[axioms]]
+id = "macro_ilp_n_bitwise_2_type_requirement"
+content = "ILP_CPU_PROFILE must be defined and accessible in the scope where ILP_N_BITWISE_2 is used"
+formal_spec = "defined(ILP_CPU_PROFILE)"
+layer = "library"
+function = "ILP_N_BITWISE_2"
+header = "../../cpp/ilp_for/ilp_for/cpu_profiles/ilp_cpu.hpp"
+axiom_type = "precondition"
+on_violation = "compilation error: undeclared identifier"
+reviewed = true
+
+[[axioms]]
+id = "macro_ilp_n_bitwise_2_member_requirement"
+content = "ILP_CPU_PROFILE must have a member named bitwise_2"
+formal_spec = "hasMember(ILP_CPU_PROFILE, bitwise_2)"
+layer = "library"
+function = "ILP_N_BITWISE_2"
+header = "../../cpp/ilp_for/ilp_for/cpu_profiles/ilp_cpu.hpp"
+axiom_type = "precondition"
+on_violation = "compilation error: no member named 'bitwise_2'"
+reviewed = true
+
+[[axioms]]
+id = "macro_ilp_n_bitwise_2_substitution_semantics"
+content = "ILP_N_BITWISE_2 expands to ILP_CPU_PROFILE.bitwise_2 via textual substitution, preserving the context of member access"
+formal_spec = "expand(ILP_N_BITWISE_2) == ILP_CPU_PROFILE.bitwise_2"
+layer = "library"
+function = "ILP_N_BITWISE_2"
+header = "../../cpp/ilp_for/ilp_for/cpu_profiles/ilp_cpu.hpp"
+axiom_type = "effect"
+on_violation = "N/A - guaranteed by preprocessor"
+reviewed = true
+
+[[axioms]]
+id = "macro_ilp_n_bitwise_4_member_access"
+content = "ILP_CPU_PROFILE must be a valid object or reference with accessible member 'bitwise_4'"
+formal_spec = "hasValidObject(ILP_CPU_PROFILE) && hasMember(ILP_CPU_PROFILE, bitwise_4)"
+layer = "library"
+function = "ILP_N_BITWISE_4"
+header = "../../cpp/ilp_for/ilp_for/cpu_profiles/ilp_cpu.hpp"
+axiom_type = "precondition"
+on_violation = "Compilation error if ILP_CPU_PROFILE is undefined or does not have member bitwise_4; undefined behavior if ILP_CPU_PROFILE is not properly initialized at runtime"
+confidence = 0.95
+reviewed = true
+
+[[axioms]]
+id = "macro_ilp_n_bitwise_4_initialization"
+content = "ILP_CPU_PROFILE must be initialized before ILP_N_BITWISE_4 is used in an expression that reads its value"
+formal_spec = "isInitialized(ILP_CPU_PROFILE) && isInitialized(ILP_CPU_PROFILE.bitwise_4)"
+layer = "library"
+function = "ILP_N_BITWISE_4"
+header = "../../cpp/ilp_for/ilp_for/cpu_profiles/ilp_cpu.hpp"
+axiom_type = "precondition"
+on_violation = "Undefined behavior if ILP_CPU_PROFILE.bitwise_4 is read before initialization"
+confidence = 0.9
+reviewed = true
+
+[[axioms]]
+id = "macro_ilp_n_bitwise_4_textual_substitution"
+content = "Every use of ILP_N_BITWISE_4 is textually replaced with ILP_CPU_PROFILE.bitwise_4, including in contexts where member access may have different precedence"
+formal_spec = "expansion(ILP_N_BITWISE_4) == ILP_CPU_PROFILE.bitwise_4"
+layer = "library"
+function = "ILP_N_BITWISE_4"
+header = "../../cpp/ilp_for/ilp_for/cpu_profiles/ilp_cpu.hpp"
+axiom_type = "constraint"
+on_violation = "Incorrect interpretation if used in complex expressions without parentheses (e.g., sizeof ILP_N_BITWISE_4 yields sizeof of the member, not the macro name)"
+reviewed = true
+
+[[axioms]]
+id = "ilp_n_bitwise_8_macro_expansion_type"
+content = "ILP_N_BITWISE_8 expands to ILP_CPU_PROFILE.bitwise_8, requiring ILP_CPU_PROFILE to be a valid object with a bitwise_8 member accessible in the current scope"
+formal_spec = "isValidObject(ILP_CPU_PROFILE) && hasMember(ILP_CPU_PROFILE, bitwise_8)"
+layer = "library"
+function = "ILP_N_BITWISE_8"
+header = "ilp_for/cpu_profiles/ilp_cpu.hpp"
+axiom_type = "constraint"
+on_violation = "compilation error: ILP_CPU_PROFILE undefined or bitwise_8 member inaccessible"
+confidence = 0.95
+reviewed = true
+
+[[axioms]]
+id = "ilp_n_bitwise_8_macro_type_preservation"
+content = "The type and value category of ILP_N_BITWISE_8 is identical to the type and value category of ILP_CPU_PROFILE.bitwise_8"
+formal_spec = "type(ILP_N_BITWISE_8) == type(ILP_CPU_PROFILE.bitwise_8) && valueCategory(ILP_N_BITWISE_8) == valueCategory(ILP_CPU_PROFILE.bitwise_8)"
+layer = "library"
+function = "ILP_N_BITWISE_8"
+header = "ilp_for/cpu_profiles/ilp_cpu.hpp"
+axiom_type = "postcondition"
+on_violation = "type mismatch in contexts expecting specific type"
+reviewed = true
+
+[[axioms]]
+id = "ilp_n_shift_1_struct_field_access_precondition"
+content = "ILP_CPU_PROFILE must be a valid object with accessible field 'shift_1'"
+formal_spec = "isObjectType(type(ILP_CPU_PROFILE)) andBool hasMember(type(ILP_CPU_PROFILE), shift_1)"
+layer = "library"
+function = "ILP_N_SHIFT_1"
+header = "../../cpp/ilp_for/ilp_for/cpu_profiles/ilp_cpu.hpp"
+axiom_type = "precondition"
+on_violation = "compilation error if ILP_CPU_PROFILE is not defined or lacks 'shift_1' member"
+confidence = 0.95
+reviewed = true
+
+[[axioms]]
+id = "ilp_n_shift_1_evaluation_context"
+content = "ILP_N_SHIFT_1 expands to a member access expression requiring ILP_CPU_PROFILE to be in scope"
+formal_spec = "inScope(ILP_CPU_PROFILE) andBool isLValue(ILP_CPU_PROFILE.shift_1)"
+layer = "library"
+function = "ILP_N_SHIFT_1"
+header = "../../cpp/ilp_for/ilp_for/cpu_profiles/ilp_cpu.hpp"
+axiom_type = "constraint"
+on_violation = "compilation error: ILP_CPU_PROFILE not declared in this scope"
+confidence = 0.9
+reviewed = true
+
+[[axioms]]
+id = "ilp_n_shift_2_struct_access_precondition"
+content = "ILP_CPU_PROFILE must be a valid object with a shift_2 member accessible in the current scope"
+formal_spec = "isDefined(ILP_CPU_PROFILE) andBool hasMember(ILP_CPU_PROFILE, shift_2)"
+layer = "library"
+function = "ILP_N_SHIFT_2"
+header = "../../cpp/ilp_for/ilp_for/cpu_profiles/ilp_cpu.hpp"
+axiom_type = "precondition"
+on_violation = "Compilation error if ILP_CPU_PROFILE is undefined or lacks shift_2 member"
+reviewed = true
+
+[[axioms]]
+id = "ilp_n_shift_2_textual_substitution"
+content = "ILP_N_SHIFT_2 performs textual substitution to ILP_CPU_PROFILE.shift_2 at preprocessing stage"
+formal_spec = "expand(ILP_N_SHIFT_2) == ILP_CPU_PROFILE.shift_2"
+layer = "library"
+function = "ILP_N_SHIFT_2"
+header = "../../cpp/ilp_for/ilp_for/cpu_profiles/ilp_cpu.hpp"
+axiom_type = "effect"
+on_violation = "N/A - guaranteed by preprocessor"
+reviewed = true
+
+[[axioms]]
+id = "ilp_n_shift_2_lvalue_context"
+content = "ILP_N_SHIFT_2 can be used as an lvalue if ILP_CPU_PROFILE.shift_2 is an lvalue, allowing both read and write access"
+formal_spec = "isLValue(ILP_N_SHIFT_2) <==> isLValue(ILP_CPU_PROFILE.shift_2)"
+layer = "library"
+function = "ILP_N_SHIFT_2"
+header = "../../cpp/ilp_for/ilp_for/cpu_profiles/ilp_cpu.hpp"
+axiom_type = "constraint"
+on_violation = "Compilation error if used as lvalue when shift_2 is not an lvalue"
+reviewed = true
+
+[[axioms]]
+id = "macro_ilp_n_shift_4_object_exists_precondition"
+content = "ILP_CPU_PROFILE object must exist and be accessible in the current scope before ILP_N_SHIFT_4 is used"
+formal_spec = "isDefined(ILP_CPU_PROFILE) andBool hasField(ILP_CPU_PROFILE, shift_4)"
+layer = "library"
+function = "ILP_N_SHIFT_4"
+header = "../../cpp/ilp_for/ilp_for/cpu_profiles/ilp_cpu.hpp"
+axiom_type = "precondition"
+on_violation = "compilation error: undefined identifier or member access"
+reviewed = true
+
+[[axioms]]
+id = "macro_ilp_n_shift_4_type_constraint"
+content = "ILP_CPU_PROFILE.shift_4 must have a type appropriate for the context where ILP_N_SHIFT_4 is expanded (typically integer type for shift operations)"
+formal_spec = "isIntegerType(type(ILP_CPU_PROFILE.shift_4)) orBool isConvertibleToInteger(type(ILP_CPU_PROFILE.shift_4))"
+layer = "library"
+function = "ILP_N_SHIFT_4"
+header = "../../cpp/ilp_for/ilp_for/cpu_profiles/ilp_cpu.hpp"
+axiom_type = "constraint"
+on_violation = "type error or incorrect computation in contexts expecting integer shift amount"
+confidence = 0.9
+reviewed = true
+
+[[axioms]]
+id = "macro_ilp_n_shift_8_type_constraint_a1b2c3d4"
+content = "ILP_N_SHIFT_8 expands to ILP_CPU_PROFILE.shift_8, which must be a valid member access. ILP_CPU_PROFILE must be an object with a shift_8 member."
+formal_spec = "requires(isObjectType(type(ILP_CPU_PROFILE)) && hasMember(ILP_CPU_PROFILE, shift_8))"
+layer = "library"
+function = "ILP_N_SHIFT_8"
+header = "../../cpp/ilp_for/ilp_for/cpu_profiles/ilp_cpu.hpp"
+axiom_type = "constraint"
+on_violation = "Compilation error if ILP_CPU_PROFILE is not defined or does not have a shift_8 member"
+reviewed = true
+
+[[axioms]]
+id = "macro_ilp_n_shift_8_dependency_e4f5g6h7"
+content = "ILP_CPU_PROFILE macro must be defined before ILP_N_SHIFT_8 is used, as ILP_N_SHIFT_8 expands to a reference to ILP_CPU_PROFILE.shift_8"
+formal_spec = "requires(isDefined(ILP_CPU_PROFILE))"
+layer = "library"
+function = "ILP_N_SHIFT_8"
+header = "../../cpp/ilp_for/ilp_for/cpu_profiles/ilp_cpu.hpp"
+axiom_type = "precondition"
+on_violation = "Compilation error due to undefined identifier"
+reviewed = true
+
+[[axioms]]
+id = "lib_ILP_N_SUM_4_cf5ce794"
+content = ""
+formal_spec = ""
+layer = "library"
+function = "ILP_N_SUM_4"
+header = "ilp_optimal_n.hpp"
+confidence = 0.8
+reviewed = true
+
+[[axioms]]
+id = "lib_ILP_N_SUM_8_a0cd6c53"
+content = ""
+formal_spec = ""
+layer = "library"
+function = "ILP_N_SUM_8"
+header = "ilp_optimal_n.hpp"
+confidence = 0.8
+reviewed = true
+
+[[axioms]]
+id = "ilp_always_inline.compiler_specific"
+content = "ILP_ALWAYS_INLINE expands to __forceinline, which is a Microsoft Visual C++ compiler-specific extension. Code using this macro requires MSVC or a compatible compiler that supports __forceinline."
+formal_spec = "requires_compiler(MSVC) ∨ supports_attribute(__forceinline)"
+layer = "library"
+function = "ILP_ALWAYS_INLINE"
+header = "ilp_for/detail/ctrl.hpp"
+axiom_type = "constraint"
+on_violation = "Compilation error if __forceinline is not recognized by the compiler"
+reviewed = true
+
+[[axioms]]
+id = "ilp_always_inline.inlining_hint"
+content = "ILP_ALWAYS_INLINE is a strong inlining directive that requests the compiler to inline the function at every call site. Unlike 'inline', __forceinline is a command rather than a suggestion, though the compiler may still refuse in cases where inlining is not possible (e.g., recursive functions, functions taken by address)."
+formal_spec = "∀f. ILP_ALWAYS_INLINE f ⇒ compiler_attempts_inline_at_all_call_sites(f) ∧ may_emit_warning_if_cannot_inline(f)"
+layer = "library"
+function = "ILP_ALWAYS_INLINE"
+header = "ilp_for/detail/ctrl.hpp"
+axiom_type = "effect"
+on_violation = "Performance may not be optimal if compiler cannot honor the directive; compiler may emit warnings"
+confidence = 0.95
+reviewed = true
+
+[[axioms]]
+id = "ilp_always_inline.usage_context"
+content = "ILP_ALWAYS_INLINE must be used in function declarations/definitions as a specifier, placed before the return type. It cannot be applied to variables, types, or other non-function entities."
+formal_spec = "∀x. ILP_ALWAYS_INLINE x ⇒ is_function_declaration(x) ∨ is_function_definition(x)"
+layer = "library"
+function = "ILP_ALWAYS_INLINE"
+header = "ilp_for/detail/ctrl.hpp"
+axiom_type = "constraint"
+on_violation = "Compilation error if applied to non-function entities"
+reviewed = true
+
+[[axioms]]
+id = "lib_ILP_ALWAYS_INLINE_21fa8215"
+content = ""
+formal_spec = ""
+layer = "library"
+function = "ILP_ALWAYS_INLINE"
+header = "ctrl.hpp"
+confidence = 0.8
+reviewed = true
+
+[[axioms]]
+id = "ilp_for_macro_unused_parameter_n_a4c8d9e2"
+content = "The parameter N is declared but never used in the macro expansion, suggesting a potential API design issue or incomplete implementation."
+formal_spec = "!appears_in_expansion(N)"
+layer = "library"
+function = "ILP_FOR"
+header = "../../cpp/ilp_for/ilp_for/detail/macros_simple.hpp"
+axiom_type = "constraint"
+on_violation = "User confusion - parameter appears to do nothing"
+reviewed = true
+
+[[axioms]]
+id = "ilp_for_macro_start_end_evaluation_b7d3e1f4"
+content = "The start and end arguments are evaluated exactly once during the macro expansion when passed to ilp::iota(), despite being macro arguments."
+formal_spec = "evaluation_count(start) == 1 && evaluation_count(end) == 1"
+layer = "library"
+function = "ILP_FOR"
+header = "../../cpp/ilp_for/ilp_for/detail/macros_simple.hpp"
+axiom_type = "effect"
+on_violation = "Not applicable - arguments are parenthesized and appear once"
+reviewed = true
+
+[[axioms]]
+id = "ilp_for_macro_loop_var_must_be_declaration_c5e9f2a3"
+content = "The loop_var_decl parameter must be a valid variable declaration (e.g., 'int i') suitable for use in a range-based for loop, not just an identifier."
+formal_spec = "is_valid_for_range_declaration(loop_var_decl)"
+layer = "library"
+function = "ILP_FOR"
+header = "../../cpp/ilp_for/ilp_for/detail/macros_simple.hpp"
+axiom_type = "precondition"
+on_violation = "Compilation error - ill-formed for loop syntax"
+reviewed = true
+
+[[axioms]]
+id = "ilp_for_macro_iota_precondition_d8f1a4b5"
+content = "The ilp::iota function must be callable with arguments start and end, and must return a range suitable for range-based for loops."
+formal_spec = "is_callable(ilp::iota, start, end) && is_range(ilp::iota(start, end))"
+layer = "library"
+function = "ILP_FOR"
+header = "../../cpp/ilp_for/ilp_for/detail/macros_simple.hpp"
+axiom_type = "precondition"
+on_violation = "Compilation error - ilp::iota not found or returns incompatible type"
+reviewed = true
+
+[[axioms]]
+id = "ilp_for_macro_start_end_type_compatible_e3a7b9c6"
+content = "The types of start and end must be compatible with ilp::iota's parameter types and support necessary operations (comparison, increment)."
+formal_spec = "is_compatible_with_iota_params(type(start), type(end))"
+layer = "library"
+function = "ILP_FOR"
+header = "../../cpp/ilp_for/ilp_for/detail/macros_simple.hpp"
+axiom_type = "constraint"
+on_violation = "Compilation error - type mismatch in ilp::iota call"
+confidence = 0.95
+reviewed = true
+
+[[axioms]]
+id = "ilp_for_macro_loop_var_type_compatible_f4b8c1d7"
+content = "The type declared in loop_var_decl must be compatible with the value type of the range returned by ilp::iota(start, end)."
+formal_spec = "is_compatible(type_in_declaration(loop_var_decl), value_type(ilp::iota(start, end)))"
+layer = "library"
+function = "ILP_FOR"
+header = "../../cpp/ilp_for/ilp_for/detail/macros_simple.hpp"
+axiom_type = "constraint"
+on_violation = "Compilation error - type mismatch in range-based for loop"
+confidence = 0.95
+reviewed = true
+
+[[axioms]]
+id = "ilp_for_range_unused_parameter_n_7a4b8c9d"
+content = "The third parameter N is not used in the macro expansion and has no effect on the generated code"
+formal_spec = "ILP_FOR_RANGE(loop_var_decl, range, N) => for (loop_var_decl : (range)) && N_unused"
+layer = "library"
+function = "ILP_FOR_RANGE"
+header = "../../cpp/ilp_for/ilp_for/detail/macros_simple.hpp"
+axiom_type = "constraint"
+on_violation = "No violation - parameter is simply ignored"
+reviewed = true
+
+[[axioms]]
+id = "ilp_for_range_range_single_evaluation_2f5e7a8b"
+content = "The range expression is evaluated once to obtain the range object for the range-based for loop, following standard range-based for semantics"
+formal_spec = "ILP_FOR_RANGE(loop_var_decl, range, N) => evaluates(range, once) && range_for_initialization"
+layer = "library"
+function = "ILP_FOR_RANGE"
+header = "../../cpp/ilp_for/ilp_for/detail/macros_simple.hpp"
+axiom_type = "effect"
+on_violation = "N/A - standard range-based for semantics apply"
+reviewed = true
+
+[[axioms]]
+id = "ilp_for_range_loop_var_scope_3c6d9e1f"
+content = "The loop_var_decl must be a valid declaration for a range-based for loop (e.g., 'int i', 'auto& x', 'const auto& elem')"
+formal_spec = "ILP_FOR_RANGE(loop_var_decl, range, N) => is_valid_range_for_declaration(loop_var_decl)"
+layer = "library"
+function = "ILP_FOR_RANGE"
+header = "../../cpp/ilp_for/ilp_for/detail/macros_simple.hpp"
+axiom_type = "constraint"
+on_violation = "Compilation error - ill-formed range-based for loop declaration"
+reviewed = true
+
+[[axioms]]
+id = "ilp_for_range_range_validity_4d7e1a2c"
+content = "The range expression must be a valid range for a range-based for loop (has begin() and end(), or is an array)"
+formal_spec = "ILP_FOR_RANGE(loop_var_decl, range, N) => (has_begin_end(range) || is_array(range))"
+layer = "library"
+function = "ILP_FOR_RANGE"
+header = "../../cpp/ilp_for/ilp_for/detail/macros_simple.hpp"
+axiom_type = "precondition"
+on_violation = "Compilation error - range does not satisfy range-based for requirements"
+reviewed = true
+
+[[axioms]]
+id = "ilp_for_range_side_effects_range_5e8f2b3d"
+content = "Side effects in the range expression occur during the initialization phase of the range-based for loop, not on each iteration"
+formal_spec = "ILP_FOR_RANGE(loop_var_decl, range, N) && has_side_effects(range) => side_effects_occur_once_at_initialization"
+layer = "library"
+function = "ILP_FOR_RANGE"
+header = "../../cpp/ilp_for/ilp_for/detail/macros_simple.hpp"
+axiom_type = "effect"
+on_violation = "N/A - informational about evaluation timing"
+reviewed = true
+
+[[axioms]]
+id = "ilp_for_auto_start_end_evaluated_once_e4f7a2b9"
+content = "The 'start' and 'end' arguments are each evaluated exactly once during macro expansion (parenthesized in the call to iota), preventing multiple evaluation of side effects."
+formal_spec = "evaluation_count(start) == 1 && evaluation_count(end) == 1"
+layer = "library"
+function = "ILP_FOR_AUTO"
+header = "../../cpp/ilp_for/ilp_for/detail/macros_simple.hpp"
+axiom_type = "effect"
+on_violation = "N/A - guaranteed by parenthesization in macro expansion"
+reviewed = true
+
+[[axioms]]
+id = "ilp_for_auto_loop_var_decl_expanded_literally_c2d5e8f1"
+content = "The 'loop_var_decl' parameter must be a valid variable declaration (e.g., 'auto i', 'int& x') suitable for a range-based for loop, as it is expanded literally without parentheses."
+formal_spec = "is_valid_range_for_declaration(loop_var_decl)"
+layer = "library"
+function = "ILP_FOR_AUTO"
+header = "../../cpp/ilp_for/ilp_for/detail/macros_simple.hpp"
+axiom_type = "constraint"
+on_violation = "Compilation error - invalid syntax in range-based for statement"
+reviewed = true
+
+[[axioms]]
+id = "ilp_for_auto_iota_precondition_a7b3c9d2"
+content = "The 'start' and 'end' arguments must satisfy the preconditions of ::ilp::iota(start, end), which typically requires them to be comparable and that start <= end for a valid range."
+formal_spec = "satisfies_iota_preconditions(start, end) && comparable(type(start), type(end))"
+layer = "library"
+function = "ILP_FOR_AUTO"
+header = "../../cpp/ilp_for/ilp_for/detail/macros_simple.hpp"
+axiom_type = "precondition"
+on_violation = "Behavior depends on ::ilp::iota implementation - may throw exception, produce empty range, or undefined behavior"
+confidence = 0.9
+reviewed = true
+
+[[axioms]]
+id = "ilp_for_auto_unused_parameters_b5e2f4c8"
+content = "The 'loop_type' and 'element_type' parameters are not used in the macro expansion and have no semantic effect. They may be present for API consistency or future extension."
+formal_spec = "!used_in_expansion(loop_type) && !used_in_expansion(element_type)"
+layer = "library"
+function = "ILP_FOR_AUTO"
+header = "../../cpp/ilp_for/ilp_for/detail/macros_simple.hpp"
+axiom_type = "constraint"
+on_violation = "N/A - parameters are ignored"
+reviewed = true
+
+[[axioms]]
+id = "ilp_for_auto_element_type_inference_d9f1a6e3"
+content = "The element type of the range-based for loop is inferred from the return type of ::ilp::iota(start, end), not from the 'element_type' parameter. The loop_var_decl should be compatible with the dereferenced iterator type returned by iota."
+formal_spec = "type(loop_var) == decltype(*begin(::ilp::iota(start, end))) || convertible(decltype(*begin(::ilp::iota(start, end))), type(loop_var))"
+layer = "library"
+function = "ILP_FOR_AUTO"
+header = "../../cpp/ilp_for/ilp_for/detail/macros_simple.hpp"
+axiom_type = "constraint"
+on_violation = "Compilation error - type mismatch in range-based for loop"
+confidence = 0.95
+reviewed = true
+
+[[axioms]]
+id = "ilp_for_auto_namespace_qualification_f3a7b2e5"
+content = "The macro uses fully qualified name '::ilp::iota' to prevent ADL issues and ensure the correct function is called regardless of the calling context or user-defined 'iota' functions in scope."
+formal_spec = "calls_qualified_function(::ilp::iota) && !subject_to_adl(::ilp::iota)"
+layer = "library"
+function = "ILP_FOR_AUTO"
+header = "../../cpp/ilp_for/ilp_for/detail/macros_simple.hpp"
+axiom_type = "effect"
+on_violation = "N/A - qualified name prevents lookup issues"
+reviewed = true
+
+[[axioms]]
+id = "ilp_for_range_auto_unused_params_constraint_a1b2c3d4"
+content = "The loop_type and element_type parameters are not used in the macro expansion and exist only for documentation or future compatibility purposes."
+formal_spec = "ILP_FOR_RANGE_AUTO(loop_var_decl, range, loop_type, element_type) expands to for(loop_var_decl : (range)) && !uses(expansion, loop_type) && !uses(expansion, element_type)"
+layer = "library"
+function = "ILP_FOR_RANGE_AUTO"
+header = "ilp_for/detail/macros_simple.hpp"
+axiom_type = "constraint"
+on_violation = "No violation possible - parameters are silently ignored"
+reviewed = true
+
+[[axioms]]
+id = "ilp_for_range_auto_range_single_eval_e5f6g7h8"
+content = "The range expression is evaluated only once during loop initialization, as it is properly parenthesized in the expansion."
+formal_spec = "ILP_FOR_RANGE_AUTO(loop_var_decl, range, loop_type, element_type) => evaluation_count(range) == 1"
+layer = "library"
+function = "ILP_FOR_RANGE_AUTO"
+header = "ilp_for/detail/macros_simple.hpp"
+axiom_type = "effect"
+on_violation = "Not applicable - correct implementation guarantees single evaluation"
+reviewed = true
+
+[[axioms]]
+id = "ilp_for_range_auto_range_based_for_requirements_i9j0k1l2"
+content = "The range expression must satisfy range-based for loop requirements: either an array type, or a type with begin()/end() members or ADL-findable begin()/end() functions."
+formal_spec = "ILP_FOR_RANGE_AUTO(loop_var_decl, range, loop_type, element_type) requires (is_array_type(type(range)) || (has_begin_end_members(type(range)) || has_adl_begin_end(type(range))))"
+layer = "library"
+function = "ILP_FOR_RANGE_AUTO"
+header = "ilp_for/detail/macros_simple.hpp"
+axiom_type = "precondition"
+on_violation = "Compilation error - ill-formed range-based for loop"
+reviewed = true
+
+[[axioms]]
+id = "ilp_for_range_auto_loop_var_scope_m3n4o5p6"
+content = "The loop_var_decl introduces a variable whose scope is limited to the for loop body, following standard range-based for loop scoping rules."
+formal_spec = "ILP_FOR_RANGE_AUTO(loop_var_decl, range, loop_type, element_type) => scope(loop_var_decl) == for_loop_body_only"
+layer = "library"
+function = "ILP_FOR_RANGE_AUTO"
+header = "ilp_for/detail/macros_simple.hpp"
+axiom_type = "effect"
+on_violation = "Not applicable - standard C++ scoping enforced by compiler"
+reviewed = true
+
+[[axioms]]
+id = "ilp_for_range_auto_loop_var_type_inference_q7r8s9t0"
+content = "The loop_var_decl should include a type specifier (auto, const auto&, etc.) as the macro does not provide type information, despite accepting element_type as a parameter which is unused."
+formal_spec = "ILP_FOR_RANGE_AUTO(loop_var_decl, range, loop_type, element_type) requires includes_type_specifier(loop_var_decl)"
+layer = "library"
+function = "ILP_FOR_RANGE_AUTO"
+header = "ilp_for/detail/macros_simple.hpp"
+axiom_type = "constraint"
+on_violation = "Compilation error - declaration without type specifier is ill-formed"
+reviewed = true
+
+[[axioms]]
+id = "ilp_for_t_type_unused_constraint_a1b2c3d4"
+content = "The 'type' parameter is not used in the macro expansion and has no semantic effect."
+formal_spec = "ILP_FOR_T(type, loop_var_decl, start, end, N) => unused(type)"
+layer = "library"
+function = "ILP_FOR_T"
+header = "ilp_for/detail/macros_simple.hpp"
+axiom_type = "constraint"
+on_violation = "No violation - parameter is simply ignored"
+reviewed = true
+
+[[axioms]]
+id = "ilp_for_t_n_unused_constraint_e5f6g7h8"
+content = "The 'N' parameter is not used in the macro expansion and has no semantic effect."
+formal_spec = "ILP_FOR_T(type, loop_var_decl, start, end, N) => unused(N)"
+layer = "library"
+function = "ILP_FOR_T"
+header = "ilp_for/detail/macros_simple.hpp"
+axiom_type = "constraint"
+on_violation = "No violation - parameter is simply ignored"
+reviewed = true
+
+[[axioms]]
+id = "ilp_for_t_loop_var_valid_decl_i9j0k1l2"
+content = "The 'loop_var_decl' parameter must be a valid C++ variable declaration suitable for range-based for loop (e.g., 'int i' or 'auto& x')."
+formal_spec = "ILP_FOR_T(type, loop_var_decl, start, end, N) => is_valid_range_for_declaration(loop_var_decl)"
+layer = "library"
+function = "ILP_FOR_T"
+header = "ilp_for/detail/macros_simple.hpp"
+axiom_type = "precondition"
+on_violation = "Compilation error - ill-formed range-based for loop syntax"
+reviewed = true
+
+[[axioms]]
+id = "ilp_for_t_iota_valid_call_m3n4o5p6"
+content = "The expression ::ilp::iota((start), (end)) must be a valid function call that returns a range suitable for range-based for loop."
+formal_spec = "ILP_FOR_T(type, loop_var_decl, start, end, N) => is_valid_call(::ilp::iota, start, end) && is_range(result_of(::ilp::iota(start, end)))"
+layer = "library"
+function = "ILP_FOR_T"
+header = "ilp_for/detail/macros_simple.hpp"
+axiom_type = "precondition"
+on_violation = "Compilation error or undefined behavior if iota is not defined or returns invalid type"
+reviewed = true
+
+[[axioms]]
+id = "ilp_for_t_single_eval_effect_q7r8s9t0"
+content = "Each argument (loop_var_decl, start, end) is evaluated exactly once due to parentheses in the expansion. Side effects in 'start' and 'end' occur once each."
+formal_spec = "ILP_FOR_T(type, loop_var_decl, start, end, N) => eval_count(start) == 1 && eval_count(end) == 1"
+layer = "library"
+function = "ILP_FOR_T"
+header = "ilp_for/detail/macros_simple.hpp"
+axiom_type = "effect"
+on_violation = "Not applicable - single evaluation is guaranteed"
+reviewed = true
+
+[[axioms]]
+id = "ilp_for_t_start_end_convertible_u1v2w3x4"
+content = "The 'start' and 'end' arguments must be implicitly convertible to the types expected by ::ilp::iota function."
+formal_spec = "ILP_FOR_T(type, loop_var_decl, start, end, N) => implicit_convertible(start, iota_param_type) && implicit_convertible(end, iota_param_type)"
+layer = "library"
+function = "ILP_FOR_T"
+header = "ilp_for/detail/macros_simple.hpp"
+axiom_type = "precondition"
+on_violation = "Compilation error - type mismatch in iota call"
+confidence = 0.95
+reviewed = true
+
+[[axioms]]
+id = "ilp_for_t_loop_var_range_compatible_y5z6a7b8"
+content = "The declared type in 'loop_var_decl' must be compatible with the value type of the range returned by ::ilp::iota(start, end)."
+formal_spec = "ILP_FOR_T(type, loop_var_decl, start, end, N) => is_compatible_with_range_value_type(loop_var_decl, value_type(::ilp::iota(start, end)))"
+layer = "library"
+function = "ILP_FOR_T"
+header = "ilp_for/detail/macros_simple.hpp"
+axiom_type = "constraint"
+on_violation = "Compilation error - type mismatch in range-based for loop"
+reviewed = true
+
+[[axioms]]
+id = "ilp_for_range_t_unused_parameters_e4f8a2b6"
+content = "The 'type' and 'N' parameters are unused in the macro expansion. They are likely placeholders for consistency with other macro variants but have no effect on the generated code."
+formal_spec = "ILP_FOR_RANGE_T(type, loop_var_decl, range, N) => unused(type) && unused(N)"
+layer = "library"
+function = "ILP_FOR_RANGE_T"
+header = "ilp_for/detail/macros_simple.hpp"
+axiom_type = "constraint"
+on_violation = "No violation possible - parameters are ignored"
+reviewed = true
+
+[[axioms]]
+id = "ilp_for_range_t_range_evaluated_once_c7d9e1f3"
+content = "The 'range' argument is evaluated exactly once during the range-for loop initialization. However, if 'range' is an expression with side effects, those effects occur once before the loop begins."
+formal_spec = "ILP_FOR_RANGE_T(type, loop_var_decl, range, N) => evaluation_count(range) == 1"
+layer = "library"
+function = "ILP_FOR_RANGE_T"
+header = "ilp_for/detail/macros_simple.hpp"
+axiom_type = "effect"
+on_violation = "N/A - guaranteed by range-for semantics"
+reviewed = true
+
+[[axioms]]
+id = "ilp_for_range_t_range_must_be_iterable_a8b3c5d7"
+content = "The 'range' parameter must be a valid range expression suitable for use in a range-based for loop (i.e., it must support std::begin() and std::end(), or be an array type)."
+formal_spec = "ILP_FOR_RANGE_T(type, loop_var_decl, range, N) => requires(has_begin_end(range) || is_array(range))"
+layer = "library"
+function = "ILP_FOR_RANGE_T"
+header = "ilp_for/detail/macros_simple.hpp"
+axiom_type = "precondition"
+on_violation = "Compilation error - ill-formed range-for statement"
+reviewed = true
+
+[[axioms]]
+id = "ilp_for_range_t_loop_var_type_compatibility_f2e4a6b8"
+content = "The 'loop_var_decl' must be a valid variable declaration whose type is compatible with the elements of 'range'. The declaration includes the variable name and optionally its type (e.g., 'auto i' or 'int& elem')."
+formal_spec = "ILP_FOR_RANGE_T(type, loop_var_decl, range, N) => requires(is_valid_declaration(loop_var_decl) && is_compatible_with_range_elements(loop_var_decl, range))"
+layer = "library"
+function = "ILP_FOR_RANGE_T"
+header = "ilp_for/detail/macros_simple.hpp"
+axiom_type = "precondition"
+on_violation = "Compilation error - type mismatch in range-for loop"
+reviewed = true
+
+[[axioms]]
+id = "ilp_for_range_t_expands_to_range_for_b9d1e3f5"
+content = "The macro expands to a standard C++ range-based for loop: 'for (loop_var_decl : (range))'. The parentheses around 'range' protect against operator precedence issues if 'range' is a complex expression."
+formal_spec = "ILP_FOR_RANGE_T(type, loop_var_decl, range, N) => expands_to('for (loop_var_decl : (range))')"
+layer = "library"
+function = "ILP_FOR_RANGE_T"
+header = "ilp_for/detail/macros_simple.hpp"
+axiom_type = "effect"
+on_violation = "N/A - macro expansion is deterministic"
+reviewed = true
+
+[[axioms]]
+id = "ilp_for_t_auto_unused_params_constraint_a1b2c3d4"
+content = "The parameters ret_type, loop_type, and element_type are not used in the macro expansion and serve only as documentation or potential future extension points."
+formal_spec = "macro_expansion(ILP_FOR_T_AUTO) => !uses(ret_type) && !uses(loop_type) && !uses(element_type)"
+layer = "library"
+function = "ILP_FOR_T_AUTO"
+header = "../../cpp/ilp_for/ilp_for/detail/macros_simple.hpp"
+axiom_type = "constraint"
+on_violation = "No violation possible - unused parameters are ignored"
+reviewed = true
+
+[[axioms]]
+id = "ilp_for_t_auto_start_end_double_eval_e4f5g6h7"
+content = "The start and end arguments are each evaluated exactly once due to parenthesization in the expansion for (loop_var_decl : ::ilp::iota((start), (end))), but their values must be valid arguments to ilp::iota."
+formal_spec = "ILP_FOR_T_AUTO(ret_type, loop_var_decl, start, end, loop_type, element_type) => eval_count(start) == 1 && eval_count(end) == 1"
+layer = "library"
+function = "ILP_FOR_T_AUTO"
+header = "../../cpp/ilp_for/ilp_for/detail/macros_simple.hpp"
+axiom_type = "effect"
+on_violation = "N/A - single evaluation guaranteed by parenthesization"
+reviewed = true
+
+[[axioms]]
+id = "ilp_for_t_auto_iota_precondition_i8j9k0l1"
+content = "The start and end arguments must be valid arguments for ilp::iota function call. The function ilp::iota must be accessible via the ::ilp namespace."
+formal_spec = "ILP_FOR_T_AUTO(ret_type, loop_var_decl, start, end, loop_type, element_type) => well_formed(::ilp::iota(start, end)) && accessible(::ilp::iota)"
+layer = "library"
+function = "ILP_FOR_T_AUTO"
+header = "../../cpp/ilp_for/ilp_for/detail/macros_simple.hpp"
+axiom_type = "precondition"
+on_violation = "Compilation error if ilp::iota is not accessible or arguments are ill-formed"
+reviewed = true
+
+[[axioms]]
+id = "ilp_for_t_auto_loop_var_range_based_m2n3o4p5"
+content = "The loop_var_decl must be a valid range-based for loop variable declaration (e.g., 'auto i', 'int& x', etc.) and the result of ilp::iota(start, end) must be a valid range expression."
+formal_spec = "ILP_FOR_T_AUTO(ret_type, loop_var_decl, start, end, loop_type, element_type) => is_valid_range_decl(loop_var_decl) && is_range(::ilp::iota(start, end))"
+layer = "library"
+function = "ILP_FOR_T_AUTO"
+header = "../../cpp/ilp_for/ilp_for/detail/macros_simple.hpp"
+axiom_type = "constraint"
+on_violation = "Compilation error if loop_var_decl is not a valid declaration or ilp::iota result is not iterable"
+reviewed = true
+
+[[axioms]]
+id = "ilp_for_t_auto_namespace_pollution_q6r7s8t9"
+content = "The macro uses fully qualified ::ilp namespace to avoid ambiguity, but if 'ilp' is defined as a macro in the calling context, macro expansion will fail or produce unexpected results."
+formal_spec = "ILP_FOR_T_AUTO(...) && is_macro_defined(ilp) => undefined_macro_behavior"
+layer = "library"
+function = "ILP_FOR_T_AUTO"
+header = "../../cpp/ilp_for/ilp_for/detail/macros_simple.hpp"
+axiom_type = "constraint"
+on_violation = "Unexpected macro expansion or compilation error"
+confidence = 0.9
+reviewed = true
+
+[[axioms]]
+id = "ilp_for_range_t_auto_unused_params_constraint_a1b2c3d4"
+content = "Parameters ret_type, loop_type, and element_type are not used in the macro expansion and have no effect on the generated code. Only loop_var_decl and range are actually expanded."
+formal_spec = "ILP_FOR_RANGE_T_AUTO(ret_type, loop_var_decl, range, loop_type, element_type) => for(loop_var_decl : range) && unused(ret_type) && unused(loop_type) && unused(element_type)"
+layer = "library"
+function = "ILP_FOR_RANGE_T_AUTO"
+header = "ilp_for/detail/macros_simple.hpp"
+axiom_type = "constraint"
+on_violation = "No violation possible - unused parameters are simply ignored"
+reviewed = true
+
+[[axioms]]
+id = "ilp_for_range_t_auto_range_single_eval_e4f5g6h7"
+content = "The range expression is evaluated exactly once before the loop begins, consistent with standard C++ range-based for loop semantics."
+formal_spec = "ILP_FOR_RANGE_T_AUTO(ret_type, loop_var_decl, range, loop_type, element_type) => evaluation_count(range) == 1 && evaluates_before_loop_body(range)"
+layer = "library"
+function = "ILP_FOR_RANGE_T_AUTO"
+header = "ilp_for/detail/macros_simple.hpp"
+axiom_type = "effect"
+on_violation = "Not applicable - this is guaranteed by range-based for loop semantics"
+reviewed = true
+
+[[axioms]]
+id = "ilp_for_range_t_auto_range_must_be_iterable_i8j9k0l1"
+content = "The range expression must be a valid range-based for loop operand (array, object with begin()/end() methods, or type for which begin()/end() are found via ADL)."
+formal_spec = "ILP_FOR_RANGE_T_AUTO(ret_type, loop_var_decl, range, loop_type, element_type) => (is_array(range) || has_member_begin_end(range) || has_adl_begin_end(range))"
+layer = "library"
+function = "ILP_FOR_RANGE_T_AUTO"
+header = "ilp_for/detail/macros_simple.hpp"
+axiom_type = "precondition"
+on_violation = "Compilation error - ill-formed program"
+reviewed = true
+
+[[axioms]]
+id = "ilp_for_range_t_auto_loop_var_must_match_element_m2n3o4p5"
+content = "The loop_var_decl must be compatible with the element type of the range. Typical forms are 'auto x', 'auto& x', 'const auto& x', or explicit type declarations."
+formal_spec = "ILP_FOR_RANGE_T_AUTO(ret_type, loop_var_decl, range, loop_type, element_type) => is_valid_range_declaration(loop_var_decl) && (is_auto_declaration(loop_var_decl) || is_convertible(range_element_type(range), declared_type(loop_var_decl)))"
+layer = "library"
+function = "ILP_FOR_RANGE_T_AUTO"
+header = "ilp_for/detail/macros_simple.hpp"
+axiom_type = "precondition"
+on_violation = "Compilation error - type mismatch or ill-formed declaration"
+reviewed = true
+
+[[axioms]]
+id = "ilp_for_range_t_auto_scope_safety_q6r7s8t9"
+content = "If the range expression is a temporary object, it is lifetime-extended for the duration of the loop, preventing dangling references consistent with C++ range-based for loop rules."
+formal_spec = "ILP_FOR_RANGE_T_AUTO(ret_type, loop_var_decl, range, loop_type, element_type) && is_prvalue(range) => lifetime_extended_to_loop_end(range)"
+layer = "library"
+function = "ILP_FOR_RANGE_T_AUTO"
+header = "ilp_for/detail/macros_simple.hpp"
+axiom_type = "constraint"
+on_violation = "Not applicable - lifetime extension is guaranteed by language rules"
+reviewed = true
+
+[[axioms]]
+id = "ilp_return_single_eval_return_stmt_a7f3e2b1"
+content = "ILP_RETURN(x) evaluates x exactly once in a return statement context. The macro expands to 'return x', creating a return statement that transfers control and returns the value of x."
+formal_spec = "ILP_RETURN(x) => evaluates_once(x) && return_statement(x)"
+layer = "library"
+function = "ILP_RETURN"
+header = "../../cpp/ilp_for/ilp_for/detail/macros_simple.hpp"
+axiom_type = "effect"
+on_violation = "N/A - simple textual substitution"
+reviewed = true
+
+[[axioms]]
+id = "ilp_return_context_requirement_b9d4c1a2"
+content = "ILP_RETURN(x) must be used in a context where a return statement is valid (i.e., within a function body, not at file scope or in namespace scope)."
+formal_spec = "usage(ILP_RETURN(x)) => in_function_body_context"
+layer = "library"
+function = "ILP_RETURN"
+header = "../../cpp/ilp_for/ilp_for/detail/macros_simple.hpp"
+axiom_type = "precondition"
+on_violation = "Compilation error - return statement outside function"
+reviewed = true
+
+[[axioms]]
+id = "ilp_return_type_compatibility_c3e5f7d8"
+content = "The type of expression x in ILP_RETURN(x) must be compatible with the return type of the enclosing function, following standard return statement rules including implicit conversions."
+formal_spec = "ILP_RETURN(x) && function_return_type(R) => implicitly_convertible(typeof(x), R) || typeof(x) == void && R == void"
+layer = "library"
+function = "ILP_RETURN"
+header = "../../cpp/ilp_for/ilp_for/detail/macros_simple.hpp"
+axiom_type = "constraint"
+on_violation = "Compilation error - type mismatch in return statement"
+reviewed = true
+
+[[axioms]]
+id = "ilp_for_lambda_capture_requirement_a7f8e9d1"
+content = "The ILP_FOR macro captures variables by reference ([&]) in its lambda. All referenced variables in the loop body must be valid and accessible at the point of macro expansion."
+formal_spec = "forall var in captured_vars: valid(var) && accessible(var) at macro_expansion_point"
+layer = "library"
+function = "ILP_FOR"
+header = "../../cpp/ilp_for/ilp_for.hpp"
+axiom_type = "constraint"
+on_violation = "Undefined behavior if referenced variables are not in scope or have been destroyed"
+confidence = 0.95
+reviewed = true
+
+[[axioms]]
+id = "ilp_for_multiple_evaluation_start_end_b2c4d5e6"
+content = "The 'start' and 'end' arguments are passed to ::ilp::for_loop<N>() and may be evaluated at the point of the function call. If these expressions have side effects, the side effects occur once during the macro expansion."
+formal_spec = "eval_count(start) == 1 && eval_count(end) == 1"
+layer = "library"
+function = "ILP_FOR"
+header = "../../cpp/ilp_for/ilp_for.hpp"
+axiom_type = "effect"
+on_violation = "Side effects in start/end expressions occur exactly once, not multiple times"
+confidence = 0.9
+reviewed = true
+
+[[axioms]]
+id = "ilp_for_template_parameter_n_constraint_c3d5e7f9"
+content = "The template parameter N must be a valid non-type template argument for ::ilp::for_loop<N>(). This typically requires N to be a constant expression of integral type."
+formal_spec = "is_constant_expr(N) && is_integral_type(N)"
+layer = "library"
+function = "ILP_FOR"
+header = "../../cpp/ilp_for/ilp_for.hpp"
+axiom_type = "constraint"
+on_violation = "Compilation error if N is not a valid non-type template argument"
+confidence = 0.95
+reviewed = true
+
+[[axioms]]
+id = "ilp_for_loop_var_decl_scope_d4e6f8a2"
+content = "The loop_var_decl parameter must be a valid variable declaration (e.g., 'int i' or 'auto i'). This variable is declared as a parameter to the inner lambda and is scoped to the lambda body."
+formal_spec = "is_valid_var_decl(loop_var_decl) && scope(loop_var_decl) == lambda_body"
+layer = "library"
+function = "ILP_FOR"
+header = "../../cpp/ilp_for/ilp_for.hpp"
+axiom_type = "constraint"
+on_violation = "Compilation error if loop_var_decl is not a valid variable declaration"
+confidence = 0.95
+reviewed = true
+
+[[axioms]]
+id = "ilp_for_incomplete_macro_warning_e5f7g9h3"
+content = "ILP_FOR is an incomplete macro that opens an if-statement and lambda body without closing them. The macro must be paired with a corresponding ILP_END or similar closing macro. Using ILP_FOR without proper closure results in compilation error."
+formal_spec = "requires_closing_macro(ILP_FOR) && must_be_paired_with(ILP_END)"
+layer = "library"
+function = "ILP_FOR"
+header = "../../cpp/ilp_for/ilp_for.hpp"
+axiom_type = "constraint"
+on_violation = "Compilation error due to unclosed braces and statements"
+reviewed = true
+
+[[axioms]]
+id = "ilp_for_ctrl_parameter_usage_f6g8h0i4"
+content = "The macro provides a __ilp_ctrl parameter of type ::ilp::ForCtrl& to the lambda body. This parameter is marked [[maybe_unused]] but if used, must be accessed correctly as a reference to ForCtrl."
+formal_spec = "type(__ilp_ctrl) == ::ilp::ForCtrl& && (unused(__ilp_ctrl) || valid_usage(__ilp_ctrl))"
+layer = "library"
+function = "ILP_FOR"
+header = "../../cpp/ilp_for/ilp_for.hpp"
+axiom_type = "constraint"
+on_violation = "Compilation error or undefined behavior if __ilp_ctrl is used incorrectly"
+confidence = 0.9
+reviewed = true
+
+[[axioms]]
+id = "ilp_for_result_type_requirement_g7h9i1j5"
+content = "The if-statement condition evaluates __ilp_ret which must be assigned from a lambda returning ::ilp::ForResult. The type ::ilp::ForResult must be contextually convertible to bool for the if-condition to be valid."
+formal_spec = "type(__ilp_ret) == ::ilp::ForResult && contextually_convertible_to_bool(::ilp::ForResult)"
+layer = "library"
+function = "ILP_FOR"
+header = "../../cpp/ilp_for/ilp_for.hpp"
+axiom_type = "constraint"
+on_violation = "Compilation error if ::ilp::ForResult is not contextually convertible to bool"
+confidence = 0.95
+reviewed = true
+
+[[axioms]]
+id = "ilp_for_range_lambda_capture_scope_a7f3e2d1"
+content = "The macro ILP_FOR_RANGE requires that all variables referenced in 'range' and within the loop body must be in scope at the macro invocation site, as they are captured by reference in the lambda."
+formal_spec = "∀var ∈ referenced_vars(range) ∪ referenced_vars(loop_body): in_scope(var) && lvalue(var)"
+layer = "library"
+function = "ILP_FOR_RANGE"
+header = "../../cpp/ilp_for/ilp_for.hpp"
+axiom_type = "constraint"
+on_violation = "Compilation error if variables are not in scope; undefined behavior if references to temporaries"
+reviewed = true
+
+[[axioms]]
+id = "ilp_for_range_loop_var_shadowing_b2c4d3e5"
+content = "The loop_var_decl parameter introduces a new variable in the lambda scope, which may shadow variables in the outer scope. The variable is only accessible within the loop body that follows the macro."
+formal_spec = "introduces_binding(loop_var_decl) && scope(loop_var_decl) == lambda_body"
+layer = "library"
+function = "ILP_FOR_RANGE"
+header = "../../cpp/ilp_for/ilp_for.hpp"
+axiom_type = "effect"
+on_violation = "Compilation error if loop_var_decl is malformed; shadowing of outer variables if names conflict"
+reviewed = true
+
+[[axioms]]
+id = "ilp_for_range_requires_loop_body_c3d5e2f1"
+content = "The ILP_FOR_RANGE macro must be followed by a brace-enclosed loop body, as the macro expansion creates an incomplete lambda expression that expects the body and the closing ILP_END macro."
+formal_spec = "follows(ILP_FOR_RANGE, '{' + loop_body + '}') && follows(loop_body, ILP_END)"
+layer = "library"
+function = "ILP_FOR_RANGE"
+header = "../../cpp/ilp_for/ilp_for.hpp"
+axiom_type = "constraint"
+on_violation = "Compilation error due to incomplete lambda expression"
+reviewed = true
+
+[[axioms]]
+id = "ilp_for_range_template_arg_n_constraint_d4e6f3a2"
+content = "The template parameter N must be a compile-time constant integral value representing the instruction-level parallelism factor, suitable as a template argument for for_loop_range<N>."
+formal_spec = "is_constant_expression(N) && is_integral(N) && N > 0"
+layer = "library"
+function = "ILP_FOR_RANGE"
+header = "../../cpp/ilp_for/ilp_for.hpp"
+axiom_type = "constraint"
+on_violation = "Compilation error if N is not a constant expression or invalid template argument"
+confidence = 0.95
+reviewed = true
+
+[[axioms]]
+id = "ilp_for_range_range_type_constraint_e5f7a4b3"
+content = "The range parameter must be compatible with the for_loop_range function template, typically satisfying range or iterator pair requirements."
+formal_spec = "valid_range_argument(range, for_loop_range<N>)"
+layer = "library"
+function = "ILP_FOR_RANGE"
+header = "../../cpp/ilp_for/ilp_for.hpp"
+axiom_type = "constraint"
+on_violation = "Compilation error if range is not compatible with for_loop_range template requirements"
+confidence = 0.9
+reviewed = true
+
+[[axioms]]
+id = "ilp_for_range_ctrl_parameter_usage_f6a8b5c4"
+content = "The loop body receives a ForCtrl reference parameter named __ilp_ctrl which must not be redefined or shadowed, as it provides loop control operations (break, continue equivalents)."
+formal_spec = "provides_parameter(__ilp_ctrl, ForCtrl&) && !redefines_in_body(__ilp_ctrl)"
+layer = "library"
+function = "ILP_FOR_RANGE"
+header = "../../cpp/ilp_for/ilp_for.hpp"
+axiom_type = "constraint"
+on_violation = "Compilation error if __ilp_ctrl is redefined; loss of loop control functionality if shadowed"
+confidence = 0.95
+reviewed = true
+
+[[axioms]]
+id = "ilp_for_range_if_statement_wrapper_a1b2c3d4"
+content = "The macro expansion wraps the loop in an if statement with the loop result assigned to __ilp_ret. This means the macro cannot be used where an if statement is syntactically invalid."
+formal_spec = "expands_to(if_statement) => valid_context(if_statement_allowed)"
+layer = "library"
+function = "ILP_FOR_RANGE"
+header = "../../cpp/ilp_for/ilp_for.hpp"
+axiom_type = "effect"
+on_violation = "Compilation error if used in contexts where if statements are not allowed"
+reviewed = true
+
+[[axioms]]
+id = "ilp_for_range_reserved_identifiers_b3c4d5e6"
+content = "The macro uses reserved identifiers __ilp_ret and __ilp_ctx which must not be used or redefined in the surrounding code or loop body to avoid name conflicts."
+formal_spec = "!uses_in_scope(__ilp_ret) && !uses_in_scope(__ilp_ctx) && !defines_in_body(__ilp_ret) && !defines_in_body(__ilp_ctx)"
+layer = "library"
+function = "ILP_FOR_RANGE"
+header = "../../cpp/ilp_for/ilp_for.hpp"
+axiom_type = "constraint"
+on_violation = "Compilation error or undefined behavior due to name conflicts"
+confidence = 0.95
+reviewed = true
+
+[[axioms]]
+id = "macro_ilp_for_auto_start_end_multiple_eval_a7f3e8d1"
+content = "The 'start' and 'end' arguments are captured by reference in the lambda and may be evaluated multiple times during loop iteration. If these expressions have side effects, the behavior may be unexpected."
+formal_spec = "captured_by_ref(start) && captured_by_ref(end) && has_side_effects(start || end) => multiple_evaluation_risk"
+layer = "library"
+function = "ILP_FOR_AUTO"
+header = "../../cpp/ilp_for/ilp_for.hpp"
+axiom_type = "effect"
+on_violation = "Side effects in start/end expressions may execute multiple times, leading to incorrect loop bounds or unintended state changes"
+confidence = 0.95
+reviewed = true
+
+[[axioms]]
+id = "macro_ilp_for_auto_loop_type_must_be_enum_b4c7f9e2"
+content = "The 'loop_type' parameter must be a valid enumerator name from ::ilp::LoopType (used without qualification in template argument ::ilp::LoopType::loop_type)."
+formal_spec = "valid_enumerator_name(loop_type, ::ilp::LoopType) && !contains_scope_resolution(loop_type)"
+layer = "library"
+function = "ILP_FOR_AUTO"
+header = "../../cpp/ilp_for/ilp_for.hpp"
+axiom_type = "constraint"
+on_violation = "Compilation error if loop_type is not a valid unqualified enumerator of ::ilp::LoopType"
+reviewed = true
+
+[[axioms]]
+id = "macro_ilp_for_auto_element_type_must_be_type_c5d8a3f4"
+content = "The 'element_type' parameter must be a valid type name suitable for use as a template argument to ::ilp::for_loop_auto."
+formal_spec = "is_valid_type(element_type) && compatible_with_for_loop_auto(element_type, start, end)"
+layer = "library"
+function = "ILP_FOR_AUTO"
+header = "../../cpp/ilp_for/ilp_for.hpp"
+axiom_type = "constraint"
+on_violation = "Compilation error if element_type is not a valid type or incompatible with the loop range"
+confidence = 0.95
+reviewed = true
+
+[[axioms]]
+id = "macro_ilp_for_auto_loop_var_decl_syntax_d6e9b4f5"
+content = "The 'loop_var_decl' parameter must be a valid variable declaration (e.g., 'int i', 'auto& elem') suitable for use as a lambda parameter declaration."
+formal_spec = "valid_lambda_param_decl(loop_var_decl)"
+layer = "library"
+function = "ILP_FOR_AUTO"
+header = "../../cpp/ilp_for/ilp_for.hpp"
+axiom_type = "constraint"
+on_violation = "Compilation error if loop_var_decl is not a syntactically valid parameter declaration"
+reviewed = true
+
+[[axioms]]
+id = "macro_ilp_for_auto_incomplete_statement_e7f0c5g6"
+content = "The macro expands to an incomplete statement (if statement with open lambda). The user must complete it with the loop body and ILP_END macro or equivalent closing syntax."
+formal_spec = "requires_completion(ILP_FOR_AUTO) && must_be_followed_by(loop_body, closing_syntax)"
+layer = "library"
+function = "ILP_FOR_AUTO"
+header = "../../cpp/ilp_for/ilp_for.hpp"
+axiom_type = "constraint"
+on_violation = "Compilation error due to incomplete if statement and unclosed lambda"
+reviewed = true
+
+[[axioms]]
+id = "macro_ilp_for_auto_name_collision_ilp_ret_f8g1d6h7"
+content = "The macro introduces local variables __ilp_ret, __ilp_ctx, and __ilp_ctrl. User code must not declare variables with these names in the same scope or in the loop body."
+formal_spec = "!user_declares(__ilp_ret) && !user_declares(__ilp_ctx) && !user_declares(__ilp_ctrl)"
+layer = "library"
+function = "ILP_FOR_AUTO"
+header = "../../cpp/ilp_for/ilp_for.hpp"
+axiom_type = "constraint"
+on_violation = "Compilation error or shadowing warning due to name collision with macro-generated identifiers"
+confidence = 0.9
+reviewed = true
+
+[[axioms]]
+id = "macro_ilp_for_auto_capture_scope_g9h2e7i8"
+content = "The macro uses capture-by-reference [&] for the lambda, making all local variables from the enclosing scope accessible within the loop body. Modifications to captured variables affect the outer scope."
+formal_spec = "lambda_capture_mode(by_reference) => modifications_visible_in_outer_scope"
+layer = "library"
+function = "ILP_FOR_AUTO"
+header = "../../cpp/ilp_for/ilp_for.hpp"
+axiom_type = "effect"
+on_violation = "Not applicable - this is documented behavior, but users must be aware of reference semantics"
+reviewed = true
+
+[[axioms]]
+id = "macro_ilp_for_range_auto_lambda_capture_validity_a7d8e9f0"
+content = "The macro must be invoked in a scope where all variables referenced by the lambda capture [&] are valid and accessible throughout the loop execution."
+formal_spec = "invocation_scope(ILP_FOR_RANGE_AUTO) => all_captured_vars_valid_until_loop_end"
+layer = "library"
+function = "ILP_FOR_RANGE_AUTO"
+header = "../../cpp/ilp_for/ilp_for.hpp"
+axiom_type = "precondition"
+on_violation = "Undefined behavior due to dangling references in lambda capture"
+confidence = 0.95
+reviewed = true
+
+[[axioms]]
+id = "macro_ilp_for_range_auto_range_lifetime_b8e9f0a1"
+content = "The 'range' argument must remain valid for the entire duration of the loop execution, as it is captured by reference in the lambda."
+formal_spec = "valid(range) && lifetime(range) >= lifetime(loop_execution)"
+layer = "library"
+function = "ILP_FOR_RANGE_AUTO"
+header = "../../cpp/ilp_for/ilp_for.hpp"
+axiom_type = "precondition"
+on_violation = "Undefined behavior due to accessing invalidated range object"
+confidence = 0.95
+reviewed = true
+
+[[axioms]]
+id = "macro_ilp_for_range_auto_element_type_match_c9f0a1b2"
+content = "The 'element_type' parameter must match or be convertible from the actual element type of 'range' to avoid template instantiation errors."
+formal_spec = "is_convertible(range_element_type(range), element_type) || is_same(range_element_type(range), element_type)"
+layer = "library"
+function = "ILP_FOR_RANGE_AUTO"
+header = "../../cpp/ilp_for/ilp_for.hpp"
+axiom_type = "constraint"
+on_violation = "Compilation failure due to template instantiation error"
+confidence = 0.9
+reviewed = true
+
+[[axioms]]
+id = "macro_ilp_for_range_auto_loop_type_valid_d0a1b2c3"
+content = "The 'loop_type' parameter must be a valid enumerator of ::ilp::LoopType without the scope qualifier."
+formal_spec = "exists_enumerator(::ilp::LoopType, loop_type)"
+layer = "library"
+function = "ILP_FOR_RANGE_AUTO"
+header = "../../cpp/ilp_for/ilp_for.hpp"
+axiom_type = "constraint"
+on_violation = "Compilation failure due to invalid qualified name ::ilp::LoopType::loop_type"
+confidence = 0.95
+reviewed = true
+
+[[axioms]]
+id = "macro_ilp_for_range_auto_loop_var_shadow_e1b2c3d4"
+content = "The 'loop_var_decl' must not conflict with the internal names '__ilp_ret', '__ilp_ctx', or '__ilp_ctrl' to avoid shadowing or name collision."
+formal_spec = "!name_conflict(loop_var_decl, {'__ilp_ret', '__ilp_ctx', '__ilp_ctrl'})"
+layer = "library"
+function = "ILP_FOR_RANGE_AUTO"
+header = "../../cpp/ilp_for/ilp_for.hpp"
+axiom_type = "constraint"
+on_violation = "Compilation failure or incorrect behavior due to name shadowing"
+confidence = 0.85
+reviewed = true
+
+[[axioms]]
+id = "macro_ilp_for_range_auto_if_statement_context_f2c3d4e5"
+content = "The macro expands to an 'if' statement with init-statement, requiring the invocation to be followed by a continuation (likely the loop body in braces) to complete the lambda and if-statement syntax."
+formal_spec = "macro_invocation(ILP_FOR_RANGE_AUTO) => requires_continuation_statement"
+layer = "library"
+function = "ILP_FOR_RANGE_AUTO"
+header = "../../cpp/ilp_for/ilp_for.hpp"
+axiom_type = "effect"
+on_violation = "Compilation failure due to incomplete if-statement or lambda definition"
+confidence = 0.95
+reviewed = true
+
+[[axioms]]
+id = "macro_ilp_for_range_auto_range_multiple_eval_g3d4e5f6"
+content = "The 'range' argument is captured by reference in the lambda and may be accessed multiple times during loop execution. Side effects in 'range' expression occur once at macro invocation."
+formal_spec = "side_effects(range) => evaluated_once_at_invocation"
+layer = "library"
+function = "ILP_FOR_RANGE_AUTO"
+header = "../../cpp/ilp_for/ilp_for.hpp"
+axiom_type = "effect"
+on_violation = "No violation - argument evaluated once, but accessible throughout loop"
+confidence = 0.9
+reviewed = true
+
+[[axioms]]
+id = "macro_ilp_for_range_auto_ctrl_param_required_h4e5f6g7"
+content = "The lambda created by this macro expects a second parameter of type '::ilp::ForCtrl&' named '__ilp_ctrl'. The continuation must be a lambda body that accepts the loop variable and this control parameter."
+formal_spec = "continuation_lambda => accepts_params(loop_var_decl, ::ilp::ForCtrl& __ilp_ctrl)"
+layer = "library"
+function = "ILP_FOR_RANGE_AUTO"
+header = "../../cpp/ilp_for/ilp_for.hpp"
+axiom_type = "constraint"
+on_violation = "Compilation failure due to lambda signature mismatch"
+confidence = 0.95
+reviewed = true
+
+[[axioms]]
+id = "ilp_for_t_macro_start_end_evaluation_a8f3d5e2"
+content = "The 'start' and 'end' arguments to ILP_FOR_T are evaluated exactly once during macro expansion, passed to ::ilp::for_loop_typed as function arguments."
+formal_spec = "ILP_FOR_T(type, loop_var_decl, start, end, N) => eval_count(start) == 1 && eval_count(end) == 1"
+layer = "library"
+function = "ILP_FOR_T"
+header = "../../cpp/ilp_for/ilp_for.hpp"
+axiom_type = "effect"
+on_violation = "Side effects in 'start' or 'end' expressions occur exactly once as expected."
+reviewed = true
+
+[[axioms]]
+id = "ilp_for_t_macro_lambda_capture_requirement_b7e4c9d3"
+content = "ILP_FOR_T captures the surrounding scope by reference ([&]) in its lambda. Variables used in 'start', 'end', and the loop body must be accessible and their lifetime must extend beyond the macro expansion."
+formal_spec = "ILP_FOR_T(type, loop_var_decl, start, end, N) => valid_capture_by_ref(start) && valid_capture_by_ref(end) && valid_capture_by_ref(loop_body)"
+layer = "library"
+function = "ILP_FOR_T"
+header = "../../cpp/ilp_for/ilp_for.hpp"
+axiom_type = "constraint"
+on_violation = "Dangling references if captured variables go out of scope, or compilation error if variables are not capturable."
+confidence = 0.95
+reviewed = true
+
+[[axioms]]
+id = "ilp_for_t_macro_type_parameter_requirement_c6d2e8f4"
+content = "The 'type' parameter must be a valid C++ type that can be used as a template argument to ::ilp::for_loop_typed<type, N> and ::ilp::ForResultTyped<type>."
+formal_spec = "ILP_FOR_T(type, loop_var_decl, start, end, N) => valid_template_arg(type) && instantiable(::ilp::for_loop_typed<type, N>) && instantiable(::ilp::ForResultTyped<type>)"
+layer = "library"
+function = "ILP_FOR_T"
+header = "../../cpp/ilp_for/ilp_for.hpp"
+axiom_type = "constraint"
+on_violation = "Compilation error due to invalid template instantiation."
+reviewed = true
+
+[[axioms]]
+id = "ilp_for_t_macro_n_constant_requirement_d5a3f7b9"
+content = "The 'N' parameter must be a compile-time constant expression suitable for use as a non-type template parameter to ::ilp::for_loop_typed<type, N>."
+formal_spec = "ILP_FOR_T(type, loop_var_decl, start, end, N) => is_constant_expression(N) && valid_nontype_template_arg(N)"
+layer = "library"
+function = "ILP_FOR_T"
+header = "../../cpp/ilp_for/ilp_for.hpp"
+axiom_type = "constraint"
+on_violation = "Compilation error if N is not a constant expression or invalid as a template argument."
+reviewed = true
+
+[[axioms]]
+id = "ilp_for_t_macro_loop_var_decl_syntax_e4b2c8a6"
+content = "The 'loop_var_decl' parameter must be a valid variable declaration syntax (e.g., 'int i' or 'auto& x') that can appear as a lambda parameter declaration."
+formal_spec = "ILP_FOR_T(type, loop_var_decl, start, end, N) => valid_lambda_param_decl(loop_var_decl)"
+layer = "library"
+function = "ILP_FOR_T"
+header = "../../cpp/ilp_for/ilp_for.hpp"
+axiom_type = "constraint"
+on_violation = "Compilation error due to invalid lambda parameter syntax."
+reviewed = true
+
+[[axioms]]
+id = "ilp_for_t_macro_incomplete_statement_f3a9d5c7"
+content = "ILP_FOR_T macro expands to an incomplete statement that opens a lambda body. The macro invocation must be followed by a lambda body block and ILP_END or similar closing construct to form a complete statement."
+formal_spec = "ILP_FOR_T(type, loop_var_decl, start, end, N) => requires_continuation(lambda_body_block)"
+layer = "library"
+function = "ILP_FOR_T"
+header = "../../cpp/ilp_for/ilp_for.hpp"
+axiom_type = "constraint"
+on_violation = "Compilation error due to incomplete statement or unmatched braces."
+reviewed = true
+
+[[axioms]]
+id = "ilp_for_t_macro_start_end_type_compatibility_a7c4b9e3"
+content = "The 'start' and 'end' arguments must be of types compatible with the expectations of ::ilp::for_loop_typed<type, N>, typically integral or iterator types depending on the library implementation."
+formal_spec = "ILP_FOR_T(type, loop_var_decl, start, end, N) => compatible_with_for_loop_typed(typeof(start), typeof(end), type, N)"
+layer = "library"
+function = "ILP_FOR_T"
+header = "../../cpp/ilp_for/ilp_for.hpp"
+axiom_type = "constraint"
+on_violation = "Compilation error or incorrect loop behavior if types are incompatible with the for_loop_typed implementation."
+confidence = 0.9
+reviewed = true
+
+[[axioms]]
+id = "ilp_for_range_t_lambda_capture_binding_c9f2a1e8"
+content = "The macro expands to code that captures all surrounding variables by reference in lambdas. All captured variables must remain valid throughout the macro expansion and loop execution."
+formal_spec = "∀v ∈ captured_vars: valid(v) ∧ lifetime(v) ⊇ execution_scope(ILP_FOR_RANGE_T)"
+layer = "library"
+function = "ILP_FOR_RANGE_T"
+header = "../../cpp/ilp_for/ilp_for.hpp"
+axiom_type = "constraint"
+on_violation = "Undefined behavior due to dangling references if captured variables go out of scope"
+reviewed = true
+
+[[axioms]]
+id = "ilp_for_range_t_loop_var_multiple_eval_a4d8b2f1"
+content = "The loop_var_decl parameter is used as a lambda parameter declaration and should not contain expressions with side effects. It is a declaration, not an expression, so it is only evaluated once per lambda invocation."
+formal_spec = "is_declaration(loop_var_decl) ∧ !contains_side_effects(loop_var_decl)"
+layer = "library"
+function = "ILP_FOR_RANGE_T"
+header = "../../cpp/ilp_for/ilp_for.hpp"
+axiom_type = "effect"
+on_violation = "Compilation error if loop_var_decl is not a valid parameter declaration"
+confidence = 0.95
+reviewed = true
+
+[[axioms]]
+id = "ilp_for_range_t_range_multiple_eval_e7c3f5a2"
+content = "The range parameter is evaluated exactly once as an argument to for_loop_range_typed. If range contains side effects, they occur exactly once during macro expansion."
+formal_spec = "eval_count(range) = 1"
+layer = "library"
+function = "ILP_FOR_RANGE_T"
+header = "../../cpp/ilp_for/ilp_for.hpp"
+axiom_type = "effect"
+on_violation = "Side effects in range occur once; no multiple evaluation issue"
+confidence = 0.9
+reviewed = true
+
+[[axioms]]
+id = "ilp_for_range_t_n_multiple_eval_b1e4d6c9"
+content = "The N parameter is used as a template argument to for_loop_range_typed and is evaluated once at compile-time. It should be a constant expression."
+formal_spec = "is_constant_expr(N) ∧ eval_count(N) = 1"
+layer = "library"
+function = "ILP_FOR_RANGE_T"
+header = "../../cpp/ilp_for/ilp_for.hpp"
+axiom_type = "effect"
+on_violation = "Compilation error if N is not a valid template argument (must be constant expression)"
+reviewed = true
+
+[[axioms]]
+id = "ilp_for_range_t_type_multiple_eval_f3a7b8e4"
+content = "The type parameter is used as a template argument in two places (ForResultTyped<type> and for_loop_range_typed<type, N>). It must be a valid type name and is evaluated at compile-time."
+formal_spec = "is_type(type) ∧ compile_time_evaluation(type)"
+layer = "library"
+function = "ILP_FOR_RANGE_T"
+header = "../../cpp/ilp_for/ilp_for.hpp"
+axiom_type = "effect"
+on_violation = "Compilation error if type is not a valid type"
+reviewed = true
+
+[[axioms]]
+id = "ilp_for_range_t_incomplete_statement_d2f9c5a3"
+content = "The macro expansion is incomplete - it opens an if statement and a lambda but does not close them. The user must provide the lambda body and closing braces. This creates a requirement for specific continuation syntax."
+formal_spec = "requires_continuation(ILP_FOR_RANGE_T) ∧ must_follow_pattern('{ ... } ILP_END;')"
+layer = "library"
+function = "ILP_FOR_RANGE_T"
+header = "../../cpp/ilp_for/ilp_for.hpp"
+axiom_type = "constraint"
+on_violation = "Compilation error due to syntax error if not properly closed"
+reviewed = true
+
+[[axioms]]
+id = "ilp_for_range_t_scope_pollution_e8b4a1f7"
+content = "The macro introduces identifiers __ilp_ret, __ilp_ctx, and __ilp_ctrl into the enclosing scope. These names must not conflict with user variables. The [[maybe_unused]] attribute suppresses warnings if they are not used."
+formal_spec = "introduces_names({'__ilp_ret', '__ilp_ctx', '__ilp_ctrl'}) ∧ potential_name_collision"
+layer = "library"
+function = "ILP_FOR_RANGE_T"
+header = "../../cpp/ilp_for/ilp_for.hpp"
+axiom_type = "effect"
+on_violation = "Compilation error or shadowing if user code contains variables with these names"
+confidence = 0.95
+reviewed = true
+
+[[axioms]]
+id = "ilp_for_range_t_if_condition_usage_a9c2e3f1"
+content = "The macro expands to an if statement with init-statement (C++17 feature). The __ilp_ret variable holds the result of the lambda and is implicitly convertible to bool for the if condition."
+formal_spec = "requires_cpp17 ∧ convertible_to_bool(ForResultTyped<type>)"
+layer = "library"
+function = "ILP_FOR_RANGE_T"
+header = "../../cpp/ilp_for/ilp_for.hpp"
+axiom_type = "constraint"
+on_violation = "Compilation error if ForResultTyped<type> is not contextually convertible to bool, or if using pre-C++17 standard"
+confidence = 0.9
+reviewed = true
+
+[[axioms]]
+id = "ilp_for_range_t_template_deduction_e5a8d2c4"
+content = "The for_loop_range_typed function template must be able to deduce its parameters from the provided range and lambda. The lambda parameter types must match what for_loop_range_typed expects."
+formal_spec = "valid_template_instantiation(for_loop_range_typed<type, N>, range, lambda) ∧ compatible_lambda_signature(loop_var_decl, ForCtrlTyped<type>&)"
+layer = "library"
+function = "ILP_FOR_RANGE_T"
+header = "../../cpp/ilp_for/ilp_for.hpp"
+axiom_type = "constraint"
+on_violation = "Compilation error due to template instantiation failure or lambda signature mismatch"
+confidence = 0.85
+reviewed = true
+
+[[axioms]]
+id = "macro_ilp_for_t_auto_multiple_eval_start_d4e5f6a7"
+content = "The 'start' argument is captured by reference in a lambda and may be evaluated multiple times during loop initialization and execution. Side effects in 'start' expression may not behave as expected."
+formal_spec = "captures_by_reference(start) && may_evaluate_multiple(start) => side_effects_unpredictable(start)"
+layer = "library"
+function = "ILP_FOR_T_AUTO"
+header = "../../cpp/ilp_for/ilp_for.hpp"
+axiom_type = "effect"
+on_violation = "Incorrect results if 'start' contains side effects (e.g., i++, function calls with state changes)"
+confidence = 0.95
+reviewed = true
+
+[[axioms]]
+id = "macro_ilp_for_t_auto_multiple_eval_end_e5f6a7b8"
+content = "The 'end' argument is captured by reference in a lambda and may be evaluated multiple times during loop condition checking. Side effects in 'end' expression may not behave as expected."
+formal_spec = "captures_by_reference(end) && may_evaluate_multiple(end) => side_effects_unpredictable(end)"
+layer = "library"
+function = "ILP_FOR_T_AUTO"
+header = "../../cpp/ilp_for/ilp_for.hpp"
+axiom_type = "effect"
+on_violation = "Incorrect results if 'end' contains side effects (e.g., container.size() on a mutating container)"
+confidence = 0.95
+reviewed = true
+
+[[axioms]]
+id = "macro_ilp_for_t_auto_loop_type_enum_constraint_f6a7b8c9"
+content = "The 'loop_type' parameter must be a valid enumerator name in the ::ilp::LoopType enumeration (used as ::ilp::LoopType::loop_type). Passing an invalid identifier causes compilation failure."
+formal_spec = "is_valid_enumerator(loop_type, ::ilp::LoopType) || compilation_error"
+layer = "library"
+function = "ILP_FOR_T_AUTO"
+header = "../../cpp/ilp_for/ilp_for.hpp"
+axiom_type = "constraint"
+on_violation = "Compilation error: invalid enumeration scope resolution"
+reviewed = true
+
+[[axioms]]
+id = "macro_ilp_for_t_auto_ret_type_constraint_a7b8c9d0"
+content = "The 'ret_type' parameter must be a valid type that can be used as a template argument for ::ilp::ForResultTyped and ::ilp::ForCtrlTyped. Type must be complete at point of macro expansion."
+formal_spec = "is_complete_type(ret_type) && is_valid_template_arg(ret_type, ::ilp::ForResultTyped) && is_valid_template_arg(ret_type, ::ilp::ForCtrlTyped) || compilation_error"
+layer = "library"
+function = "ILP_FOR_T_AUTO"
+header = "../../cpp/ilp_for/ilp_for.hpp"
+axiom_type = "constraint"
+on_violation = "Compilation error: incomplete type or invalid template instantiation"
+reviewed = true
+
+[[axioms]]
+id = "macro_ilp_for_t_auto_element_type_constraint_b8c9d0e1"
+content = "The 'element_type' parameter must be a valid type that can be used as the first template argument for ::ilp::for_loop_typed_auto. Type must be complete at point of macro expansion."
+formal_spec = "is_complete_type(element_type) && is_valid_template_arg(element_type, ::ilp::for_loop_typed_auto) || compilation_error"
+layer = "library"
+function = "ILP_FOR_T_AUTO"
+header = "../../cpp/ilp_for/ilp_for.hpp"
+axiom_type = "constraint"
+on_violation = "Compilation error: incomplete type or invalid template instantiation"
+reviewed = true
+
+[[axioms]]
+id = "macro_ilp_for_t_auto_loop_var_decl_constraint_c9d0e1f2"
+content = "The 'loop_var_decl' parameter must be a valid parameter declaration suitable for use in a lambda parameter list. It should be compatible with the element_type being iterated over."
+formal_spec = "is_valid_param_decl(loop_var_decl) && compatible_with_iteration(loop_var_decl, element_type) || compilation_error"
+layer = "library"
+function = "ILP_FOR_T_AUTO"
+header = "../../cpp/ilp_for/ilp_for.hpp"
+axiom_type = "constraint"
+on_violation = "Compilation error: invalid lambda parameter declaration or type mismatch"
+confidence = 0.9
+reviewed = true
+
+[[axioms]]
+id = "macro_ilp_for_t_auto_incomplete_statement_d0e1f2a3"
+content = "This macro expands to an incomplete statement (if statement with lambda definition that ends with an open lambda body). It must be followed by the loop body code and proper closing syntax (ILP_END or similar macro). Using this macro without proper continuation causes compilation failure."
+formal_spec = "requires_continuation(ILP_FOR_T_AUTO) => must_be_followed_by(loop_body_and_closing_macro)"
+layer = "library"
+function = "ILP_FOR_T_AUTO"
+header = "../../cpp/ilp_for/ilp_for.hpp"
+axiom_type = "constraint"
+on_violation = "Compilation error: syntax error due to incomplete statement"
+reviewed = true
+
+[[axioms]]
+id = "macro_ilp_for_t_auto_reference_capture_scope_e1f2a3b4"
+content = "The macro captures all variables by reference ([&]). All variables referenced in 'start', 'end', and the loop body must be in scope and have lifetimes extending beyond the macro expansion. Dangling references cause undefined behavior."
+formal_spec = "captures_all_by_reference && (referenced_var_out_of_scope(V) || dangling_reference(V)) => undefined_behavior"
+layer = "library"
+function = "ILP_FOR_T_AUTO"
+header = "../../cpp/ilp_for/ilp_for.hpp"
+axiom_type = "constraint"
+on_violation = "Undefined behavior: accessing dangling references in lambda"
+reviewed = true
+
+[[axioms]]
+id = "macro_ilp_for_t_auto_start_end_type_constraint_f2a3b4c5"
+content = "The 'start' and 'end' arguments must have types compatible with the requirements of ::ilp::for_loop_typed_auto template function. They must form a valid range or iteration bounds."
+formal_spec = "compatible_types(start, end, ::ilp::for_loop_typed_auto) && forms_valid_range(start, end) || compilation_error"
+layer = "library"
+function = "ILP_FOR_T_AUTO"
+header = "../../cpp/ilp_for/ilp_for.hpp"
+axiom_type = "constraint"
+on_violation = "Compilation error: type mismatch or invalid range specification"
+confidence = 0.9
+reviewed = true
+
+[[axioms]]
+id = "ilp_for_range_t_auto_multiple_eval_range_4a7c8d2f"
+content = "The 'range' argument is captured by reference in a lambda and may be evaluated multiple times during loop iteration. If 'range' is an expression with side effects, those side effects occur only once at macro expansion, but the captured reference must remain valid throughout loop execution."
+formal_spec = "let r = range in captures_by_reference(lambda, r) => valid_throughout_scope(r) && side_effects_once(r)"
+layer = "library"
+function = "ILP_FOR_RANGE_T_AUTO"
+header = "../../cpp/ilp_for/ilp_for.hpp"
+axiom_type = "effect"
+on_violation = "Undefined behavior if range expression yields a temporary or dangling reference; incorrect results if range is modified during iteration"
+confidence = 0.95
+reviewed = true
+
+[[axioms]]
+id = "ilp_for_range_t_auto_loop_var_decl_syntax_b3d5e7f1"
+content = "The 'loop_var_decl' parameter must be a valid variable declaration syntax (e.g., 'auto x' or 'int& x') suitable for use as a lambda parameter. It is textually substituted and must form valid C++ syntax in that context."
+formal_spec = "valid_lambda_param_decl(loop_var_decl)"
+layer = "library"
+function = "ILP_FOR_RANGE_T_AUTO"
+header = "../../cpp/ilp_for/ilp_for.hpp"
+axiom_type = "constraint"
+on_violation = "Compilation error due to ill-formed lambda parameter list"
+reviewed = true
+
+[[axioms]]
+id = "ilp_for_range_t_auto_loop_type_enum_c5e8f2a4"
+content = "The 'loop_type' parameter must be a valid enumerator name within the ::ilp::LoopType enumeration (without the scope qualification, as the macro supplies '::ilp::LoopType::loop_type'). Common values might be 'Sequential', 'Parallel', etc."
+formal_spec = "exists_enumerator(::ilp::LoopType, loop_type)"
+layer = "library"
+function = "ILP_FOR_RANGE_T_AUTO"
+header = "../../cpp/ilp_for/ilp_for.hpp"
+axiom_type = "constraint"
+on_violation = "Compilation error due to invalid qualified-id"
+confidence = 0.95
+reviewed = true
+
+[[axioms]]
+id = "ilp_for_range_t_auto_ret_type_complete_d7f3a8b2"
+content = "The 'ret_type' parameter must be a complete type suitable for instantiating ::ilp::ForResultTyped<ret_type> and ::ilp::ForCtrlTyped<ret_type>. It is used as a template argument and must be a valid type-id."
+formal_spec = "complete_type(ret_type) && valid_template_arg(::ilp::ForResultTyped, ret_type) && valid_template_arg(::ilp::ForCtrlTyped, ret_type)"
+layer = "library"
+function = "ILP_FOR_RANGE_T_AUTO"
+header = "../../cpp/ilp_for/ilp_for.hpp"
+axiom_type = "constraint"
+on_violation = "Compilation error due to incomplete type or invalid template instantiation"
+confidence = 0.95
+reviewed = true
+
+[[axioms]]
+id = "ilp_for_range_t_auto_element_type_template_arg_e9a4b6c3"
+content = "The 'element_type' parameter must be a valid type-id suitable as the first template argument to ::ilp::for_loop_range_typed_auto<element_type, ret_type, ...>. It should match or be compatible with the element type of 'range'."
+formal_spec = "valid_type(element_type) && compatible_with_range_element(element_type, range)"
+layer = "library"
+function = "ILP_FOR_RANGE_T_AUTO"
+header = "../../cpp/ilp_for/ilp_for.hpp"
+axiom_type = "constraint"
+on_violation = "Compilation error or incorrect type deduction if element_type mismatches the actual range element type"
+confidence = 0.9
+reviewed = true
+
+[[axioms]]
+id = "ilp_for_range_t_auto_lambda_scope_capture_f2b7d5e8"
+content = "The macro expands to an if-statement containing a lambda with capture-by-reference [&]. All variables referenced within the subsequent loop body (after macro invocation) are captured by reference and must remain valid throughout the lambda's execution."
+formal_spec = "capture_default_reference(lambda) => for_all_vars_in_body(v, valid_throughout_lambda_exec(v))"
+layer = "library"
+function = "ILP_FOR_RANGE_T_AUTO"
+header = "../../cpp/ilp_for/ilp_for.hpp"
+axiom_type = "effect"
+on_violation = "Undefined behavior if captured references become invalid during lambda execution; dangling references"
+reviewed = true
+
+[[axioms]]
+id = "ilp_for_range_t_auto_incomplete_statement_a8c3f1d9"
+content = "The macro expansion is incomplete and requires continuation. The macro defines an if-statement with a lambda that has an open parameter list and body. The user must provide the lambda body followed by proper closing syntax (likely via a companion ILP_END macro or similar)."
+formal_spec = "incomplete_statement(expansion) => requires_continuation_macro"
+layer = "library"
+function = "ILP_FOR_RANGE_T_AUTO"
+header = "../../cpp/ilp_for/ilp_for.hpp"
+axiom_type = "constraint"
+on_violation = "Compilation error due to unclosed lambda and if-statement if continuation syntax is not provided"
+reviewed = true
+
+[[axioms]]
+id = "ilp_for_range_t_auto_maybe_unused_attributes_b5d8e3f2"
+content = "The macro applies [[maybe_unused]] attributes to __ilp_ret, __ilp_ctx, loop_var_decl, and __ilp_ctrl. These suppress warnings if the user's loop body does not reference these entities, but do not affect semantics."
+formal_spec = "has_attribute(maybe_unused, __ilp_ret) && has_attribute(maybe_unused, __ilp_ctx) && has_attribute(maybe_unused, loop_var_decl) && has_attribute(maybe_unused, __ilp_ctrl)"
+layer = "library"
+function = "ILP_FOR_RANGE_T_AUTO"
+header = "../../cpp/ilp_for/ilp_for.hpp"
+axiom_type = "effect"
+on_violation = "No violation - this is a warning suppression mechanism only"
+reviewed = true
+
+[[axioms]]
+id = "ilp_end_macro_context_a1b2c3d4"
+content = "ILP_END must be used as the closing delimiter of an ILP_FOR loop construct. It completes the lambda expression started by ILP_FOR and closes the conditional statement."
+formal_spec = "ilp_end_usage() => preceded_by_ilp_for_construct() && in_lambda_context() && has_matching_ilp_ret_object()"
+layer = "library"
+function = "ILP_END"
+header = "../../cpp/ilp_for/ilp_for.hpp"
+axiom_type = "precondition"
+on_violation = "Syntax error: unmatched parentheses and braces, or reference to undefined __ilp_ret variable"
+confidence = 0.95
+reviewed = true
+
+[[axioms]]
+id = "ilp_end_return_detection_b3c4d5e6"
+content = "ILP_END checks if any return statement was executed within the ILP_FOR body by examining __ilp_ret.has_return. If true, it calls ilp_end_with_return_error() before evaluation completes."
+formal_spec = "__ilp_ret.has_return == true => ilp_end_with_return_error() is_called && evaluation_continues_with_false"
+layer = "library"
+function = "ILP_END"
+header = "../../cpp/ilp_for/ilp_for.hpp"
+axiom_type = "effect"
+on_violation = "Return statements within ILP_FOR body are detected and trigger error reporting"
+confidence = 0.9
+reviewed = true
+
+[[axioms]]
+id = "ilp_end_void_cast_effect_c5d6e7f8"
+content = "ILP_END casts the final expression to (void) to suppress unused value warnings and ensure the entire construct has void result type."
+formal_spec = "ilp_end_expansion() => result_type(entire_construct) == void && no_unused_value_warning()"
+layer = "library"
+function = "ILP_END"
+header = "../../cpp/ilp_for/ilp_for.hpp"
+axiom_type = "effect"
+on_violation = "N/A - this is the intended effect"
+confidence = 0.85
+reviewed = true
+
+[[axioms]]
+id = "ilp_end_ternary_evaluation_d7e8f9a0"
+content = "The ternary operator in ILP_END always evaluates to false regardless of __ilp_ret.has_return value, ensuring the if-else construct executes the else branch with (void)0."
+formal_spec = "ternary_result(__ilp_ret.has_return ? (ilp_end_with_return_error(), false) : false) == false"
+layer = "library"
+function = "ILP_END"
+header = "../../cpp/ilp_for/ilp_for.hpp"
+axiom_type = "constraint"
+on_violation = "N/A - both branches return false"
+confidence = 0.9
+reviewed = true
+
+[[axioms]]
+id = "ilp_end_ilp_ret_scope_e9f0a1b2"
+content = "__ilp_ret variable must be in scope and accessible when ILP_END is expanded. It must be an object with a boolean member has_return."
+formal_spec = "ilp_end_expansion() => in_scope(__ilp_ret) && has_member(__ilp_ret, has_return) && type(__ilp_ret.has_return) == bool"
+layer = "library"
+function = "ILP_END"
+header = "../../cpp/ilp_for/ilp_for.hpp"
+axiom_type = "precondition"
+on_violation = "Compilation error: undefined identifier __ilp_ret or invalid member access"
+confidence = 0.95
+reviewed = true
+
+[[axioms]]
+id = "ilp_end_return_dereference_precond_a8f3d2e1"
+content = "The macro dereferences __ilp_ret, which must point to a valid object. The pointer __ilp_ret must be dereferenceable when ILP_END_RETURN is expanded."
+formal_spec = "expansion(ILP_END_RETURN) && dereferences(__ilp_ret) => dereferenceable(__ilp_ret) && points_to_object(__ilp_ret)"
+layer = "library"
+function = "ILP_END_RETURN"
+header = "../../cpp/ilp_for/ilp_for.hpp"
+axiom_type = "precondition"
+on_violation = "undefined behavior"
+confidence = 0.95
+reviewed = true
+
+[[axioms]]
+id = "ilp_end_return_move_rvalue_precond_b7c4e9f2"
+content = "The macro uses std::move(*__ilp_ret) which requires *__ilp_ret to be a valid expression that can be moved. The dereferenced object must be of a type that supports move semantics."
+formal_spec = "expansion(ILP_END_RETURN) && std_move(*__ilp_ret) => valid_expression(*__ilp_ret) && (is_class_type(type(*__ilp_ret)) || is_rvalue_reference_compatible(type(*__ilp_ret)))"
+layer = "library"
+function = "ILP_END_RETURN"
+header = "../../cpp/ilp_for/ilp_for.hpp"
+axiom_type = "precondition"
+on_violation = "compilation error or undefined behavior"
+confidence = 0.9
+reviewed = true
+
+[[axioms]]
+id = "ilp_end_return_context_constraint_c9d1f4a3"
+content = "The macro must be used in a context where __ilp_ret is a defined variable (presumably set by a matching ILP_BEGIN macro). The macro also assumes it can be used in a return statement context."
+formal_spec = "expansion(ILP_END_RETURN) => in_scope(__ilp_ret) && valid_return_context() && has_matching_ilp_begin_macro()"
+layer = "library"
+function = "ILP_END_RETURN"
+header = "../../cpp/ilp_for/ilp_for.hpp"
+axiom_type = "constraint"
+on_violation = "compilation error"
+confidence = 0.95
+reviewed = true
+
+[[axioms]]
+id = "ilp_end_return_cast_effect_d3e8b5c7"
+content = "The macro performs an implicit cast through the else(void)0 expression, which casts 0 to void. This is used to consume the result of the conditional expression and make the macro usable in statement position."
+formal_spec = "expansion(ILP_END_RETURN) && contains(else(void)0) => cast_to_void(0) && statement_expression_context()"
+layer = "library"
+function = "ILP_END_RETURN"
+header = "../../cpp/ilp_for/ilp_for.hpp"
+axiom_type = "effect"
+on_violation = "none - this is a valid idiom"
+confidence = 0.85
+reviewed = true
+
+[[axioms]]
+id = "ilp_end_return_syntax_structure_e5f2a7b9"
+content = "The macro ends with ); } (); __ilp_ret) return *std::move(__ilp_ret); else(void)0, which implies it must be preceded by matching syntax (likely from ILP_BEGIN macro that opens parentheses and braces). The macro completes a lambda or function call expression."
+formal_spec = "expansion(ILP_END_RETURN) => preceded_by_matching_ilp_begin() && completes_lambda_or_function_call() && balanced_parentheses() && balanced_braces()"
+layer = "library"
+function = "ILP_END_RETURN"
+header = "../../cpp/ilp_for/ilp_for.hpp"
+axiom_type = "constraint"
+on_violation = "compilation error due to syntax mismatch"
+confidence = 0.9
+reviewed = true
+
+[[axioms]]
+id = "ilp_continue_context_requirement"
+content = "ILP_CONTINUE must be used within a function returning void or within a context where 'return;' is valid"
+formal_spec = "enclosing_function_return_type == void || valid_void_return_context()"
+layer = "library"
+function = "ILP_CONTINUE"
+header = "../../cpp/ilp_for/ilp_for.hpp"
+axiom_type = "precondition"
+on_violation = "compilation error if used in non-void function or invalid context"
+reviewed = true
+
+[[axioms]]
+id = "ilp_continue_statement_context"
+content = "ILP_CONTINUE expands to 'do { return; } while (0)' which requires statement context, not expression context"
+formal_spec = "usage_context == statement_context"
+layer = "library"
+function = "ILP_CONTINUE"
+header = "../../cpp/ilp_for/ilp_for.hpp"
+axiom_type = "constraint"
+on_violation = "compilation error if used where expression is required"
+reviewed = true
+
+[[axioms]]
+id = "ilp_continue_control_flow_effect"
+content = "ILP_CONTINUE causes immediate return from the enclosing function; destructors for local objects are called in reverse order of construction"
+formal_spec = "post(ILP_CONTINUE): control_flow == returned_from_function && local_objects_destroyed_in_reverse_order"
+layer = "library"
+function = "ILP_CONTINUE"
+header = "../../cpp/ilp_for/ilp_for.hpp"
+axiom_type = "effect"
+on_violation = "not applicable - guaranteed by language semantics"
+reviewed = true
+
+[[axioms]]
+id = "ilp_continue_semicolon_safe"
+content = "ILP_CONTINUE uses do-while(0) pattern making it safe to use with semicolon in all contexts (if-else, etc.)"
+formal_spec = "semicolon_safe(ILP_CONTINUE) == true"
+layer = "library"
+function = "ILP_CONTINUE"
+header = "../../cpp/ilp_for/ilp_for.hpp"
+axiom_type = "invariant"
+on_violation = "not applicable - guaranteed by macro expansion pattern"
+reviewed = true
+
+[[axioms]]
+id = "ilp_break_context_requirement"
+content = "ILP_BREAK must be used within a function that has access to __ilp_ctrl variable"
+formal_spec = "scope_contains_variable(__ilp_ctrl)"
+layer = "library"
+function = "ILP_BREAK"
+header = "../../cpp/ilp_for/ilp_for.hpp"
+axiom_type = "precondition"
+on_violation = "compilation error: __ilp_ctrl undeclared identifier"
+reviewed = true
+
+[[axioms]]
+id = "ilp_break_ilp_ctrl_type_requirement"
+content = "__ilp_ctrl must be a structure or object with a member 'ok' that is assignable from bool"
+formal_spec = "has_member(__ilp_ctrl, ok) && is_assignable(__ilp_ctrl.ok, bool)"
+layer = "library"
+function = "ILP_BREAK"
+header = "../../cpp/ilp_for/ilp_for.hpp"
+axiom_type = "constraint"
+on_violation = "compilation error: __ilp_ctrl has no member 'ok' or type mismatch"
+reviewed = true
+
+[[axioms]]
+id = "ilp_break_return_context_requirement"
+content = "ILP_BREAK must be used within a function with void return type (or compatible with return without value)"
+formal_spec = "enclosing_function_return_type() == void"
+layer = "library"
+function = "ILP_BREAK"
+header = "../../cpp/ilp_for/ilp_for.hpp"
+axiom_type = "precondition"
+on_violation = "compilation error: return-statement with no value in function returning non-void"
+reviewed = true
+
+[[axioms]]
+id = "ilp_break_effect"
+content = "ILP_BREAK sets __ilp_ctrl.ok to false and immediately returns from the enclosing function"
+formal_spec = "post(__ilp_ctrl.ok == false) && control_flow_exits(enclosing_function)"
+layer = "library"
+function = "ILP_BREAK"
+header = "../../cpp/ilp_for/ilp_for.hpp"
+axiom_type = "effect"
+on_violation = "N/A - this describes the guaranteed effect"
+reviewed = true
+
+[[axioms]]
+id = "ilp_break_do_while_zero_idiom"
+content = "ILP_BREAK uses do-while(0) idiom to allow use in contexts requiring a statement (e.g., after if without braces)"
+formal_spec = "requires_semicolon_after_use && safe_in_if_without_braces"
+layer = "library"
+function = "ILP_BREAK"
+header = "../../cpp/ilp_for/ilp_for.hpp"
+axiom_type = "invariant"
+on_violation = "N/A - this is a safety property provided by the macro design"
+reviewed = true
+
+[[axioms]]
+id = "ilp_return_x_evaluation_once_e4f7a2b9"
+content = "The argument x is evaluated exactly once during the __ilp_ctrl.storage.set(x) call, despite appearing in a macro expansion."
+formal_spec = "ILP_RETURN(x) => evaluation_count(x) == 1"
+layer = "library"
+function = "ILP_RETURN"
+header = "ilp_for/ilp_for.hpp"
+axiom_type = "effect"
+on_violation = "Side effects in x occur as expected; this is a safe macro design"
+reviewed = true
+
+[[axioms]]
+id = "ilp_return_requires_ilp_ctrl_variable_c8d3e5f1"
+content = "A variable named __ilp_ctrl must be accessible in the scope where ILP_RETURN is invoked."
+formal_spec = "ILP_RETURN(x) => exists_in_scope(__ilp_ctrl)"
+layer = "library"
+function = "ILP_RETURN"
+header = "ilp_for/ilp_for.hpp"
+axiom_type = "precondition"
+on_violation = "Compilation error: __ilp_ctrl undeclared"
+reviewed = true
+
+[[axioms]]
+id = "ilp_return_requires_storage_member_a9b2c4d6"
+content = "__ilp_ctrl must have a member named 'storage' with a callable 'set' method that accepts the type of x."
+formal_spec = "ILP_RETURN(x) => has_member(__ilp_ctrl, storage) && has_method(__ilp_ctrl.storage, set) && callable(__ilp_ctrl.storage.set, type(x))"
+layer = "library"
+function = "ILP_RETURN"
+header = "ilp_for/ilp_for.hpp"
+axiom_type = "precondition"
+on_violation = "Compilation error: __ilp_ctrl.storage.set(x) ill-formed"
+reviewed = true
+
+[[axioms]]
+id = "ilp_return_requires_return_set_member_b3c5d7e9"
+content = "__ilp_ctrl must have a boolean member named 'return_set' that is assignable."
+formal_spec = "ILP_RETURN(x) => has_member(__ilp_ctrl, return_set) && is_assignable(__ilp_ctrl.return_set, bool)"
+layer = "library"
+function = "ILP_RETURN"
+header = "ilp_for/ilp_for.hpp"
+axiom_type = "precondition"
+on_violation = "Compilation error: cannot assign to __ilp_ctrl.return_set"
+reviewed = true
+
+[[axioms]]
+id = "ilp_return_requires_ok_member_d4e6f8a1"
+content = "__ilp_ctrl must have a boolean member named 'ok' that is assignable."
+formal_spec = "ILP_RETURN(x) => has_member(__ilp_ctrl, ok) && is_assignable(__ilp_ctrl.ok, bool)"
+layer = "library"
+function = "ILP_RETURN"
+header = "ilp_for/ilp_for.hpp"
+axiom_type = "precondition"
+on_violation = "Compilation error: cannot assign to __ilp_ctrl.ok"
+reviewed = true
+
+[[axioms]]
+id = "ilp_return_requires_void_function_context_e5f7a9b2"
+content = "ILP_RETURN must be invoked within a function with void return type, as it executes a bare 'return' statement."
+formal_spec = "ILP_RETURN(x) => enclosing_function_return_type() == void"
+layer = "library"
+function = "ILP_RETURN"
+header = "ilp_for/ilp_for.hpp"
+axiom_type = "precondition"
+on_violation = "Compilation error: return-statement with no value, in function returning non-void"
+reviewed = true
+
+[[axioms]]
+id = "ilp_return_postcondition_state_f6a8b0c3"
+content = "After ILP_RETURN(x) executes (before returning), __ilp_ctrl.storage contains x, __ilp_ctrl.return_set is true, and __ilp_ctrl.ok is false."
+formal_spec = "ILP_RETURN(x) => (__ilp_ctrl.storage.value == x) && (__ilp_ctrl.return_set == true) && (__ilp_ctrl.ok == false)"
+layer = "library"
+function = "ILP_RETURN"
+header = "ilp_for/ilp_for.hpp"
+axiom_type = "postcondition"
+on_violation = "Logic error: control flow state incorrectly set"
+reviewed = true
+
+[[axioms]]
+id = "ilp_return_control_flow_terminates_a7b9c1d4"
+content = "ILP_RETURN causes immediate return from the enclosing function; no subsequent code in the same block is executed."
+formal_spec = "ILP_RETURN(x) => terminates_enclosing_function() && !executes_subsequent_statements()"
+layer = "library"
+function = "ILP_RETURN"
+header = "ilp_for/ilp_for.hpp"
+axiom_type = "effect"
+on_violation = "N/A - this is guaranteed by the return statement"
+reviewed = true
+
+[[axioms]]
+id = "ilp_return_set_may_throw_e8c0d2f5"
+content = "If __ilp_ctrl.storage.set(x) throws an exception, the subsequent assignments and return are not executed, potentially leaving __ilp_ctrl in an inconsistent state."
+formal_spec = "ILP_RETURN(x) && throws(__ilp_ctrl.storage.set(x)) => !(__ilp_ctrl.return_set == true) && !(__ilp_ctrl.ok == false)"
+layer = "library"
+function = "ILP_RETURN"
+header = "ilp_for/ilp_for.hpp"
+axiom_type = "constraint"
+on_violation = "Exception propagates; __ilp_ctrl state may be inconsistent"
+confidence = 0.9
+reviewed = true
+
