@@ -41,6 +41,7 @@ dependencies = [
     # Utilities
     "python-dotenv>=1.0.0",
     "pyyaml>=6.0.0",
+    "toml>=0.10.0",  # For TOML writing (tomllib only reads)
 ]
 
 [project.optional-dependencies]
