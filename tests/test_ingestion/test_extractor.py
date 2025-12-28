@@ -1,6 +1,5 @@
 """Tests for the AxiomExtractor and related functionality."""
 
-import pytest
 
 from axiom.ingestion import AxiomExtractor, ExtractionResult, extract_axioms
 from axiom.ingestion.extractor import MacroExtractionResult
@@ -445,7 +444,7 @@ class TestHazardousOperationDetection:
 
         code = "int f(int a, int b) { return a + b; }"
         builder = SubgraphBuilder()
-        subgraph = builder.build(code, "f")
+        builder.build(code, "f")  # Build subgraph (used internally)
 
         extractor = AxiomExtractor()
         # Addition without function calls is not hazardous

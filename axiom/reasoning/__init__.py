@@ -5,9 +5,9 @@
 
 """Reasoning module for axiom validation and proof chains."""
 
-from .validator import AxiomValidator
-from .proof_chain import ProofChainGenerator
 from .contradiction import ContradictionDetector
+from .proof_chain import ProofChainGenerator
+from .validator import AxiomValidator
 
 __all__ = [
     "AxiomValidator",

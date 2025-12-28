@@ -10,7 +10,6 @@ of all operations in a function for semantic analysis.
 """
 
 import hashlib
-from typing import List, Optional, Tuple
 
 import tree_sitter_c as tsc
 import tree_sitter_cpp as tscpp
@@ -91,7 +90,7 @@ class SubgraphBuilder:
         content = f"{node.start_point}:{node.end_point}:{self._node_counter}"
         return hashlib.md5(content.encode()).hexdigest()[:8]
 
-    def build(self, source: str, function_name: str) -> Optional[FunctionSubgraph]:
+    def build(self, source: str, function_name: str) -> FunctionSubgraph | None:
         """Parse a function and build its operation subgraph.
 
         Args:
@@ -130,7 +129,7 @@ class SubgraphBuilder:
             )
 
         # Walk the AST and extract all operations
-        operations: List[OperationNode] = []
+        operations: list[OperationNode] = []
         self._walk_all_nodes(body, source, operations, guards=[], parent_id=None)
 
         # Link predecessors/successors (simple linear for now)
@@ -158,7 +157,7 @@ class SubgraphBuilder:
             line_end=func_node.end_point[0] + 1,
         )
 
-    def build_all(self, source: str) -> List[FunctionSubgraph]:
+    def build_all(self, source: str) -> list[FunctionSubgraph]:
         """Build subgraphs for all functions in the source.
 
         Args:
@@ -178,7 +177,7 @@ class SubgraphBuilder:
 
         return results
 
-    def _find_function(self, root: Node, function_name: str) -> Optional[Node]:
+    def _find_function(self, root: Node, function_name: str) -> Node | None:
         """Find a function definition by name.
 
         Args:
@@ -202,7 +201,7 @@ class SubgraphBuilder:
 
         return None
 
-    def _find_all_functions(self, root: Node) -> List[str]:
+    def _find_all_functions(self, root: Node) -> list[str]:
         """Find all function names in the source.
 
         Args:
@@ -225,7 +224,7 @@ class SubgraphBuilder:
 
         return functions
 
-    def _get_function_name_from_declarator(self, declarator: Node) -> Optional[str]:
+    def _get_function_name_from_declarator(self, declarator: Node) -> str | None:
         """Extract function name from a declarator node.
 
         Args:
@@ -281,7 +280,7 @@ class SubgraphBuilder:
             return func_node.text[:end_pos - func_node.start_byte].decode("utf8").strip()
         return func_node.text.decode("utf8")
 
-    def _extract_parameters(self, func_node: Node) -> List[Tuple[str, str]]:
+    def _extract_parameters(self, func_node: Node) -> list[tuple[str, str]]:
         """Extract function parameters.
 
         Args:
@@ -342,7 +341,7 @@ class SubgraphBuilder:
             return type_node.text.decode("utf8")
         return ""
 
-    def _check_if_method(self, func_node: Node) -> Tuple[bool, Optional[str]]:
+    def _check_if_method(self, func_node: Node) -> tuple[bool, str | None]:
         """Check if function is a class method.
 
         Args:
@@ -373,7 +372,7 @@ class SubgraphBuilder:
 
         return False, None
 
-    def _find_child_recursive(self, node: Node, node_type: str) -> Optional[Node]:
+    def _find_child_recursive(self, node: Node, node_type: str) -> Node | None:
         """Recursively find a child node of a specific type.
 
         Args:
@@ -397,9 +396,9 @@ class SubgraphBuilder:
         self,
         node: Node,
         source: str,
-        operations: List[OperationNode],
-        guards: List[str],
-        parent_id: Optional[str],
+        operations: list[OperationNode],
+        guards: list[str],
+        parent_id: str | None,
     ) -> None:
         """Recursively walk AST and extract all operations.
 
@@ -535,7 +534,7 @@ class SubgraphBuilder:
             self._walk_all_nodes(child, source, operations, guards, parent_id)
 
     def _create_binary_op(
-        self, node: Node, source: str, guards: List[str], parent_id: Optional[str]
+        self, node: Node, source: str, guards: list[str], parent_id: str | None
     ) -> OperationNode:
         """Create operation node for binary expression."""
         operator = ""
@@ -571,7 +570,7 @@ class SubgraphBuilder:
         )
 
     def _create_assignment_op(
-        self, node: Node, source: str, guards: List[str], parent_id: Optional[str]
+        self, node: Node, source: str, guards: list[str], parent_id: str | None
     ) -> OperationNode:
         """Create operation node for assignment expression."""
         operator = "="
@@ -613,7 +612,7 @@ class SubgraphBuilder:
         )
 
     def _create_unary_op(
-        self, node: Node, source: str, guards: List[str], parent_id: Optional[str]
+        self, node: Node, source: str, guards: list[str], parent_id: str | None
     ) -> OperationNode:
         """Create operation node for unary expression."""
         operator = ""
@@ -643,7 +642,7 @@ class SubgraphBuilder:
         )
 
     def _create_update_op(
-        self, node: Node, source: str, guards: List[str], parent_id: Optional[str]
+        self, node: Node, source: str, guards: list[str], parent_id: str | None
     ) -> OperationNode:
         """Create operation node for update expression (++/--)."""
         operator = ""
@@ -675,7 +674,7 @@ class SubgraphBuilder:
         )
 
     def _create_subscript_op(
-        self, node: Node, source: str, guards: List[str], parent_id: Optional[str]
+        self, node: Node, source: str, guards: list[str], parent_id: str | None
     ) -> OperationNode:
         """Create operation node for subscript/array access."""
         argument = node.child_by_field_name("argument")
@@ -710,7 +709,7 @@ class SubgraphBuilder:
         )
 
     def _create_pointer_op(
-        self, node: Node, source: str, guards: List[str], parent_id: Optional[str]
+        self, node: Node, source: str, guards: list[str], parent_id: str | None
     ) -> OperationNode:
         """Create operation node for pointer expression (* or &)."""
         operator = ""
@@ -742,7 +741,7 @@ class SubgraphBuilder:
         )
 
     def _create_field_op(
-        self, node: Node, source: str, guards: List[str], parent_id: Optional[str]
+        self, node: Node, source: str, guards: list[str], parent_id: str | None
     ) -> OperationNode:
         """Create operation node for field access (. or ->)."""
         operator = "."
@@ -781,7 +780,7 @@ class SubgraphBuilder:
         )
 
     def _create_call_op(
-        self, node: Node, source: str, guards: List[str], parent_id: Optional[str]
+        self, node: Node, source: str, guards: list[str], parent_id: str | None
     ) -> OperationNode:
         """Create operation node for function call."""
         func_node = node.child_by_field_name("function")
@@ -812,7 +811,7 @@ class SubgraphBuilder:
         )
 
     def _create_return_op(
-        self, node: Node, source: str, guards: List[str], parent_id: Optional[str]
+        self, node: Node, source: str, guards: list[str], parent_id: str | None
     ) -> OperationNode:
         """Create operation node for return statement."""
         # Get return value
@@ -836,7 +835,7 @@ class SubgraphBuilder:
         )
 
     def _create_declaration_op(
-        self, node: Node, source: str, guards: List[str], parent_id: Optional[str]
+        self, node: Node, source: str, guards: list[str], parent_id: str | None
     ) -> OperationNode:
         """Create operation node for variable declaration."""
         # Get declared variable names
@@ -866,7 +865,7 @@ class SubgraphBuilder:
         )
 
     def _create_branch_op(
-        self, node: Node, source: str, guards: List[str], parent_id: Optional[str]
+        self, node: Node, source: str, guards: list[str], parent_id: str | None
     ) -> OperationNode:
         """Create operation node for if statement."""
         condition = node.child_by_field_name("condition")
@@ -887,7 +886,7 @@ class SubgraphBuilder:
         )
 
     def _create_loop_op(
-        self, node: Node, source: str, guards: List[str], parent_id: Optional[str]
+        self, node: Node, source: str, guards: list[str], parent_id: str | None
     ) -> OperationNode:
         """Create operation node for loop statement."""
         # Extract loop condition
@@ -911,7 +910,7 @@ class SubgraphBuilder:
         )
 
     def _create_switch_op(
-        self, node: Node, source: str, guards: List[str], parent_id: Optional[str]
+        self, node: Node, source: str, guards: list[str], parent_id: str | None
     ) -> OperationNode:
         """Create operation node for switch statement."""
         condition = node.child_by_field_name("condition")
@@ -932,7 +931,7 @@ class SubgraphBuilder:
         )
 
     def _create_ternary_op(
-        self, node: Node, source: str, guards: List[str], parent_id: Optional[str]
+        self, node: Node, source: str, guards: list[str], parent_id: str | None
     ) -> OperationNode:
         """Create operation node for ternary expression."""
         condition = node.child_by_field_name("condition")
@@ -963,7 +962,7 @@ class SubgraphBuilder:
         )
 
     def _create_cast_op(
-        self, node: Node, source: str, guards: List[str], parent_id: Optional[str]
+        self, node: Node, source: str, guards: list[str], parent_id: str | None
     ) -> OperationNode:
         """Create operation node for cast expression."""
         type_node = node.child_by_field_name("type")
@@ -990,7 +989,7 @@ class SubgraphBuilder:
         )
 
     def _create_sizeof_op(
-        self, node: Node, source: str, guards: List[str], parent_id: Optional[str]
+        self, node: Node, source: str, guards: list[str], parent_id: str | None
     ) -> OperationNode:
         """Create operation node for sizeof expression."""
         operands = []
@@ -1013,7 +1012,7 @@ class SubgraphBuilder:
         )
 
     def _create_new_op(
-        self, node: Node, source: str, guards: List[str], parent_id: Optional[str]
+        self, node: Node, source: str, guards: list[str], parent_id: str | None
     ) -> OperationNode:
         """Create operation node for new expression (C++)."""
         type_node = node.child_by_field_name("type")
@@ -1034,7 +1033,7 @@ class SubgraphBuilder:
         )
 
     def _create_delete_op(
-        self, node: Node, source: str, guards: List[str], parent_id: Optional[str]
+        self, node: Node, source: str, guards: list[str], parent_id: str | None
     ) -> OperationNode:
         """Create operation node for delete expression (C++)."""
         operands = []
@@ -1057,7 +1056,7 @@ class SubgraphBuilder:
         )
 
     def _create_throw_op(
-        self, node: Node, source: str, guards: List[str], parent_id: Optional[str]
+        self, node: Node, source: str, guards: list[str], parent_id: str | None
     ) -> OperationNode:
         """Create operation node for throw statement (C++)."""
         operands = []
@@ -1083,7 +1082,7 @@ class SubgraphBuilder:
     # Macro extraction methods
     # =====================================================================
 
-    def extract_macros(self, source: str, file_path: str = "") -> List[MacroDefinition]:
+    def extract_macros(self, source: str, file_path: str = "") -> list[MacroDefinition]:
         """Extract all macro definitions from source code.
 
         Args:
@@ -1105,7 +1104,7 @@ class SubgraphBuilder:
         node: Node,
         source: str,
         file_path: str,
-        macros: List[MacroDefinition],
+        macros: list[MacroDefinition],
     ) -> None:
         """Recursively find macro definitions in the AST.
 
@@ -1133,7 +1132,7 @@ class SubgraphBuilder:
 
     def _parse_function_macro(
         self, node: Node, source: str, file_path: str
-    ) -> Optional[MacroDefinition]:
+    ) -> MacroDefinition | None:
         """Parse a function-like macro definition.
 
         Args:
@@ -1190,7 +1189,7 @@ class SubgraphBuilder:
 
     def _parse_object_macro(
         self, node: Node, source: str, file_path: str
-    ) -> Optional[MacroDefinition]:
+    ) -> MacroDefinition | None:
         """Parse an object-like macro definition.
 
         Args:
@@ -1239,7 +1238,7 @@ class SubgraphBuilder:
 
     def _analyze_macro_body(
         self, body: str
-    ) -> Tuple[bool, bool, bool, List[str], List[str]]:
+    ) -> tuple[bool, bool, bool, list[str], list[str]]:
         """Analyze macro body for hazardous operations.
 
         This uses simple pattern matching since the macro body

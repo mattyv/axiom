@@ -7,7 +7,6 @@
 
 import csv
 from pathlib import Path
-from typing import List, Optional
 
 from axiom.models import ErrorCode, ErrorType
 
@@ -30,15 +29,15 @@ class ErrorCodesParser:
         """
         self.csv_path = Path(csv_path)
 
-    def parse(self) -> List[ErrorCode]:
+    def parse(self) -> list[ErrorCode]:
         """Parse CSV and return list of ErrorCode objects.
 
         Returns:
             List of parsed ErrorCode objects.
         """
-        error_codes: List[ErrorCode] = []
+        error_codes: list[ErrorCode] = []
 
-        with open(self.csv_path, "r", encoding="utf-8") as f:
+        with open(self.csv_path, encoding="utf-8") as f:
             reader = csv.reader(f)
 
             for row in reader:
@@ -48,7 +47,7 @@ class ErrorCodesParser:
 
         return error_codes
 
-    def _parse_row(self, row: List[str]) -> Optional[ErrorCode]:
+    def _parse_row(self, row: list[str]) -> ErrorCode | None:
         """Parse a single CSV row.
 
         Args:
@@ -112,7 +111,7 @@ class ErrorCodesParser:
             return code.split("-", 1)[1]
         return code
 
-    def _parse_references(self, refs: str) -> List[str]:
+    def _parse_references(self, refs: str) -> list[str]:
         """Parse C standard references from string.
 
         Args:

@@ -6,12 +6,16 @@
 """Pydantic models for axioms and error codes."""
 
 import tomllib
-from datetime import datetime
+from datetime import UTC, datetime
 from enum import Enum
 from pathlib import Path
-from typing import List, Optional
 
 from pydantic import BaseModel, Field
+
+
+def _utc_now() -> datetime:
+    """Return current UTC time as timezone-aware datetime."""
+    return datetime.now(UTC)
 
 
 class ErrorType(str, Enum):
@@ -29,8 +33,8 @@ class SourceLocation(BaseModel):
 
     file: str
     module: str
-    line_start: Optional[int] = None
-    line_end: Optional[int] = None
+    line_start: int | None = None
+    line_end: int | None = None
 
 
 class ViolationRef(BaseModel):
@@ -61,20 +65,20 @@ class Axiom(BaseModel):
     content: str  # Human-readable description
     formal_spec: str  # K requires clause
     source: SourceLocation
-    violated_by: List[ViolationRef] = Field(default_factory=list)
-    c_standard_refs: List[str] = Field(default_factory=list)
+    violated_by: list[ViolationRef] = Field(default_factory=list)
+    c_standard_refs: list[str] = Field(default_factory=list)
     layer: str = "c11_core"
     confidence: float = 1.0
-    tags: List[str] = Field(default_factory=list)
+    tags: list[str] = Field(default_factory=list)
 
     # New fields for function-centric axioms (K-style)
-    function: Optional[str] = None  # e.g., "malloc", "realloc"
-    header: Optional[str] = None  # e.g., "stdlib.h", "string.h"
-    axiom_type: Optional[AxiomType] = None  # precondition, postcondition, etc.
-    on_violation: Optional[str] = None  # e.g., "undefined behavior", "throws X"
+    function: str | None = None  # e.g., "malloc", "realloc"
+    header: str | None = None  # e.g., "stdlib.h", "string.h"
+    axiom_type: AxiomType | None = None  # precondition, postcondition, etc.
+    on_violation: str | None = None  # e.g., "undefined behavior", "throws X"
 
     # Dependency tracking (for library -> foundation axiom chains)
-    depends_on: List[str] = Field(default_factory=list)  # IDs of foundation axioms this depends on
+    depends_on: list[str] = Field(default_factory=list)  # IDs of foundation axioms this depends on
 
     # Review status (affects confidence calculation for library axioms)
     reviewed: bool = False  # True if human-approved during review process
@@ -93,12 +97,12 @@ class Axiom(BaseModel):
             Adjusted confidence value between 0.0 and 1.0.
         """
         # Foundation layers are ground truth - no adjustment
-        GROUNDED_LAYERS = {
+        grounded_layers = {
             "c11_core", "c11_stdlib",
             "cpp_core", "cpp_stdlib",
             "cpp20_language", "cpp20_stdlib",
         }
-        if self.layer in GROUNDED_LAYERS:
+        if self.layer in grounded_layers:
             return self.confidence
 
         # Library axioms get confidence adjusted based on review status
@@ -117,8 +121,8 @@ class ErrorCode(BaseModel):
     internal_code: str  # Short code like "CEMX1"
     type: ErrorType
     description: str
-    c_standard_refs: List[str] = Field(default_factory=list)
-    validates_axioms: List[str] = Field(default_factory=list)
+    c_standard_refs: list[str] = Field(default_factory=list)
+    validates_axioms: list[str] = Field(default_factory=list)
 
 
 class AxiomCollection(BaseModel):
@@ -126,9 +130,9 @@ class AxiomCollection(BaseModel):
 
     version: str = "1.0"
     source: str = "kframework/c-semantics"
-    extracted_at: datetime = Field(default_factory=datetime.utcnow)
-    axioms: List[Axiom] = Field(default_factory=list)
-    error_codes: List[ErrorCode] = Field(default_factory=list)
+    extracted_at: datetime = Field(default_factory=_utc_now)
+    axioms: list[Axiom] = Field(default_factory=list)
+    error_codes: list[ErrorCode] = Field(default_factory=list)
 
     def to_toml(self) -> str:
         """Serialize collection to TOML string."""
@@ -264,7 +268,7 @@ class AxiomCollection(BaseModel):
             source=data.get("source", "unknown"),
             extracted_at=datetime.fromisoformat(data["extracted_at"])
             if "extracted_at" in data
-            else datetime.utcnow(),
+            else _utc_now(),
             axioms=axioms,
             error_codes=error_codes,
         )

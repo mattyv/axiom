@@ -15,7 +15,6 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from axiom.extractors import AxiomLinker, ErrorCodesParser, KSemanticsExtractor
 from axiom.graph import Neo4jLoader, apply_schema
-from axiom.models import AxiomCollection
 from axiom.vectors import LanceDBLoader
 
 

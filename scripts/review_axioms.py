@@ -22,7 +22,7 @@ from axiom.ingestion.reviewer import (
     ReviewSessionManager,
     format_axiom_for_review,
 )
-from axiom.models import Axiom, AxiomType, SourceLocation
+from axiom.models import Axiom, AxiomType
 
 
 def clear_screen():

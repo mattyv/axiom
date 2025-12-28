@@ -13,7 +13,6 @@ import hashlib
 import re
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import List, Optional
 
 import toml
 
@@ -37,10 +36,10 @@ class ExtractionResult:
 
     function_name: str
     file_path: str
-    axioms: List[Axiom] = field(default_factory=list)
+    axioms: list[Axiom] = field(default_factory=list)
     raw_response: str = ""
-    error: Optional[str] = None
-    subgraph: Optional[FunctionSubgraph] = None
+    error: str | None = None
+    subgraph: FunctionSubgraph | None = None
 
 
 @dataclass
@@ -49,10 +48,10 @@ class MacroExtractionResult:
 
     macro_name: str
     file_path: str
-    axioms: List[Axiom] = field(default_factory=list)
+    axioms: list[Axiom] = field(default_factory=list)
     raw_response: str = ""
-    error: Optional[str] = None
-    macro: Optional[MacroDefinition] = None
+    error: str | None = None
+    macro: MacroDefinition | None = None
 
 
 @dataclass
@@ -60,8 +59,8 @@ class ExtractionJob:
     """A batch extraction job for multiple functions."""
 
     job_id: str
-    source_files: List[str]
-    results: List[ExtractionResult] = field(default_factory=list)
+    source_files: list[str]
+    results: list[ExtractionResult] = field(default_factory=list)
     status: str = "pending"  # pending, running, completed, failed
 
 
@@ -153,9 +152,9 @@ class AxiomExtractor:
     def extract_from_file(
         self,
         file_path: str,
-        function_names: Optional[List[str]] = None,
+        function_names: list[str] | None = None,
         progress_callback=None,
-    ) -> List[ExtractionResult]:
+    ) -> list[ExtractionResult]:
         """Extract axioms from all functions in a file.
 
         Args:
@@ -211,7 +210,7 @@ class AxiomExtractor:
         file_path: str = "",
         header: str = "",
         only_hazardous: bool = True,
-    ) -> List[MacroExtractionResult]:
+    ) -> list[MacroExtractionResult]:
         """Extract axioms from all macros in source code.
 
         Args:
@@ -292,7 +291,7 @@ class AxiomExtractor:
         file_path: str,
         only_hazardous: bool = True,
         progress_callback=None,
-    ) -> List[MacroExtractionResult]:
+    ) -> list[MacroExtractionResult]:
         """Extract axioms from all macros in a file.
 
         Args:
@@ -332,7 +331,7 @@ class AxiomExtractor:
 
         return results
 
-    def _query_macro_rag(self, macro: MacroDefinition) -> List[dict]:
+    def _query_macro_rag(self, macro: MacroDefinition) -> list[dict]:
         """Query RAG for related foundation axioms for a macro.
 
         Args:
@@ -418,7 +417,7 @@ class AxiomExtractor:
             return True
         return False
 
-    def _query_rag(self, subgraph: FunctionSubgraph) -> List[dict]:
+    def _query_rag(self, subgraph: FunctionSubgraph) -> list[dict]:
         """Query RAG for related foundation axioms.
 
         Args:
@@ -546,7 +545,7 @@ class AxiomExtractor:
         function_name: str,
         header: str,
         file_path: str,
-    ) -> List[Axiom]:
+    ) -> list[Axiom]:
         """Parse LLM response into Axiom objects.
 
         Args:
@@ -596,7 +595,7 @@ class AxiomExtractor:
         function_name: str,
         header: str,
         file_path: str,
-    ) -> Optional[Axiom]:
+    ) -> Axiom | None:
         """Create an Axiom object from parsed dict.
 
         Args:

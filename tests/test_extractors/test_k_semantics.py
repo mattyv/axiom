@@ -1,9 +1,6 @@
 """Tests for K semantics extractor."""
 
 from pathlib import Path
-from typing import List
-
-import pytest
 
 from axiom.extractors.k_semantics import KSemanticsExtractor, ParsedRule
 from axiom.models import Axiom

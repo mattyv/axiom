@@ -6,7 +6,6 @@
 """FastAPI application for Axiom validation service."""
 
 from contextlib import asynccontextmanager
-from typing import Optional
 
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
@@ -27,11 +26,10 @@ from .models import (
     ValidateResponse,
 )
 
-
 # Global instances
-_validator: Optional[AxiomValidator] = None
-_neo4j: Optional[Neo4jLoader] = None
-_lance: Optional[LanceDBLoader] = None
+_validator: AxiomValidator | None = None
+_neo4j: Neo4jLoader | None = None
+_lance: LanceDBLoader | None = None
 
 
 @asynccontextmanager

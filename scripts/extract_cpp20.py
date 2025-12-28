@@ -21,7 +21,7 @@ import argparse
 import subprocess
 import sys
 import tomllib
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from html.parser import HTMLParser
 from pathlib import Path
 from urllib.request import urlopen
@@ -30,14 +30,13 @@ from urllib.request import urlopen
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from axiom.extractors.prompts import (
-    SYSTEM_PROMPT,
-    HIGH_SIGNAL_SECTIONS,
     HIGH_SIGNAL_LIBRARY_SECTIONS,
+    HIGH_SIGNAL_SECTIONS,
+    SYSTEM_PROMPT,
     generate_extraction_prompt,
 )
 from axiom.models import AxiomCollection
 from axiom.vectors import LanceDBLoader
-
 
 OUTPUT_FILE = Path("knowledge/foundations/cpp20_language.toml")
 
@@ -120,7 +119,7 @@ def extract_section(section: str, dry_run: bool = False) -> int:
     print(f"  Existing axioms: {len(existing)}")
 
     # Build prompt
-    timestamp = datetime.now(timezone.utc).isoformat()
+    timestamp = datetime.now(UTC).isoformat()
     prompt = generate_extraction_prompt(
         section_ref=section,
         html_content=html_content,
@@ -162,7 +161,7 @@ def extract_section(section: str, dry_run: bool = False) -> int:
 
     # Clean markdown code blocks (start and end)
     lines = toml_output.split("\n")
-    lines = [l for l in lines if not l.strip().startswith("```")]
+    lines = [line for line in lines if not line.strip().startswith("```")]
     toml_output = "\n".join(lines)
 
     # Strip any preamble before TOML (Claude sometimes adds text before)

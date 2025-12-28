@@ -6,7 +6,6 @@
 """Validate LLM outputs against formal axioms."""
 
 from dataclasses import dataclass, field
-from typing import List, Optional
 
 from .contradiction import Contradiction, ContradictionDetector
 from .proof_chain import ProofChain, ProofChainGenerator
@@ -19,10 +18,10 @@ class ValidationResult:
     claim: str
     is_valid: bool
     confidence: float
-    contradictions: List[Contradiction] = field(default_factory=list)
-    proof_chain: Optional[ProofChain] = None
+    contradictions: list[Contradiction] = field(default_factory=list)
+    proof_chain: ProofChain | None = None
     explanation: str = ""
-    warnings: List[str] = field(default_factory=list)
+    warnings: list[str] = field(default_factory=list)
 
 
 class AxiomValidator:
@@ -30,8 +29,8 @@ class AxiomValidator:
 
     def __init__(
         self,
-        proof_generator: Optional[ProofChainGenerator] = None,
-        contradiction_detector: Optional[ContradictionDetector] = None,
+        proof_generator: ProofChainGenerator | None = None,
+        contradiction_detector: ContradictionDetector | None = None,
     ) -> None:
         """Initialize validator with reasoning components.
 
@@ -102,7 +101,7 @@ class AxiomValidator:
             warnings=warnings,
         )
 
-    def validate_text(self, text: str) -> List[ValidationResult]:
+    def validate_text(self, text: str) -> list[ValidationResult]:
         """Validate multiple claims extracted from text.
 
         Args:
@@ -134,7 +133,7 @@ class AxiomValidator:
         is_valid, _ = self.contradiction_detector.validate_claim(claim)
         return is_valid
 
-    def _extract_claims(self, text: str) -> List[str]:
+    def _extract_claims(self, text: str) -> list[str]:
         """Extract individual claims from text.
 
         For now, split on sentences. Future: use NLP.
@@ -156,7 +155,7 @@ class AxiomValidator:
         self,
         claim: str,
         is_valid: bool,
-        contradictions: List[Contradiction],
+        contradictions: list[Contradiction],
         proof_chain: ProofChain,
     ) -> str:
         """Generate a human-readable explanation of the validation."""
@@ -179,18 +178,18 @@ class AxiomValidator:
             )
         elif is_valid:
             return (
-                f"UNCERTAIN: No contradictions found, but no supporting "
-                f"axioms were found either. Exercise caution."
+                "UNCERTAIN: No contradictions found, but no supporting "
+                "axioms were found either. Exercise caution."
             )
         else:
             return (
-                f"UNCERTAIN: Could not definitively validate or contradict "
-                f"this claim against the axiom database."
+                "UNCERTAIN: Could not definitively validate or contradict "
+                "this claim against the axiom database."
             )
 
     def _generate_warnings(
-        self, claim: str, contradictions: List[Contradiction]
-    ) -> List[str]:
+        self, claim: str, contradictions: list[Contradiction]
+    ) -> list[str]:
         """Generate warnings based on validation results."""
         warnings = []
 

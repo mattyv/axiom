@@ -29,7 +29,6 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from axiom.vectors import LanceDBLoader
 
-
 # Keywords that indicate dependencies between axioms
 DEPENDENCY_PATTERNS = [
     # Variable/symbol dependencies
@@ -51,7 +50,7 @@ def extract_dependencies_from_content(content: str) -> list[str]:
     keywords = []
     content_lower = content.lower()
 
-    for pattern, dep_type in DEPENDENCY_PATTERNS:
+    for pattern, _dep_type in DEPENDENCY_PATTERNS:
         matches = re.findall(pattern, content_lower)
         for match in matches:
             if isinstance(match, tuple):
@@ -270,9 +269,9 @@ def main():
             if args.apply:
                 success = lance.update_depends_on(axiom_id, suggested)
                 if success:
-                    print(f"  ✓ Updated depends_on in LanceDB")
+                    print("  ✓ Updated depends_on in LanceDB")
                 else:
-                    print(f"  ✗ Failed to update in LanceDB")
+                    print("  ✗ Failed to update in LanceDB")
 
     print(f"\nFound {links_found} axioms that could be linked.")
 

@@ -8,7 +8,7 @@
 This server exposes axiom validation tools to LLMs via the Model Context Protocol.
 """
 
-from typing import Any, Optional
+from typing import Any
 
 from mcp.server import Server
 from mcp.server.stdio import stdio_server
@@ -19,9 +19,9 @@ from axiom.reasoning import AxiomValidator
 from axiom.vectors import LanceDBLoader
 
 # Global instances (lazy-loaded)
-_validator: Optional[AxiomValidator] = None
-_neo4j: Optional[Neo4jLoader] = None
-_lance: Optional[LanceDBLoader] = None
+_validator: AxiomValidator | None = None
+_neo4j: Neo4jLoader | None = None
+_lance: LanceDBLoader | None = None
 
 
 def _get_validator() -> AxiomValidator:
@@ -32,7 +32,7 @@ def _get_validator() -> AxiomValidator:
     return _validator
 
 
-def _get_lance() -> Optional[LanceDBLoader]:
+def _get_lance() -> LanceDBLoader | None:
     """Get or create the LanceDB instance."""
     global _lance
     if _lance is None:
@@ -43,7 +43,7 @@ def _get_lance() -> Optional[LanceDBLoader]:
     return _lance
 
 
-def _get_neo4j() -> Optional[Neo4jLoader]:
+def _get_neo4j() -> Neo4jLoader | None:
     """Get or create the Neo4j instance."""
     global _neo4j
     if _neo4j is None:
@@ -202,12 +202,12 @@ async def _handle_validate(arguments: dict[str, Any]) -> list[TextContent]:
 
     # Format response
     lines = [
-        f"## Validation Result",
-        f"",
+        "## Validation Result",
+        "",
         f"**Claim**: {result.claim}",
         f"**Valid**: {result.is_valid}",
         f"**Confidence**: {result.confidence:.2f}",
-        f"",
+        "",
     ]
 
     if result.contradictions:
@@ -226,7 +226,7 @@ async def _handle_validate(arguments: dict[str, Any]) -> list[TextContent]:
             lines.append(f"   {step.content}")
         lines.append("")
 
-    lines.append(f"### Explanation")
+    lines.append("### Explanation")
     lines.append(result.explanation)
 
     if result.warnings:
@@ -289,14 +289,14 @@ async def _handle_get_axiom(arguments: dict[str, Any]) -> list[TextContent]:
         f"**Layer**: {axiom.get('layer', 'unknown')}",
         f"**Confidence**: {axiom.get('confidence', 0.0):.2f}",
         "",
-        f"### Content",
+        "### Content",
         axiom.get("content", ""),
         "",
     ]
 
     if axiom.get("formal_spec"):
         lines.append("### Formal Specification")
-        lines.append(f"```")
+        lines.append("```")
         lines.append(axiom["formal_spec"])
         lines.append("```")
 

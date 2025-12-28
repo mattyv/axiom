@@ -63,3 +63,4 @@ knowledge/temp/
 external/c-semantics/.build/
 *.kore
 *.kompiled
+*_approved.toml

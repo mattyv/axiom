@@ -1,6 +1,5 @@
 """Tests for the axiom linker module."""
 
-import pytest
 
 from axiom.extractors.linker import AxiomLinker
 from axiom.models import Axiom, ErrorCode, ErrorType, SourceLocation, ViolationRef

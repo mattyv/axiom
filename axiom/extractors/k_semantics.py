@@ -6,14 +6,13 @@
 """K Semantics extractor for parsing .k files."""
 
 import re
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from pathlib import Path
-from typing import Dict, List, Optional
 
-from axiom.models import Axiom, AxiomType, SourceLocation, ViolationRef
+from axiom.models import Axiom, AxiomType, SourceLocation
 
 # Module name to header file mapping
-MODULE_TO_HEADER: Dict[str, str] = {
+MODULE_TO_HEADER: dict[str, str] = {
     "LIBC-STDLIB": "stdlib.h",
     "LIBC-STDLIB-SYNTAX": "stdlib.h",
     "LIBC-STRING": "string.h",
@@ -66,18 +65,18 @@ class ParsedRule:
 
     lhs: str
     rhs: str
-    requires: Optional[str]
+    requires: str | None
     module: str
     source_file: str
-    error_marker: Optional[ErrorMarker]
-    attributes: List[str]
-    line_start: Optional[int] = None
-    line_end: Optional[int] = None
+    error_marker: ErrorMarker | None
+    attributes: list[str]
+    line_start: int | None = None
+    line_end: int | None = None
 
     # New K-style fields
-    function: Optional[str] = None  # Extracted from builtin("name", ...)
-    standard_ref: Optional[StandardRef] = None  # C standard citation
-    preceding_comment: Optional[str] = None  # Comment block before rule
+    function: str | None = None  # Extracted from builtin("name", ...)
+    standard_ref: StandardRef | None = None  # C standard citation
+    preceding_comment: str | None = None  # Comment block before rule
 
 
 class KSemanticsExtractor:
@@ -122,7 +121,7 @@ class KSemanticsExtractor:
         """
         self.semantics_root = Path(semantics_root)
 
-    def parse_file(self, k_file: Path) -> List[ParsedRule]:
+    def parse_file(self, k_file: Path) -> list[ParsedRule]:
         """Parse a single K file and extract rules.
 
         Args:
@@ -135,7 +134,7 @@ class KSemanticsExtractor:
         module_name = self._extract_module_name(content)
         source_file = str(k_file.name)
 
-        rules: List[ParsedRule] = []
+        rules: list[ParsedRule] = []
 
         # Split content into rule blocks
         rule_blocks = self._split_into_rules(content)
@@ -156,7 +155,7 @@ class KSemanticsExtractor:
             return match.group(1)
         return "UNKNOWN"
 
-    def _split_into_rules(self, content: str) -> List[tuple]:
+    def _split_into_rules(self, content: str) -> list[tuple]:
         """Split K file content into individual rule blocks.
 
         Returns:
@@ -169,7 +168,7 @@ class KSemanticsExtractor:
         rule_start = 0
         in_rule = False
         in_comment = False
-        preceding_for_rule: Optional[str] = None
+        preceding_for_rule: str | None = None
 
         for i, line in enumerate(lines, 1):
             stripped = line.strip()
@@ -223,8 +222,8 @@ class KSemanticsExtractor:
         module: str,
         source_file: str,
         line_start: int,
-        preceding_comment: Optional[str] = None,
-    ) -> Optional[ParsedRule]:
+        preceding_comment: str | None = None,
+    ) -> ParsedRule | None:
         """Parse a single rule block.
 
         Args:
@@ -282,14 +281,14 @@ class KSemanticsExtractor:
             preceding_comment=preceding_comment,
         )
 
-    def _extract_function_name(self, block: str) -> Optional[str]:
+    def _extract_function_name(self, block: str) -> str | None:
         """Extract function name from builtin("name", ...) pattern."""
         match = self.BUILTIN_PATTERN.search(block)
         if match:
             return match.group(1)
         return None
 
-    def _extract_standard_ref(self, comment: str) -> Optional[StandardRef]:
+    def _extract_standard_ref(self, comment: str) -> StandardRef | None:
         """Extract C standard reference from comment block."""
         # First try to find the paragraph reference
         para_match = self.PARA_PATTERN.search(comment)
@@ -335,7 +334,7 @@ class KSemanticsExtractor:
 
         return "", ""
 
-    def _extract_requires(self, block: str) -> Optional[str]:
+    def _extract_requires(self, block: str) -> str | None:
         """Extract requires clause from rule block."""
         match = re.search(r"requires\s+(.+?)(?=\s+\[|\s*$)", block, re.DOTALL)
         if match:
@@ -345,7 +344,7 @@ class KSemanticsExtractor:
             return req
         return None
 
-    def extract_axioms_from_file(self, k_file: Path) -> List[Axiom]:
+    def extract_axioms_from_file(self, k_file: Path) -> list[Axiom]:
         """Extract axioms from a K file.
 
         Axioms are rules with requires clauses that don't have error markers.
@@ -360,7 +359,7 @@ class KSemanticsExtractor:
 
         rules = self.parse_file(k_file)
         generator = ContentGenerator()
-        axioms: List[Axiom] = []
+        axioms: list[Axiom] = []
 
         for rule in rules:
             # Extract axioms from rules with requires clauses (no error markers)
@@ -381,7 +380,7 @@ class KSemanticsExtractor:
                     )
 
                 # Build C standard refs list
-                c_standard_refs: List[str] = []
+                c_standard_refs: list[str] = []
                 if rule.standard_ref:
                     ref = f"{rule.standard_ref.section}/{rule.standard_ref.paragraphs}"
                     c_standard_refs.append(ref)
@@ -478,13 +477,13 @@ class KSemanticsExtractor:
 
         return axioms
 
-    def extract_all(self) -> List[Axiom]:
+    def extract_all(self) -> list[Axiom]:
         """Extract axioms from all K files in the semantics directory.
 
         Returns:
             List of all extracted Axiom objects.
         """
-        axioms: List[Axiom] = []
+        axioms: list[Axiom] = []
 
         for k_file in self.semantics_root.rglob("*.k"):
             try:
@@ -521,7 +520,7 @@ class KSemanticsExtractor:
         else:
             return "operation"
 
-    def _infer_tags(self, rule: ParsedRule) -> List[str]:
+    def _infer_tags(self, rule: ParsedRule) -> list[str]:
         """Infer tags for a rule based on content."""
         tags = []
 

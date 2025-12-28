@@ -11,14 +11,18 @@ axioms extracted by the LLM. It maintains review state and tracks decisions.
 
 import json
 from dataclasses import dataclass, field
-from datetime import datetime
+from datetime import UTC, datetime
 from enum import Enum
 from pathlib import Path
-from typing import List, Optional
 
 import toml
 
 from axiom.models import Axiom
+
+
+def _utc_now() -> datetime:
+    """Return current UTC time as timezone-aware datetime."""
+    return datetime.now(UTC)
 
 
 class ReviewDecision(str, Enum):
@@ -38,14 +42,14 @@ class ReviewItem:
     axiom: Axiom
     decision: ReviewDecision = ReviewDecision.PENDING
     reviewer_notes: str = ""
-    modified_axiom: Optional[Axiom] = None
-    reviewed_at: Optional[datetime] = None
-    source_operation_id: Optional[str] = None
-    foundation_axiom_id: Optional[str] = None
+    modified_axiom: Axiom | None = None
+    reviewed_at: datetime | None = None
+    source_operation_id: str | None = None
+    foundation_axiom_id: str | None = None
     # Function context for review display
-    line_start: Optional[int] = None
-    line_end: Optional[int] = None
-    signature: Optional[str] = None
+    line_start: int | None = None
+    line_end: int | None = None
+    signature: str | None = None
 
 
 @dataclass
@@ -53,9 +57,9 @@ class ReviewSession:
     """A review session containing multiple axioms to review."""
 
     session_id: str
-    created_at: datetime = field(default_factory=datetime.utcnow)
+    created_at: datetime = field(default_factory=_utc_now)
     source_file: str = ""
-    items: List[ReviewItem] = field(default_factory=list)
+    items: list[ReviewItem] = field(default_factory=list)
     current_index: int = 0
 
     @property
@@ -96,27 +100,27 @@ class ReviewSession:
         """Check if all items have been reviewed."""
         return self.reviewed_count == self.total_items
 
-    def get_current_item(self) -> Optional[ReviewItem]:
+    def get_current_item(self) -> ReviewItem | None:
         """Get the current item under review."""
         if 0 <= self.current_index < len(self.items):
             return self.items[self.current_index]
         return None
 
-    def next_item(self) -> Optional[ReviewItem]:
+    def next_item(self) -> ReviewItem | None:
         """Move to the next item."""
         if self.current_index < len(self.items) - 1:
             self.current_index += 1
             return self.get_current_item()
         return None
 
-    def prev_item(self) -> Optional[ReviewItem]:
+    def prev_item(self) -> ReviewItem | None:
         """Move to the previous item."""
         if self.current_index > 0:
             self.current_index -= 1
             return self.get_current_item()
         return None
 
-    def next_pending(self) -> Optional[ReviewItem]:
+    def next_pending(self) -> ReviewItem | None:
         """Move to the next pending item."""
         for i in range(self.current_index + 1, len(self.items)):
             if self.items[i].decision == ReviewDecision.PENDING:
@@ -129,7 +133,7 @@ class ReviewSession:
                 return self.items[i]
         return None
 
-    def get_approved_axioms(self) -> List[Axiom]:
+    def get_approved_axioms(self) -> list[Axiom]:
         """Get all approved axioms (including modified ones).
 
         Sets reviewed=True on all returned axioms to indicate human approval.
@@ -161,10 +165,10 @@ class ReviewSessionManager:
 
     def create_session(
         self,
-        axioms: Optional[List[Axiom]] = None,
-        session_id: Optional[str] = None,
+        axioms: list[Axiom] | None = None,
+        session_id: str | None = None,
         source_file: str = "",
-        items: Optional[List[ReviewItem]] = None,
+        items: list[ReviewItem] | None = None,
         group_by_function: bool = True,
     ) -> ReviewSession:
         """Create a new review session.
@@ -181,7 +185,7 @@ class ReviewSessionManager:
             New ReviewSession object.
         """
         if session_id is None:
-            session_id = datetime.utcnow().strftime("%Y%m%d_%H%M%S")
+            session_id = _utc_now().strftime("%Y%m%d_%H%M%S")
 
         if items is None:
             items = [ReviewItem(axiom=axiom) for axiom in (axioms or [])]
@@ -199,7 +203,7 @@ class ReviewSessionManager:
         self.save_session(session)
         return session
 
-    def _sort_items_by_function(self, items: List[ReviewItem]) -> List[ReviewItem]:
+    def _sort_items_by_function(self, items: list[ReviewItem]) -> list[ReviewItem]:
         """Sort review items so axioms from the same function are grouped together.
 
         Sorting order:
@@ -266,7 +270,7 @@ class ReviewSessionManager:
 
         path.write_text(json.dumps(data, indent=2))
 
-    def load_session(self, session_id: str) -> Optional[ReviewSession]:
+    def load_session(self, session_id: str) -> ReviewSession | None:
         """Load a review session from disk.
 
         Args:
@@ -318,7 +322,7 @@ class ReviewSessionManager:
             current_index=data["current_index"],
         )
 
-    def list_sessions(self) -> List[dict]:
+    def list_sessions(self) -> list[dict]:
         """List all available review sessions.
 
         Returns:

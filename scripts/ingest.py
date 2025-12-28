@@ -23,7 +23,6 @@ from axiom.graph import Neo4jLoader, apply_schema
 from axiom.models import AxiomCollection
 from axiom.vectors import LanceDBLoader
 
-
 # Default TOML files to load (in order)
 DEFAULT_TOML_FILES = [
     "knowledge/foundations/c11_core.toml",

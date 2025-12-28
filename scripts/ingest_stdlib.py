@@ -33,16 +33,13 @@ import json
 import re
 import subprocess
 import sys
-from datetime import datetime
 from pathlib import Path
-from typing import List, Optional, Tuple
 
 # Add project root to path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from axiom.ingestion.reviewer import ReviewItem, ReviewSessionManager
 from axiom.models import Axiom, AxiomType, SourceLocation
-
 
 # Base URL for C++ draft standard
 DRAFT_BASE_URL = "https://eel.is/c++draft"
@@ -83,7 +80,7 @@ STDLIB_SECTIONS = [
 ]
 
 
-def fetch_section(section: str) -> Optional[str]:
+def fetch_section(section: str) -> str | None:
     """Fetch a section from eel.is/c++draft.
 
     Args:
@@ -92,8 +89,8 @@ def fetch_section(section: str) -> Optional[str]:
     Returns:
         HTML content of the section, or None on error.
     """
-    import urllib.request
     import urllib.error
+    import urllib.request
 
     url = f"{DRAFT_BASE_URL}/{section}"
 
@@ -179,7 +176,7 @@ def generate_axiom_id(section: str, content: str) -> str:
     return f"cpp_stdlib_{clean_section}_{content_hash}"
 
 
-def extract_axioms_with_claude(section: str, content: str, verbose: bool = False) -> List[Axiom]:
+def extract_axioms_with_claude(section: str, content: str, verbose: bool = False) -> list[Axiom]:
     """Use Claude CLI to extract axioms from spec content.
 
     Args:
@@ -259,7 +256,7 @@ Spec content:
         json_match = re.search(r'\[[\s\S]*\]', response)
         if not json_match:
             if verbose:
-                print(f"  No JSON array found in response")
+                print("  No JSON array found in response")
                 print(f"  Response preview: {response[:500]}")
             return []
 
@@ -428,8 +425,8 @@ def main():
         print("-" * 40)
         for section in STDLIB_SECTIONS:
             print(f"  {section}")
-        print(f"\nUsage: python scripts/ingest_stdlib.py <section> [section...]")
-        print(f"URL format: https://eel.is/c++draft/<section>")
+        print("\nUsage: python scripts/ingest_stdlib.py <section> [section...]")
+        print("URL format: https://eel.is/c++draft/<section>")
         return
 
     # Determine sections to process
@@ -441,7 +438,7 @@ def main():
         sys.exit(1)
 
     # Process a single section (used for parallel processing)
-    def process_section(section: str) -> Tuple[str, List[Axiom]]:
+    def process_section(section: str) -> tuple[str, list[Axiom]]:
         """Fetch and extract axioms from a section."""
         html = fetch_section(section)
         if not html:
@@ -481,14 +478,14 @@ def main():
                 print(f"  Extracted {len(text)} chars of text")
 
             # Extract axioms
-            print(f"  Extracting axioms with Claude...")
+            print("  Extracting axioms with Claude...")
             axioms = extract_axioms_with_claude(section, text, args.verbose)
 
             if axioms:
                 print(f"  Found {len(axioms)} axioms")
                 all_axioms.extend(axioms)
             else:
-                print(f"  No axioms extracted")
+                print("  No axioms extracted")
 
     if not all_axioms:
         print("\nNo axioms extracted.")
@@ -496,7 +493,7 @@ def main():
 
     # Summary
     print(f"\n{'=' * 60}")
-    print(f"Extraction Summary")
+    print("Extraction Summary")
     print(f"{'=' * 60}")
     print(f"Sections processed: {len(sections)}")
     print(f"Total axioms:       {len(all_axioms)}")
@@ -505,7 +502,7 @@ def main():
     from axiom.models import AxiomCollection
 
     collection = AxiomCollection(
-        source=f"eel.is/c++draft",
+        source="eel.is/c++draft",
         axioms=all_axioms,
     )
 
@@ -523,7 +520,7 @@ def main():
     )
 
     print(f"Review session created: {session.session_id}")
-    print(f"\nTo review axioms:")
+    print("\nTo review axioms:")
     print(f"  python scripts/ingest_stdlib.py --review {session.session_id}")
 
 

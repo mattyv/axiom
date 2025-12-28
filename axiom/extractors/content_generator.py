@@ -7,7 +7,6 @@
 
 import hashlib
 import re
-from typing import List, Optional, Tuple
 
 
 class ContentGenerator:
@@ -143,7 +142,7 @@ class ContentGenerator:
     }
 
     def generate(
-        self, formal_spec: str, operation: Optional[str] = None
+        self, formal_spec: str, operation: str | None = None
     ) -> str:
         """Generate human-readable content from K formal spec.
 
@@ -186,7 +185,7 @@ class ContentGenerator:
         else:
             return f"{op_name} requires: {', '.join(descriptions[:-1])}, and {descriptions[-1]}."
 
-    def _extract_standard_text(self, formal_spec: str) -> Optional[str]:
+    def _extract_standard_text(self, formal_spec: str) -> str | None:
         """Extract human-readable text from C standard comments.
 
         K semantics often embed C standard quotes like:
@@ -237,7 +236,7 @@ class ContentGenerator:
         spec = re.sub(r'context\s+[^\n]+', '', spec)
         return spec.strip()
 
-    def parse_conditions(self, formal_spec: str) -> List[str]:
+    def parse_conditions(self, formal_spec: str) -> list[str]:
         """Parse formal spec into individual conditions.
 
         Args:
@@ -412,7 +411,7 @@ class ContentGenerator:
         # Create ID
         return f"c11_{module_part}_{operation}_{content_hash}"
 
-    def extract_c_standard_ref(self, formal_spec: str) -> Optional[str]:
+    def extract_c_standard_ref(self, formal_spec: str) -> str | None:
         """Extract C standard section reference from K comments.
 
         Args:

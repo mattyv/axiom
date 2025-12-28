@@ -1,6 +1,5 @@
 """Tests for human-readable content generator."""
 
-import pytest
 
 from axiom.extractors.content_generator import ContentGenerator
 

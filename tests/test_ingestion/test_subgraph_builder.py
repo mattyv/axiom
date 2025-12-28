@@ -4,11 +4,9 @@ These tests ensure the tree-sitter based parser correctly extracts
 operations from C/C++ source code with proper guards, operands, and types.
 """
 
-import pytest
 
 from axiom.ingestion import SubgraphBuilder
-from axiom.models import FunctionSubgraph, OperationNode, OperationType
-from axiom.models.operation import MacroDefinition
+from axiom.models import OperationType
 
 
 class TestSubgraphBuilderBasics:

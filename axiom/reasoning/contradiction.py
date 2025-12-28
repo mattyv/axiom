@@ -6,7 +6,6 @@
 """Detect contradictions between claims and axioms."""
 
 from dataclasses import dataclass
-from typing import List, Optional, Tuple
 
 from axiom.vectors import LanceDBLoader
 
@@ -53,7 +52,7 @@ class ContradictionDetector:
 
     def __init__(
         self,
-        lance_loader: Optional[LanceDBLoader] = None,
+        lance_loader: LanceDBLoader | None = None,
     ) -> None:
         """Initialize detector.
 
@@ -69,7 +68,7 @@ class ContradictionDetector:
             self._lance = LanceDBLoader()
         return self._lance
 
-    def detect(self, claim: str) -> List[Contradiction]:
+    def detect(self, claim: str) -> list[Contradiction]:
         """Detect contradictions for a claim.
 
         Args:
@@ -78,7 +77,7 @@ class ContradictionDetector:
         Returns:
             List of detected contradictions.
         """
-        contradictions: List[Contradiction] = []
+        contradictions: list[Contradiction] = []
 
         # Check against dangerous claims first
         if self._is_dangerous_claim(claim):
@@ -103,7 +102,7 @@ class ContradictionDetector:
 
         return unique
 
-    def validate_claim(self, claim: str) -> Tuple[bool, List[Contradiction]]:
+    def validate_claim(self, claim: str) -> tuple[bool, list[Contradiction]]:
         """Validate a claim against the axiom database.
 
         Args:
@@ -139,7 +138,7 @@ class ContradictionDetector:
         common = pattern_words & text_words
         return len(common) >= len(pattern_words) * 0.6
 
-    def _search_for_contradictions(self, claim: str) -> List[dict]:
+    def _search_for_contradictions(self, claim: str) -> list[dict]:
         """Search for axioms that might contradict the claim."""
         # Extract key terms and search for their negations
         search_terms = self._extract_contradiction_terms(claim)
@@ -151,7 +150,7 @@ class ContradictionDetector:
 
         return results
 
-    def _extract_contradiction_terms(self, claim: str) -> List[str]:
+    def _extract_contradiction_terms(self, claim: str) -> list[str]:
         """Extract terms to search for potential contradictions."""
         terms = []
         claim_lower = claim.lower()
@@ -175,7 +174,7 @@ class ContradictionDetector:
 
     def _analyze_contradiction(
         self, claim: str, axiom: dict
-    ) -> Optional[Contradiction]:
+    ) -> Contradiction | None:
         """Analyze if an axiom contradicts the claim."""
         claim_lower = claim.lower()
         axiom_content = axiom["content"].lower()
@@ -197,7 +196,7 @@ class ContradictionDetector:
 
         return None
 
-    def _semantic_contradiction_search(self, claim: str) -> List[Contradiction]:
+    def _semantic_contradiction_search(self, claim: str) -> list[Contradiction]:
         """Use semantic search to find potential contradictions."""
         contradictions = []
         claim_lower = claim.lower()

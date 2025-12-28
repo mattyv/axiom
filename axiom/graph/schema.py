@@ -5,12 +5,11 @@
 
 """Neo4j schema definitions and constraints."""
 
-from typing import List
 
 from neo4j import Driver
 
 # Schema constraints for the Axiom knowledge graph
-SCHEMA_CONSTRAINTS: List[str] = [
+SCHEMA_CONSTRAINTS: list[str] = [
     # Unique constraints
     "CREATE CONSTRAINT axiom_id IF NOT EXISTS FOR (a:Axiom) REQUIRE a.id IS UNIQUE",
     "CREATE CONSTRAINT error_code IF NOT EXISTS FOR (e:ErrorCode) REQUIRE e.code IS UNIQUE",

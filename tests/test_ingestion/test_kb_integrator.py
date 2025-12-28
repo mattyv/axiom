@@ -3,10 +3,8 @@
 import tempfile
 from pathlib import Path
 
-import pytest
-
 from axiom.ingestion.kb_integrator import IntegrationResult, KBIntegrator
-from axiom.ingestion.reviewer import ReviewDecision, ReviewItem, ReviewSession
+from axiom.ingestion.reviewer import ReviewDecision
 from axiom.models import Axiom, AxiomCollection, AxiomType, SourceLocation
 
 

@@ -70,7 +70,6 @@ import sys
 import threading
 import time
 from pathlib import Path
-from typing import List, Optional
 
 from axiom.ingestion import (
     AxiomExtractor,
@@ -79,8 +78,7 @@ from axiom.ingestion import (
     SubgraphBuilder,
 )
 from axiom.ingestion.extractor import MacroExtractionResult
-from axiom.ingestion.reviewer import format_axiom_for_review, ReviewItem
-from axiom.models import Axiom
+from axiom.ingestion.reviewer import ReviewItem
 
 
 class Spinner:
@@ -91,7 +89,7 @@ class Spinner:
     def __init__(self, message: str = ""):
         self.message = message
         self._stop_event = threading.Event()
-        self._thread: Optional[threading.Thread] = None
+        self._thread: threading.Thread | None = None
 
     def _spin(self):
         for frame in itertools.cycle(self.FRAMES):
@@ -132,7 +130,7 @@ class ProgressTracker:
         self.width = width
         self.start_time = time.time()
         self._stop_event = threading.Event()
-        self._thread: Optional[threading.Thread] = None
+        self._thread: threading.Thread | None = None
         self._lock = threading.Lock()
 
     def _render(self) -> str:
@@ -195,7 +193,7 @@ class ProgressTracker:
             self.func_progress = f"({current}/{total})"
 
 
-def load_axignore(root_path: Path) -> List[str]:
+def load_axignore(root_path: Path) -> list[str]:
     """Load ignore patterns from .axignore file.
 
     Args:
@@ -220,7 +218,7 @@ def load_axignore(root_path: Path) -> List[str]:
     return patterns
 
 
-def should_ignore(file_path: Path, root_path: Path, patterns: List[str]) -> bool:
+def should_ignore(file_path: Path, root_path: Path, patterns: list[str]) -> bool:
     """Check if a file should be ignored based on patterns.
 
     Args:
@@ -248,7 +246,7 @@ def should_ignore(file_path: Path, root_path: Path, patterns: List[str]) -> bool
         if pattern.endswith("/"):
             dir_pattern = pattern.rstrip("/")
             # Check if any part of the path matches
-            for i, part in enumerate(rel_parts[:-1]):  # Exclude filename
+            for part in rel_parts[:-1]:  # Exclude filename
                 if fnmatch.fnmatch(part, dir_pattern):
                     return True
             # Also check full directory paths
@@ -279,8 +277,8 @@ def find_source_files(
     path: Path,
     recursive: bool = False,
     language: str = "cpp",
-    ignore_patterns: Optional[List[str]] = None,
-) -> List[Path]:
+    ignore_patterns: list[str] | None = None,
+) -> list[Path]:
     """Find C/C++ source files in a path.
 
     Args:
@@ -317,7 +315,7 @@ def find_source_files(
     return sorted(files)
 
 
-def discover_functions(source_path: Path, builder: SubgraphBuilder) -> List[str]:
+def discover_functions(source_path: Path, builder: SubgraphBuilder) -> list[str]:
     """Discover all functions in a source file.
 
     Args:
@@ -335,10 +333,10 @@ def discover_functions(source_path: Path, builder: SubgraphBuilder) -> List[str]
 def extract_from_file(
     source_path: Path,
     extractor: AxiomExtractor,
-    function_names: Optional[List[str]] = None,
+    function_names: list[str] | None = None,
     verbose: bool = False,
-    tracker: Optional[ProgressTracker] = None,
-) -> List[ExtractionResult]:
+    tracker: ProgressTracker | None = None,
+) -> list[ExtractionResult]:
     """Extract axioms from a source file.
 
     Args:
@@ -419,10 +417,10 @@ def show_subgraph(source_path: Path, builder: SubgraphBuilder, function_name: st
 
 
 def create_review_session(
-    results: List[ExtractionResult],
+    results: list[ExtractionResult],
     manager: ReviewSessionManager,
     source_file: str,
-) -> Optional[str]:
+) -> str | None:
     """Create a review session from extraction results.
 
     Args:
@@ -463,8 +461,8 @@ def extract_macros_from_file(
     extractor: AxiomExtractor,
     only_hazardous: bool = True,
     verbose: bool = False,
-    tracker: Optional[ProgressTracker] = None,
-) -> List[MacroExtractionResult]:
+    tracker: ProgressTracker | None = None,
+) -> list[MacroExtractionResult]:
     """Extract axioms from macros in a source file.
 
     Args:
@@ -506,10 +504,10 @@ def extract_macros_from_file(
 
 
 def create_macro_review_session(
-    results: List[MacroExtractionResult],
+    results: list[MacroExtractionResult],
     manager: ReviewSessionManager,
     source_file: str,
-) -> Optional[str]:
+) -> str | None:
     """Create a review session from macro extraction results.
 
     Args:
@@ -545,7 +543,7 @@ def create_macro_review_session(
     return session.session_id
 
 
-def discover_macros(source_path: Path, builder: SubgraphBuilder, only_hazardous: bool = True) -> List[str]:
+def discover_macros(source_path: Path, builder: SubgraphBuilder, only_hazardous: bool = True) -> list[str]:
     """Discover all macros in a source file.
 
     Args:
@@ -1010,9 +1008,9 @@ def main():
     session_id = session.session_id
 
     print(f"\nReview session created: {session_id}")
-    print(f"\nTo review axioms:")
+    print("\nTo review axioms:")
     print(f"  python scripts/ingest_library.py --review {session_id}")
-    print(f"\nTo export approved axioms:")
+    print("\nTo export approved axioms:")
     print(f"  python scripts/ingest_library.py --export {session_id} -o approved.toml")
 
     # Ask if user wants to review now

@@ -15,13 +15,11 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, List, Optional
+from typing import TYPE_CHECKING
 
-import toml
+from axiom.models import Axiom, AxiomCollection
 
-from axiom.models import Axiom, AxiomCollection, AxiomType, SourceLocation
-
-from .reviewer import ReviewSession, ReviewSessionManager
+from .reviewer import ReviewSessionManager
 
 if TYPE_CHECKING:
     from axiom.graph.loader import Neo4jLoader
@@ -36,7 +34,7 @@ class IntegrationResult:
     neo4j_nodes_created: int
     lancedb_records_created: int
     dependencies_created: int
-    errors: List[str]
+    errors: list[str]
 
 
 class KBIntegrator:
@@ -50,9 +48,9 @@ class KBIntegrator:
 
     def __init__(
         self,
-        neo4j_loader: Optional["Neo4jLoader"] = None,
-        lancedb_loader: Optional["LanceDBLoader"] = None,
-        review_manager: Optional[ReviewSessionManager] = None,
+        neo4j_loader: Neo4jLoader | None = None,
+        lancedb_loader: LanceDBLoader | None = None,
+        review_manager: ReviewSessionManager | None = None,
     ):
         """Initialize the KB integrator.
 
@@ -130,7 +128,7 @@ class KBIntegrator:
 
     def integrate_axioms(
         self,
-        axioms: List[Axiom],
+        axioms: list[Axiom],
         table_name: str = "axioms",
     ) -> IntegrationResult:
         """Integrate a list of axioms into the KB.
@@ -174,7 +172,7 @@ class KBIntegrator:
             errors=errors,
         )
 
-    def validate_dependencies(self, axioms: List[Axiom]) -> List[str]:
+    def validate_dependencies(self, axioms: list[Axiom]) -> list[str]:
         """Check if all depends_on references exist in the KB.
 
         Args:

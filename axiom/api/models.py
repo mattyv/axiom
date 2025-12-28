@@ -5,7 +5,6 @@
 
 """API request and response models."""
 
-from typing import List, Optional
 
 from pydantic import BaseModel, Field
 
@@ -44,7 +43,7 @@ class ProofChainResponse(BaseModel):
     """A proof chain response."""
 
     claim: str
-    steps: List[ProofStepResponse]
+    steps: list[ProofStepResponse]
     grounded: bool
     confidence: float
     explanation: str
@@ -56,10 +55,10 @@ class ValidateResponse(BaseModel):
     claim: str
     valid: bool
     confidence: float
-    contradictions: List[ContradictionResponse] = Field(default_factory=list)
-    proof_chain: Optional[ProofChainResponse] = None
+    contradictions: list[ContradictionResponse] = Field(default_factory=list)
+    proof_chain: ProofChainResponse | None = None
     explanation: str
-    warnings: List[str] = Field(default_factory=list)
+    warnings: list[str] = Field(default_factory=list)
 
 
 class SearchRequest(BaseModel):
@@ -78,14 +77,14 @@ class AxiomResponse(BaseModel):
     module: str
     layer: str
     confidence: float
-    tags: List[str]
+    tags: list[str]
 
 
 class SearchResponse(BaseModel):
     """Response from search endpoint."""
 
     query: str
-    results: List[AxiomResponse]
+    results: list[AxiomResponse]
     count: int
 
 

@@ -6,7 +6,6 @@
 """Load axiom embeddings into LanceDB."""
 
 from pathlib import Path
-from typing import List, Optional
 
 import lancedb
 from sentence_transformers import SentenceTransformer
@@ -31,7 +30,7 @@ class LanceDBLoader:
         self.db_path = Path(db_path)
         self.db_path.parent.mkdir(parents=True, exist_ok=True)
         self.db = lancedb.connect(str(self.db_path))
-        self._model: Optional[SentenceTransformer] = None
+        self._model: SentenceTransformer | None = None
         self._model_name = model_name
 
     @property
@@ -161,7 +160,7 @@ class LanceDBLoader:
         query: str,
         table_name: str = "axioms",
         limit: int = 10,
-    ) -> List[dict]:
+    ) -> list[dict]:
         """Search for axioms by semantic similarity.
 
         Args:
@@ -185,7 +184,7 @@ class LanceDBLoader:
         self,
         tag: str,
         table_name: str = "axioms",
-    ) -> List[dict]:
+    ) -> list[dict]:
         """Search for axioms by tag.
 
         Args:
@@ -223,7 +222,7 @@ class LanceDBLoader:
         self,
         function_name: str,
         table_name: str = "axioms",
-    ) -> List[dict]:
+    ) -> list[dict]:
         """Search for axioms by function name.
 
         Args:
@@ -244,7 +243,7 @@ class LanceDBLoader:
         self,
         header: str,
         table_name: str = "axioms",
-    ) -> List[dict]:
+    ) -> list[dict]:
         """Search for axioms by header file.
 
         Args:
@@ -265,7 +264,7 @@ class LanceDBLoader:
         self,
         axiom_type: str,
         table_name: str = "axioms",
-    ) -> List[dict]:
+    ) -> list[dict]:
         """Search for axioms by axiom type.
 
         Args:
@@ -285,7 +284,7 @@ class LanceDBLoader:
     def update_depends_on(
         self,
         axiom_id: str,
-        depends_on: List[str],
+        depends_on: list[str],
         table_name: str = "axioms",
     ) -> bool:
         """Update the depends_on field for an axiom.

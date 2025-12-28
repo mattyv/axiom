@@ -6,7 +6,6 @@
 """Generate proof chains from claims to foundational axioms."""
 
 from dataclasses import dataclass, field
-from typing import List, Optional
 
 from axiom.graph import Neo4jLoader
 from axiom.vectors import LanceDBLoader
@@ -30,7 +29,7 @@ class ProofChain:
     """A complete proof chain from claim to foundational axioms."""
 
     claim: str
-    steps: List[ProofStep] = field(default_factory=list)
+    steps: list[ProofStep] = field(default_factory=list)
     grounded: bool = False
     confidence: float = 0.0
     explanation: str = ""
@@ -53,8 +52,8 @@ class ProofChainGenerator:
 
     def __init__(
         self,
-        neo4j_loader: Optional[Neo4jLoader] = None,
-        lance_loader: Optional[LanceDBLoader] = None,
+        neo4j_loader: Neo4jLoader | None = None,
+        lance_loader: LanceDBLoader | None = None,
     ) -> None:
         """Initialize with database connections.
 
@@ -136,20 +135,20 @@ class ProofChainGenerator:
 
         # Step 3: Determine if claim is grounded
         # All formal semantic layers are considered "grounded"
-        GROUNDED_LAYERS = {
+        grounded_layers = {
             "c11_core", "c11_stdlib",
             "cpp_core", "cpp_stdlib",
             "cpp20_language", "cpp20_stdlib",
         }
         if chain.steps:
-            chain.grounded = chain.steps[0].layer in GROUNDED_LAYERS
+            chain.grounded = chain.steps[0].layer in grounded_layers
             chain.explanation = self._generate_explanation(chain)
 
         return chain
 
     def find_supporting_axioms(
         self, claim: str, limit: int = 5
-    ) -> List[dict]:
+    ) -> list[dict]:
         """Find axioms that support a claim.
 
         Args:
@@ -163,7 +162,7 @@ class ProofChainGenerator:
 
     def find_contradicting_axioms(
         self, claim: str, limit: int = 5
-    ) -> List[dict]:
+    ) -> list[dict]:
         """Find axioms that might contradict a claim.
 
         This searches for axioms with negation of key terms.
@@ -211,7 +210,7 @@ class ProofChainGenerator:
         common = claim_keywords & content_keywords
         return len(common) >= 2
 
-    def _negate_claim(self, claim: str) -> List[str]:
+    def _negate_claim(self, claim: str) -> list[str]:
         """Generate negated versions of a claim for contradiction search."""
         negations = []
         claim_lower = claim.lower()

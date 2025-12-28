@@ -2,8 +2,6 @@
 
 from pathlib import Path
 
-import pytest
-
 from axiom.extractors.error_codes import ErrorCodesParser
 from axiom.models import ErrorCode, ErrorType
 

@@ -5,7 +5,6 @@
 
 """Load axioms into Neo4j graph database."""
 
-from typing import Optional
 
 from neo4j import Driver, GraphDatabase
 
@@ -181,7 +180,7 @@ class Neo4jLoader:
         """
         tx.run(query)
 
-    def get_axiom(self, axiom_id: str) -> Optional[dict]:
+    def get_axiom(self, axiom_id: str) -> dict | None:
         """Get an axiom by ID.
 
         Args:

@@ -10,7 +10,6 @@ as an in-memory graph structure built from tree-sitter parsing.
 """
 
 from enum import Enum
-from typing import List, Optional, Set
 
 from pydantic import BaseModel, Field
 
@@ -131,40 +130,40 @@ class OperationNode(BaseModel):
     """Ending column in the source file."""
 
     # Structural information from tree-sitter
-    operands: List[str] = Field(default_factory=list)
+    operands: list[str] = Field(default_factory=list)
     """Variable names and expressions involved in this operation."""
 
-    operator: Optional[str] = None
+    operator: str | None = None
     """The operator symbol (e.g., '+', '/', '[]', '->')."""
 
     # Control flow information
-    guards: List[str] = Field(default_factory=list)
+    guards: list[str] = Field(default_factory=list)
     """Conditions that must be true to reach this operation.
 
     For example, if this operation is inside an if-block,
     the condition of the if statement is a guard.
     """
 
-    predecessors: List[str] = Field(default_factory=list)
+    predecessors: list[str] = Field(default_factory=list)
     """IDs of operations that come before this one."""
 
-    successors: List[str] = Field(default_factory=list)
+    successors: list[str] = Field(default_factory=list)
     """IDs of operations that come after this one."""
 
     # Additional context
-    parent_id: Optional[str] = None
+    parent_id: str | None = None
     """ID of the parent operation (for nested expressions)."""
 
     is_lvalue: bool = False
     """Whether this expression is used as an lvalue."""
 
-    function_called: Optional[str] = None
+    function_called: str | None = None
     """For FUNCTION_CALL ops, the name of the function being called."""
 
-    call_arguments: List[str] = Field(default_factory=list)
+    call_arguments: list[str] = Field(default_factory=list)
     """For FUNCTION_CALL ops, the argument expressions."""
 
-    ast_node_type: Optional[str] = None
+    ast_node_type: str | None = None
     """The tree-sitter node type (for debugging)."""
 
 
@@ -184,23 +183,23 @@ class FunctionSubgraph(BaseModel):
     signature: str
     """Full function signature."""
 
-    parameters: List[tuple] = Field(default_factory=list)
+    parameters: list[tuple] = Field(default_factory=list)
     """List of (name, type) tuples for parameters."""
 
     return_type: str = ""
     """Return type of the function."""
 
-    nodes: List[OperationNode] = Field(default_factory=list)
+    nodes: list[OperationNode] = Field(default_factory=list)
     """All operation nodes in the function."""
 
-    entry_id: Optional[str] = None
+    entry_id: str | None = None
     """ID of the first operation node."""
 
-    exit_ids: List[str] = Field(default_factory=list)
+    exit_ids: list[str] = Field(default_factory=list)
     """IDs of return/exit operation nodes."""
 
     # Source location
-    file_path: Optional[str] = None
+    file_path: str | None = None
     """Path to the source file."""
 
     line_start: int = 0
@@ -213,13 +212,13 @@ class FunctionSubgraph(BaseModel):
     is_method: bool = False
     """Whether this is a class method."""
 
-    class_name: Optional[str] = None
+    class_name: str | None = None
     """For methods, the containing class name."""
 
     is_template: bool = False
     """Whether this is a template function."""
 
-    def get_node(self, node_id: str) -> Optional[OperationNode]:
+    def get_node(self, node_id: str) -> OperationNode | None:
         """Get an operation node by ID.
 
         Args:
@@ -233,7 +232,7 @@ class FunctionSubgraph(BaseModel):
                 return node
         return None
 
-    def get_operations_of_type(self, op_type: OperationType) -> List[OperationNode]:
+    def get_operations_of_type(self, op_type: OperationType) -> list[OperationNode]:
         """Get all operations of a specific type.
 
         Args:
@@ -244,18 +243,18 @@ class FunctionSubgraph(BaseModel):
         """
         return [node for node in self.nodes if node.op_type == op_type]
 
-    def get_all_operands(self) -> Set[str]:
+    def get_all_operands(self) -> set[str]:
         """Get all unique operand names used in the function.
 
         Returns:
             Set of operand names (variable names, expressions).
         """
-        operands: Set[str] = set()
+        operands: set[str] = set()
         for node in self.nodes:
             operands.update(node.operands)
         return operands
 
-    def get_function_calls(self) -> List[OperationNode]:
+    def get_function_calls(self) -> list[OperationNode]:
         """Get all function call operations.
 
         Returns:
@@ -263,7 +262,7 @@ class FunctionSubgraph(BaseModel):
         """
         return self.get_operations_of_type(OperationType.FUNCTION_CALL)
 
-    def get_divisions(self) -> List[OperationNode]:
+    def get_divisions(self) -> list[OperationNode]:
         """Get all division operations.
 
         Useful for finding potential divide-by-zero issues.
@@ -276,7 +275,7 @@ class FunctionSubgraph(BaseModel):
             if node.op_type in (OperationType.DIVISION, OperationType.MODULO)
         ]
 
-    def get_pointer_operations(self) -> List[OperationNode]:
+    def get_pointer_operations(self) -> list[OperationNode]:
         """Get all pointer-related operations.
 
         Useful for finding potential null pointer dereferences.
@@ -291,7 +290,7 @@ class FunctionSubgraph(BaseModel):
         )
         return [node for node in self.nodes if node.op_type in pointer_types]
 
-    def get_memory_operations(self) -> List[OperationNode]:
+    def get_memory_operations(self) -> list[OperationNode]:
         """Get all memory allocation/deallocation operations.
 
         Returns:
@@ -313,7 +312,7 @@ class FunctionSubgraph(BaseModel):
         """
         return any(node.op_type == OperationType.LOOP for node in self.nodes)
 
-    def get_nodes_with_guards(self) -> List[OperationNode]:
+    def get_nodes_with_guards(self) -> list[OperationNode]:
         """Get all operations that have guard conditions.
 
         These are operations inside conditional blocks.
@@ -363,7 +362,7 @@ class MacroDefinition(BaseModel):
     name: str
     """The macro name (identifier after #define)."""
 
-    parameters: List[str] = Field(default_factory=list)
+    parameters: list[str] = Field(default_factory=list)
     """Parameter names for function-like macros. Empty for object-like macros."""
 
     body: str = ""
@@ -373,7 +372,7 @@ class MacroDefinition(BaseModel):
     """Whether this is a function-like macro (has parentheses after name)."""
 
     # Source location
-    file_path: Optional[str] = None
+    file_path: str | None = None
     """Path to the source file."""
 
     line_start: int = 0
@@ -392,10 +391,10 @@ class MacroDefinition(BaseModel):
     has_casts: bool = False
     """Whether the macro body contains type casts."""
 
-    function_calls: List[str] = Field(default_factory=list)
+    function_calls: list[str] = Field(default_factory=list)
     """Function calls found in the macro body."""
 
-    referenced_macros: List[str] = Field(default_factory=list)
+    referenced_macros: list[str] = Field(default_factory=list)
     """Other macros referenced in the body."""
 
     def to_signature(self) -> str:

@@ -5,7 +5,6 @@
 
 """Link axioms to error codes based on shared formal specifications."""
 
-from typing import Dict, List, Optional, Set
 
 from axiom.models import Axiom, AxiomCollection, ErrorCode, ViolationRef
 
@@ -15,14 +14,14 @@ class AxiomLinker:
 
     def __init__(self) -> None:
         """Initialize the linker."""
-        self._axiom_by_condition: Dict[str, List[Axiom]] = {}
-        self._error_by_code: Dict[str, ErrorCode] = {}
+        self._axiom_by_condition: dict[str, list[Axiom]] = {}
+        self._error_by_code: dict[str, ErrorCode] = {}
 
     def link(
         self,
-        axioms: List[Axiom],
-        error_codes: List[ErrorCode],
-        error_rules: Optional[List] = None,
+        axioms: list[Axiom],
+        error_codes: list[ErrorCode],
+        error_rules: list | None = None,
     ) -> AxiomCollection:
         """Link axioms to error codes and create a collection.
 
@@ -58,7 +57,7 @@ class AxiomLinker:
         )
 
     def _link_via_error_rules(
-        self, axioms: List[Axiom], error_rules: List
+        self, axioms: list[Axiom], error_rules: list
     ) -> None:
         """Link axioms to errors using parsed error rules from K files.
 
@@ -66,7 +65,7 @@ class AxiomLinker:
         but include an error marker.
         """
         # Group axioms by module
-        axioms_by_module: Dict[str, List[Axiom]] = {}
+        axioms_by_module: dict[str, list[Axiom]] = {}
         for axiom in axioms:
             module = axiom.source.module
             if module not in axioms_by_module:
@@ -119,7 +118,7 @@ class AxiomLinker:
 
         return False
 
-    def _extract_predicates(self, spec: str) -> Set[str]:
+    def _extract_predicates(self, spec: str) -> set[str]:
         """Extract key predicates from a K specification."""
         if not spec:
             return set()
@@ -148,14 +147,14 @@ class AxiomLinker:
         return predicates
 
     def _link_via_patterns(
-        self, axioms: List[Axiom], error_codes: List[ErrorCode]
+        self, axioms: list[Axiom], error_codes: list[ErrorCode]
     ) -> None:
         """Link axioms to errors using pattern matching on specifications.
 
         This is a fallback when we don't have parsed error rules.
         """
         # Create a mapping of key terms to error codes
-        term_to_errors: Dict[str, List[ErrorCode]] = {}
+        term_to_errors: dict[str, list[ErrorCode]] = {}
 
         for ec in error_codes:
             terms = self._extract_error_terms(ec.description)
@@ -182,7 +181,7 @@ class AxiomLinker:
                                 )
                                 axiom.violated_by.append(violation)
 
-    def _extract_error_terms(self, description: str) -> Set[str]:
+    def _extract_error_terms(self, description: str) -> set[str]:
         """Extract key terms from error description."""
         terms = set()
         desc_lower = description.lower()
@@ -206,7 +205,7 @@ class AxiomLinker:
 
         return terms
 
-    def _extract_axiom_terms(self, axiom: Axiom) -> Set[str]:
+    def _extract_axiom_terms(self, axiom: Axiom) -> set[str]:
         """Extract key terms from axiom."""
         terms = set()
 
