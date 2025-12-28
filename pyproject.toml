@@ -74,6 +74,10 @@ test = [
     "pytest>=7.4.0",
     "pytest-asyncio>=0.21.0",
     "pytest-cov>=4.1.0",
+    # Tree-sitter for ingestion tests
+    "tree-sitter>=0.21.0",
+    "tree-sitter-c>=0.21.0",
+    "tree-sitter-cpp>=0.21.0",
 ]
 
 [project.scripts]
