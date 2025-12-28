@@ -27,18 +27,7 @@ dependencies = [
     # K Framework parser
     "pyk>=0.3.2",
 
-    # Graph database
-    "neo4j>=5.15.0",
-
-    # Vector database
-    "lancedb>=0.4.0",
-
-    # Embeddings
-    "sentence-transformers>=2.2.0",
-
-    # API
-    "fastapi>=0.108.0",
-    "uvicorn[standard]>=0.25.0",
+    # Data validation
     "pydantic>=2.5.0",
 
     # Data processing
@@ -52,12 +41,24 @@ dependencies = [
     # Utilities
     "python-dotenv>=1.0.0",
     "pyyaml>=6.0.0",
+]
 
+[project.optional-dependencies]
+# Heavy optional dependencies - install with: pip install -e ".[full]"
+full = [
+    # Graph database
+    "neo4j>=5.15.0",
+    # Vector database
+    "lancedb>=0.4.0",
+    # Embeddings
+    "sentence-transformers>=2.2.0",
+    # API
+    "fastapi>=0.108.0",
+    "uvicorn[standard]>=0.25.0",
     # MCP (Model Context Protocol)
     "mcp>=1.0.0",
 ]
 
-[project.optional-dependencies]
 dev = [
     "pytest>=7.4.0",
     "pytest-asyncio>=0.21.0",
@@ -72,7 +73,6 @@ test = [
     "pytest>=7.4.0",
     "pytest-asyncio>=0.21.0",
     "pytest-cov>=4.1.0",
-    "httpx>=0.25.0",  # For FastAPI testing
 ]
 
 [project.scripts]

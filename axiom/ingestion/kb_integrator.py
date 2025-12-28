@@ -7,19 +7,25 @@
 
 This module provides the integration layer between the ingestion pipeline
 (extraction + review) and the knowledge base (Neo4j + LanceDB).
+
+Note: Full functionality requires optional dependencies: pip install axiom[full]
 """
+
+from __future__ import annotations
 
 from dataclasses import dataclass
 from pathlib import Path
-from typing import List, Optional
+from typing import TYPE_CHECKING, Any, List, Optional
 
 import toml
 
-from axiom.graph.loader import Neo4jLoader
 from axiom.models import Axiom, AxiomCollection, AxiomType, SourceLocation
-from axiom.vectors.loader import LanceDBLoader
 
 from .reviewer import ReviewSession, ReviewSessionManager
+
+if TYPE_CHECKING:
+    from axiom.graph.loader import Neo4jLoader
+    from axiom.vectors.loader import LanceDBLoader
 
 
 @dataclass
@@ -44,8 +50,8 @@ class KBIntegrator:
 
     def __init__(
         self,
-        neo4j_loader: Optional[Neo4jLoader] = None,
-        lancedb_loader: Optional[LanceDBLoader] = None,
+        neo4j_loader: Optional["Neo4jLoader"] = None,
+        lancedb_loader: Optional["LanceDBLoader"] = None,
         review_manager: Optional[ReviewSessionManager] = None,
     ):
         """Initialize the KB integrator.
@@ -226,6 +232,8 @@ def load_approved_axioms_to_kb(
 ) -> IntegrationResult:
     """Convenience function to load approved axioms into the KB.
 
+    Requires optional dependencies: pip install axiom[full]
+
     Args:
         toml_path: Path to TOML file with approved axioms.
         neo4j_uri: Neo4j connection URI.
@@ -237,6 +245,10 @@ def load_approved_axioms_to_kb(
     Returns:
         IntegrationResult with counts and errors.
     """
+    # Import at runtime to avoid requiring heavy dependencies
+    from axiom.graph.loader import Neo4jLoader
+    from axiom.vectors.loader import LanceDBLoader
+
     neo4j_loader = None
     lancedb_loader = None
     errors = []
