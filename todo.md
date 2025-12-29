@@ -1,0 +1,1 @@
+[ ] - extract c11 function signature from cppreference.com

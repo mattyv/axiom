@@ -31,6 +31,40 @@ source_file = "<spec_section>"        # e.g., "basic.life" or "string.view.ops"
 source_module = "<section_ref>"       # e.g., "[basic.life]/8"
 tags = ['<tag1>', '<tag2>']           # Relevant tags
 c_standard_refs = ['<ref>']           # e.g., "6.7.2/4" for related C refs
+
+# For library axioms (functions/methods), ALWAYS include these:
+function = "<function_name>"          # e.g., "std::optional::value", "make_shared"
+header = "<header>"                   # e.g., "<optional>", "<memory>"
+signature = '''<full_signature>'''    # MUST include return type, e.g., "T& std::optional<T>::value()"
+depends_on = ['<axiom_id>', ...]      # Axiom IDs for return type and each argument type
+```
+
+## CRITICAL: Function Signatures and Type Dependencies
+
+For library sections (stdlib), you MUST:
+
+1. **Include full signature with return type** - Even though return type is not formally part of C++ signature, it is critical for correct usage:
+   - `T& std::optional<T>::value()`
+   - `std::shared_ptr<T> std::make_shared<T, Args...>(Args&&... args)`
+   - `void* malloc(size_t size)`
+
+2. **Link argument types and return type to existing axioms via `depends_on`** - Each type used in the signature should reference foundation axioms:
+   - If return type is `void*`, link to pointer axioms
+   - If argument is `size_t`, link to size_t axioms
+   - If using `std::optional<T>`, link to optional axioms
+   - Search the existing axioms list provided below to find matching axiom IDs
+
+Example with dependencies:
+```toml
+[[axioms]]
+id = "cpp20_optional_value_precondition_a1b2c3d4"
+content = '''Calling value() on an empty optional throws bad_optional_access'''
+formal_spec = '''!has_value() && call(value) => throws(bad_optional_access)'''
+layer = "cpp20_stdlib"
+function = "std::optional::value"
+header = "<optional>"
+signature = '''T& std::optional<T>::value()'''
+depends_on = ['cpp20_optional_has_value_...', 'cpp20_bad_optional_access_...']
 ```
 
 ## Extraction Rules

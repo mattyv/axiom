@@ -14,6 +14,7 @@ def create_test_axiom(
     depends_on: list = None,
     function: str = None,
     header: str = None,
+    signature: str = None,
 ) -> Axiom:
     """Create a test axiom."""
     return Axiom(
@@ -24,6 +25,7 @@ def create_test_axiom(
         source=SourceLocation(file="test.cpp", module="test"),
         function=function or "test_func",
         header=header or "test.h",
+        signature=signature or "void test_func(int x)",
         axiom_type=AxiomType.PRECONDITION,
         on_violation="undefined behavior",
         confidence=0.9,
@@ -292,3 +294,27 @@ class TestAxiomLibraryFields:
             assert loaded.axioms[0].header == "string.h"
             assert loaded.axioms[0].axiom_type == AxiomType.PRECONDITION
             assert "buffer overlap" in loaded.axioms[0].on_violation
+
+    def test_axiom_collection_signature_round_trip(self):
+        """Test signature field is serialized and deserialized correctly."""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            axiom = create_test_axiom(
+                function="ILP_FOR_AUTO",
+                header="ilp_for.hpp",
+                signature="ILP_FOR_AUTO(loop_var_decl, start, end, loop_type, element_type)",
+            )
+            collection = AxiomCollection(axioms=[axiom])
+
+            path = Path(tmpdir) / "test.toml"
+            collection.save_toml(path)
+
+            # Verify signature is in TOML output
+            toml_content = path.read_text()
+            assert "signature" in toml_content
+            assert "ILP_FOR_AUTO(loop_var_decl, start, end, loop_type, element_type)" in toml_content
+
+            # Verify round-trip
+            loaded = AxiomCollection.load_toml(path)
+
+            assert loaded.axioms[0].function == "ILP_FOR_AUTO"
+            assert loaded.axioms[0].signature == "ILP_FOR_AUTO(loop_var_decl, start, end, loop_type, element_type)"

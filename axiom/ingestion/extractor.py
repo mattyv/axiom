@@ -144,7 +144,9 @@ class AxiomExtractor:
 
         if raw_response:
             # Step 6: Parse response into Axiom objects
-            axioms = self._parse_llm_response(raw_response, function_name, header, file_path)
+            axioms = self._parse_llm_response(
+                raw_response, function_name, header, file_path, subgraph.signature
+            )
             result.axioms = axioms
 
         return result
@@ -277,6 +279,7 @@ class AxiomExtractor:
                 macro.name,
                 header or self._infer_header(macro.file_path or ""),
                 macro.file_path or "",
+                macro.to_signature(),
             )
             # Add macro tag to all extracted axioms
             for axiom in axioms:
@@ -545,6 +548,7 @@ class AxiomExtractor:
         function_name: str,
         header: str,
         file_path: str,
+        signature: str = "",
     ) -> list[Axiom]:
         """Parse LLM response into Axiom objects.
 
@@ -553,6 +557,7 @@ class AxiomExtractor:
             function_name: Name of the function
             header: Header file
             file_path: Source file path
+            signature: Full function/macro signature
 
         Returns:
             List of parsed Axiom objects
@@ -580,7 +585,9 @@ class AxiomExtractor:
 
         for raw in raw_axioms:
             try:
-                axiom = self._create_axiom_from_dict(raw, function_name, header, file_path)
+                axiom = self._create_axiom_from_dict(
+                    raw, function_name, header, file_path, signature
+                )
                 if axiom:
                     axioms.append(axiom)
             except Exception:
@@ -595,6 +602,7 @@ class AxiomExtractor:
         function_name: str,
         header: str,
         file_path: str,
+        signature: str = "",
     ) -> Axiom | None:
         """Create an Axiom object from parsed dict.
 
@@ -603,6 +611,7 @@ class AxiomExtractor:
             function_name: Function name (fallback)
             header: Header file (fallback)
             file_path: Source file path
+            signature: Full function/macro signature
 
         Returns:
             Axiom object or None if invalid
@@ -635,6 +644,7 @@ class AxiomExtractor:
             ),
             function=data.get("function", function_name),
             header=data.get("header", header),
+            signature=data.get("signature", signature),
             axiom_type=axiom_type,
             on_violation=data.get("on_violation"),
             confidence=data.get("confidence", 0.8),
