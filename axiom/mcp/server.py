@@ -259,9 +259,21 @@ async def _handle_search(arguments: dict[str, Any]) -> list[TextContent]:
     for r in results:
         lines.append(f"### {r['id']}")
         lines.append(f"**Module**: {r['module']} | **Layer**: {r['layer']}")
+        if r.get("function"):
+            lines.append(f"**Function**: `{r['function']}` | **Header**: `{r.get('header', 'N/A')}`")
+        if r.get("signature"):
+            lines.append(f"**Signature**: `{r['signature']}`")
         lines.append(f"**Content**: {r['content']}")
         if r.get("formal_spec"):
             lines.append(f"**Formal**: `{r['formal_spec']}`")
+        if r.get("depends_on"):
+            deps = r["depends_on"]
+            if deps:
+                lines.append(f"**Depends on**: {len(deps)} axiom(s)")
+                for dep in deps[:3]:  # Show first 3
+                    lines.append(f"  - `{dep}`")
+                if len(deps) > 3:
+                    lines.append(f"  - ... and {len(deps) - 3} more")
         lines.append("")
 
     return [TextContent(type="text", text="\n".join(lines))]
@@ -288,17 +300,49 @@ async def _handle_get_axiom(arguments: dict[str, Any]) -> list[TextContent]:
         f"**Module**: {axiom.get('module_name', 'unknown')}",
         f"**Layer**: {axiom.get('layer', 'unknown')}",
         f"**Confidence**: {axiom.get('confidence', 0.0):.2f}",
+    ]
+
+    if axiom.get("function"):
+        lines.append(f"**Function**: `{axiom['function']}`")
+    if axiom.get("header"):
+        lines.append(f"**Header**: `{axiom['header']}`")
+
+    lines.extend([
         "",
         "### Content",
         axiom.get("content", ""),
         "",
-    ]
+    ])
 
     if axiom.get("formal_spec"):
         lines.append("### Formal Specification")
         lines.append("```")
         lines.append(axiom["formal_spec"])
         lines.append("```")
+        lines.append("")
+
+    # Show dependencies from Neo4j relationship
+    deps = neo4j.get_dependencies(axiom_id)
+    if deps:
+        lines.append("### Dependencies")
+        lines.append(f"This axiom depends on {len(deps)} other axiom(s):")
+        for dep in deps:
+            func = dep.get("function", "")
+            func_str = f" (`{func}`)" if func else ""
+            lines.append(f"- `{dep['id']}`{func_str}")
+        lines.append("")
+
+    # Show dependents (what depends on this)
+    dependents = neo4j.get_dependents(axiom_id)
+    if dependents:
+        lines.append("### Dependents")
+        lines.append(f"{len(dependents)} axiom(s) depend on this:")
+        for dep in dependents[:5]:  # Limit to 5
+            func = dep.get("function", "")
+            func_str = f" (`{func}`)" if func else ""
+            lines.append(f"- `{dep['id']}`{func_str}")
+        if len(dependents) > 5:
+            lines.append(f"- ... and {len(dependents) - 5} more")
 
     return [TextContent(type="text", text="\n".join(lines))]
 

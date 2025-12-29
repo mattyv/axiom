@@ -118,6 +118,7 @@ class LanceDBLoader:
             # New fields for function-centric axioms
             "function": axiom.function or "",
             "header": axiom.header or "",
+            "signature": axiom.signature or "",
             "axiom_type": axiom.axiom_type.value if axiom.axiom_type else "",
             "on_violation": axiom.on_violation or "",
             "depends_on": axiom.depends_on,
@@ -139,6 +140,8 @@ class LanceDBLoader:
             parts.append(f"Function: {axiom.function}")
         if axiom.header:
             parts.append(f"Header: {axiom.header}")
+        if axiom.signature:
+            parts.append(f"Signature: {axiom.signature}")
         if axiom.axiom_type:
             parts.append(f"Type: {axiom.axiom_type.value}")
         if axiom.on_violation:

@@ -281,11 +281,32 @@ class KSemanticsExtractor:
             preceding_comment=preceding_comment,
         )
 
+    # Pattern to extract K function name from LHS like "alignedAlloc(Align, Sz)"
+    # or "<k> alignedAlloc(Align::Int, Sz::Int)"
+    LHS_FUNCTION_PATTERN = re.compile(
+        r"(?:<[^>]+>\s*)?([a-zA-Z_][a-zA-Z0-9_]*)\s*\("
+    )
+
     def _extract_function_name(self, block: str) -> str | None:
-        """Extract function name from builtin("name", ...) pattern."""
+        """Extract function name from builtin("name", ...) or LHS pattern."""
+        # First try builtin("name", ...) pattern
         match = self.BUILTIN_PATTERN.search(block)
         if match:
             return match.group(1)
+
+        # Try to extract from LHS pattern like "alignedAlloc(Align, Sz)"
+        # Find the rule keyword and extract what comes after
+        rule_match = re.search(r"rule\s+(.+?)\s*=>", block, re.DOTALL)
+        if rule_match:
+            lhs = rule_match.group(1).strip()
+            # Extract function name from LHS
+            func_match = self.LHS_FUNCTION_PATTERN.match(lhs)
+            if func_match:
+                func_name = func_match.group(1)
+                # Skip K primitives and cell names
+                if func_name not in {"tv", "utype", "type", "lval", "reval", "K"}:
+                    return func_name
+
         return None
 
     def _extract_standard_ref(self, comment: str) -> StandardRef | None:
@@ -475,6 +496,41 @@ class KSemanticsExtractor:
                 )
                 axioms.append(axiom)
 
+            # Extract axioms from function rules without requires/standard_ref/error
+            # Only for C library functions (LIBC-* modules) or known stdlib functions
+            elif rule.function and not rule.error_marker and self._is_library_function(rule):
+                axiom_id = generator.generate_axiom_id(
+                    module=rule.module,
+                    operation=rule.function,
+                    formal_spec=rule.rhs[:100] if rule.rhs else "",
+                )
+
+                header = MODULE_TO_HEADER.get(rule.module)
+
+                # Generate content from the rule transformation
+                content = f"{rule.function} transforms to {rule.rhs[:80]}"
+                if rule.requires:
+                    content += f" when {rule.requires[:50]}"
+
+                axiom = Axiom(
+                    id=axiom_id,
+                    content=content,
+                    formal_spec=rule.requires or "",
+                    source=SourceLocation(
+                        file=str(k_file.relative_to(self.semantics_root))
+                        if k_file.is_relative_to(self.semantics_root)
+                        else str(k_file),
+                        module=rule.module,
+                        line_start=rule.line_start,
+                        line_end=rule.line_end,
+                    ),
+                    tags=self._infer_tags(rule),
+                    function=rule.function,
+                    header=header,
+                    axiom_type=AxiomType.EFFECT,  # These describe what functions do
+                )
+                axioms.append(axiom)
+
         return axioms
 
     def extract_all(self) -> list[Axiom]:
@@ -519,6 +575,30 @@ class KSemanticsExtractor:
             return "assignment"
         else:
             return "operation"
+
+    def _is_library_function(self, rule: ParsedRule) -> bool:
+        """Check if rule represents a C library function (not a K helper).
+
+        Args:
+            rule: The parsed rule to check.
+
+        Returns:
+            True if this is likely a C library function.
+        """
+        # Check if module is a LIBC module
+        if rule.module.startswith("LIBC-"):
+            return True
+
+        # Check if function has a known header mapping
+        if rule.module in MODULE_TO_HEADER:
+            return True
+
+        # Check if function is a builtin (extracted from builtin("name", ...))
+        # These are definitely C functions
+        if rule.function and 'builtin("' in (rule.lhs or ""):
+            return True
+
+        return False
 
     def _infer_tags(self, rule: ParsedRule) -> list[str]:
         """Infer tags for a rule based on content."""

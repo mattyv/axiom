@@ -13,7 +13,13 @@ from pathlib import Path
 # Add parent to path for imports
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from axiom.extractors import AxiomLinker, ErrorCodesParser, KSemanticsExtractor
+from axiom.extractors import (
+    AxiomLinker,
+    CSignatureExtractor,
+    ErrorCodesParser,
+    KDependencyExtractor,
+    KSemanticsExtractor,
+)
 from axiom.graph import Neo4jLoader, apply_schema
 from axiom.vectors import LanceDBLoader
 
@@ -77,6 +83,11 @@ def main() -> int:
         action="store_true",
         help="Skip saving to TOML",
     )
+    parser.add_argument(
+        "--with-deps",
+        action="store_true",
+        help="Extract with dependency resolution (two-pass)",
+    )
 
     args = parser.parse_args()
 
@@ -88,17 +99,51 @@ def main() -> int:
         return 1
 
     # Determine semantics directory based on layer
+    # Note: c11_core also includes semantics/common/ for shared functions like deleteObject
+    # For stdlib layers, we include core directories for cross-layer dependency resolution
     layer_paths = {
-        "c11_core": k_root / "semantics" / "c" / "language",
-        "c11_stdlib": k_root / "semantics" / "c" / "library",
-        "cpp_core": k_root / "semantics" / "cpp" / "language",
-        "cpp_stdlib": k_root / "semantics" / "cpp" / "library",
+        "c11_core": [
+            k_root / "semantics" / "c" / "language",
+            k_root / "semantics" / "common",  # Shared functions (deleteObject, etc.)
+        ],
+        "c11_stdlib": [
+            k_root / "semantics" / "c" / "library",
+            # Include core paths for cross-layer dependency index (but only extract from library)
+        ],
+        "cpp_core": [
+            k_root / "semantics" / "cpp" / "language",
+            k_root / "semantics" / "common",  # Shared functions
+        ],
+        "cpp_stdlib": [
+            k_root / "semantics" / "cpp" / "library",
+            # Include core paths for cross-layer dependency index (but only extract from library)
+        ],
     }
-    semantics_dir = layer_paths[args.layer]
 
-    if not semantics_dir.exists():
-        print(f"Error: Semantics directory not found: {semantics_dir}")
-        return 1
+    # Define which directories to include in the function index for cross-layer resolution
+    # This allows stdlib axioms to depend on core axioms
+    index_paths = {
+        "c11_core": layer_paths["c11_core"],
+        "c11_stdlib": [
+            k_root / "semantics" / "c" / "library",
+            k_root / "semantics" / "c" / "language",
+            k_root / "semantics" / "common",
+        ],
+        "cpp_core": layer_paths["cpp_core"],
+        "cpp_stdlib": [
+            k_root / "semantics" / "cpp" / "library",
+            k_root / "semantics" / "cpp" / "language",
+            k_root / "semantics" / "common",
+        ],
+    }
+
+    semantics_dirs = layer_paths[args.layer]
+    index_dirs = index_paths[args.layer]
+
+    for semantics_dir in semantics_dirs:
+        if not semantics_dir.exists():
+            print(f"Error: Semantics directory not found: {semantics_dir}")
+            return 1
 
     error_codes_csv = k_root / "examples" / "c" / "error-codes" / "Error_Codes.csv"
     if not error_codes_csv.exists():
@@ -108,17 +153,74 @@ def main() -> int:
     print("=" * 60)
     print(f"Axiom Knowledge Graph Bootstrap - {args.layer}")
     print("=" * 60)
-    print(f"Source: {semantics_dir}")
+    print(f"Extract from: {len(semantics_dirs)} directories")
+    for d in semantics_dirs:
+        print(f"  - {d.name}/")
+    if args.with_deps and len(index_dirs) > len(semantics_dirs):
+        print(f"Index includes: {len(index_dirs)} directories (cross-layer)")
     print()
 
-    # Step 1: Extract axioms from K semantics
+    # Step 1: Extract axioms from K semantics (from all directories)
     print("Step 1: Extracting axioms from K semantics...")
-    extractor = KSemanticsExtractor(semantics_dir)
-    axioms = extractor.extract_all()
+    all_axioms = []
+
+    if args.with_deps:
+        # Build combined function index from INDEX directories (includes cross-layer)
+        print("  - Building combined function index...")
+        from axiom.extractors.k_dependencies import build_function_index
+
+        combined_index: dict[str, list[str]] = {}
+        for idx_dir in index_dirs:
+            if idx_dir.exists():
+                extractor = KDependencyExtractor(idx_dir)
+                dir_index = extractor.get_function_index()
+                for func, axiom_ids in dir_index.items():
+                    if func in combined_index:
+                        combined_index[func].extend(axiom_ids)
+                    else:
+                        combined_index[func] = list(axiom_ids)
+        print(f"    Index has {len(combined_index)} unique functions")
+
+        # Now extract ONLY from semantics_dirs with dependency resolution
+        for semantics_dir in semantics_dirs:
+            print(f"  - Scanning {semantics_dir.name}/...")
+            extractor = KDependencyExtractor(semantics_dir)
+            axioms = extractor.extract_with_dependencies(base_index=combined_index)
+            all_axioms.extend(axioms)
+            print(f"    Found {len(axioms)} axioms")
+    else:
+        for semantics_dir in semantics_dirs:
+            print(f"  - Scanning {semantics_dir.name}/...")
+            extractor = KSemanticsExtractor(semantics_dir)
+            axioms = extractor.extract_all()
+            all_axioms.extend(axioms)
+            print(f"    Found {len(axioms)} axioms")
+
+    axioms = all_axioms
     # Set layer on all axioms
     for axiom in axioms:
         axiom.layer = args.layer
-    print(f"  - Found {len(axioms)} axioms")
+    print(f"  - Total: {len(axioms)} axioms")
+    if args.with_deps:
+        deps_count = sum(1 for a in axioms if a.depends_on)
+        print(f"  - {deps_count} axioms have depends_on")
+
+    # Step 1b: Extract C signatures for stdlib layers
+    if args.layer in ("c11_stdlib", "cpp_stdlib"):
+        headers_dir = k_root / "profiles/x86-gcc-limited-libc/include/library"
+        if headers_dir.exists():
+            print("\nStep 1b: Extracting C signatures from headers...")
+            sig_extractor = CSignatureExtractor(headers_dir)
+            signatures = sig_extractor.extract_all()
+            print(f"  - Found {len(signatures)} function signatures")
+
+            # Match signatures to axioms
+            matched = 0
+            for axiom in axioms:
+                if axiom.function and axiom.function in signatures:
+                    axiom.signature = signatures[axiom.function].signature
+                    matched += 1
+            print(f"  - Matched {matched} axioms with signatures")
 
     # Step 2: Parse error codes CSV
     print("\nStep 2: Parsing error codes CSV...")

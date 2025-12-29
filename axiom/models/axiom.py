@@ -74,6 +74,7 @@ class Axiom(BaseModel):
     # New fields for function-centric axioms (K-style)
     function: str | None = None  # e.g., "malloc", "realloc"
     header: str | None = None  # e.g., "stdlib.h", "string.h"
+    signature: str | None = None  # e.g., "void* malloc(size_t size)"
     axiom_type: AxiomType | None = None  # precondition, postcondition, etc.
     on_violation: str | None = None  # e.g., "undefined behavior", "throws X"
 
@@ -180,6 +181,8 @@ class AxiomCollection(BaseModel):
                 lines.append(f'function = "{escaped_fn}"')
             if axiom.header:
                 lines.append(f'header = "{axiom.header}"')
+            if axiom.signature:
+                lines.append(f"signature = {to_literal(axiom.signature)}")
             if axiom.axiom_type:
                 lines.append(f'axiom_type = "{axiom.axiom_type.value}"')
             if axiom.on_violation:
@@ -243,6 +246,7 @@ class AxiomCollection(BaseModel):
                     # New K-style fields
                     function=a.get("function"),
                     header=a.get("header"),
+                    signature=a.get("signature"),
                     axiom_type=AxiomType(a["axiom_type"]) if a.get("axiom_type") else None,
                     on_violation=a.get("on_violation"),
                     depends_on=a.get("depends_on", []),
