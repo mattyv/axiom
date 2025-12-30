@@ -1,1 +1,1 @@
-[ ] - extract c11 function signature from cppreference.com
+[ ] - distinguish "undefined" vs "implementation-defined" behavior in axioms (e.g., realloc(ptr, 0) is implementation-defined in C11 but the current axiom flags it as an error condition without this distinction)
