@@ -1,5 +1,85 @@
 [ ] - distinguish "undefined" vs "implementation-defined" behavior in axioms (e.g., realloc(ptr, 0) is implementation-defined in C11 but the current axiom flags it as an error condition without this distinction)
 
+[ ] - Validator returns false positives for contradictory claims (CRITICAL)
+
+    ## Problem
+    The validator uses semantic similarity search to find related axioms, then
+    assumes they support the claim. It does NOT check logical entailment or
+    detect contradictions.
+
+    ## Examples of False Positives
+    1. "Signed integer overflow in C wraps around using two's complement"
+       - Validated as: True, confidence 1.00
+       - Reality: Signed overflow is UB in C, not defined wrap
+
+    2. "Dereferencing a null pointer in C is completely safe and well-defined"
+       - Validated as: True, confidence 1.00
+       - Axiom found: "Null pointer passed to strcpy" (error condition!)
+       - Reality: Null deref is UB
+
+    ## Root Cause
+    `axiom/reasoning/validator.py` and `proof_chain.py` do:
+    1. Semantic search for related axioms
+    2. Check if axiom text mentions similar concepts
+    3. Assume match = support
+
+    Missing: actual contradiction detection between claim semantics and axiom
+    semantics (e.g., "safe" vs "error", "defined" vs "undefined behavior")
+
+    ## Detailed Root Cause Analysis
+
+    ### 1. Vocabulary Mismatch
+    The contradiction detector looks for "undefined behavior" in axiom content:
+    ```python
+    danger_warnings = ["undefined", "unsafe", "invalid", ...]
+    ```
+
+    But K semantics axioms use precondition language:
+    - "must not be a null pointer"
+    - "Operation requires: NOT: isNull(ptr)"
+
+    Stats from Neo4j:
+    - Axioms with "undefined behavior": 9
+    - Axioms with "must not" / "requires": 1,583
+
+    ### 2. Word Form Mismatch
+    `_is_dangerous_claim` fuzzy match fails on word forms:
+    - DANGEROUS_CLAIMS has "null pointer dereference is safe"
+    - Claim uses "dereferencing" (gerund) not "dereference"
+    - Exact word match fails
+
+    ### 3. Axiom Content Too Terse
+    Example axiom for null pointer:
+    ```
+    c11_c_memory_reading_syntax_operation_8c395fed:
+    "Operation requires: ... must not be a null pointer"
+    ```
+
+    This should trigger contradiction with "null deref is safe" but:
+    - No "undefined" keyword
+    - No "unsafe" keyword
+    - Just a precondition constraint
+
+    ## Potential Fixes
+    1. **Expand danger_warnings vocabulary** to include K semantics patterns:
+       - "must not", "requires: NOT", "shall not", "error", "invalid"
+
+    2. **Add lemmatization** for fuzzy matching:
+       - "dereferencing" → "dereference"
+       - Use spaCy or NLTK for word stemming
+
+    3. **Add axiom metadata** during extraction:
+       - `is_constraint: true` for precondition axioms
+       - `violation_is_ub: true` for UB-causing violations
+
+    4. **NLI model** to check entailment/contradiction semantically
+
+    5. **LLM reasoning step** to compare claim vs axiom and classify
+
+    6. **Invert logic for constraint axioms**:
+       - If axiom says "requires X" and claim says "X is not needed" → contradiction
+       - If axiom says "must not X" and claim says "X is safe" → contradiction
+
 [ ] - Fix Neo4j DEPENDS_ON graph cycles causing validate_claim timeout
 
     ## Problem
@@ -10,8 +90,10 @@
     ## Current Graph Stats
     - Total axioms: 5,653
     - Total DEPENDS_ON edges: 6,980
-    - Two-hop cycles (A→B→A): 190
+    - Two-hop cycles (A→B→A): 62 (down from 190)
     - Max out-degree: 19 dependencies per axiom
+    - c11_core cycles: FIXED
+    - Remaining cycles: all in library layer
 
     ## Root Cause
     The query pattern:
@@ -99,11 +181,19 @@
         axiom.depends_on = deps
     ```
 
+    ## Remaining Library Layer Cycles (62)
+    Examples:
+    - `ilp_end_with_return_error_exception_no_throw` ↔ `return_with_exception_noexcept_if_r_noexcept`
+    - `ctrl_r_conversion_operator_*` ↔ `extract_constraint_type_r_moveable`
+
+    These are from LLM-based library linking where related concepts got linked
+    bidirectionally. The LLM linker needs to enforce DAG structure.
+
     ## Suggested Fix Order
-    1. Immediate: Add path length bound (Option 1) to unblock usage
-    2. Fix k_dependencies.py to exclude same-function axioms
-    3. Re-run bootstrap to regenerate c11_core without cycles
-    4. Verify cycles are eliminated
+    1. [DONE] Fix k_dependencies.py - c11_core cycles eliminated
+    2. Add path length bound to query as safety measure
+    3. Fix library linking to enforce DAG (no bidirectional links)
+    4. Re-run library linking to eliminate remaining 62 cycles
 
 [ ] - Complete ILP_FOR library axiom grounding (~50% coverage, up from 25%)
 
@@ -134,3 +224,37 @@
     - [range.range] - Range concept definition
     - [range.iota] - iota_view specification
     - [basic.scope] - Scope and block rules
+
+---
+
+## Testing Session Results (2024-12-31)
+
+### Fixes Deployed
+1. [x] k_dependencies.py - exclude same-function axioms from depends_on (prevents c11_core cycles)
+2. [x] loader.py - added path length bound `*1..10` and cycle detection to get_proof_chain query
+3. [x] Contradiction detector improvements (vocabulary expansion)
+
+### Validation Test Results (After Fixes)
+
+| Claim | Before | After | Status |
+|-------|--------|-------|--------|
+| "Null pointer deref is safe" | True (1.00) | **False (0.10)** | ✅ FIXED |
+| "Signed overflow wraps (two's complement)" | True (1.00) | **False (0.10)** | ✅ FIXED |
+| "std::move moves object to new location" | True (0.95) | True (0.50) | ⚠️ Still wrong, lower confidence |
+| "Double delete is safe" | - | True (0.50) | ⚠️ Wrong - axiom found but not flagged |
+| "ILP_FOR_T_AUTO needs 6 params" | - | True (0.50) | ✅ Correct |
+
+### Performance
+- Queries now run fast (sub-second) vs 2+ minute timeouts before
+- c11_core cycles eliminated (190 → 0)
+- Library layer cycles remain (62) but bounded query prevents hangs
+
+### Remaining Issues
+1. **std::move false positive**: Axioms about move semantics found, but they describe
+   actual moves, not what `std::move()` itself does (it's just a cast)
+
+2. **Double delete false positive**: Axiom "Called free on memory... already freed"
+   found but phrasing doesn't trigger contradiction detection (no "undefined"/"unsafe")
+
+3. **Vocabulary gap**: Error-condition axioms from K semantics don't use
+   "undefined behavior" language, so some contradictions slip through

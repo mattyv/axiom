@@ -8,6 +8,7 @@
 from dataclasses import dataclass, field
 
 from axiom.graph import Neo4jLoader
+from axiom.reasoning.entailment import EntailmentClassifier
 from axiom.vectors import LanceDBLoader
 
 
@@ -54,15 +55,18 @@ class ProofChainGenerator:
         self,
         neo4j_loader: Neo4jLoader | None = None,
         lance_loader: LanceDBLoader | None = None,
+        entailment_classifier: EntailmentClassifier | None = None,
     ) -> None:
         """Initialize with database connections.
 
         Args:
             neo4j_loader: Neo4j connection for graph traversal.
             lance_loader: LanceDB connection for semantic search.
+            entailment_classifier: Classifier for claim-axiom relationships.
         """
         self._neo4j = neo4j_loader
         self._lance = lance_loader
+        self._entailment = entailment_classifier
 
     @property
     def neo4j(self) -> Neo4jLoader:
@@ -77,6 +81,13 @@ class ProofChainGenerator:
         if self._lance is None:
             self._lance = LanceDBLoader()
         return self._lance
+
+    @property
+    def entailment(self) -> EntailmentClassifier:
+        """Get or create entailment classifier."""
+        if self._entailment is None:
+            self._entailment = EntailmentClassifier()
+        return self._entailment
 
     def generate(self, claim: str, max_depth: int = 5) -> ProofChain:
         """Generate a proof chain for a claim.
@@ -98,12 +109,15 @@ class ProofChainGenerator:
             return chain
 
         # Step 2: Build proof chain from relevant axioms
-        # Add top 3 matching axioms for stronger evidence
+        # Classify relationship using entailment analysis
         added = 0
         for axiom in relevant_axioms:
             if not self._claim_matches_axiom(claim, axiom):
                 continue
 
+            # Use entailment classifier to determine actual relationship
+            entailment_result = self.entailment.classify(claim, axiom)
+
             step = ProofStep(
                 axiom_id=axiom["id"],
                 content=axiom["content"],
@@ -111,17 +125,18 @@ class ProofChainGenerator:
                 module=axiom["module"],
                 layer=axiom["layer"],
                 confidence=axiom["confidence"],
-                relationship="SUPPORTS",
+                relationship=entailment_result.relationship,
             )
             chain.add_step(step)
             added += 1
 
-            if added >= 3:  # Limit to top 3 supporting axioms
+            if added >= 3:  # Limit to top 3 matching axioms
                 break
 
-        # If no strong matches, add top result as RELATED_TO
+        # If no strong matches, add top result with entailment classification
         if added == 0 and relevant_axioms:
             axiom = relevant_axioms[0]
+            entailment_result = self.entailment.classify(claim, axiom)
             step = ProofStep(
                 axiom_id=axiom["id"],
                 content=axiom["content"],
@@ -129,7 +144,7 @@ class ProofChainGenerator:
                 module=axiom["module"],
                 layer=axiom["layer"],
                 confidence=axiom["confidence"],
-                relationship="RELATED_TO",
+                relationship=entailment_result.relationship,
             )
             chain.add_step(step)
 
@@ -262,6 +277,17 @@ class ProofChainGenerator:
             return "No proof chain generated."
 
         step = chain.steps[0]
+
+        # Check for contradictions first
+        contradicting_steps = [s for s in chain.steps if s.relationship == "CONTRADICTS"]
+        if contradicting_steps:
+            c = contradicting_steps[0]
+            return (
+                f"CONTRADICTION: The claim conflicts with formal semantics. "
+                f"The axiom '{c.axiom_id}' from module {c.module} indicates "
+                f"this is an error/undefined behavior condition: {c.content}"
+            )
+
         if chain.grounded:
             return (
                 f"This claim is grounded in formal semantics ({step.layer}). "

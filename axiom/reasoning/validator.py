@@ -8,7 +8,7 @@
 from dataclasses import dataclass, field
 
 from .contradiction import Contradiction, ContradictionDetector
-from .proof_chain import ProofChain, ProofChainGenerator
+from .proof_chain import ProofChain, ProofChainGenerator, ProofStep
 
 
 @dataclass
@@ -64,17 +64,38 @@ class AxiomValidator:
         Returns:
             ValidationResult with validity, contradictions, and proof.
         """
-        # Detect contradictions
-        is_valid, contradictions = self.contradiction_detector.validate_claim(claim)
-
-        # Generate proof chain (for supporting or contradicting)
+        # Generate proof chain (includes entailment classification)
         proof_chain = self.proof_generator.generate(claim)
 
+        # Check for contradictions in the proof chain (from entailment classifier)
+        proof_chain_contradictions = [
+            self._step_to_contradiction(step, claim)
+            for step in proof_chain.steps
+            if step.relationship == "CONTRADICTS"
+        ]
+
+        # Also run legacy contradiction detector as fallback
+        legacy_valid, legacy_contradictions = self.contradiction_detector.validate_claim(claim)
+
+        # Combine contradictions (proof chain contradictions take precedence)
+        all_contradictions = proof_chain_contradictions + [
+            c for c in legacy_contradictions
+            if c.axiom_id not in {pc.axiom_id for pc in proof_chain_contradictions}
+        ]
+
+        # Claim is invalid if ANY contradictions found
+        is_valid = len(all_contradictions) == 0
+
         # Calculate overall confidence
-        if contradictions:
-            confidence = 1.0 - max(c.confidence for c in contradictions)
+        if all_contradictions:
+            confidence = 1.0 - max(c.confidence for c in all_contradictions)
         elif proof_chain.grounded:
-            confidence = proof_chain.confidence
+            # Only count as grounded if we have SUPPORTS relationships
+            supporting_steps = [s for s in proof_chain.steps if s.relationship == "SUPPORTS"]
+            if supporting_steps:
+                confidence = proof_chain.confidence
+            else:
+                confidence = 0.5  # Grounded but not supporting
         else:
             # Not grounded but may have supporting axioms
             if proof_chain.steps:
@@ -85,20 +106,32 @@ class AxiomValidator:
 
         # Generate explanation
         explanation = self._generate_explanation(
-            claim, is_valid, contradictions, proof_chain
+            claim, is_valid, all_contradictions, proof_chain
         )
 
         # Generate warnings
-        warnings = self._generate_warnings(claim, contradictions)
+        warnings = self._generate_warnings(claim, all_contradictions)
 
         return ValidationResult(
             claim=claim,
             is_valid=is_valid,
             confidence=confidence,
-            contradictions=contradictions,
+            contradictions=all_contradictions,
             proof_chain=proof_chain,
             explanation=explanation,
             warnings=warnings,
+        )
+
+    def _step_to_contradiction(self, step: ProofStep, claim: str) -> Contradiction:
+        """Convert a proof step with CONTRADICTS relationship to a Contradiction."""
+        return Contradiction(
+            claim=claim,
+            axiom_id=step.axiom_id,
+            axiom_content=step.content,
+            formal_spec=step.formal_spec,
+            contradiction_type="entailment",
+            confidence=0.9,
+            explanation=f"Entailment analysis: claim conflicts with axiom '{step.axiom_id}'",
         )
 
     def validate_text(self, text: str) -> list[ValidationResult]:
