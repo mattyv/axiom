@@ -135,6 +135,9 @@ python scripts/ingest_library.py -r /path/to/library/
 # Export approved axioms to TOML
 python scripts/ingest_library.py --export <session_id> -o mylib_axioms.toml
 
+# Link depends_on for functions with typed signatures
+python scripts/link_depends_on.py mylib_axioms.toml
+
 # Ingest into databases
 python scripts/ingest.py mylib_axioms.toml
 ```
@@ -222,6 +225,7 @@ python scripts/ingest.py knowledge/foundations/cpp20_stdlib.toml
 # 5. Extract and load a library (can now depend on all foundation axioms)
 python scripts/ingest_library.py -r /path/to/mylib/
 python scripts/ingest_library.py --export <session_id> -o mylib_axioms.toml
+python scripts/link_depends_on.py mylib_axioms.toml
 python scripts/ingest.py mylib_axioms.toml
 ```
 

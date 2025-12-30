@@ -383,6 +383,8 @@ class ReviewSessionManager:
                 axiom_dict["function"] = axiom.function
             if axiom.header:
                 axiom_dict["header"] = axiom.header
+            if axiom.signature:
+                axiom_dict["signature"] = axiom.signature
             if axiom.axiom_type:
                 axiom_dict["axiom_type"] = axiom.axiom_type.value
             if axiom.on_violation:
@@ -413,6 +415,7 @@ class ReviewSessionManager:
             "source_module": axiom.source.module,
             "function": axiom.function,
             "header": axiom.header,
+            "signature": axiom.signature,
             "axiom_type": axiom.axiom_type.value if axiom.axiom_type else None,
             "on_violation": axiom.on_violation,
             "confidence": axiom.confidence,
@@ -445,6 +448,7 @@ class ReviewSessionManager:
             ),
             function=data.get("function"),
             header=data.get("header"),
+            signature=data.get("signature"),
             axiom_type=axiom_type,
             on_violation=data.get("on_violation"),
             confidence=data.get("confidence", 1.0),

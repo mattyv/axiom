@@ -488,6 +488,59 @@ class TestReviewedFlag:
             content = output_path.read_text()
             assert "reviewed = true" in content
 
+    def test_export_approved_includes_signature(self):
+        """Test that exported axioms include signature field."""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            manager = ReviewSessionManager(storage_dir=tmpdir)
+
+            # Create axiom with signature
+            axiom = Axiom(
+                id="macro_test_sig",
+                content="Test macro axiom",
+                formal_spec="x > 0",
+                layer="library",
+                source=SourceLocation(file="test.hpp", module="TEST_MACRO"),
+                function="TEST_MACRO",
+                header="test.hpp",
+                signature="TEST_MACRO(a, b, c)",
+            )
+            session = manager.create_session([axiom], session_id="export_sig")
+            session.items[0].decision = ReviewDecision.APPROVED
+            manager.save_session(session)
+
+            output_path = Path(tmpdir) / "exported.toml"
+            manager.export_approved(session, str(output_path))
+
+            content = output_path.read_text()
+            assert 'signature = "TEST_MACRO(a, b, c)"' in content
+
+    def test_signature_preserved_in_save_load_cycle(self):
+        """Test that axiom signature survives save/load round-trip."""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            manager = ReviewSessionManager(storage_dir=tmpdir)
+
+            # Create axiom with signature
+            axiom = Axiom(
+                id="macro_roundtrip_sig",
+                content="Test macro axiom for round-trip",
+                formal_spec="x > 0",
+                layer="library",
+                source=SourceLocation(file="test.hpp", module="ROUNDTRIP_MACRO"),
+                function="ROUNDTRIP_MACRO",
+                header="test.hpp",
+                signature="ROUNDTRIP_MACRO(a, b, c, d)",
+            )
+            session = manager.create_session([axiom], session_id="roundtrip_sig")
+
+            # Save and reload
+            manager.save_session(session)
+            loaded = manager.load_session("roundtrip_sig")
+
+            # Verify signature survived the round-trip
+            assert loaded is not None
+            assert len(loaded.items) == 1
+            assert loaded.items[0].axiom.signature == "ROUNDTRIP_MACRO(a, b, c, d)"
+
 
 class TestFunctionGrouping:
     """Tests for grouping axioms by function during review."""
