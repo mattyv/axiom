@@ -11,6 +11,7 @@ When rebuilding the knowledge base from scratch, axioms must be extracted and lo
 | `scripts/ingest.py` | Load TOML axioms into Neo4j and LanceDB |
 | `scripts/ingest_library.py` | Interactive extraction from user C/C++ libraries |
 | `scripts/ingest_stdlib.py` | Extract axioms from C++ stdlib headers |
+| `scripts/link_depends_on.py` | Post-extraction linking of `depends_on` fields |
 
 ## 1. Foundation Axioms (K-semantics based)
 
@@ -89,6 +90,23 @@ python scripts/ingest.py knowledge/foundations/cpp20_stdlib.toml
 ### Expected Axiom Counts
 - cpp20_language: ~300-400 axioms
 - cpp20_stdlib: ~200-300 axioms
+
+### Post-Extraction Dependency Linking
+
+For stdlib-style axioms with C++ signatures, run the linker to populate `depends_on` fields:
+
+```bash
+# Analyze and link dependencies based on signatures
+python scripts/link_depends_on.py knowledge/foundations/cpp20_stdlib.toml
+
+# Dry run (show what would be linked without making changes)
+python scripts/link_depends_on.py knowledge/foundations/cpp20_stdlib.toml --dry-run
+
+# Force re-link (overwrite existing depends_on)
+python scripts/link_depends_on.py knowledge/foundations/cpp20_stdlib.toml --force
+```
+
+The linker parses C++ signatures to extract type references (references, pointers, iterators, exceptions) and uses semantic search to find matching foundation axioms.
 
 ### Notes
 - Uses Claude CLI with `--dangerously-skip-permissions` and `--no-history`
