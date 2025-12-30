@@ -141,7 +141,29 @@ class ProofChainGenerator:
             "cpp20_language", "cpp20_stdlib",
         }
         if chain.steps:
-            chain.grounded = chain.steps[0].layer in grounded_layers
+            first_step = chain.steps[0]
+            if first_step.layer in grounded_layers:
+                # Directly grounded
+                chain.grounded = True
+            else:
+                # Check if there's a depends_on path to a grounded layer
+                graph_chain = self.neo4j.get_proof_chain(first_step.axiom_id)
+                if graph_chain:
+                    # Add foundation axioms to the proof chain
+                    for node in graph_chain[1:]:  # Skip first (already added)
+                        if node.get("layer") in grounded_layers:
+                            step = ProofStep(
+                                axiom_id=node["id"],
+                                content=node.get("content", ""),
+                                formal_spec=node.get("formal_spec", ""),
+                                module=node.get("module_name", ""),
+                                layer=node["layer"],
+                                confidence=node.get("confidence", 1.0),
+                                relationship="DEPENDS_ON",
+                            )
+                            chain.add_step(step)
+                            chain.grounded = True
+                            break
             chain.explanation = self._generate_explanation(chain)
 
         return chain

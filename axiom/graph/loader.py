@@ -270,7 +270,7 @@ class Neo4jLoader:
             result = session.run(
                 """
                 MATCH path = (a:Axiom {id: $id})-[:DEPENDS_ON*]->(foundation:Axiom)
-                WHERE foundation.layer IN ['c11_core', 'c11_stdlib', 'cpp_core', 'cpp_stdlib']
+                WHERE foundation.layer IN ['c11_core', 'c11_stdlib', 'cpp_core', 'cpp_stdlib', 'cpp20_language', 'cpp20_stdlib']
                 WITH path, length(path) as depth
                 ORDER BY depth DESC
                 LIMIT 1

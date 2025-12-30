@@ -11,7 +11,8 @@ When rebuilding the knowledge base from scratch, axioms must be extracted and lo
 | `scripts/ingest.py` | Load TOML axioms into Neo4j and LanceDB |
 | `scripts/ingest_library.py` | Interactive extraction from user C/C++ libraries |
 | `scripts/ingest_stdlib.py` | Extract axioms from C++ stdlib headers |
-| `scripts/link_depends_on.py` | Post-extraction linking of `depends_on` fields |
+| `scripts/link_depends_on.py` | Regex-based linking (types from signatures) |
+| `scripts/link_semantic.py` | LLM-based linking (semantic grounding to foundations) |
 
 ## 1. Foundation Axioms (K-semantics based)
 
@@ -135,8 +136,11 @@ python scripts/ingest_library.py -r /path/to/library/
 # Export approved axioms to TOML
 python scripts/ingest_library.py --export <session_id> -o mylib_axioms.toml
 
-# Link depends_on for functions with typed signatures
+# Link depends_on for functions with typed signatures (regex-based)
 python scripts/link_depends_on.py mylib_axioms.toml
+
+# Link to foundation axioms via LLM semantic analysis (optional, for grounding)
+python scripts/link_semantic.py mylib_axioms.toml
 
 # Ingest into databases
 python scripts/ingest.py mylib_axioms.toml
@@ -226,6 +230,7 @@ python scripts/ingest.py knowledge/foundations/cpp20_stdlib.toml
 python scripts/ingest_library.py -r /path/to/mylib/
 python scripts/ingest_library.py --export <session_id> -o mylib_axioms.toml
 python scripts/link_depends_on.py mylib_axioms.toml
+python scripts/link_semantic.py mylib_axioms.toml  # LLM-based grounding (optional)
 python scripts/ingest.py mylib_axioms.toml
 ```
 
