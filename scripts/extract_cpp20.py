@@ -38,7 +38,8 @@ from axiom.extractors.prompts import (
 from axiom.models import AxiomCollection
 from axiom.vectors import LanceDBLoader
 
-OUTPUT_FILE = Path("knowledge/foundations/cpp20_language.toml")
+LANGUAGE_OUTPUT_FILE = Path("knowledge/foundations/cpp20_language.toml")
+LIBRARY_OUTPUT_FILE = Path("knowledge/foundations/cpp20_stdlib.toml")
 
 
 class HTMLToText(HTMLParser):
@@ -105,10 +106,11 @@ def get_existing_axioms(section: str) -> list[dict]:
         return []
 
 
-def extract_section(section: str, dry_run: bool = False) -> int:
+def extract_section(section: str, output_file: Path, dry_run: bool = False) -> int:
     """Extract axioms from a section using Claude CLI."""
     print(f"\n{'=' * 60}")
     print(f"Section: {section}")
+    print(f"Output: {output_file}")
     print("=" * 60)
 
     # Fetch and prepare
@@ -195,17 +197,17 @@ def extract_section(section: str, dry_run: bool = False) -> int:
     print(f"  Extracted: {len(collection.axioms)} axioms")
 
     # Merge with existing
-    if OUTPUT_FILE.exists():
-        existing_col = AxiomCollection.load_toml(OUTPUT_FILE)
+    if output_file.exists():
+        existing_col = AxiomCollection.load_toml(output_file)
         existing_ids = {a.id for a in existing_col.axioms}
         new_axioms = [a for a in collection.axioms if a.id not in existing_ids]
         existing_col.axioms.extend(new_axioms)
-        existing_col.save_toml(OUTPUT_FILE)
+        existing_col.save_toml(output_file)
         print(f"  Added: {len(new_axioms)} new axioms (total: {len(existing_col.axioms)})")
     else:
         collection.source = "eel.is/c++draft"
-        collection.save_toml(OUTPUT_FILE)
-        print(f"  Created: {OUTPUT_FILE}")
+        collection.save_toml(output_file)
+        print(f"  Created: {output_file}")
 
     return 0
 
@@ -230,12 +232,15 @@ def main() -> int:
         return 0
 
     if args.section:
-        return extract_section(args.section, args.dry_run)
+        # Determine output file based on section type
+        is_library = args.section in HIGH_SIGNAL_LIBRARY_SECTIONS
+        output_file = LIBRARY_OUTPUT_FILE if is_library else LANGUAGE_OUTPUT_FILE
+        return extract_section(args.section, output_file, args.dry_run)
 
     if args.batch_language:
         failed = 0
         for section in HIGH_SIGNAL_SECTIONS:
-            if extract_section(section, args.dry_run) != 0:
+            if extract_section(section, LANGUAGE_OUTPUT_FILE, args.dry_run) != 0:
                 failed += 1
         print(f"\nDone. {len(HIGH_SIGNAL_SECTIONS) - failed}/{len(HIGH_SIGNAL_SECTIONS)} succeeded")
         return 0 if failed == 0 else 1
@@ -243,7 +248,7 @@ def main() -> int:
     if args.batch_library:
         failed = 0
         for section in HIGH_SIGNAL_LIBRARY_SECTIONS:
-            if extract_section(section, args.dry_run) != 0:
+            if extract_section(section, LIBRARY_OUTPUT_FILE, args.dry_run) != 0:
                 failed += 1
         print(f"\nDone. {len(HIGH_SIGNAL_LIBRARY_SECTIONS) - failed}/{len(HIGH_SIGNAL_LIBRARY_SECTIONS)} succeeded")
         return 0 if failed == 0 else 1

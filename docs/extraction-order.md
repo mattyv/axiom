@@ -2,12 +2,24 @@
 
 When rebuilding the knowledge base from scratch, axioms must be extracted and loaded in this order:
 
+## Scripts Overview
+
+| Script | Purpose |
+|--------|---------|
+| `scripts/bootstrap.py` | Extract axioms from K-Framework semantics (*.k files) |
+| `scripts/extract_cpp20.py` | Extract axioms from C++ draft spec (eel.is/c++draft) |
+| `scripts/ingest.py` | Load TOML axioms into Neo4j and LanceDB |
+| `scripts/ingest_library.py` | Interactive extraction from user C/C++ libraries |
+| `scripts/ingest_stdlib.py` | Extract axioms from C++ stdlib headers |
+
 ## 1. Foundation Axioms (K-semantics based)
+
+**Script**: `scripts/bootstrap.py`
 
 These are extracted from the K-Framework C/C++ semantics and provide the ground truth for language behavior.
 
 - `c11_core` - C11 language semantics
-- `c11_stdlib` - C11 standard library
+- `c11_stdlib` - C11 standard library (includes C function signatures from profile headers)
 - `cpp_core` - C++ core language semantics
 - `cpp_stdlib` - C++ standard library (minimal - K-Framework only has `new.k`)
 
@@ -17,7 +29,7 @@ These are extracted from the K-Framework C/C++ semantics and provide the ground 
 # Clone K-Framework C semantics (if not already done)
 git clone https://github.com/kframework/c-semantics /tmp/c-semantics
 
-# Extract each layer
+# Extract each layer (bootstrap.py also loads into Neo4j and LanceDB)
 python scripts/bootstrap.py --layer c11_core --output knowledge/foundations/c11_core.toml
 python scripts/bootstrap.py --layer c11_stdlib --output knowledge/foundations/c11_stdlib.toml
 python scripts/bootstrap.py --layer cpp_core --output knowledge/foundations/cpp_core.toml
@@ -31,6 +43,8 @@ python scripts/bootstrap.py --layer cpp_stdlib --output knowledge/foundations/cp
 - cpp_stdlib: ~1 axiom (K-Framework C++ stdlib is minimal)
 
 ## 2. C++20 Axioms (LLM-extracted from eel.is/c++draft)
+
+**Script**: `scripts/extract_cpp20.py`
 
 These are extracted from the C++ standard draft using Claude CLI.
 
@@ -56,21 +70,35 @@ python scripts/extract_cpp20.py --batch-library
 python scripts/extract_cpp20.py --batch-language --dry-run
 ```
 
+### Ingestion (after extraction)
+
+**Script**: `scripts/ingest.py`
+
+```bash
+# Ingest language axioms
+python scripts/ingest.py knowledge/foundations/cpp20_language.toml
+
+# Ingest library axioms
+python scripts/ingest.py knowledge/foundations/cpp20_stdlib.toml
+```
+
 ### Output Files
 - Language axioms: `knowledge/foundations/cpp20_language.toml`
 - Library axioms: `knowledge/foundations/cpp20_stdlib.toml`
 
 ### Expected Axiom Counts
-- cpp20_language: ~1000-1200 axioms
-- cpp20_stdlib: ~500-600 axioms
+- cpp20_language: ~300-400 axioms
+- cpp20_stdlib: ~200-300 axioms
 
 ### Notes
-- Uses Claude CLI with `--dangerously-skip-permissions`
+- Uses Claude CLI with `--dangerously-skip-permissions` and `--no-history`
 - Fetches HTML from eel.is/c++draft and converts to text
 - Merges new axioms with existing file (deduplicates by ID)
 - Section lists defined in `axiom/extractors/prompts.py`
 
 ## 3. Library Axioms (LLM-extracted from source code)
+
+**Script**: `scripts/ingest_library.py`
 
 These are extracted from actual C/C++ source files using tree-sitter parsing + LLM analysis.
 
@@ -88,6 +116,9 @@ python scripts/ingest_library.py -r /path/to/library/
 
 # Export approved axioms to TOML
 python scripts/ingest_library.py --export <session_id> -o mylib_axioms.toml
+
+# Ingest into databases
+python scripts/ingest.py mylib_axioms.toml
 ```
 
 ## Why This Order Matters

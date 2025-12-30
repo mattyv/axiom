@@ -1,0 +1,3164 @@
+version = "1.0"
+source = "eel.is/c++draft"
+extracted_at = "2025-12-29T23:09:10.230102+00:00"
+
+[[axioms]]
+id = "cpp20_basic_life_reference_lifetime_end_scalar_7e8f9a0b"
+content = '''The lifetime of a reference ends as if it were a scalar object requiring storage.'''
+formal_spec = '''is_reference(ref) => (lifetime_ends(ref) <=> storage_released_or_scope_ends(ref))'''
+layer = "cpp20_language"
+confidence = 0.9
+source_file = "basic.life"
+source_module = "[basic.life]/3"
+tags = ['lifetime', 'reference', 'storage']
+
+[[axioms]]
+id = "cpp20_basic_life_reference_lifetime_end_3f8a2b1c"
+content = '''The lifetime of a reference ends as if it were a scalar object requiring storage.'''
+formal_spec = '''is_reference(ref) => lifetime_ends(ref) <=> lifetime_ends_as_scalar_requiring_storage(ref)'''
+layer = "cpp20_language"
+confidence = 0.9
+source_file = "basic.life"
+source_module = "[basic.life]/3"
+tags = ['lifetime', 'reference', 'storage']
+
+[[axioms]]
+id = "cpp20_basic_life_vacuous_initialization_def_7c4e5d6a"
+content = '''A variable has vacuous initialization if it is default-initialized, no other initialization is performed, and if it is of class type or a (possibly multidimensional) array thereof, a trivial constructor of that class type is selected for the default-initialization.'''
+formal_spec = '''vacuous_initialization(var) <=> (default_initialized(var) && no_other_initialization(var) && ((!is_class_type(var) && !is_array_of_class_type(var)) || trivial_constructor_selected_for_default_init(var)))'''
+layer = "cpp20_language"
+confidence = 0.95
+source_file = "basic.life"
+source_module = "[basic.life]/2"
+tags = ['initialization', 'lifetime', 'trivial', 'default-initialization']
+
+[[axioms]]
+id = "cpp20_basic_life_runtime_property_1a2b3c4d"
+content = '''The lifetime of an object or reference is a runtime property of the object or reference.'''
+formal_spec = '''is_runtime_property(lifetime(obj_or_ref))'''
+layer = "cpp20_language"
+confidence = 0.95
+source_file = "basic.life"
+source_module = "[basic.life]/2"
+tags = ['lifetime', 'runtime']
+
+[[axioms]]
+id = "cpp20_basic_life_before_after_happens_before_5e6f7a8b"
+content = '''In the context of object lifetime, "before" and "after" refer to the "happens before" relation.'''
+formal_spec = '''in_context(basic_life) => (before(a, b) <=> happens_before(a, b)) && (after(a, b) <=> happens_before(b, a))'''
+layer = "cpp20_language"
+confidence = 0.95
+source_file = "basic.life"
+source_module = "[basic.life]/1"
+tags = ['lifetime', 'concurrency', 'happens-before']
+
+[[axioms]]
+id = "cpp20_basic_life_end_without_destructor_9c0d1e2f"
+content = '''A program may end the lifetime of an object of class type without invoking the destructor, by reusing or releasing the storage.'''
+formal_spec = '''is_class_type(T) && type(obj) == T && (storage_reused(obj) || storage_released(obj)) => lifetime_ended(obj) && !destructor_invoked(obj)'''
+layer = "cpp20_language"
+confidence = 0.9
+source_file = "basic.life"
+source_module = "[basic.life]/6"
+tags = ['lifetime', 'destructor', 'storage']
+
+[[axioms]]
+id = "cpp20_basic_life_ptr_void_star_well_defined_3b4c5d6e"
+content = '''Before an object's lifetime starts or after it ends, a pointer to the storage location may be used as if the pointer were of type void* and such use is well-defined.'''
+formal_spec = '''(before_lifetime_start(ptr) || after_lifetime_end(ptr)) && storage_allocated(ptr) && use_as_void_pointer(ptr) => well_defined'''
+layer = "cpp20_language"
+confidence = 0.9
+source_file = "basic.life"
+source_module = "[basic.life]/7"
+tags = ['lifetime', 'pointer', 'void-pointer', 'storage']
+
+[[axioms]]
+id = "cpp20_basic_life_indirection_limited_use_7f8a9b0c"
+content = '''Indirection through a pointer to storage where an object's lifetime has not started or has ended is permitted but the resulting lvalue may only be used in limited ways.'''
+formal_spec = '''(before_lifetime_start(ptr) || after_lifetime_end(ptr)) && storage_allocated(ptr) && indirection(ptr) => lvalue_limited_use_only(result)'''
+layer = "cpp20_language"
+confidence = 0.9
+source_file = "basic.life"
+source_module = "[basic.life]/7"
+tags = ['lifetime', 'pointer', 'indirection', 'lvalue']
+
+[[axioms]]
+id = "cpp20_basic_life_glvalue_properties_well_defined_2d3e4f5a"
+content = '''Before an object's lifetime starts or after it ends, using the properties of a glvalue that do not depend on its value is well-defined.'''
+formal_spec = '''(before_lifetime_start(glvalue) || after_lifetime_end(glvalue)) && storage_allocated(glvalue) && use_value_independent_properties(glvalue) => well_defined'''
+layer = "cpp20_language"
+confidence = 0.9
+source_file = "basic.life"
+source_module = "[basic.life]/8"
+tags = ['lifetime', 'glvalue', 'storage']
+
+[[axioms]]
+id = "cpp20_basic_life_transparent_replace_subobj_mutable_4a5b6c7d"
+content = '''Direct subobjects o1 and o2 are transparently replaceable if o1 is a mutable member subobject or a subobject thereof, even if the complete object is const.'''
+formal_spec = '''is_direct_subobject(o1) && is_direct_subobject(o2) && corresponding_subobjects(o1, o2) && (is_mutable_member(o1) || is_subobject_of_mutable_member(o1)) && same_type_ignoring_cv(o1, o2) && storage_exactly_overlays(o2, o1) => transparently_replaceable(o1, o2)'''
+layer = "cpp20_language"
+confidence = 0.9
+source_file = "basic.life"
+source_module = "[basic.life]/9"
+tags = ['lifetime', 'transparent-replacement', 'mutable', 'subobject']
+
+[[axioms]]
+id = "cpp20_basic_life_ptr_auto_refers_new_obj_8c9d0e1f"
+content = '''After transparent replacement, a pointer that pointed to the original object will automatically refer to the new object and can be used to manipulate it once its lifetime starts.'''
+formal_spec = '''transparently_replaceable(o1, o2) && lifetime_ended(o1) && !storage_reused_or_released(o1) && created_at_storage(o2, storage(o1)) && pointed_to(ptr, o1) => (lifetime_started(o2) => points_to(ptr, o2) && can_manipulate(ptr, o2))'''
+layer = "cpp20_language"
+confidence = 0.9
+source_file = "basic.life"
+source_module = "[basic.life]/10"
+tags = ['lifetime', 'transparent-replacement', 'pointer']
+
+[[axioms]]
+id = "cpp20_basic_life_ref_auto_refers_new_obj_0a1b2c3d"
+content = '''After transparent replacement, a reference that referred to the original object will automatically refer to the new object and can be used to manipulate it once its lifetime starts.'''
+formal_spec = '''transparently_replaceable(o1, o2) && lifetime_ended(o1) && !storage_reused_or_released(o1) && created_at_storage(o2, storage(o1)) && referred_to(ref, o1) => (lifetime_started(o2) => refers_to(ref, o2) && can_manipulate(ref, o2))'''
+layer = "cpp20_language"
+confidence = 0.9
+source_file = "basic.life"
+source_module = "[basic.life]/10"
+tags = ['lifetime', 'transparent-replacement', 'reference']
+
+[[axioms]]
+id = "cpp20_basic_life_name_auto_refers_new_obj_4e5f6a7b"
+content = '''After transparent replacement, the name of the original object will automatically refer to the new object and can be used to manipulate it once its lifetime starts.'''
+formal_spec = '''transparently_replaceable(o1, o2) && lifetime_ended(o1) && !storage_reused_or_released(o1) && created_at_storage(o2, storage(o1)) && names(name, o1) => (lifetime_started(o2) => names(name, o2) && can_manipulate(name, o2))'''
+layer = "cpp20_language"
+confidence = 0.9
+source_file = "basic.life"
+source_module = "[basic.life]/10"
+tags = ['lifetime', 'transparent-replacement', 'name']
+
+[[axioms]]
+id = "cpp20_basic_life_launder_required_6c7d8e9f"
+content = '''If transparent replacement conditions are not met, a pointer to the new object can be obtained from a pointer that represents the address of its storage by calling std::launder.'''
+formal_spec = '''!transparently_replaceable(o1, o2) && lifetime_ended(o1) && created_at_storage(o2, storage(o1)) && pointer_to_storage(ptr, storage(o1)) => (std_launder(ptr) => points_to(result, o2))'''
+layer = "cpp20_language"
+confidence = 0.85
+source_file = "basic.life"
+source_module = "[basic.life]/10"
+tags = ['lifetime', 'launder', 'pointer']
+
+[[axioms]]
+id = "cpp20_basic_stc_general_storage_duration_categories_a1b2c3d4"
+content = '''The storage duration is the property of an object that defines the minimum potential lifetime of the storage containing the object and is one of: static, thread, automatic, or dynamic storage duration.'''
+formal_spec = '''storage_duration(obj) in {static, thread, automatic, dynamic}'''
+layer = "cpp20_language"
+confidence = 0.85
+source_file = "basic.stc.general"
+source_module = "[basic.stc.general]/1"
+tags = ['storage-duration', 'lifetime', 'object-model']
+
+[[axioms]]
+id = "cpp20_basic_stc_general_pointer_use_after_duration_e5f6a7b8"
+content = '''After the duration of a region of storage has ended, the use of pointers to that region of storage is limited.'''
+formal_spec = '''storage_duration_ended(region) => limited_pointer_use(ptr_to(region))'''
+layer = "cpp20_language"
+confidence = 0.85
+source_file = "basic.stc.general"
+source_module = "[basic.stc.general]/1"
+tags = ['storage-duration', 'lifetime', 'pointer', 'dangling']
+
+[[axioms]]
+id = "cpp20_basic_stc_general_subobject_duration_c9d0e1f2"
+content = '''The storage duration of subobjects and reference members is that of their complete object.'''
+formal_spec = '''is_subobject(sub, complete) || is_reference_member(sub, complete) => storage_duration(sub) == storage_duration(complete)'''
+layer = "cpp20_language"
+confidence = 0.9
+source_file = "basic.stc.general"
+source_module = "[basic.stc.general]/4"
+tags = ['storage-duration', 'subobject', 'reference', 'object-model']
+
+[[axioms]]
+id = "cpp20_basic_stc_static_program_duration_a3b4c5d6"
+content = '''The storage for entities with static storage duration lasts for the duration of the program.'''
+formal_spec = '''has_static_storage_duration(V) => storage_lifetime(V) == program_duration'''
+layer = "cpp20_language"
+confidence = 0.9
+source_file = "basic.stc.static"
+source_module = "[basic.stc.static]/1"
+tags = ['storage-duration', 'static', 'lifetime', 'program-duration']
+
+[[axioms]]
+id = "cpp20_basic_stc_static_namespace_scope_b7c8d9e0"
+content = '''All variables which do not have thread storage duration and belong to a namespace scope or are first declared with the static or extern keywords have static storage duration.'''
+formal_spec = '''(!has_thread_storage_duration(V) && (has_namespace_scope(V) || first_declared_static(V) || first_declared_extern(V))) => has_static_storage_duration(V)'''
+layer = "cpp20_language"
+confidence = 0.9
+source_file = "basic.stc.static"
+source_module = "[basic.stc.static]/1"
+tags = ['storage-duration', 'static', 'namespace-scope', 'linkage']
+
+[[axioms]]
+id = "cpp20_basic_stc_thread_duration_f1a2b3c4"
+content = '''The storage for entities with thread storage duration lasts for the duration of the thread in which they are created.'''
+formal_spec = '''has_thread_storage_duration(V) => storage_lifetime(V) == thread_duration(creating_thread(V))'''
+layer = "cpp20_language"
+confidence = 0.9
+source_file = "basic.stc.thread"
+source_module = "[basic.stc.thread]/1"
+tags = ['storage-duration', 'thread', 'lifetime', 'thread_local']
+
+[[axioms]]
+id = "cpp20_basic_stc_thread_distinct_per_thread_d5e6f7a8"
+content = '''For variables with thread storage duration, there is a distinct object or reference per thread, and use of the declared name refers to the entity associated with the current thread.'''
+formal_spec = '''has_thread_storage_duration(V) && thread(T1) != thread(T2) => object_instance(V, T1) != object_instance(V, T2)'''
+layer = "cpp20_language"
+confidence = 0.9
+source_file = "basic.stc.thread"
+source_module = "[basic.stc.thread]/1"
+tags = ['storage-duration', 'thread', 'thread_local', 'object-identity']
+
+[[axioms]]
+id = "cpp20_basic_stc_thread_thread_local_keyword_b9c0d1e2"
+content = '''All variables declared with the thread_local keyword have thread storage duration.'''
+formal_spec = '''declared_thread_local(V) => has_thread_storage_duration(V)'''
+layer = "cpp20_language"
+confidence = 0.95
+source_file = "basic.stc.thread"
+source_module = "[basic.stc.thread]/1"
+tags = ['storage-duration', 'thread', 'thread_local', 'declaration']
+
+[[axioms]]
+id = "cpp20_basic_stc_auto_block_scope_f3a4b5c6"
+content = '''Variables that belong to a block scope and are not explicitly declared static, thread_local, or extern have automatic storage duration.'''
+formal_spec = '''has_block_scope(V) && !declared_static(V) && !declared_thread_local(V) && !declared_extern(V) => has_automatic_storage_duration(V)'''
+layer = "cpp20_language"
+confidence = 0.95
+source_file = "basic.stc.auto"
+source_module = "[basic.stc.auto]/1"
+tags = ['storage-duration', 'automatic', 'block-scope', 'local-variable']
+
+[[axioms]]
+id = "cpp20_basic_stc_auto_block_exit_d7e8f9a0"
+content = '''The storage for variables with automatic storage duration lasts until the block in which they are created exits.'''
+formal_spec = '''has_automatic_storage_duration(V) && has_block_scope(V) => storage_lifetime(V) == until_block_exit(enclosing_block(V))'''
+layer = "cpp20_language"
+confidence = 0.9
+source_file = "basic.stc.auto"
+source_module = "[basic.stc.auto]/1"
+tags = ['storage-duration', 'automatic', 'lifetime', 'block-scope']
+
+[[axioms]]
+id = "cpp20_basic_stc_auto_parameter_scope_b1c2d3e4"
+content = '''Variables that belong to a parameter scope have automatic storage duration.'''
+formal_spec = '''has_parameter_scope(V) => has_automatic_storage_duration(V)'''
+layer = "cpp20_language"
+confidence = 0.9
+source_file = "basic.stc.auto"
+source_module = "[basic.stc.auto]/1"
+tags = ['storage-duration', 'automatic', 'parameter', 'function']
+
+[[axioms]]
+id = "cpp20_basic_stc_auto_parameter_lifetime_f5a6b7c8"
+content = '''The storage for a function parameter lasts until immediately after its destruction.'''
+formal_spec = '''is_function_parameter(V) => storage_lifetime(V) == until_after_destruction(V)'''
+layer = "cpp20_language"
+confidence = 0.9
+source_file = "basic.stc.auto"
+source_module = "[basic.stc.auto]/1"
+tags = ['storage-duration', 'automatic', 'parameter', 'lifetime', 'destruction']
+
+[[axioms]]
+id = "cpp20_basic_stc_dynamic_new_expression_d9e0f1a2"
+content = '''The dynamic storage duration is associated with objects created by a new-expression or with implicitly created objects.'''
+formal_spec = '''(created_by_new_expression(obj) || is_implicitly_created(obj)) => has_dynamic_storage_duration(obj)'''
+layer = "cpp20_language"
+confidence = 0.9
+source_file = "basic.stc.dynamic.general"
+source_module = "[basic.stc.dynamic.general]/1"
+tags = ['storage-duration', 'dynamic', 'new-expression', 'implicit-object']
+
+[[axioms]]
+id = "cpp20_basic_stc_dynamic_dealloc_nonnull_first_param_c3d4e5f6"
+content = '''If a deallocation function is not a destroying operator delete, the type of its first parameter shall be void*.'''
+formal_spec = '''is_deallocation_function(F) && !is_destroying_operator_delete(F) => param_type(F, 0) == void_ptr'''
+layer = "cpp20_language"
+confidence = 0.95
+source_file = "basic.stc.dynamic.deallocation"
+source_module = "[basic.stc.dynamic.deallocation]/3"
+tags = ['deallocation', 'function-signature', 'parameter-type']
+
+[[axioms]]
+id = "cpp20_basic_stc_dynamic_dealloc_destroying_first_param_a7b8c9d0"
+content = '''If a deallocation function is a destroying operator delete declared in class type C, the type of its first parameter shall be C*.'''
+formal_spec = '''is_deallocation_function(F) && is_destroying_operator_delete(F) && declared_in_class(F, C) => param_type(F, 0) == pointer_to(C)'''
+layer = "cpp20_language"
+confidence = 0.95
+source_file = "basic.stc.dynamic.deallocation"
+source_module = "[basic.stc.dynamic.deallocation]/3"
+tags = ['deallocation', 'destroying-delete', 'function-signature', 'parameter-type']
+
+[[axioms]]
+id = "cpp20_basic_stc_dynamic_dealloc_template_not_usual_e1f2a3b4"
+content = '''A template instance is never a usual deallocation function, regardless of its signature.'''
+formal_spec = '''is_template_instance(F) => !is_usual_deallocation_function(F)'''
+layer = "cpp20_language"
+confidence = 0.95
+source_file = "basic.stc.dynamic.deallocation"
+source_module = "[basic.stc.dynamic.deallocation]/3"
+tags = ['deallocation', 'template', 'usual-deallocation-function']
+
+[[axioms]]
+id = "cpp20_basic_stc_dynamic_dealloc_stdlib_null_no_effect_b5c6d7e8"
+content = '''If the first argument supplied to a standard library deallocation function is a null pointer value, the call has no effect.'''
+formal_spec = '''is_stdlib_deallocation_function(F) && arg(F, 0) == nullptr => no_effect(call(F))'''
+layer = "cpp20_language"
+confidence = 0.95
+source_file = "basic.stc.dynamic.deallocation"
+source_module = "[basic.stc.dynamic.deallocation]/4"
+tags = ['deallocation', 'stdlib', 'null-pointer', 'no-op']
+
+[[axioms]]
+id = "cpp20_basic_stc_dynamic_dealloc_stdlib_shall_deallocate_f9a0b1c2"
+content = '''If the argument given to a standard library deallocation function is a pointer that is not the null pointer value, the deallocation function shall deallocate the storage referenced by the pointer, ending the duration of the region of storage.'''
+formal_spec = '''is_stdlib_deallocation_function(F) && arg(F, 0) != nullptr => deallocates_storage(F, arg(F, 0)) && ends_storage_duration(arg(F, 0))'''
+layer = "cpp20_language"
+confidence = 0.95
+source_file = "basic.stc.dynamic.deallocation"
+source_module = "[basic.stc.dynamic.deallocation]/5"
+tags = ['deallocation', 'stdlib', 'storage-duration', 'lifetime']
+
+[[axioms]]
+id = "cpp20_basic_stc_dynamic_alloc_disjoint_storage_c3d4e5f6"
+content = '''For the library allocation functions, the returned pointer p0 represents the address of a block of storage disjoint from the storage for any other object accessible to the caller.'''
+formal_spec = '''is_stdlib_allocation_function(F) && succeeds(F) => forall obj. (accessible_to_caller(obj) => disjoint(storage(returned_ptr(F)), storage(obj)))'''
+layer = "cpp20_language"
+confidence = 0.9
+source_file = "basic.stc.dynamic.allocation"
+source_module = "[basic.stc.dynamic.allocation]/2"
+tags = ['allocation', 'stdlib', 'disjoint-storage', 'memory-safety']
+
+[[axioms]]
+id = "cpp20_basic_stc_dynamic_alloc_unique_ptr_a7b8c9d0"
+content = '''The value returned by a replaceable allocation function is a non-null pointer value p0 different from any previously returned value p1, unless that value p1 was subsequently passed to a replaceable deallocation function.'''
+formal_spec = '''is_replaceable_allocation(F) && succeeds(F) => returned_ptr(F) != nullptr && (forall p1. (previously_returned(p1) && !subsequently_deallocated(p1) => returned_ptr(F) != p1))'''
+layer = "cpp20_language"
+confidence = 0.9
+source_file = "basic.stc.dynamic.allocation"
+source_module = "[basic.stc.dynamic.allocation]/2"
+tags = ['allocation', 'replaceable', 'unique-pointer', 'memory-safety']
+
+[[axioms]]
+id = "cpp20_expr_pre_result_undefined_math_range_8a3f7c21"
+content = '''If during the evaluation of an expression, the result is not mathematically defined or not in the range of representable values for its type, the behavior is undefined.'''
+formal_spec = '''eval(expr) && (!mathematically_defined(result(expr)) || !in_range(result(expr), type(expr))) => undefined_behavior'''
+layer = "cpp20_language"
+confidence = 0.95
+source_file = "expr.pre"
+source_module = "[expr.pre]/4"
+tags = ['expression', 'undefined-behavior', 'overflow', 'mathematical', 'range']
+c_standard_refs = ['6.5/5']
+
+[[axioms]]
+id = "cpp20_expr_pre_overload_builtin_invariant_b2e4d519"
+content = '''Operator overloading shall not modify the rules for the built-in operators, that is, for operators applied to types for which they are defined by this Standard.'''
+formal_spec = '''is_builtin_operator(op, type1, type2) && overload_resolution_selects_builtin(op, type1, type2) => builtin_operator_rules_apply(op, type1, type2)'''
+layer = "cpp20_language"
+confidence = 0.95
+source_file = "expr.pre"
+source_module = "[expr.pre]/3"
+tags = ['operator-overloading', 'built-in-operators', 'constraint', 'invariant']
+
+[[axioms]]
+id = "cpp20_expr_pre_floating_point_extended_precision_c7f8a2e3"
+content = '''The values of floating-point operands and the results of floating-point expressions may be represented in greater precision and range than that required by the type; the types are not changed thereby.'''
+formal_spec = '''is_floating_point(type(expr)) => (precision(value(expr)) >= precision(type(expr)) && range(value(expr)) >= range(type(expr)) && type(expr) == declared_type(expr))'''
+layer = "cpp20_language"
+confidence = 0.95
+source_file = "expr.pre"
+source_module = "[expr.pre]/6"
+tags = ['floating-point', 'precision', 'range', 'representation', 'implementation-latitude']
+c_standard_refs = ['6.3.1.8', '6.8.6.4']
+
+[[axioms]]
+id = "cpp20_expr_pre_cast_assignment_conversion_required_d4a1b6f8"
+content = '''Cast and assignment operators must still perform their specific conversions even when floating-point values are represented with extended precision and range.'''
+formal_spec = '''(is_cast_expr(expr) || is_assignment_expr(expr)) && is_floating_point(type(operand(expr))) => performs_type_conversion(expr, declared_type(target(expr)))'''
+layer = "cpp20_language"
+confidence = 0.85
+source_file = "expr.pre"
+source_module = "[expr.pre]/6"
+tags = ['floating-point', 'cast', 'assignment', 'conversion', 'precision']
+
+[[axioms]]
+id = "cpp20_expr_pre_overloaded_operator_no_associativity_e5c9d2a1"
+content = '''Relations between operators, such as ++a meaning a+=1, are not guaranteed for overloaded operators.'''
+formal_spec = '''is_overloaded_operator(op) && is_class_or_enum_type(operand_type(op)) => !guaranteed(operator_relations(op))'''
+layer = "cpp20_language"
+confidence = 0.85
+source_file = "expr.pre"
+source_module = "[expr.pre]/2"
+tags = ['operator-overloading', 'class-type', 'enumeration', 'semantics']
+
+[[axioms]]
+id = "cpp20_expr_pre_overloaded_not_associative_commutative_f6b2e3c4"
+content = '''Overloaded operators are never assumed to be associative or commutative for the purpose of expression regrouping.'''
+formal_spec = '''is_overloaded_operator(op) => (!assume_associative(op) && !assume_commutative(op))'''
+layer = "cpp20_language"
+confidence = 0.95
+source_file = "expr.pre"
+source_module = "[expr.pre]/5"
+tags = ['operator-overloading', 'associativity', 'commutativity', 'optimization', 'constraint']
+
+[[axioms]]
+id = "cpp20_expr_pre_builtin_conversion_before_operation_a8d7c5b2"
+content = '''If a built-in operator is selected during overload resolution, user-defined conversions will be applied to the operands before the operation is considered further according to the rules in [expr.compound].'''
+formal_spec = '''overload_resolution_selects_builtin(op, args) && requires_conversion(args, builtin_operand_types(op)) => apply_conversions(args, builtin_operand_types(op)) && then(apply_builtin_rules(op))'''
+layer = "cpp20_language"
+confidence = 0.85
+source_file = "expr.pre"
+source_module = "[expr.pre]/3"
+tags = ['operator-overloading', 'built-in-operators', 'conversion', 'overload-resolution']
+
+[[axioms]]
+id = "cpp20_basic_lval_glvalue_to_prvalue_conversion_a7c3d8f2"
+content = '''When a glvalue appears as an operand of an operator that requires a prvalue for that operand, the lvalue-to-rvalue, array-to-pointer, or function-to-pointer standard conversions are applied to convert the expression to a prvalue.'''
+formal_spec = '''is_glvalue(E) && operator_requires_prvalue(op, E) => apply_conversion(E, one_of(lval_to_rval, array_to_ptr, func_to_ptr)) && becomes_prvalue(E)'''
+layer = "cpp20_language"
+confidence = 0.95
+source_file = "basic.lval"
+source_module = "[basic.lval]/6"
+tags = ['value_category', 'conversion', 'glvalue', 'prvalue', 'operator']
+
+[[axioms]]
+id = "cpp20_basic_lval_temp_materialization_b4e9f1c5"
+content = '''Unless otherwise specified, when a prvalue that is not the result of the lvalue-to-rvalue conversion appears as an operand of an operator, the temporary materialization conversion is applied to convert the expression to an xvalue.'''
+formal_spec = '''is_prvalue(E) && !is_lval_to_rval_result(E) && is_operator_operand(E) && !exception_applies(E, reinterpret_cast | const_cast) => apply_temporary_materialization(E) && becomes_xvalue(E)'''
+layer = "cpp20_language"
+confidence = 0.95
+source_file = "basic.lval"
+source_module = "[basic.lval]/7"
+tags = ['value_category', 'conversion', 'prvalue', 'xvalue', 'temporary', 'materialization']
+
+[[axioms]]
+id = "cpp20_expr_type_ref_adjust_c8d2a5e7"
+content = '''If an expression initially has the type "reference to T", the type is adjusted to T prior to any further analysis; the value category of the expression is not altered.'''
+formal_spec = '''initial_type(E) == reference_to(T) => adjusted_type(E) == T && value_category_unchanged(E)'''
+layer = "cpp20_language"
+confidence = 0.95
+source_file = "expr.type"
+source_module = "[expr.type]/1"
+tags = ['type', 'reference', 'adjustment', 'value_category']
+
+[[axioms]]
+id = "cpp20_expr_type_prvalue_cv_strip_d9e3b6f8"
+content = '''If a prvalue initially has the type "cv T", where T is a cv-unqualified non-class, non-array type, the type of the expression is adjusted to T prior to any further analysis.'''
+formal_spec = '''is_prvalue(E) && initial_type(E) == cv_qualified(T) && is_cv_unqualified(T) && !is_class_type(T) && !is_array_type(T) => adjusted_type(E) == T'''
+layer = "cpp20_language"
+confidence = 0.95
+source_file = "expr.type"
+source_module = "[expr.type]/2"
+tags = ['type', 'prvalue', 'cv_qualifier', 'adjustment']
+
+[[axioms]]
+id = "cpp20_expr_context_unevaluated_operand_e1f4c7a9"
+content = '''An unevaluated operand is not evaluated and is considered a full-expression.'''
+formal_spec = '''is_unevaluated_operand(E) => !is_evaluated(E) && is_full_expression(E)'''
+layer = "cpp20_language"
+confidence = 0.95
+source_file = "expr.context"
+source_module = "[expr.context]/1"
+tags = ['unevaluated', 'operand', 'full_expression', 'evaluation']
+
+[[axioms]]
+id = "cpp20_expr_context_discarded_no_arr_func_conv_f2a5d8b1"
+content = '''In a discarded-value expression context, the array-to-pointer and function-to-pointer standard conversions are not applied.'''
+formal_spec = '''is_discarded_value_expr(E) => !apply_array_to_ptr_conversion(E) && !apply_func_to_ptr_conversion(E)'''
+layer = "cpp20_language"
+confidence = 0.95
+source_file = "expr.context"
+source_module = "[expr.context]/2"
+tags = ['discarded_value', 'conversion', 'array', 'function', 'pointer']
+
+[[axioms]]
+id = "cpp20_expr_context_discarded_volatile_lval_conv_g3b6e9c2"
+content = '''In a discarded-value expression, the lvalue-to-rvalue conversion is applied if and only if the expression is a glvalue of volatile-qualified type and is one of the specified expression forms (parenthesized expression, id-expression, splice-expression, subscripting, class member access, indirection, pointer-to-member operation, conditional expression with qualifying operands, or comma expression with qualifying right operand).'''
+formal_spec = '''is_discarded_value_expr(E) && is_glvalue(E) && is_volatile_qualified(type(E)) && is_qualifying_discarded_form(E) <=> apply_lval_to_rval_conversion(E)'''
+layer = "cpp20_language"
+confidence = 0.95
+source_file = "expr.context"
+source_module = "[expr.context]/2"
+tags = ['discarded_value', 'volatile', 'lvalue_to_rvalue', 'conversion', 'glvalue']
+
+[[axioms]]
+id = "cpp20_expr_context_discarded_temp_materialization_h4c7f0d3"
+content = '''In a discarded-value expression, the temporary materialization conversion is applied if the (possibly converted) expression is a prvalue of object type.'''
+formal_spec = '''is_discarded_value_expr(E) && is_prvalue(converted(E)) && is_object_type(type(converted(E))) => apply_temporary_materialization(converted(E))'''
+layer = "cpp20_language"
+confidence = 0.95
+source_file = "expr.context"
+source_module = "[expr.context]/2"
+tags = ['discarded_value', 'prvalue', 'temporary', 'materialization', 'object_type']
+
+[[axioms]]
+id = "cpp20_expr_context_discarded_result_discard_i5d8g1e4"
+content = '''In a discarded-value expression, the expression is evaluated and its result (if any) is discarded.'''
+formal_spec = '''is_discarded_value_expr(E) => is_evaluated(E) && is_discarded(result(E))'''
+layer = "cpp20_language"
+confidence = 0.95
+source_file = "expr.context"
+source_module = "[expr.context]/2"
+tags = ['discarded_value', 'evaluation', 'result', 'discard']
+
+[[axioms]]
+id = "cpp20_expr_type_composite_ptr_nullptr_j6e9h2f5"
+content = '''The composite pointer type of two operands that are both null pointer constants is std::nullptr_t.'''
+formal_spec = '''is_null_pointer_constant(p1) && is_null_pointer_constant(p2) => composite_pointer_type(p1, p2) == std_nullptr_t'''
+layer = "cpp20_language"
+confidence = 0.95
+source_file = "expr.type"
+source_module = "[expr.type]/3.1"
+tags = ['composite_pointer_type', 'nullptr', 'null_pointer_constant']
+
+[[axioms]]
+id = "cpp20_expr_type_composite_ptr_one_null_k7f0i3g6"
+content = '''The composite pointer type when one operand is a null pointer constant is the type of the other operand.'''
+formal_spec = '''is_null_pointer_constant(p1) && !is_null_pointer_constant(p2) => composite_pointer_type(p1, p2) == type(p2)'''
+layer = "cpp20_language"
+confidence = 0.95
+source_file = "expr.type"
+source_module = "[expr.type]/3.2"
+tags = ['composite_pointer_type', 'nullptr', 'null_pointer_constant']
+
+[[axioms]]
+id = "cpp20_expr_type_composite_ptr_void_l8g1j4h7"
+content = '''The composite pointer type of "pointer to cv1 void" and "pointer to cv2 T" (where T is an object type or void) is "pointer to cv12 void", where cv12 is the union of cv1 and cv2.'''
+formal_spec = '''(type(p1) == ptr_to(cv1, void) && type(p2) == ptr_to(cv2, T) && (is_object_type(T) || T == void)) => composite_pointer_type(p1, p2) == ptr_to(union(cv1, cv2), void)'''
+layer = "cpp20_language"
+confidence = 0.95
+source_file = "expr.type"
+source_module = "[expr.type]/3.3"
+tags = ['composite_pointer_type', 'void_pointer', 'cv_qualifier']
+
+[[axioms]]
+id = "cpp20_expr_type_composite_ptr_noexcept_func_m9h2k5i8"
+content = '''The composite pointer type of "pointer to noexcept function" and "pointer to function" with otherwise identical function types is "pointer to function" (without noexcept).'''
+formal_spec = '''type(p1) == ptr_to(noexcept_func(F)) && type(p2) == ptr_to(func(F)) => composite_pointer_type(p1, p2) == ptr_to(func(F))'''
+layer = "cpp20_language"
+confidence = 0.95
+source_file = "expr.type"
+source_module = "[expr.type]/3.4"
+tags = ['composite_pointer_type', 'function_pointer', 'noexcept']
+
+[[axioms]]
+id = "cpp20_expr_type_composite_ptr_ref_related_n0i3l6j9"
+content = '''When determining composite pointer type of pointers to classes C1 and C2 where one is reference-related to the other, the result is the qualification-combined type of the appropriate operand order.'''
+formal_spec = '''type(p1) == ptr_to(C1) && type(p2) == ptr_to(C2) && (reference_related(C1, C2) || reference_related(C2, C1)) => composite_pointer_type(p1, p2) == qualification_combined(type(p1), type(p2))'''
+layer = "cpp20_language"
+confidence = 0.9
+source_file = "expr.type"
+source_module = "[expr.type]/3.5"
+tags = ['composite_pointer_type', 'reference_related', 'qualification_combined']
+
+[[axioms]]
+id = "cpp20_expr_type_composite_ptr_similar_o1j4m7k0"
+content = '''If T1 and T2 are similar types, the composite pointer type is the qualification-combined type of T1 and T2.'''
+formal_spec = '''similar(type(p1), type(p2)) => composite_pointer_type(p1, p2) == qualification_combined(type(p1), type(p2))'''
+layer = "cpp20_language"
+confidence = 0.95
+source_file = "expr.type"
+source_module = "[expr.type]/3.8"
+tags = ['composite_pointer_type', 'similar_types', 'qualification_combined']
+
+[[axioms]]
+id = "cpp20_expr_prim_this_context_restriction_a3b7c2d1"
+content = '''The expression 'this' shall not appear in any context other than within a member function, default member initializer, or contract assertion of the current class.'''
+formal_spec = '''appears(this) && !in_member_function() && !in_default_member_initializer() && !in_contract_assertion_of_current_class() => ill_formed'''
+layer = "cpp20_language"
+confidence = 0.95
+source_file = "expr.prim.this"
+source_module = "[expr.prim.this]/6"
+tags = ['this', 'context', 'member-function', 'constraint']
+
+[[axioms]]
+id = "cpp20_expr_prim_this_static_member_forbidden_e4f8a1b2"
+content = '''The expression 'this' shall not appear within the declaration of a static or explicit object member function of the current class.'''
+formal_spec = '''appears(this) && (in_static_member_function() || in_explicit_object_member_function()) => ill_formed'''
+layer = "cpp20_language"
+confidence = 0.95
+source_file = "expr.prim.this"
+source_module = "[expr.prim.this]/4"
+tags = ['this', 'static', 'member-function', 'constraint']
+
+[[axioms]]
+id = "cpp20_expr_prim_id_transform_precond_ctor_c5d9e3f4"
+content = '''If id-expression transformation to class member access occurs in a precondition assertion of a constructor or postcondition assertion of a destructor, the expression is ill-formed.'''
+formal_spec = '''id_expression_transform_to_member_access(E) && (in_precondition_of_constructor(X) || in_postcondition_of_destructor(X)) => ill_formed'''
+layer = "cpp20_language"
+confidence = 0.95
+source_file = "expr.prim.id.general"
+source_module = "[expr.prim.id.general]/2"
+tags = ['id-expression', 'contract', 'constructor', 'destructor', 'precondition', 'postcondition']
+
+[[axioms]]
+id = "cpp20_expr_prim_id_nonstatic_member_usage_d6e0f5a7"
+content = '''An id-expression or splice-expression designating a non-static data member or implicit object member function can only be used as part of class member access, to form pointer to member, or in unevaluated operand for non-static data members.'''
+formal_spec = '''designates_nonstatic_member(E) && !part_of_class_member_access(E) && !forming_pointer_to_member(E) && !(designates_nonstatic_data_member(E) && in_unevaluated_operand(E)) => ill_formed'''
+layer = "cpp20_language"
+confidence = 0.95
+source_file = "expr.prim.id.general"
+source_module = "[expr.prim.id.general]/4"
+tags = ['id-expression', 'member-access', 'non-static', 'constraint']
+
+[[axioms]]
+id = "cpp20_expr_prim_id_base_class_splice_a7b1c2d3"
+content = '''A splice-expression that designates a direct base class relationship shall appear only as the second operand of a class member access.'''
+formal_spec = '''splice_expression_designates_base_class(E) && !is_second_operand_of_member_access(E) => ill_formed'''
+layer = "cpp20_language"
+confidence = 0.95
+source_file = "expr.prim.id.general"
+source_module = "[expr.prim.id.general]/5"
+tags = ['splice-expression', 'base-class', 'member-access', 'constraint']
+
+[[axioms]]
+id = "cpp20_expr_prim_id_dtor_pseudo_constraint_b8c2d4e5"
+content = '''If an id-expression names a pseudo-destructor (destructor of non-class type), T shall be a scalar type and the id-expression shall appear as the right operand of a class member access that forms the postfix-expression of a function call.'''
+formal_spec = '''names_pseudo_destructor(E, T) && (!is_scalar_type(T) || !is_right_operand_of_member_access_in_function_call(E)) => ill_formed'''
+layer = "cpp20_language"
+confidence = 0.95
+source_file = "expr.prim.id.dtor"
+source_module = "[expr.prim.id.dtor]/2"
+tags = ['destructor', 'pseudo-destructor', 'scalar', 'constraint']
+
+[[axioms]]
+id = "cpp20_expr_prim_id_dtor_double_destroy_ub_c9d3e5f6"
+content = '''Destroying a temporary object twice by calling its destructor explicitly results in undefined behavior.'''
+formal_spec = '''is_temporary(obj) && destructor_called(obj) && destructor_called_again(obj) => undefined_behavior'''
+layer = "cpp20_language"
+confidence = 0.95
+source_file = "expr.prim.id.dtor"
+source_module = "[expr.prim.id.dtor]/3"
+tags = ['destructor', 'temporary', 'lifetime', 'undefined-behavior']
+
+[[axioms]]
+id = "cpp20_expr_prim_pack_index_denotes_pack_d0e4f6a7"
+content = '''The id-expression P in a pack-index-expression shall be an identifier that denotes a pack.'''
+formal_spec = '''pack_index_expression(P, I) && !denotes_pack(P) => ill_formed'''
+layer = "cpp20_language"
+confidence = 0.95
+source_file = "expr.prim.pack.index"
+source_module = "[expr.prim.pack.index]/1"
+tags = ['pack', 'pack-index', 'variadic', 'constraint']
+
+[[axioms]]
+id = "cpp20_expr_prim_pack_index_bounds_e1f5a7b8"
+content = '''The index V in a pack-index-expression shall satisfy 0 <= V < sizeof...(P) where P is the pack.'''
+formal_spec = '''pack_index_expression(P, V) && (V < 0 || V >= sizeof_pack(P)) => ill_formed'''
+layer = "cpp20_language"
+confidence = 0.95
+source_file = "expr.prim.pack.index"
+source_module = "[expr.prim.pack.index]/2"
+tags = ['pack', 'pack-index', 'bounds', 'constraint']
+
+[[axioms]]
+id = "cpp20_expr_prim_lambda_specifier_unique_f2a6b8c9"
+content = '''A lambda-specifier-seq shall contain at most one of each lambda-specifier and shall not contain both constexpr and consteval.'''
+formal_spec = '''lambda_specifier_seq(L) && (duplicate_specifier(L) || (contains(L, constexpr) && contains(L, consteval))) => ill_formed'''
+layer = "cpp20_language"
+confidence = 0.95
+source_file = "expr.prim.lambda.general"
+source_module = "[expr.prim.lambda.general]/4"
+tags = ['lambda', 'specifier', 'constexpr', 'consteval', 'constraint']
+
+[[axioms]]
+id = "cpp20_expr_prim_lambda_explicit_object_no_mutable_static_a3b7c9d0"
+content = '''If the lambda-declarator contains an explicit object parameter, no lambda-specifier shall be mutable or static.'''
+formal_spec = '''lambda_has_explicit_object_parameter(L) && (has_specifier(L, mutable) || has_specifier(L, static)) => ill_formed'''
+layer = "cpp20_language"
+confidence = 0.95
+source_file = "expr.prim.lambda.general"
+source_module = "[expr.prim.lambda.general]/4"
+tags = ['lambda', 'explicit-object-parameter', 'mutable', 'static', 'constraint']
+
+[[axioms]]
+id = "cpp20_expr_prim_lambda_mutable_static_exclusive_b4c8d0e1"
+content = '''The lambda-specifier-seq shall not contain both mutable and static.'''
+formal_spec = '''lambda_specifier_seq(L) && contains(L, mutable) && contains(L, static) => ill_formed'''
+layer = "cpp20_language"
+confidence = 0.95
+source_file = "expr.prim.lambda.general"
+source_module = "[expr.prim.lambda.general]/4"
+tags = ['lambda', 'mutable', 'static', 'constraint']
+
+[[axioms]]
+id = "cpp20_expr_prim_lambda_static_no_capture_c5d9e1f2"
+content = '''If the lambda-specifier-seq contains static, there shall be no lambda-capture.'''
+formal_spec = '''has_specifier(L, static) && has_lambda_capture(L) => ill_formed'''
+layer = "cpp20_language"
+confidence = 0.95
+source_file = "expr.prim.lambda.general"
+source_module = "[expr.prim.lambda.general]/4"
+tags = ['lambda', 'static', 'capture', 'constraint']
+
+[[axioms]]
+id = "cpp20_expr_prim_lambda_capture_explicit_object_type_d6e0f2a3"
+content = '''For a lambda with captures, the explicit object parameter type shall be the closure type, a class derived from it, or a reference to such type.'''
+formal_spec = '''lambda_has_capture(L) && has_explicit_object_parameter(L, T) && !is_closure_type(T) && !is_derived_from_closure(T) && !is_reference_to_closure_or_derived(T) => ill_formed'''
+layer = "cpp20_language"
+confidence = 0.95
+source_file = "expr.prim.lambda.closure"
+source_module = "[expr.prim.lambda.closure]/6"
+tags = ['lambda', 'closure', 'explicit-object-parameter', 'constraint']
+
+[[axioms]]
+id = "cpp20_expr_prim_lambda_contract_only_capture_e7f1a3b4"
+content = '''If all potential references to a local entity implicitly captured by a lambda occur only within contract assertions or assertion-statements, the program is ill-formed.'''
+formal_spec = '''implicit_capture(L, entity) && all_references_in_contract_assertions(L, entity) => ill_formed'''
+layer = "cpp20_language"
+confidence = 0.95
+source_file = "expr.prim.lambda.closure"
+source_module = "[expr.prim.lambda.closure]/10"
+tags = ['lambda', 'capture', 'contract', 'constraint']
+
+[[axioms]]
+id = "cpp20_expr_prim_lambda_closure_member_no_explicit_f8a2b4c5"
+content = '''A member of a closure type shall not be explicitly instantiated, explicitly specialized, or named in a friend declaration.'''
+formal_spec = '''is_closure_member(M) && (explicitly_instantiated(M) || explicitly_specialized(M) || named_in_friend_declaration(M)) => ill_formed'''
+layer = "cpp20_language"
+confidence = 0.95
+source_file = "expr.prim.lambda.closure"
+source_module = "[expr.prim.lambda.closure]/19"
+tags = ['lambda', 'closure', 'instantiation', 'specialization', 'friend', 'constraint']
+
+[[axioms]]
+id = "cpp20_expr_prim_lambda_capture_default_ampersand_a9b3c5d6"
+content = '''If a lambda-capture includes a capture-default that is &, no identifier in a simple-capture shall be preceded by &.'''
+formal_spec = '''capture_default(L, by_reference) && simple_capture_has_ampersand(L, id) => ill_formed'''
+layer = "cpp20_language"
+confidence = 0.95
+source_file = "expr.prim.lambda.capture"
+source_module = "[expr.prim.lambda.capture]/2"
+tags = ['lambda', 'capture', 'capture-default', 'constraint']
+
+[[axioms]]
+id = "cpp20_expr_prim_lambda_capture_default_equals_b0c4d6e7"
+content = '''If a lambda-capture includes a capture-default that is =, each simple-capture shall be "&identifier...", "this", or "*this".'''
+formal_spec = '''capture_default(L, by_copy) && simple_capture_not_allowed_form(L, C) => ill_formed'''
+layer = "cpp20_language"
+confidence = 0.95
+source_file = "expr.prim.lambda.capture"
+source_module = "[expr.prim.lambda.capture]/2"
+tags = ['lambda', 'capture', 'capture-default', 'constraint']
+
+[[axioms]]
+id = "cpp20_expr_prim_lambda_capture_unique_c1d5e7f8"
+content = '''An identifier or this shall not appear more than once in a lambda-capture (ignoring appearances in initializers of init-captures).'''
+formal_spec = '''appears_multiple_times_in_capture(L, id_or_this) => ill_formed'''
+layer = "cpp20_language"
+confidence = 0.95
+source_file = "expr.prim.lambda.capture"
+source_module = "[expr.prim.lambda.capture]/2"
+tags = ['lambda', 'capture', 'duplicate', 'constraint']
+
+[[axioms]]
+id = "cpp20_expr_prim_lambda_capture_scope_restriction_d2e6f8a9"
+content = '''A lambda-expression shall not have a capture-default or simple-capture unless its innermost enclosing scope is a block scope, it appears within a default member initializer, or it appears within a contract assertion.'''
+formal_spec = '''has_capture_default_or_simple_capture(L) && !innermost_scope_is_block(L) && !in_default_member_initializer(L) && !in_contract_assertion(L) => ill_formed'''
+layer = "cpp20_language"
+confidence = 0.95
+source_file = "expr.prim.lambda.capture"
+source_module = "[expr.prim.lambda.capture]/3"
+tags = ['lambda', 'capture', 'scope', 'constraint']
+
+[[axioms]]
+id = "cpp20_expr_prim_lambda_simple_capture_local_e3f7a9b0"
+content = '''The identifier in a simple-capture shall denote a local entity.'''
+formal_spec = '''simple_capture(L, id) && !denotes_local_entity(id) => ill_formed'''
+layer = "cpp20_language"
+confidence = 0.95
+source_file = "expr.prim.lambda.capture"
+source_module = "[expr.prim.lambda.capture]/4"
+tags = ['lambda', 'capture', 'local-entity', 'constraint']
+
+[[axioms]]
+id = "cpp20_expr_prim_lambda_capture_shadows_param_f4a8b0c1"
+content = '''If an identifier in a capture appears as the declarator-id of a parameter or as the name of a template parameter of the lambda-expression, the program is ill-formed.'''
+formal_spec = '''capture_identifier(L, id) && (is_parameter_name(L, id) || is_template_parameter_name(L, id)) => ill_formed'''
+layer = "cpp20_language"
+confidence = 0.95
+source_file = "expr.prim.lambda.capture"
+source_module = "[expr.prim.lambda.capture]/5"
+tags = ['lambda', 'capture', 'parameter', 'shadowing', 'constraint']
+
+[[axioms]]
+id = "cpp20_expr_prim_qual_id_dtor_computed_type_a5b9c1d2"
+content = '''A qualified-id shall not be of the form nested-name-specifier template-opt ~computed-type-specifier nor of the form computed-type-specifier::~type-name.'''
+formal_spec = '''qualified_id_with_computed_type_dtor(Q) => ill_formed'''
+layer = "cpp20_language"
+confidence = 0.95
+source_file = "expr.prim.id.qual"
+source_module = "[expr.prim.id.qual]/5"
+tags = ['qualified-id', 'destructor', 'computed-type-specifier', 'constraint']
+
+[[axioms]]
+id = "cpp20_expr_prim_qual_nested_name_declarative_b6c0d2e3"
+content = '''A declarative nested-name-specifier shall not have a computed-type-specifier or a splice-scope-specifier.'''
+formal_spec = '''is_declarative_nested_name_specifier(N) && (has_computed_type_specifier(N) || has_splice_scope_specifier(N)) => ill_formed'''
+layer = "cpp20_language"
+confidence = 0.95
+source_file = "expr.prim.id.qual"
+source_module = "[expr.prim.id.qual]/3"
+tags = ['nested-name-specifier', 'declarative', 'computed-type', 'splice', 'constraint']
+
+[[axioms]]
+id = "cpp20_expr_prim_qual_nested_name_computed_type_c7d1e3f4"
+content = '''A nested-name-specifier with a computed-type-specifier shall designate a class or enumeration type.'''
+formal_spec = '''nested_name_specifier_with_computed_type(N, T) && !is_class_type(T) && !is_enum_type(T) => ill_formed'''
+layer = "cpp20_language"
+confidence = 0.95
+source_file = "expr.prim.id.qual"
+source_module = "[expr.prim.id.qual]/4.2"
+tags = ['nested-name-specifier', 'computed-type', 'class', 'enumeration', 'constraint']
+
+[[axioms]]
+id = "cpp20_expr_prim_qual_splice_class_enum_namespace_d8e2f4a5"
+content = '''For a nested-name-specifier of the form splice-specifier::, the splice-specifier shall designate a class or enumeration type or a namespace.'''
+formal_spec = '''nested_name_splice_specifier(N, S) && !designates_class(S) && !designates_enum(S) && !designates_namespace(S) => ill_formed'''
+layer = "cpp20_language"
+confidence = 0.95
+source_file = "expr.prim.id.qual"
+source_module = "[expr.prim.id.qual]/4.3"
+tags = ['nested-name-specifier', 'splice', 'class', 'enumeration', 'namespace', 'constraint']
+
+[[axioms]]
+id = "cpp20_expr_prim_qual_splice_specialization_class_e9f3a5b6"
+content = '''For a nested-name-specifier of the form template-opt splice-specialization-specifier::, the splice-specifier shall designate a class template or alias template, and the specialization shall be a class template specialization or alias denoting a class or enumeration type.'''
+formal_spec = '''nested_name_splice_specialization(N, S, T) && !is_class_template(T) && !is_alias_template_to_class_or_enum(T) => ill_formed'''
+layer = "cpp20_language"
+confidence = 0.95
+source_file = "expr.prim.id.qual"
+source_module = "[expr.prim.id.qual]/4.4"
+tags = ['nested-name-specifier', 'splice', 'template', 'specialization', 'constraint']
+
+[[axioms]]
+id = "cpp20_expr_prim_contract_var_const_lvalue_f0a4b6c7"
+content = '''Modifying a variable or reference parameter within a contract assertion predicate through const lvalue conversion is ill-formed.'''
+formal_spec = '''in_contract_predicate(E) && modifies_const_converted_variable(E) => ill_formed'''
+layer = "cpp20_language"
+confidence = 0.95
+source_file = "expr.prim.id.unqual"
+source_module = "[expr.prim.id.unqual]/7"
+tags = ['contract', 'predicate', 'const', 'modification', 'constraint']
+
+[[axioms]]
+id = "cpp20_expr_prim_overload_requires_unsatisfied_a1b5c7d8"
+content = '''A program cannot refer to a function with a trailing requires-clause whose constraint-expression is not satisfied, because such functions are never selected by overload resolution.'''
+formal_spec = '''refers_to_function(E, F) && has_requires_clause(F) && !constraints_satisfied(F) => ill_formed'''
+layer = "cpp20_language"
+confidence = 0.95
+source_file = "expr.prim.id.general"
+source_module = "[expr.prim.id.general]/6"
+tags = ['overload', 'requires-clause', 'constraints', 'constraint']
+
+[[axioms]]
+id = "cpp20_expr_unary_op_indirection_ub_a7c3f2d1"
+content = '''Dereferencing a pointer that does not point to an object or function is undefined behavior, except as specified in [expr.typeid].'''
+formal_spec = '''dereference(ptr) && !points_to_object(ptr) && !points_to_function(ptr) && !typeid_context(ptr) => undefined_behavior'''
+layer = "cpp20_language"
+confidence = 0.95
+source_file = "expr.unary.op"
+source_module = "[expr.unary.op]/1"
+tags = ['pointer', 'indirection', 'dereference', 'undefined-behavior']
+
+[[axioms]]
+id = "cpp20_expr_unary_op_indirection_operand_b8d4e5f2"
+content = '''The operand of the unary * operator shall be a prvalue of type "pointer to T", where T is an object or function type.'''
+formal_spec = '''unary_star(operand) => prvalue(operand) && pointer_type(operand) && (object_type(pointee(operand)) || function_type(pointee(operand)))'''
+layer = "cpp20_language"
+confidence = 0.95
+source_file = "expr.unary.op"
+source_module = "[expr.unary.op]/1"
+tags = ['pointer', 'indirection', 'operand', 'constraint']
+
+[[axioms]]
+id = "cpp20_expr_unary_op_address_of_lvalue_c9e6f3a4"
+content = '''The operand of the unary & operator shall be an lvalue of some type T.'''
+formal_spec = '''unary_ampersand(operand) => lvalue(operand)'''
+layer = "cpp20_language"
+confidence = 0.95
+source_file = "expr.unary.op"
+source_module = "[expr.unary.op]/3"
+tags = ['address-of', 'lvalue', 'constraint']
+
+[[axioms]]
+id = "cpp20_expr_unary_op_address_bitfield_d0f7a4b5"
+content = '''The operand of the unary & operator shall not be a bit-field.'''
+formal_spec = '''unary_ampersand(operand) && bit_field(operand) => ill_formed'''
+layer = "cpp20_language"
+confidence = 0.95
+source_file = "expr.unary.op"
+source_module = "[expr.unary.op]/5"
+tags = ['address-of', 'bit-field', 'constraint']
+
+[[axioms]]
+id = "cpp20_expr_unary_op_address_incomplete_class_e1a8b5c6"
+content = '''If unary & is applied to an lvalue of incomplete class type and the complete type declares operator&(), it is unspecified whether the operator has the built-in meaning or the operator function is called.'''
+formal_spec = '''unary_ampersand(operand) && incomplete_class_type(typeof(operand)) && complete_type_has_operator_ampersand(typeof(operand)) => unspecified_behavior'''
+layer = "cpp20_language"
+confidence = 0.85
+source_file = "expr.unary.op"
+source_module = "[expr.unary.op]/5"
+tags = ['address-of', 'incomplete-type', 'unspecified']
+
+[[axioms]]
+id = "cpp20_expr_unary_op_plus_operand_f2b9c6d7"
+content = '''The operand of the unary + operator shall be a prvalue of arithmetic, unscoped enumeration, or pointer type.'''
+formal_spec = '''unary_plus(operand) => prvalue(operand) && (arithmetic_type(operand) || unscoped_enum_type(operand) || pointer_type(operand))'''
+layer = "cpp20_language"
+confidence = 0.95
+source_file = "expr.unary.op"
+source_module = "[expr.unary.op]/7"
+tags = ['unary-plus', 'operand', 'constraint']
+
+[[axioms]]
+id = "cpp20_expr_unary_op_minus_operand_03cad7e8"
+content = '''The operand of the unary - operator shall be a prvalue of arithmetic or unscoped enumeration type.'''
+formal_spec = '''unary_minus(operand) => prvalue(operand) && (arithmetic_type(operand) || unscoped_enum_type(operand))'''
+layer = "cpp20_language"
+confidence = 0.95
+source_file = "expr.unary.op"
+source_module = "[expr.unary.op]/8"
+tags = ['unary-minus', 'operand', 'constraint']
+
+[[axioms]]
+id = "cpp20_expr_unary_op_bitwise_not_operand_14dbe8f9"
+content = '''The operand of the ~ operator shall be a prvalue of integral or unscoped enumeration type.'''
+formal_spec = '''bitwise_not(operand) => prvalue(operand) && (integral_type(operand) || unscoped_enum_type(operand))'''
+layer = "cpp20_language"
+confidence = 0.95
+source_file = "expr.unary.op"
+source_module = "[expr.unary.op]/10"
+tags = ['bitwise-not', 'operand', 'constraint']
+
+[[axioms]]
+id = "cpp20_expr_pre_incr_not_bool_25ecf90a"
+content = '''The operand of prefix ++ or -- shall not be of type cv bool.'''
+formal_spec = '''(prefix_increment(operand) || prefix_decrement(operand)) && is_bool_type(operand) => ill_formed'''
+layer = "cpp20_language"
+confidence = 0.95
+source_file = "expr.pre.incr"
+source_module = "[expr.pre.incr]/1"
+tags = ['increment', 'decrement', 'bool', 'constraint']
+
+[[axioms]]
+id = "cpp20_expr_sizeof_function_type_36fda01b"
+content = '''The sizeof operator shall not be applied to an expression that has function type.'''
+formal_spec = '''sizeof_expr(operand) && function_type(typeof(operand)) => ill_formed'''
+layer = "cpp20_language"
+confidence = 0.95
+source_file = "expr.sizeof"
+source_module = "[expr.sizeof]/1"
+tags = ['sizeof', 'function-type', 'constraint']
+
+[[axioms]]
+id = "cpp20_expr_sizeof_incomplete_type_47aeb12c"
+content = '''The sizeof operator shall not be applied to an expression that has incomplete type, or to the parenthesized name of such types.'''
+formal_spec = '''sizeof_expr(operand) && incomplete_type(typeof(operand)) => ill_formed'''
+layer = "cpp20_language"
+confidence = 0.95
+source_file = "expr.sizeof"
+source_module = "[expr.sizeof]/1"
+tags = ['sizeof', 'incomplete-type', 'constraint']
+
+[[axioms]]
+id = "cpp20_expr_sizeof_bitfield_58bfc23d"
+content = '''The sizeof operator shall not be applied to a glvalue that designates a bit-field.'''
+formal_spec = '''sizeof_expr(operand) && glvalue(operand) && bit_field(operand) => ill_formed'''
+layer = "cpp20_language"
+confidence = 0.95
+source_file = "expr.sizeof"
+source_module = "[expr.sizeof]/1"
+tags = ['sizeof', 'bit-field', 'constraint']
+
+[[axioms]]
+id = "cpp20_expr_sizeof_char_is_one_69c0d34e"
+content = '''The result of sizeof applied to any of the narrow character types is 1.'''
+formal_spec = '''sizeof_expr(operand) && narrow_character_type(typeof(operand)) => result == 1'''
+layer = "cpp20_language"
+confidence = 0.95
+source_file = "expr.sizeof"
+source_module = "[expr.sizeof]/1"
+tags = ['sizeof', 'character', 'invariant']
+c_standard_refs = ['6.5.3.4']
+
+[[axioms]]
+id = "cpp20_expr_sizeof_pack_identifier_7ad1e45f"
+content = '''The identifier in a sizeof... expression shall name a pack.'''
+formal_spec = '''sizeof_pack(identifier) => is_pack(identifier)'''
+layer = "cpp20_language"
+confidence = 0.95
+source_file = "expr.sizeof"
+source_module = "[expr.sizeof]/4"
+tags = ['sizeof', 'pack', 'variadic', 'constraint']
+
+[[axioms]]
+id = "cpp20_expr_alignof_complete_object_type_8be2f560"
+content = '''The operand of alignof shall be a type-id representing a complete object type, or an array thereof, or a reference to one of those types.'''
+formal_spec = '''alignof_expr(type_id) => (complete_object_type(type_id) || array_of(complete_object_type, type_id) || reference_to(complete_object_type, type_id))'''
+layer = "cpp20_language"
+confidence = 0.95
+source_file = "expr.alignof"
+source_module = "[expr.alignof]/1"
+tags = ['alignof', 'complete-type', 'constraint']
+
+[[axioms]]
+id = "cpp20_expr_new_complete_object_type_9cf3a671"
+content = '''The allocated type in a new-expression shall be a complete object type, but not an abstract class type or array thereof.'''
+formal_spec = '''new_expr(type) => complete_object_type(type) && !abstract_class_type(type) && !array_of(abstract_class_type, type)'''
+layer = "cpp20_language"
+confidence = 0.95
+source_file = "expr.new"
+source_module = "[expr.new]/1"
+tags = ['new', 'complete-type', 'abstract-class', 'constraint']
+
+[[axioms]]
+id = "cpp20_expr_new_constant_expr_positive_adb4b782"
+content = '''Every constant-expression in a noptr-new-declarator shall be a converted constant expression of type std::size_t and its value shall be greater than zero.'''
+formal_spec = '''noptr_new_declarator_constant_expr(expr) => converted_constant_expr(expr, size_t) && value(expr) > 0'''
+layer = "cpp20_language"
+confidence = 0.95
+source_file = "expr.new"
+source_module = "[expr.new]/6"
+tags = ['new', 'array', 'constant-expression', 'constraint']
+
+[[axioms]]
+id = "cpp20_expr_new_unknown_bound_initializer_bec5c893"
+content = '''If the type-id or new-type-id denotes an array type of unknown bound, the new-initializer shall not be omitted.'''
+formal_spec = '''new_expr(type) && array_of_unknown_bound(type) && !has_new_initializer => ill_formed'''
+layer = "cpp20_language"
+confidence = 0.95
+source_file = "expr.new"
+source_module = "[expr.new]/7"
+tags = ['new', 'array', 'unknown-bound', 'constraint']
+
+[[axioms]]
+id = "cpp20_expr_new_invalid_size_ill_formed_cfd6d9a4"
+content = '''If the value of the array size expression is invalid and is a potentially-evaluated core constant expression, the program is ill-formed.'''
+formal_spec = '''new_expr_array_size(expr) && invalid_size_value(expr) && core_constant_expression(expr) => ill_formed'''
+layer = "cpp20_language"
+confidence = 0.95
+source_file = "expr.new"
+source_module = "[expr.new]/8.5"
+tags = ['new', 'array', 'size', 'constant-expression', 'constraint']
+
+[[axioms]]
+id = "cpp20_expr_new_invalid_size_nothrow_null_d0e7e0b5"
+content = '''If the array size value is invalid at runtime and the allocation function has a non-throwing exception specification, the value of the new-expression is the null pointer value.'''
+formal_spec = '''new_expr_array_size(expr) && invalid_size_value(expr) && !core_constant_expression(expr) && nothrow_alloc_fn => result == nullptr'''
+layer = "cpp20_language"
+confidence = 0.95
+source_file = "expr.new"
+source_module = "[expr.new]/8.6.1"
+tags = ['new', 'array', 'size', 'nothrow', 'null']
+
+[[axioms]]
+id = "cpp20_expr_new_invalid_size_throwing_e1f8f1c6"
+content = '''If the array size value is invalid at runtime and the allocation function has a throwing exception specification, the new-expression terminates by throwing std::bad_array_new_length.'''
+formal_spec = '''new_expr_array_size(expr) && invalid_size_value(expr) && !core_constant_expression(expr) && !nothrow_alloc_fn => throws(bad_array_new_length)'''
+layer = "cpp20_language"
+confidence = 0.95
+source_file = "expr.new"
+source_module = "[expr.new]/8.6.2"
+tags = ['new', 'array', 'size', 'exception', 'bad_array_new_length']
+
+[[axioms]]
+id = "cpp20_expr_new_placement_null_ub_f20902d7"
+content = '''If the allocation function is a non-allocating form (placement new) that returns null, the behavior is undefined.'''
+formal_spec = '''new_expr_placement && non_allocating_form && allocation_returns_null => undefined_behavior'''
+layer = "cpp20_language"
+confidence = 0.95
+source_file = "expr.new"
+source_module = "[expr.new]/22"
+tags = ['new', 'placement', 'null', 'undefined-behavior']
+
+[[axioms]]
+id = "cpp20_expr_delete_single_valid_pointer_031a13e8"
+content = '''In a single-object delete expression, the value of the operand of delete may be a null pointer value, a pointer value that resulted from a previous non-array new-expression, or a pointer to a base class subobject of an object created by such a new-expression. If not, the behavior is undefined.'''
+formal_spec = '''delete_single(ptr) && !null_pointer(ptr) && !from_non_array_new(ptr) && !base_class_subobject_from_new(ptr) => undefined_behavior'''
+layer = "cpp20_language"
+confidence = 0.95
+source_file = "expr.delete"
+source_module = "[expr.delete]/2"
+tags = ['delete', 'pointer', 'undefined-behavior']
+
+[[axioms]]
+id = "cpp20_expr_delete_array_valid_pointer_142b24f9"
+content = '''In an array delete expression, the value of the operand of delete may be a null pointer value or a pointer value that resulted from a previous array new-expression whose allocation function was not a non-allocating form. If not, the behavior is undefined.'''
+formal_spec = '''delete_array(ptr) && !null_pointer(ptr) && !(from_array_new(ptr) && !non_allocating_form(alloc_fn)) => undefined_behavior'''
+layer = "cpp20_language"
+confidence = 0.95
+source_file = "expr.delete"
+source_module = "[expr.delete]/2"
+tags = ['delete', 'array', 'pointer', 'undefined-behavior']
+
+[[axioms]]
+id = "cpp20_expr_delete_virtual_destructor_253c350a"
+content = '''In a single-object delete expression, if the static type of the object to be deleted is not similar to its dynamic type and the selected deallocation function is not a destroying operator delete, the static type shall be a base class of the dynamic type and shall have a virtual destructor or the behavior is undefined.'''
+formal_spec = '''delete_single(ptr) && !similar_types(static_type(ptr), dynamic_type(ptr)) && !destroying_delete && !(base_class(static_type(ptr), dynamic_type(ptr)) && has_virtual_destructor(static_type(ptr))) => undefined_behavior'''
+layer = "cpp20_language"
+confidence = 0.95
+source_file = "expr.delete"
+source_module = "[expr.delete]/3"
+tags = ['delete', 'virtual-destructor', 'polymorphism', 'undefined-behavior']
+
+[[axioms]]
+id = "cpp20_expr_delete_array_type_mismatch_364d460b"
+content = '''In an array delete expression, if the dynamic type of the object to be deleted is not similar to its static type, the behavior is undefined.'''
+formal_spec = '''delete_array(ptr) && !similar_types(dynamic_type(ptr), static_type(ptr)) => undefined_behavior'''
+layer = "cpp20_language"
+confidence = 0.95
+source_file = "expr.delete"
+source_module = "[expr.delete]/3"
+tags = ['delete', 'array', 'type-mismatch', 'undefined-behavior']
+
+[[axioms]]
+id = "cpp20_expr_delete_incomplete_class_475e571c"
+content = '''If the object being deleted has incomplete class type at the point of deletion, the program is ill-formed.'''
+formal_spec = '''delete_expr(ptr) && incomplete_class_type(pointee_type(ptr)) => ill_formed'''
+layer = "cpp20_language"
+confidence = 0.95
+source_file = "expr.delete"
+source_module = "[expr.delete]/4"
+tags = ['delete', 'incomplete-type', 'constraint']
+
+[[axioms]]
+id = "cpp20_expr_delete_destructor_accessible_586f682d"
+content = '''When a delete-expression invokes the destructor, the destructor shall be accessible from the point where the delete-expression appears.'''
+formal_spec = '''delete_expr(ptr) && !null_pointer(ptr) && !destroying_delete && has_destructor(pointee_type(ptr)) => destructor_accessible(pointee_type(ptr))'''
+layer = "cpp20_language"
+confidence = 0.95
+source_file = "expr.delete"
+source_module = "[expr.delete]/5"
+tags = ['delete', 'destructor', 'accessibility', 'constraint']
+
+[[axioms]]
+id = "cpp20_expr_await_context_697a793e"
+content = '''An await-expression shall appear only as a potentially-evaluated expression within the compound-statement of a function-body or lambda-expression, outside of a handler.'''
+formal_spec = '''await_expr && !(in_compound_statement && (in_function_body || in_lambda) && !in_handler) => ill_formed'''
+layer = "cpp20_language"
+confidence = 0.95
+source_file = "expr.await"
+source_module = "[expr.await]/2"
+tags = ['await', 'coroutine', 'context', 'constraint']
+
+[[axioms]]
+id = "cpp20_expr_await_default_argument_7a8b8a4f"
+content = '''An await-expression shall not appear in a default argument.'''
+formal_spec = '''await_expr && in_default_argument => ill_formed'''
+layer = "cpp20_language"
+confidence = 0.95
+source_file = "expr.await"
+source_module = "[expr.await]/2"
+tags = ['await', 'coroutine', 'default-argument', 'constraint']
+
+[[axioms]]
+id = "cpp20_expr_await_static_storage_8b9c9b50"
+content = '''An await-expression shall not appear in the initializer of a block variable with static or thread storage duration.'''
+formal_spec = '''await_expr && in_block_var_initializer && (static_storage_duration || thread_storage_duration) => ill_formed'''
+layer = "cpp20_language"
+confidence = 0.95
+source_file = "expr.await"
+source_module = "[expr.await]/2"
+tags = ['await', 'coroutine', 'static-storage', 'constraint']
+
+[[axioms]]
+id = "cpp20_expr_await_suspend_type_9cad0c61"
+content = '''The await-suspend expression shall be a prvalue of type void, bool, or std::coroutine_handle<Z> for some type Z.'''
+formal_spec = '''await_suspend_expr(e) => prvalue(e) && (typeof(e) == void || typeof(e) == bool || is_coroutine_handle(typeof(e)))'''
+layer = "cpp20_language"
+confidence = 0.95
+source_file = "expr.await"
+source_module = "[expr.await]/3.7"
+tags = ['await', 'coroutine', 'await_suspend', 'constraint']
+
+[[axioms]]
+id = "cpp20_expr_unary_op_explicit_object_member_adb1d172"
+content = '''If the operand of unary & designates an explicit object member function, the operand shall be a qualified-id or a splice-expression.'''
+formal_spec = '''unary_ampersand(operand) && explicit_object_member_function(operand) => (qualified_id(operand) || splice_expression(operand))'''
+layer = "cpp20_language"
+confidence = 0.95
+source_file = "expr.unary.op"
+source_module = "[expr.unary.op]/3.2"
+tags = ['address-of', 'explicit-object', 'member-function', 'constraint']
+
+[[axioms]]
+id = "cpp20_expr_new_dealloc_accessible_bec2e283"
+content = '''The matching deallocation function for a new-expression (if any) shall be non-deleted and accessible from the point where the new-expression appears.'''
+formal_spec = '''new_expr && matching_dealloc_fn(fn) => !deleted(fn) && accessible(fn)'''
+layer = "cpp20_language"
+confidence = 0.95
+source_file = "expr.new"
+source_module = "[expr.new]/29"
+tags = ['new', 'deallocation', 'accessibility', 'constraint']
+
+[[axioms]]
+id = "cpp20_expr_new_usual_dealloc_match_ill_formed_cfd3f394"
+content = '''If the lookup for a matching deallocation function finds a usual deallocation function that would have been selected as a match for a placement allocation function, the program is ill-formed.'''
+formal_spec = '''new_expr_placement && lookup_finds_usual_dealloc && usual_dealloc_matches_placement_alloc => ill_formed'''
+layer = "cpp20_language"
+confidence = 0.95
+source_file = "expr.new"
+source_module = "[expr.new]/29"
+tags = ['new', 'placement', 'deallocation', 'constraint']
+
+[[axioms]]
+id = "cpp20_expr_delete_dealloc_accessible_d0e4a4a5"
+content = '''Unless the deallocation function is selected at the point of definition of the dynamic type's virtual destructor, the selected deallocation function shall be accessible from the point where the delete-expression appears.'''
+formal_spec = '''delete_expr && selected_dealloc_fn(fn) && !selected_at_virtual_destructor_definition => accessible(fn)'''
+layer = "cpp20_language"
+confidence = 0.95
+source_file = "expr.delete"
+source_module = "[expr.delete]/9"
+tags = ['delete', 'deallocation', 'accessibility', 'constraint']
+
+[[axioms]]
+id = "cpp20_expr_await_contract_assertion_e1f5b5b6"
+content = '''An await-expression shall not be a potentially-evaluated subexpression of the predicate of a contract assertion.'''
+formal_spec = '''await_expr && in_contract_assertion_predicate => ill_formed'''
+layer = "cpp20_language"
+confidence = 0.95
+source_file = "expr.await"
+source_module = "[expr.await]/2"
+tags = ['await', 'coroutine', 'contract', 'constraint']
+
+[[axioms]]
+id = "cpp20_expr_cast_result_type_a7c3f2b1"
+content = '''The result of the expression (T)cast-expression is of type T.'''
+formal_spec = '''cast_expr(T, E) => type(result) == T'''
+layer = "cpp20_language"
+confidence = 0.95
+source_file = "expr.cast"
+source_module = "[expr.cast]/1"
+tags = ['cast', 'type-conversion', 'expression']
+
+[[axioms]]
+id = "cpp20_expr_cast_lvalue_result_d4e8a1c3"
+content = '''The result of a cast expression is an lvalue if T is an lvalue reference type or an rvalue reference to function type.'''
+formal_spec = '''cast_expr(T, E) && (is_lvalue_ref(T) || (is_rvalue_ref(T) && is_function_type(remove_ref(T)))) => is_lvalue(result)'''
+layer = "cpp20_language"
+confidence = 0.95
+source_file = "expr.cast"
+source_module = "[expr.cast]/1"
+tags = ['cast', 'value-category', 'lvalue', 'reference']
+
+[[axioms]]
+id = "cpp20_expr_cast_xvalue_result_b2f5c8d9"
+content = '''The result of a cast expression is an xvalue if T is an rvalue reference to object type.'''
+formal_spec = '''cast_expr(T, E) && is_rvalue_ref(T) && is_object_type(remove_ref(T)) => is_xvalue(result)'''
+layer = "cpp20_language"
+confidence = 0.95
+source_file = "expr.cast"
+source_module = "[expr.cast]/1"
+tags = ['cast', 'value-category', 'xvalue', 'reference']
+
+[[axioms]]
+id = "cpp20_expr_cast_prvalue_result_e1a4b7f6"
+content = '''The result of a cast expression is a prvalue if T is not a reference type.'''
+formal_spec = '''cast_expr(T, E) && !is_reference_type(T) => is_prvalue(result)'''
+layer = "cpp20_language"
+confidence = 0.95
+source_file = "expr.cast"
+source_module = "[expr.cast]/1"
+tags = ['cast', 'value-category', 'prvalue']
+
+[[axioms]]
+id = "cpp20_expr_cast_unlisted_illformed_c3d7e2a5"
+content = '''Any type conversion not mentioned in the cast notation rules and not explicitly defined by the user is ill-formed.'''
+formal_spec = '''cast_expr(T, E) && !listed_conversion(T, E) && !user_defined_conversion(T, E) => ill_formed'''
+layer = "cpp20_language"
+confidence = 0.95
+source_file = "expr.cast"
+source_module = "[expr.cast]/3"
+tags = ['cast', 'type-conversion', 'ill-formed', 'constraint']
+
+[[axioms]]
+id = "cpp20_expr_cast_interpretation_order_f8b2c4d1"
+content = '''If a cast can be interpreted in more than one way (const_cast, static_cast, static_cast+const_cast, reinterpret_cast, reinterpret_cast+const_cast), the interpretation that appears first in the list is used, even if a cast resulting from that interpretation is ill-formed.'''
+formal_spec = '''cast_expr(T, E) && multiple_interpretations(T, E) => use_first_valid_interpretation([const_cast, static_cast, static_cast_const_cast, reinterpret_cast, reinterpret_cast_const_cast])'''
+layer = "cpp20_language"
+confidence = 0.95
+source_file = "expr.cast"
+source_module = "[expr.cast]/4"
+tags = ['cast', 'type-conversion', 'interpretation', 'precedence']
+
+[[axioms]]
+id = "cpp20_expr_cast_static_const_ambiguous_illformed_a5c9d3e7"
+content = '''If a static_cast followed by a const_cast is used and the conversion can be interpreted in more than one way as such, the conversion is ill-formed.'''
+formal_spec = '''cast_expr(T, E) && interpretation(static_cast_const_cast) && multiple_static_const_interpretations(T, E) => ill_formed'''
+layer = "cpp20_language"
+confidence = 0.95
+source_file = "expr.cast"
+source_module = "[expr.cast]/4"
+tags = ['cast', 'static_cast', 'const_cast', 'ill-formed', 'ambiguity']
+
+[[axioms]]
+id = "cpp20_expr_cast_inaccessible_base_derived_ptr_b7f4a2c8"
+content = '''A pointer to an object of derived class type may be explicitly converted to a pointer to an unambiguous base class type using cast notation, even if the base class is inaccessible.'''
+formal_spec = '''cast_expr(base_ptr_type, derived_ptr) && is_unambiguous_base(base, derived) => valid_cast (access_check_bypassed)'''
+layer = "cpp20_language"
+confidence = 0.95
+source_file = "expr.cast"
+source_module = "[expr.cast]/4.6"
+tags = ['cast', 'static_cast', 'derived-to-base', 'access-control', 'pointer']
+
+[[axioms]]
+id = "cpp20_expr_cast_inaccessible_base_derived_ref_d2e6b1a4"
+content = '''An lvalue or rvalue of derived class type may be explicitly converted to a reference to an unambiguous base class type using cast notation, even if the base class is inaccessible.'''
+formal_spec = '''cast_expr(base_ref_type, derived_glvalue) && is_unambiguous_base(base, derived) => valid_cast (access_check_bypassed)'''
+layer = "cpp20_language"
+confidence = 0.95
+source_file = "expr.cast"
+source_module = "[expr.cast]/4.6"
+tags = ['cast', 'static_cast', 'derived-to-base', 'access-control', 'reference']
+
+[[axioms]]
+id = "cpp20_expr_cast_inaccessible_base_ptrmem_c9a3f5e2"
+content = '''A pointer to member of derived class type may be explicitly converted to a pointer to member of an unambiguous non-virtual base class type using cast notation, even if the base class is inaccessible.'''
+formal_spec = '''cast_expr(base_ptrmem_type, derived_ptrmem) && is_unambiguous_nonvirtual_base(base, derived) => valid_cast (access_check_bypassed)'''
+layer = "cpp20_language"
+confidence = 0.95
+source_file = "expr.cast"
+source_module = "[expr.cast]/4.7"
+tags = ['cast', 'static_cast', 'pointer-to-member', 'access-control']
+
+[[axioms]]
+id = "cpp20_expr_cast_base_to_derived_ptr_e4b8c2d6"
+content = '''A pointer to an object of an unambiguous non-virtual base class type may be explicitly converted to a pointer to a derived class type using cast notation, even if the base class is inaccessible.'''
+formal_spec = '''cast_expr(derived_ptr_type, base_ptr) && is_unambiguous_nonvirtual_base(base, derived) => valid_cast (access_check_bypassed)'''
+layer = "cpp20_language"
+confidence = 0.95
+source_file = "expr.cast"
+source_module = "[expr.cast]/4.8"
+tags = ['cast', 'static_cast', 'base-to-derived', 'access-control', 'pointer']
+
+[[axioms]]
+id = "cpp20_expr_cast_base_to_derived_ref_f1c7d4a9"
+content = '''A glvalue of an unambiguous non-virtual base class type may be explicitly converted to a reference to a derived class type using cast notation, even if the base class is inaccessible.'''
+formal_spec = '''cast_expr(derived_ref_type, base_glvalue) && is_unambiguous_nonvirtual_base(base, derived) => valid_cast (access_check_bypassed)'''
+layer = "cpp20_language"
+confidence = 0.95
+source_file = "expr.cast"
+source_module = "[expr.cast]/4.8"
+tags = ['cast', 'static_cast', 'base-to-derived', 'access-control', 'reference']
+
+[[axioms]]
+id = "cpp20_expr_cast_base_to_derived_ptrmem_a8d5e3b2"
+content = '''A pointer to member of an unambiguous non-virtual base class type may be explicitly converted to a pointer to member of a derived class type using cast notation, even if the base class is inaccessible.'''
+formal_spec = '''cast_expr(derived_ptrmem_type, base_ptrmem) && is_unambiguous_nonvirtual_base(base, derived) => valid_cast (access_check_bypassed)'''
+layer = "cpp20_language"
+confidence = 0.95
+source_file = "expr.cast"
+source_module = "[expr.cast]/4.8"
+tags = ['cast', 'static_cast', 'base-to-derived', 'pointer-to-member', 'access-control']
+
+[[axioms]]
+id = "cpp20_expr_cast_incomplete_class_ptr_operand_b4f2a7c1"
+content = '''The operand of a cast using the cast notation can be a prvalue of type "pointer to incomplete class type".'''
+formal_spec = '''cast_expr(T, E) && is_prvalue(E) && is_pointer_to_incomplete_class(type(E)) => valid_operand'''
+layer = "cpp20_language"
+confidence = 0.9
+source_file = "expr.cast"
+source_module = "[expr.cast]/5"
+tags = ['cast', 'incomplete-type', 'pointer']
+
+[[axioms]]
+id = "cpp20_expr_cast_incomplete_class_ptr_dest_c6e9d2a3"
+content = '''The destination type of a cast using the cast notation can be "pointer to incomplete class type".'''
+formal_spec = '''cast_expr(T, E) && is_pointer_to_incomplete_class(T) => valid_destination_type'''
+layer = "cpp20_language"
+confidence = 0.9
+source_file = "expr.cast"
+source_module = "[expr.cast]/5"
+tags = ['cast', 'incomplete-type', 'pointer']
+
+[[axioms]]
+id = "cpp20_expr_cast_incomplete_unspecified_d8a4b5e7"
+content = '''If both the operand and destination types of a cast are class types and one or both are incomplete, it is unspecified whether the static_cast or the reinterpret_cast interpretation is used, even if there is an inheritance relationship between the two classes.'''
+formal_spec = '''cast_expr(T, E) && is_class_type(T) && is_class_type(type(E)) && (is_incomplete(T) || is_incomplete(type(E))) => unspecified(interpretation, [static_cast, reinterpret_cast])'''
+layer = "cpp20_language"
+confidence = 0.95
+source_file = "expr.cast"
+source_module = "[expr.cast]/5"
+tags = ['cast', 'incomplete-type', 'unspecified-behavior', 'static_cast', 'reinterpret_cast']
+
+[[axioms]]
+id = "cpp20_expr_cast_ambiguous_base_illformed_e2c8f1a6"
+content = '''A cast from derived pointer to ambiguous base pointer using cast notation is ill-formed.'''
+formal_spec = '''cast_expr(base_ptr_type, derived_ptr) && is_ambiguous_base(base, derived) => ill_formed'''
+layer = "cpp20_language"
+confidence = 0.95
+source_file = "expr.cast"
+source_module = "[expr.cast]/4"
+tags = ['cast', 'static_cast', 'ambiguous-base', 'ill-formed']
+
+[[axioms]]
+id = "cpp20_expr_eq_result_type_bool_a8c4f2d1"
+content = '''The equality operators == and != yield true or false, i.e., a result of type bool.'''
+formal_spec = '''equality_expr(op1, op2) => result_type(op1 == op2) == bool && result_type(op1 != op2) == bool'''
+layer = "cpp20_language"
+confidence = 0.95
+source_file = "expr.eq"
+source_module = "[expr.eq]/2"
+tags = ['equality', 'operators', 'bool', 'result-type']
+
+[[axioms]]
+id = "cpp20_expr_eq_ptr_otherwise_unequal_b3e7c9a2"
+content = '''Pointers that are not both null, do not both point to the same function, and do not both represent the same address compare unequal.'''
+formal_spec = '''pointer_compare(p1, p2) && !(null_pointer(p1) && null_pointer(p2)) && !same_function(p1, p2) && !same_address(p1, p2) => compare_unequal(p1, p2)'''
+layer = "cpp20_language"
+confidence = 0.95
+source_file = "expr.eq"
+source_module = "[expr.eq]/3.3"
+tags = ['pointer', 'comparison', 'equality', 'unequal']
+
+[[axioms]]
+id = "cpp20_expr_eq_ptm_same_member_equal_c5d8f1a3"
+content = '''Two pointers to members compare equal if they would refer to the same member of the same most derived object or the same subobject if indirection with a hypothetical object of the associated class type were performed, otherwise they compare unequal.'''
+formal_spec = '''ptm_compare(pm1, pm2) && !null_member_pointer(pm1) && !null_member_pointer(pm2) && !pointer_to_virtual_member_function(pm1) && !pointer_to_virtual_member_function(pm2) && same_class_or_base(class_of(pm1), class_of(pm2)) && !same_union_members(pm1, pm2) => (same_member_on_hypothetical_object(pm1, pm2) <=> compare_equal(pm1, pm2))'''
+layer = "cpp20_language"
+confidence = 0.9
+source_file = "expr.eq"
+source_module = "[expr.eq]/4.6"
+tags = ['pointer-to-member', 'comparison', 'equality', 'derived-object', 'subobject']
+
+[[axioms]]
+id = "cpp20_expr_eq_arithmetic_enum_semantics_d2f4a6b8"
+content = '''If both operands are of arithmetic or enumeration type, the usual arithmetic conversions are performed on both operands; each of the operators shall yield true if the specified relationship is true and false if it is false.'''
+formal_spec = '''equality_expr(op1, op2) && (arithmetic_type(op1) || enumeration_type(op1)) && (arithmetic_type(op2) || enumeration_type(op2)) => usual_arithmetic_conversions_applied(op1, op2) && (values_equal(converted(op1), converted(op2)) <=> result(op1 == op2) == true) && (values_equal(converted(op1), converted(op2)) <=> result(op1 != op2) == false)'''
+layer = "cpp20_language"
+confidence = 0.95
+source_file = "expr.eq"
+source_module = "[expr.eq]/8"
+tags = ['arithmetic', 'enumeration', 'comparison', 'equality', 'usual-arithmetic-conversions']
+
+[[axioms]]
+id = "cpp20_expr_eq_equal_yields_true_e7b3c1d9"
+content = '''If two operands compare equal, the result is true for the == operator and false for the != operator.'''
+formal_spec = '''equality_expr(op1, op2) && compare_equal(op1, op2) => result(op1 == op2) == true && result(op1 != op2) == false'''
+layer = "cpp20_language"
+confidence = 0.95
+source_file = "expr.eq"
+source_module = "[expr.eq]/7"
+tags = ['equality', 'operators', 'result', 'true', 'false']
+
+[[axioms]]
+id = "cpp20_expr_eq_unequal_yields_false_f1a5d8c2"
+content = '''If two operands compare unequal, the result is false for the == operator and true for the != operator.'''
+formal_spec = '''equality_expr(op1, op2) && compare_unequal(op1, op2) => result(op1 == op2) == false && result(op1 != op2) == true'''
+layer = "cpp20_language"
+confidence = 0.95
+source_file = "expr.eq"
+source_module = "[expr.eq]/7"
+tags = ['equality', 'operators', 'result', 'true', 'false']
+
+[[axioms]]
+id = "cpp20_expr_eq_lvalue_to_rvalue_conversion_g4c2e9f7"
+content = '''The lvalue-to-rvalue and function-to-pointer standard conversions are performed on the operands of equality operators.'''
+formal_spec = '''equality_expr(op1, op2) => lvalue_to_rvalue_converted(op1) && lvalue_to_rvalue_converted(op2) && function_to_pointer_converted(op1) && function_to_pointer_converted(op2)'''
+layer = "cpp20_language"
+confidence = 0.9
+source_file = "expr.eq"
+source_module = "[expr.eq]/1"
+tags = ['equality', 'conversion', 'lvalue-to-rvalue', 'function-to-pointer']
+
+[[axioms]]
+id = "cpp20_expr_eq_array_to_pointer_conversion_h8d5f3a1"
+content = '''If one of the operands is a pointer or a null pointer constant, the array-to-pointer conversion is performed on the other operand.'''
+formal_spec = '''equality_expr(op1, op2) && (pointer_type(op1) || null_pointer_constant(op1)) => array_to_pointer_converted(op2)'''
+layer = "cpp20_language"
+confidence = 0.9
+source_file = "expr.eq"
+source_module = "[expr.eq]/1"
+tags = ['equality', 'conversion', 'array-to-pointer', 'pointer']
+
+[[axioms]]
+id = "cpp20_expr_eq_meta_info_otherwise_unequal_i9e6g4b2"
+content = '''Two operands of type std::meta::info that do not satisfy any of the equality conditions compare unequal.'''
+formal_spec = '''type(op1) == meta_info && type(op2) == meta_info && !null_reflection(op1, op2) && !template_argument_equivalent(op1, op2) && !same_object(op1, op2) && !same_entity(op1, op2) && !same_annotation(op1, op2) && !same_base_class_relationship(op1, op2) && !equal_data_member_description(op1, op2) => compare_unequal(op1, op2)'''
+layer = "cpp20_language"
+confidence = 0.95
+source_file = "expr.eq"
+source_module = "[expr.eq]/6"
+tags = ['meta-info', 'reflection', 'comparison', 'equality', 'unequal']
+
+[[axioms]]
+id = "cpp20_dcl_init_ref_arg_pass_return_init_7a3b8c2d"
+content = '''Argument passing and function value return are initializations.'''
+formal_spec = '''is_argument_passing(context) || is_function_return(context) => is_initialization(context)'''
+layer = "cpp20_language"
+confidence = 0.95
+source_file = "dcl.init.ref"
+source_module = "[dcl.init.ref]/2"
+tags = ['initialization', 'function-call', 'return']
+
+[[axioms]]
+id = "cpp20_dcl_init_ref_assign_to_referent_e4f5a6b7"
+content = '''Assignment to a reference assigns to the object referred to by the reference, not rebinding the reference.'''
+formal_spec = '''is_reference(ref) && initialized(ref) && assign_expr(ref, value) => assigns_to(referred_object(ref), value)'''
+layer = "cpp20_language"
+confidence = 0.95
+source_file = "dcl.init.ref"
+source_module = "[dcl.init.ref]/2"
+tags = ['reference', 'assignment', 'semantics']
+
+[[axioms]]
+id = "cpp20_dcl_init_ref_reference_related_def_c8d9e0f1"
+content = '''Type "cv1 T1" is reference-related to "cv2 T2" if T1 is similar to T2, or T1 is a base class of T2.'''
+formal_spec = '''reference_related(cv1_T1, cv2_T2) <=> (similar(T1, T2) || is_base_class_of(T1, T2))'''
+layer = "cpp20_language"
+confidence = 0.95
+source_file = "dcl.init.ref"
+source_module = "[dcl.init.ref]/4"
+tags = ['reference', 'type-relationship', 'definition']
+
+[[axioms]]
+id = "cpp20_dcl_init_ref_reference_compatible_def_2a3b4c5d"
+content = '''Type "cv1 T1" is reference-compatible with "cv2 T2" if a prvalue of type "pointer to cv2 T2" can be converted to type "pointer to cv1 T1" via a standard conversion sequence.'''
+formal_spec = '''reference_compatible(cv1_T1, cv2_T2) <=> can_standard_convert(prvalue(pointer_to(cv2_T2)), pointer_to(cv1_T1))'''
+layer = "cpp20_language"
+confidence = 0.95
+source_file = "dcl.init.ref"
+source_module = "[dcl.init.ref]/4"
+tags = ['reference', 'type-relationship', 'definition', 'conversion']
+
+[[axioms]]
+id = "cpp20_dcl_init_ref_lvalue_ref_direct_bind_6e7f8a9b"
+content = '''An lvalue reference binds directly to an lvalue initializer (not a bit-field) when cv1 T1 is reference-compatible with cv2 T2.'''
+formal_spec = '''is_lvalue_reference(ref_cv1_T1) && is_lvalue(init) && !is_bitfield(init) && reference_compatible(cv1_T1, type(init)) => binds_directly(ref_cv1_T1, init)'''
+layer = "cpp20_language"
+confidence = 0.95
+source_file = "dcl.init.ref"
+source_module = "[dcl.init.ref]/5.1.1"
+tags = ['reference', 'binding', 'lvalue', 'direct-binding']
+
+[[axioms]]
+id = "cpp20_dcl_init_ref_lvalue_ref_conversion_bind_0c1d2e3f"
+content = '''An lvalue reference to cv1 T1 can bind to a class type initializer via conversion function when T1 is not reference-related to T2 and a conversion to lvalue of reference-compatible type exists.'''
+formal_spec = '''is_lvalue_reference(ref_cv1_T1) && is_class_type(T2) && !reference_related(T1, T2) && has_conversion_to_lvalue(T2, cv3_T3) && reference_compatible(cv1_T1, cv3_T3) => binds_directly(ref_cv1_T1, conversion_result)'''
+layer = "cpp20_language"
+confidence = 0.9
+source_file = "dcl.init.ref"
+source_module = "[dcl.init.ref]/5.1.2"
+tags = ['reference', 'binding', 'conversion', 'lvalue']
+
+[[axioms]]
+id = "cpp20_dcl_init_ref_conversion_func_requires_ref_return_4g5h6i7j"
+content = '''When an lvalue reference binds via conversion to an lvalue from a class type, this requires a conversion function returning a reference type.'''
+formal_spec = '''lvalue_reference_binds_via_conversion(ref, class_type_init, lvalue_result) => conversion_function_returns_reference_type(class_type_init)'''
+layer = "cpp20_language"
+confidence = 0.9
+source_file = "dcl.init.ref"
+source_module = "[dcl.init.ref]/5.1.2 footnote 75"
+tags = ['reference', 'conversion', 'conversion-function']
+
+[[axioms]]
+id = "cpp20_dcl_init_ref_standard_conv_suppressed_8k9l0m1n"
+content = '''When an lvalue reference binds directly to an lvalue, the usual lvalue-to-rvalue, array-to-pointer, and function-to-pointer standard conversions are suppressed.'''
+formal_spec = '''binds_directly_to_lvalue(lvalue_ref, lvalue_init) => suppressed(lvalue_to_rvalue_conv) && suppressed(array_to_pointer_conv) && suppressed(function_to_pointer_conv)'''
+layer = "cpp20_language"
+confidence = 0.85
+source_file = "dcl.init.ref"
+source_module = "[dcl.init.ref]/5.1"
+tags = ['reference', 'binding', 'conversion', 'suppression']
+
+[[axioms]]
+id = "cpp20_dcl_init_ref_rvalue_or_func_lvalue_bind_2o3p4q5r"
+content = '''A reference can bind to an rvalue (not a bit-field) or an lvalue of function type when cv1 T1 is reference-compatible with cv2 T2.'''
+formal_spec = '''((is_rvalue(init) && !is_bitfield(init)) || (is_lvalue(init) && is_function_type(T2))) && reference_compatible(cv1_T1, cv2_T2) => can_bind(ref_cv1_T1, init)'''
+layer = "cpp20_language"
+confidence = 0.95
+source_file = "dcl.init.ref"
+source_module = "[dcl.init.ref]/5.3.1"
+tags = ['reference', 'binding', 'rvalue', 'function-type']
+
+[[axioms]]
+id = "cpp20_dcl_init_ref_rvalue_conversion_bind_6s7t8u9v"
+content = '''A reference to cv1 T1 can bind to a class type initializer via conversion when T1 is not reference-related to T2 and conversion to rvalue of cv3 T3 or lvalue of function type cv3 T3 exists where cv1 T1 is reference-compatible with cv3 T3.'''
+formal_spec = '''is_class_type(T2) && !reference_related(T1, T2) && (has_conversion_to_rvalue(T2, cv3_T3) || has_conversion_to_function_lvalue(T2, cv3_T3)) && reference_compatible(cv1_T1, cv3_T3) => can_bind(ref_cv1_T1, conversion_result)'''
+layer = "cpp20_language"
+confidence = 0.9
+source_file = "dcl.init.ref"
+source_module = "[dcl.init.ref]/5.3.2"
+tags = ['reference', 'binding', 'conversion', 'rvalue']
+
+[[axioms]]
+id = "cpp20_dcl_init_ref_temp_materialization_prvalue_0w1x2y3z"
+content = '''When binding a reference to a converted initializer that is a prvalue of type T4, temporary materialization conversion is applied with the type of the prvalue considered to be cv1 T4.'''
+formal_spec = '''is_prvalue(converted_initializer) && type(converted_initializer) == T4 && reference_binding(ref_cv1_T1, converted_initializer) => apply_temporary_materialization(converted_initializer, cv1_T4)'''
+layer = "cpp20_language"
+confidence = 0.95
+source_file = "dcl.init.ref"
+source_module = "[dcl.init.ref]/5.3"
+tags = ['reference', 'binding', 'temporary', 'materialization', 'prvalue']
+
+[[axioms]]
+id = "cpp20_dcl_init_ref_implicit_conv_to_t1_4a5b6c7d"
+content = '''When none of the prior reference binding rules apply and neither T1 nor T2 is a class type, the initializer expression is implicitly converted to a prvalue of type T1, temporary materialization is applied considering the type as cv1 T1, and the reference binds to the result.'''
+formal_spec = '''reference_binding_fallthrough(ref_cv1_T1, init_T2) && !is_class_type(T1) && !is_class_type(T2) && !reference_related(T1, T2) => implicit_convert_to_prvalue(init, T1) && apply_temporary_materialization(prvalue, cv1_T1) && binds(ref, materialized_result)'''
+layer = "cpp20_language"
+confidence = 0.95
+source_file = "dcl.init.ref"
+source_module = "[dcl.init.ref]/5.4.2"
+tags = ['reference', 'binding', 'implicit-conversion', 'temporary']
+
+[[axioms]]
+id = "cpp20_dcl_init_ref_user_conv_no_second_user_conv_8e9f0a1b"
+content = '''In direct-initialization of a reference using the result of a user-defined conversion (rule 5.4.1), user-defined conversions are not considered for the direct-initialization step.'''
+formal_spec = '''reference_binding_rule_5_4_1(ref, init) && direct_init_from_conversion_result(ref, E) => !consider_user_defined_conversions(E, ref)'''
+layer = "cpp20_language"
+confidence = 0.95
+source_file = "dcl.init.ref"
+source_module = "[dcl.init.ref]/5.4.1"
+tags = ['reference', 'binding', 'conversion', 'user-defined-conversion']
+
+[[axioms]]
+id = "cpp20_dcl_init_ref_not_direct_bind_definition_2c3d4e5f"
+content = '''A reference binds directly to the initializer expression in all cases except when the initializer is implicitly converted to the referenced type (rule 5.4.2).'''
+formal_spec = '''reference_binding(ref, init) && !implicit_conversion_to_referenced_type(init, ref) => binds_directly(ref, init)'''
+layer = "cpp20_language"
+confidence = 0.95
+source_file = "dcl.init.ref"
+source_module = "[dcl.init.ref]/5.4.2"
+tags = ['reference', 'binding', 'direct-binding', 'definition']
+
+[[axioms]]
+id = "cpp20_class_dtor_deleted_union_ctor_trivial_e2c7a4f9"
+content = '''A defaulted destructor for a union X is defined as deleted if overload resolution to select a constructor to default-initialize an object of type X either fails or selects a constructor that is either deleted or not trivial.'''
+formal_spec = '''defaulted_destructor(X) && is_union(X) && (default_init_ctor_resolution_fails(X) || deleted(default_init_ctor(X)) || !trivial(default_init_ctor(X))) => deleted(destructor(X))'''
+layer = "cpp20_language"
+confidence = 0.95
+source_file = "class.dtor"
+source_module = "[class.dtor]/7.2.1"
+tags = ['destructor', 'union', 'deleted', 'defaulted']
+
+[[axioms]]
+id = "cpp20_class_dtor_deleted_union_variant_dmi_f4b8c3a2"
+content = '''A defaulted destructor for a union X is defined as deleted if X has a variant member V of class type M (or possibly multi-dimensional array thereof) where V has a default member initializer and M has a destructor that is non-trivial.'''
+formal_spec = '''defaulted_destructor(X) && is_union(X) && exists(V, variant_member(X, V) && (is_class_type(V) || is_array_of_class_type(V)) && has_default_member_initializer(V) && !trivial_destructor(element_type(V))) => deleted(destructor(X))'''
+layer = "cpp20_language"
+confidence = 0.95
+source_file = "class.dtor"
+source_module = "[class.dtor]/7.2.2"
+tags = ['destructor', 'union', 'deleted', 'defaulted', 'variant-member']
+
+[[axioms]]
+id = "cpp20_class_dtor_trivial_conditions_a9d6e5b8"
+content = '''A destructor for a class X is trivial if it is not user-provided, the destructor is not virtual, all of the direct base classes of X have trivial destructors, and either X is a union or for all of the non-variant non-static data members of X that are of class type (or array thereof), each such class has a trivial destructor.'''
+formal_spec = '''trivial_destructor(X) <=> (!user_provided(destructor(X)) && !virtual(destructor(X)) && forall(B, direct_base(X, B) => trivial_destructor(B)) && (is_union(X) || forall(M, non_variant_non_static_class_member(X, M) => trivial_destructor(element_type(M)))))'''
+layer = "cpp20_language"
+confidence = 0.95
+source_file = "class.dtor"
+source_module = "[class.dtor]/8"
+tags = ['destructor', 'trivial', 'non-trivial']
+
+[[axioms]]
+id = "cpp20_class_dtor_defaulted_constexpr_b3e7f2c4"
+content = '''A defaulted destructor is a constexpr destructor.'''
+formal_spec = '''defaulted(destructor(X)) => constexpr(destructor(X))'''
+layer = "cpp20_language"
+confidence = 0.95
+source_file = "class.dtor"
+source_module = "[class.dtor]/9"
+tags = ['destructor', 'constexpr', 'defaulted']
+
+[[axioms]]
+id = "cpp20_class_dtor_implicit_definition_order_c8a4d9e1"
+content = '''Before a defaulted destructor for a class is implicitly defined, all the non-user-provided destructors for its base classes and its non-static data members are implicitly defined.'''
+formal_spec = '''implicit_definition(destructor(X)) => forall(B, base_class(X, B) && !user_provided(destructor(B)) => implicitly_defined_before(destructor(B), destructor(X))) && forall(M, non_static_member(X, M) && is_class_type(M) && !user_provided(destructor(M)) => implicitly_defined_before(destructor(M), destructor(X)))'''
+layer = "cpp20_language"
+confidence = 0.9
+source_file = "class.dtor"
+source_module = "[class.dtor]/10"
+tags = ['destructor', 'implicit-definition', 'defaulted']
+
+[[axioms]]
+id = "cpp20_class_dtor_implicit_declaration_inline_public_d5f9a7b3"
+content = '''An implicitly-declared prospective destructor is an inline public member of its class.'''
+formal_spec = '''implicitly_declared(prospective_destructor(X)) => inline(prospective_destructor(X)) && public(prospective_destructor(X))'''
+layer = "cpp20_language"
+confidence = 0.95
+source_file = "class.dtor"
+source_module = "[class.dtor]/2"
+tags = ['destructor', 'implicit-declaration', 'inline', 'access-specifier']
+
+[[axioms]]
+id = "cpp20_class_dtor_implicit_form_e6b2c8f4"
+content = '''An implicitly-declared prospective destructor for a class X will have the form ~X().'''
+formal_spec = '''implicitly_declared(prospective_destructor(X)) => signature(prospective_destructor(X)) == "~X()"'''
+layer = "cpp20_language"
+confidence = 0.95
+source_file = "class.dtor"
+source_module = "[class.dtor]/3"
+tags = ['destructor', 'implicit-declaration', 'signature']
+
+[[axioms]]
+id = "cpp20_class_dtor_member_destruction_order_a7e4c9d2"
+content = '''After executing the body of the destructor and destroying any objects with automatic storage duration allocated within the body, a destructor for class X calls the destructors for X's direct non-variant non-static data members other than anonymous unions, the destructors for X's non-virtual direct base classes and, if X is the most derived class, its destructor calls the destructors for X's virtual base classes.'''
+formal_spec = '''destructor_body_executed(X) => destroy_in_order(direct_non_variant_non_static_members(X) ++ non_virtual_direct_bases(X) ++ (is_most_derived(X) ? virtual_bases(X) : []))'''
+layer = "cpp20_language"
+confidence = 0.9
+source_file = "class.dtor"
+source_module = "[class.dtor]/13"
+tags = ['destructor', 'destruction-order', 'base-class', 'member']
+
+[[axioms]]
+id = "cpp20_class_dtor_qualified_call_in_body_f8c5a3b7"
+content = '''All destructor calls for bases and members during destruction are called as if they were referenced with a qualified name, ignoring any possible virtual overriding destructors in more derived classes.'''
+formal_spec = '''destructor_calls_bases_members(X, target) => qualified_call(target) && !consider_virtual_override(target)'''
+layer = "cpp20_language"
+confidence = 0.9
+source_file = "class.dtor"
+source_module = "[class.dtor]/13"
+tags = ['destructor', 'qualified-name', 'virtual']
+
+[[axioms]]
+id = "cpp20_special_implicit_declaration_no_redefine_8a3f2c1d"
+content = '''Programs shall not define implicitly-declared special member functions.'''
+formal_spec = '''implicitly_declared(F, C) && is_special_member_function(F) && program_defines(F) => ill_formed'''
+layer = "cpp20_language"
+confidence = 0.95
+source_file = "special"
+source_module = "[special]/1"
+tags = ['special-member-functions', 'implicit-declaration', 'definition', 'constraint']
+
+[[axioms]]
+id = "cpp20_special_member_function_kinds_e7b4a9c2"
+content = '''Special member functions are: default constructors, copy constructors, move constructors, copy assignment operators, move assignment operators, and prospective destructors.'''
+formal_spec = '''is_special_member_function(F) <=> (is_default_constructor(F) || is_copy_constructor(F) || is_move_constructor(F) || is_copy_assignment_operator(F) || is_move_assignment_operator(F) || is_prospective_destructor(F))'''
+layer = "cpp20_language"
+confidence = 0.95
+source_file = "special"
+source_module = "[special]/1"
+tags = ['special-member-functions', 'definition', 'constructor', 'destructor', 'assignment']
+
+[[axioms]]
+id = "cpp20_special_implicit_declaration_location_f2c8d4e5"
+content = '''An implicitly-declared special member function is declared at the closing brace of the class-specifier.'''
+formal_spec = '''implicitly_declared(F, C) && is_special_member_function(F) => declaration_point(F) == closing_brace(class_specifier(C))'''
+layer = "cpp20_language"
+confidence = 0.95
+source_file = "special"
+source_module = "[special]/1"
+tags = ['special-member-functions', 'implicit-declaration', 'declaration-point']
+
+[[axioms]]
+id = "cpp20_special_access_rules_apply_3b9e1a7f"
+content = '''Special member functions obey the usual access rules.'''
+formal_spec = '''is_special_member_function(F) => access_rules_apply(F)'''
+layer = "cpp20_language"
+confidence = 0.95
+source_file = "special"
+source_module = "[special]/4"
+tags = ['special-member-functions', 'access-control']
+
+[[axioms]]
+id = "cpp20_special_same_kind_default_ctor_c4d2f8a1"
+content = '''Two special member functions are of the same kind if they are both default constructors.'''
+formal_spec = '''same_kind(F1, F2) <= (is_default_constructor(F1) && is_default_constructor(F2))'''
+layer = "cpp20_language"
+confidence = 0.95
+source_file = "special"
+source_module = "[special]/5.1"
+tags = ['special-member-functions', 'same-kind', 'default-constructor']
+
+[[axioms]]
+id = "cpp20_special_same_kind_copy_move_ctor_d5e3a9b2"
+content = '''Two special member functions are of the same kind if they are both copy or move constructors with the same first parameter type.'''
+formal_spec = '''same_kind(F1, F2) <= ((is_copy_constructor(F1) || is_move_constructor(F1)) && (is_copy_constructor(F2) || is_move_constructor(F2)) && first_param_type(F1) == first_param_type(F2))'''
+layer = "cpp20_language"
+confidence = 0.95
+source_file = "special"
+source_module = "[special]/5.2"
+tags = ['special-member-functions', 'same-kind', 'copy-constructor', 'move-constructor']
+
+[[axioms]]
+id = "cpp20_special_same_kind_copy_move_assign_e6f4b0c3"
+content = '''Two special member functions are of the same kind if they are both copy or move assignment operators with the same first parameter type and the same cv-qualifiers and ref-qualifier, if any.'''
+formal_spec = '''same_kind(F1, F2) <= ((is_copy_assignment_operator(F1) || is_move_assignment_operator(F1)) && (is_copy_assignment_operator(F2) || is_move_assignment_operator(F2)) && first_param_type(F1) == first_param_type(F2) && cv_qualifiers(F1) == cv_qualifiers(F2) && ref_qualifier(F1) == ref_qualifier(F2))'''
+layer = "cpp20_language"
+confidence = 0.95
+source_file = "special"
+source_module = "[special]/5.3"
+tags = ['special-member-functions', 'same-kind', 'copy-assignment', 'move-assignment', 'cv-qualifier', 'ref-qualifier']
+
+[[axioms]]
+id = "cpp20_special_eligible_not_deleted_f7a5c1d4"
+content = '''An eligible special member function must not be deleted.'''
+formal_spec = '''eligible_special_member_function(F) => !is_deleted(F)'''
+layer = "cpp20_language"
+confidence = 0.95
+source_file = "special"
+source_module = "[special]/6.1"
+tags = ['special-member-functions', 'eligible', 'deleted-function']
+
+[[axioms]]
+id = "cpp20_special_eligible_constraints_satisfied_a8b6d2e5"
+content = '''An eligible special member function must have its associated constraints satisfied, if any.'''
+formal_spec = '''eligible_special_member_function(F) && has_constraints(F) => constraints_satisfied(F)'''
+layer = "cpp20_language"
+confidence = 0.95
+source_file = "special"
+source_module = "[special]/6.2"
+tags = ['special-member-functions', 'eligible', 'constraints', 'concepts']
+
+[[axioms]]
+id = "cpp20_special_eligible_most_constrained_b9c7e3f6"
+content = '''An eligible special member function must not have a special member function of the same kind whose associated constraints are satisfied and is more constrained.'''
+formal_spec = '''eligible_special_member_function(F) => !exists(G, same_kind(F, G) && constraints_satisfied(G) && more_constrained(G, F))'''
+layer = "cpp20_language"
+confidence = 0.95
+source_file = "special"
+source_module = "[special]/6.3"
+tags = ['special-member-functions', 'eligible', 'constraints', 'overload-resolution']
+
+[[axioms]]
+id = "cpp20_special_potentially_constructed_subobjects_cad8f4a7"
+content = '''For a class, its potentially constructed subobjects are: its direct non-static data members, its non-virtual direct base classes, and (if the class is not abstract) its virtual base classes.'''
+formal_spec = '''potentially_constructed_subobject(S, C) <=> (direct_nonstatic_data_member(S, C) || nonvirtual_direct_base_class(S, C) || (virtual_base_class(S, C) && !is_abstract(C)))'''
+layer = "cpp20_language"
+confidence = 0.95
+source_file = "special"
+source_module = "[special]/7"
+tags = ['special-member-functions', 'subobjects', 'data-members', 'base-classes', 'abstract-class']
+
+[[axioms]]
+id = "cpp20_over_match_general_illfomed_no_best_viable_3a8f2c1d"
+content = '''If overload resolution does not produce a unique best viable function, the invocation is ill-formed.'''
+formal_spec = '''overload_resolution(candidates, args) && (!exists_best_viable(candidates, args) || !unique_best_viable(candidates, args)) => ill_formed'''
+layer = "cpp20_language"
+confidence = 0.95
+source_file = "over.match.general"
+source_module = "[over.match.general]/3"
+tags = ['overload-resolution', 'function-call', 'ill-formed']
+
+[[axioms]]
+id = "cpp20_over_match_general_inaccessible_best_viable_7b4e9d2a"
+content = '''When overload resolution succeeds but the best viable function is not accessible in the context in which it is used, the program is ill-formed.'''
+formal_spec = '''overload_resolution_succeeds(candidates, args, f) && !accessible(f, context) => ill_formed'''
+layer = "cpp20_language"
+confidence = 0.95
+source_file = "over.match.general"
+source_module = "[over.match.general]/3"
+tags = ['overload-resolution', 'access-control', 'ill-formed']
+
+[[axioms]]
+id = "cpp20_over_match_call_general_member_from_address_f2c8a3b1"
+content = '''If the postfix-expression is the address of an overload set and overload resolution selects an implicit object member function, the program is ill-formed.'''
+formal_spec = '''is_address_of_overload_set(postfix_expr) && overload_resolution_selects(f, postfix_expr, args) && is_implicit_object_member_function(f) => ill_formed'''
+layer = "cpp20_language"
+confidence = 0.95
+source_file = "over.match.call.general"
+source_module = "[over.match.call.general]/2"
+tags = ['overload-resolution', 'member-function', 'address-of', 'ill-formed']
+
+[[axioms]]
+id = "cpp20_over_call_func_precondition_assertion_ctor_d9e7b4c2"
+content = '''If an unqualified function call appears in a precondition assertion of a constructor and overload resolution selects a non-static member function, the call is ill-formed.'''
+formal_spec = '''in_precondition_assertion(call, ctor) && is_constructor(ctor) && overload_resolution_selects(f, call) && is_non_static_member_function(f) => ill_formed'''
+layer = "cpp20_language"
+confidence = 0.95
+source_file = "over.call.func"
+source_module = "[over.call.func]/3.1"
+tags = ['overload-resolution', 'constructor', 'precondition', 'contract', 'ill-formed']
+
+[[axioms]]
+id = "cpp20_over_call_func_postcondition_assertion_dtor_a1b3c5d7"
+content = '''If an unqualified function call appears in a postcondition assertion of a destructor and overload resolution selects a non-static member function, the call is ill-formed.'''
+formal_spec = '''in_postcondition_assertion(call, dtor) && is_destructor(dtor) && overload_resolution_selects(f, call) && is_non_static_member_function(f) => ill_formed'''
+layer = "cpp20_language"
+confidence = 0.95
+source_file = "over.call.func"
+source_module = "[over.call.func]/3.1"
+tags = ['overload-resolution', 'destructor', 'postcondition', 'contract', 'ill-formed']
+
+[[axioms]]
+id = "cpp20_over_call_func_contrived_object_nonstatic_e4f6a8b9"
+content = '''If overload resolution for an unqualified function call with a contrived object argument selects a non-static member function, the call is ill-formed.'''
+formal_spec = '''is_unqualified_call(call) && has_contrived_object_argument(call) && overload_resolution_selects(f, call) && is_non_static_member_function(f) => ill_formed'''
+layer = "cpp20_language"
+confidence = 0.95
+source_file = "over.call.func"
+source_module = "[over.call.func]/3.3"
+tags = ['overload-resolution', 'member-function', 'contrived-object', 'ill-formed']
+
+[[axioms]]
+id = "cpp20_over_match_funcs_general_deleted_move_excluded_c7d9e1f3"
+content = '''A defaulted move special member function that is defined as deleted is excluded from the set of candidate functions in all contexts.'''
+formal_spec = '''is_defaulted_move_special_member(f) && is_defined_as_deleted(f) => excluded_from_candidates(f)'''
+layer = "cpp20_language"
+confidence = 0.95
+source_file = "over.match.funcs.general"
+source_module = "[over.match.funcs.general]/9"
+tags = ['overload-resolution', 'move-constructor', 'move-assignment', 'deleted-function', 'candidate-functions']
+
+[[axioms]]
+id = "cpp20_over_match_funcs_general_inherited_ctor_exclusion_8a2b4c6d"
+content = '''A constructor inherited from class type C that has a first parameter of type "reference to cv1 P" is excluded from candidates when constructing cv2 D if the argument list has exactly one argument, C is reference-related to P, and P is reference-related to D.'''
+formal_spec = '''is_inherited_constructor(f, C) && first_param_is_reference_to(f, P) && constructing_type(D) && argument_count(args) == 1 && reference_related(C, P) && reference_related(P, D) => excluded_from_candidates(f)'''
+layer = "cpp20_language"
+confidence = 0.95
+source_file = "over.match.funcs.general"
+source_module = "[over.match.funcs.general]/9"
+tags = ['overload-resolution', 'inherited-constructor', 'candidate-functions', 'reference-related']
+
+[[axioms]]
+id = "cpp20_over_match_funcs_general_one_user_conversion_b3c5d7e9"
+content = '''Only one user-defined conversion is allowed in an implicit conversion sequence (except in list-initialization).'''
+formal_spec = '''!is_list_initialization(context) && implicit_conversion_sequence(expr, target) => user_defined_conversion_count(sequence) <= 1'''
+layer = "cpp20_language"
+confidence = 0.95
+source_file = "over.match.funcs.general"
+source_module = "[over.match.funcs.general]/6"
+tags = ['overload-resolution', 'implicit-conversion', 'user-defined-conversion']
+
+[[axioms]]
+id = "cpp20_over_match_oper_no_class_enum_builtin_f1a2b3c4"
+content = '''If no operand of an operator in an expression has a type that is a class or an enumeration, the operator is assumed to be a built-in operator.'''
+formal_spec = '''operator_expression(op, operands) && forall(o in operands, !is_class_type(type(o)) && !is_enum_type(type(o))) => uses_builtin_operator(op)'''
+layer = "cpp20_language"
+confidence = 0.95
+source_file = "over.match.oper"
+source_module = "[over.match.oper]/1"
+tags = ['overload-resolution', 'operators', 'built-in-operators']
+
+[[axioms]]
+id = "cpp20_over_match_oper_nonmember_empty_for_assign_d5e6f7a8"
+content = '''For the operators =, [], or ->, the set of non-member candidates is empty.'''
+formal_spec = '''(op == '=' || op == '[]' || op == '->') => non_member_candidates(op) == empty_set'''
+layer = "cpp20_language"
+confidence = 0.95
+source_file = "over.match.oper"
+source_module = "[over.match.oper]/3.2"
+tags = ['overload-resolution', 'operators', 'non-member-candidates', 'assignment', 'subscript', 'arrow']
+
+[[axioms]]
+id = "cpp20_over_match_oper_builtin_empty_comma_addr_arrow_b9c1d2e3"
+content = '''For the operator comma, the unary operator &, or the operator ->, the built-in candidates set is empty.'''
+formal_spec = '''(op == ',' || (op == '&' && is_unary(op)) || op == '->') => builtin_candidates(op) == empty_set'''
+layer = "cpp20_language"
+confidence = 0.95
+source_file = "over.match.oper"
+source_module = "[over.match.oper]/3.3"
+tags = ['overload-resolution', 'operators', 'built-in-candidates', 'comma', 'address-of', 'arrow']
+
+[[axioms]]
+id = "cpp20_over_match_oper_assignment_standard_conv_only_f4a5b6c7"
+content = '''For the first parameter of the built-in assignment operators, only standard conversion sequences are considered.'''
+formal_spec = '''is_builtin_assignment_operator(op) && first_parameter_conversion(op, conv) => is_standard_conversion_sequence(conv)'''
+layer = "cpp20_language"
+confidence = 0.95
+source_file = "over.match.oper"
+source_module = "[over.match.oper]/5"
+tags = ['overload-resolution', 'operators', 'assignment', 'standard-conversion']
+
+[[axioms]]
+id = "cpp20_over_match_oper_rewritten_eq_bool_return_d8e9f1a2"
+content = '''If a rewritten operator== candidate is selected by overload resolution for an operator @, its return type shall be cv bool.'''
+formal_spec = '''is_rewritten_operator_eq_candidate(f) && selected_by_overload_resolution(f, op_expr) => is_cv_bool(return_type(f))'''
+layer = "cpp20_language"
+confidence = 0.95
+source_file = "over.match.oper"
+source_module = "[over.match.oper]/10"
+tags = ['overload-resolution', 'operators', 'rewritten-candidates', 'equality', 'return-type']
+
+[[axioms]]
+id = "cpp20_over_match_ctor_explicit_default_init_copy_list_b3c4d5e6"
+content = '''For default-initialization in the context of copy-list-initialization, if an explicit constructor is chosen, the initialization is ill-formed.'''
+formal_spec = '''is_default_initialization(init) && in_context_of_copy_list_initialization(init) && overload_resolution_selects(ctor, init) && is_explicit(ctor) => ill_formed'''
+layer = "cpp20_language"
+confidence = 0.95
+source_file = "over.match.ctor"
+source_module = "[over.match.ctor]/1"
+tags = ['overload-resolution', 'constructor', 'explicit', 'list-initialization', 'ill-formed']
+
+[[axioms]]
+id = "cpp20_over_match_list_explicit_copy_list_init_f7a8b9c1"
+content = '''In copy-list-initialization, if an explicit constructor is chosen by overload resolution, the initialization is ill-formed.'''
+formal_spec = '''is_copy_list_initialization(init) && overload_resolution_selects(ctor, init) && is_explicit(ctor) => ill_formed'''
+layer = "cpp20_language"
+confidence = 0.95
+source_file = "over.match.list"
+source_module = "[over.match.list]/1"
+tags = ['overload-resolution', 'constructor', 'explicit', 'list-initialization', 'copy-initialization', 'ill-formed']
+
+[[axioms]]
+id = "cpp20_over_match_viable_viable_function_requirements_d2e3f4a5"
+content = '''A candidate function is viable only if it has the proper number of arguments and meets certain other conditions related to argument-parameter matching.'''
+formal_spec = '''viable_function(f, args) <=> proper_argument_count(f, args) && all_arguments_convertible_to_parameters(f, args)'''
+layer = "cpp20_language"
+confidence = 0.85
+source_file = "over.match.viable"
+source_module = "[over.match.general]/2.8"
+tags = ['overload-resolution', 'viable-functions', 'candidate-functions']
+
+[[axioms]]
+id = "cpp20_over_match_funcs_implicit_object_param_lvalue_ref_b6c7d8e9"
+content = '''For implicit object member functions declared without a ref-qualifier or with the & ref-qualifier, the type of the implicit object parameter is "lvalue reference to cv X".'''
+formal_spec = '''is_implicit_object_member_function(f) && (!has_ref_qualifier(f) || has_lvalue_ref_qualifier(f)) => implicit_object_param_type(f) == lvalue_reference_to(cv_qualified(class_of(f)))'''
+layer = "cpp20_language"
+confidence = 0.95
+source_file = "over.match.funcs.general"
+source_module = "[over.match.funcs.general]/4.1"
+tags = ['overload-resolution', 'implicit-object-parameter', 'ref-qualifier', 'member-function']
+
+[[axioms]]
+id = "cpp20_over_match_funcs_implicit_object_param_rvalue_ref_f1a2b3c4"
+content = '''For implicit object member functions declared with the && ref-qualifier, the type of the implicit object parameter is "rvalue reference to cv X".'''
+formal_spec = '''is_implicit_object_member_function(f) && has_rvalue_ref_qualifier(f) => implicit_object_param_type(f) == rvalue_reference_to(cv_qualified(class_of(f)))'''
+layer = "cpp20_language"
+confidence = 0.95
+source_file = "over.match.funcs.general"
+source_module = "[over.match.funcs.general]/4.2"
+tags = ['overload-resolution', 'implicit-object-parameter', 'ref-qualifier', 'member-function']
+
+[[axioms]]
+id = "cpp20_over_match_funcs_no_user_conv_implicit_object_d5e6f7a8"
+content = '''No user-defined conversions can be applied to achieve a type match with the implicit object parameter.'''
+formal_spec = '''is_implicit_object_parameter(param) && conversion_to_match(arg, param, conv) => !is_user_defined_conversion(conv)'''
+layer = "cpp20_language"
+confidence = 0.95
+source_file = "over.match.funcs.general"
+source_module = "[over.match.funcs.general]/5"
+tags = ['overload-resolution', 'implicit-object-parameter', 'user-defined-conversion']
+
+[[axioms]]
+id = "cpp20_over_match_funcs_value_dependent_explicit_deduction_first_b9c1d2e3"
+content = '''If a constructor template or conversion function template has an explicit-specifier whose constant-expression is value-dependent, template argument deduction is performed first, then explicit candidates are removed if the context admits only non-explicit candidates.'''
+formal_spec = '''(is_constructor_template(f) || is_conversion_function_template(f)) && has_value_dependent_explicit_specifier(f) => template_deduction_before_explicit_check(f)'''
+layer = "cpp20_language"
+confidence = 0.85
+source_file = "over.match.funcs.general"
+source_module = "[over.match.funcs.general]/8"
+tags = ['overload-resolution', 'template', 'explicit', 'value-dependent', 'deduction']
+
+[[axioms]]
+id = "cpp20_over_call_object_surrogate_non_explicit_only_f4a5b6c7"
+content = '''Surrogate call functions are only generated from non-explicit conversion functions that convert to pointer-to-function or reference-to-function types.'''
+formal_spec = '''is_conversion_function(f) && (converts_to_ptr_to_function(f) || converts_to_ref_to_function(f)) && !is_explicit(f) => generates_surrogate_call_function(f)'''
+layer = "cpp20_language"
+confidence = 0.95
+source_file = "over.call.object"
+source_module = "[over.call.object]/2"
+tags = ['overload-resolution', 'conversion-function', 'surrogate-call-function', 'function-pointer']
+
+[[axioms]]
+id = "cpp20_over_match_oper_arrow_second_operand_ignored_d8e9f1a2"
+content = '''The second operand of operator-> is ignored in selecting an operator-> function, and is not an argument when the operator-> function is called.'''
+formal_spec = '''selecting_operator_arrow(op_expr) => second_operand_not_considered(op_expr) && second_operand_not_argument(op_expr)'''
+layer = "cpp20_language"
+confidence = 0.95
+source_file = "over.match.oper"
+source_module = "[over.match.oper]/12"
+tags = ['overload-resolution', 'operators', 'arrow-operator']
+
+[[axioms]]
+id = "cpp20_over_match_oper_fallback_builtin_comma_addr_arrow_b3c4d5e6"
+content = '''If the operator is comma, unary &, or ->, and there are no viable functions, then the operator is assumed to be the built-in operator.'''
+formal_spec = '''(op == ',' || (op == '&' && is_unary(op)) || op == '->') && viable_functions(op, candidates) == empty_set => uses_builtin_operator(op)'''
+layer = "cpp20_language"
+confidence = 0.95
+source_file = "over.match.oper"
+source_module = "[over.match.oper]/13"
+tags = ['overload-resolution', 'operators', 'built-in-operators', 'viable-functions']
+
+[[axioms]]
+id = "cpp20_over_match_class_deduct_no_aggregate_candidate_f7a8b9c1"
+content = '''If there is no aggregate element ei for any xi in list initialization, the aggregate deduction candidate is not added to the set of guides.'''
+formal_spec = '''is_aggregate_class(C) && list_initialization(C, init_list) && exists(xi in init_list, !has_corresponding_aggregate_element(xi, C)) => !add_aggregate_deduction_candidate(C)'''
+layer = "cpp20_language"
+confidence = 0.95
+source_file = "over.match.class.deduct"
+source_module = "[over.match.class.deduct]/1"
+tags = ['overload-resolution', 'class-template-argument-deduction', 'aggregate', 'deduction-guide']
+
+[[axioms]]
+id = "cpp20_over_match_conv_permissible_types_standard_conv_d2e3f4a5"
+content = '''For initialization by conversion function, the permissible types for non-explicit conversion functions are those that can be converted to type T via a standard conversion sequence.'''
+formal_spec = '''initialization_by_conversion_function(init, T) && is_non_explicit_conversion_function(f) => permissible_type(result_type(f)) <=> can_convert_via_standard_conversion(result_type(f), T)'''
+layer = "cpp20_language"
+confidence = 0.95
+source_file = "over.match.conv"
+source_module = "[over.match.conv]/1.1"
+tags = ['overload-resolution', 'conversion-function', 'standard-conversion', 'initialization']
+
+[[axioms]]
+id = "cpp20_over_match_conv_explicit_direct_init_only_b6c7d8e9"
+content = '''For direct-initialization via conversion function, explicit conversion functions are candidates only if their result type can be converted to T with a (possibly trivial) qualification conversion; otherwise no explicit functions are candidates.'''
+formal_spec = '''initialization_by_conversion_function(init, T) && is_direct_initialization(init) && is_explicit_conversion_function(f) => permissible_type(result_type(f)) <=> can_convert_via_qualification_conversion(result_type(f), T)'''
+layer = "cpp20_language"
+confidence = 0.95
+source_file = "over.match.conv"
+source_module = "[over.match.conv]/1.1"
+tags = ['overload-resolution', 'conversion-function', 'explicit', 'direct-initialization', 'qualification-conversion']
+
+[[axioms]]
+id = "cpp20_over_oper_precedence_immutable_a7c3f8e2"
+content = '''It is not possible to change the precedence, grouping, or number of operands of operators through operator overloading.'''
+formal_spec = '''operator_function(F, Op) => precedence(Op) == builtin_precedence(Op) && grouping(Op) == builtin_grouping(Op) && operand_count(Op) == builtin_operand_count(Op)'''
+layer = "cpp20_language"
+confidence = 0.95
+source_file = "over.oper.general"
+source_module = "[over.oper.general]/7"
+tags = ['overloading', 'operator', 'constraint', 'precedence']
+
+[[axioms]]
+id = "cpp20_temp_inst_incomplete_class_error_a7b8c9d0"
+content = '''Using an incomplete class type X<T> where T requires a complete type results in an error when the template is declared but not defined.'''
+formal_spec = '''class_template_specialization(X, T) && requires_complete_type(context) && declared(template_of(X)) && !defined(template_of(X)) => ill_formed'''
+layer = "cpp20_language"
+confidence = 0.9
+source_file = "temp.inst"
+source_module = "[temp.inst]/2"
+tags = ['template', 'instantiation', 'incomplete_type']
+
+[[axioms]]
+id = "cpp20_temp_inst_friend_def_second_error_e1f2a3b4"
+content = '''Instantiating a class template that produces a second definition of a friend function via friend function definition is ill-formed.'''
+formal_spec = '''class_template_instantiation(C1) && friend_function_definition(F, C1) && class_template_instantiation(C2) && friend_function_definition(F, C2) && C1 != C2 => ill_formed'''
+layer = "cpp20_language"
+confidence = 0.95
+source_file = "temp.inst"
+source_module = "[temp.inst]/3"
+tags = ['template', 'instantiation', 'friend', 'odr']
+
+[[axioms]]
+id = "cpp20_temp_inst_deleted_member_redefinition_error_c5d6e7f8"
+content = '''An explicit specialization of a deleted member function template is ill-formed as it constitutes a redefinition.'''
+formal_spec = '''class_template(C, T) && member_function(F, C) && deleted(F) && explicit_specialization(F, Args) => ill_formed'''
+layer = "cpp20_language"
+confidence = 0.95
+source_file = "temp.inst"
+source_module = "[temp.inst]/3"
+tags = ['template', 'instantiation', 'deleted', 'redefinition']
+
+[[axioms]]
+id = "cpp20_temp_inst_no_implicit_unless_required_b3c4d5e6"
+content = '''An implementation shall not implicitly instantiate a function template, variable template, member template, non-virtual member function, member class, static data member of a templated class, or a substatement of a constexpr if statement, unless such instantiation is required.'''
+formal_spec = '''(is_function_template(E) || is_variable_template(E) || is_member_template(E) || is_nonvirtual_member_function(E) || is_member_class(E) || is_static_data_member(E) || is_constexpr_if_substatement(E)) && !instantiation_required(E) => shall_not_implicitly_instantiate(E)'''
+layer = "cpp20_language"
+confidence = 0.95
+source_file = "temp.inst"
+source_module = "[temp.inst]/11"
+tags = ['template', 'instantiation', 'implicit']
+
+[[axioms]]
+id = "cpp20_temp_inst_constraint_no_valid_specialization_ndr_f9a0b1c2"
+content = '''A template with constraints that have no valid specializations is ill-formed, no diagnostic required.'''
+formal_spec = '''template(T) && has_constraints(T) && forall(Args) => !satisfied(constraints(T), Args) => ill_formed_ndr'''
+layer = "cpp20_language"
+confidence = 0.95
+source_file = "temp.inst"
+source_module = "[temp.inst]/17"
+tags = ['template', 'constraints', 'sfinae']
+
+[[axioms]]
+id = "cpp20_temp_inst_requires_invalid_expression_ndr_d7e8f9a0"
+content = '''A template with a requires-clause containing an expression that would never result in a valid expression for any substitution is ill-formed, no diagnostic required.'''
+formal_spec = '''template(T) && has_requires_clause(T, R) && forall(Args) => !valid_expression(substitute(R, Args)) => ill_formed_ndr'''
+layer = "cpp20_language"
+confidence = 0.95
+source_file = "temp.inst"
+source_module = "[temp.inst]/17"
+tags = ['template', 'requires', 'constraints']
+
+[[axioms]]
+id = "cpp20_temp_explicit_simple_template_id_variable_class_a1b2c3d4"
+content = '''In an explicit specialization declaration for a variable template, class template, member of a class template, or class member template, the variable or class being specialized shall be specified with a simple-template-id.'''
+formal_spec = '''explicit_specialization(E) && (is_variable_template(E) || is_class_template(E) || is_member_of_class_template(E) || is_class_member_template(E)) => uses_simple_template_id(E)'''
+layer = "cpp20_language"
+confidence = 0.9
+source_file = "temp.spec.general"
+source_module = "[temp.spec.general]/3"
+tags = ['template', 'specialization', 'syntax']
+
+[[axioms]]
+id = "cpp20_temp_explicit_class_elaborated_type_specifier_e5f6a7b8"
+content = '''If the explicit instantiation is for a class or member class, the elaborated-type-specifier in the declaration shall include a simple-template-id.'''
+formal_spec = '''explicit_instantiation(E) && (is_class(E) || is_member_class(E)) => elaborated_type_specifier_includes_simple_template_id(E)'''
+layer = "cpp20_language"
+confidence = 0.9
+source_file = "temp.explicit"
+source_module = "[temp.explicit]/4"
+tags = ['template', 'explicit_instantiation', 'syntax']
+
+[[axioms]]
+id = "cpp20_temp_explicit_variable_unqualified_id_simple_template_id_c9d0e1f2"
+content = '''If the explicit instantiation is for a variable template specialization, the unqualified-id in the declarator shall be a simple-template-id.'''
+formal_spec = '''explicit_instantiation(E) && is_variable_template_specialization(E) => unqualified_id_is_simple_template_id(E)'''
+layer = "cpp20_language"
+confidence = 0.9
+source_file = "temp.explicit"
+source_module = "[temp.explicit]/4"
+tags = ['template', 'explicit_instantiation', 'variable_template', 'syntax']
+
+[[axioms]]
+id = "cpp20_temp_explicit_single_init_declarator_no_initializer_a3b4c5d6"
+content = '''For explicit instantiation of non-class entities, the declaration shall be a simple-declaration whose init-declarator-list comprises a single init-declarator that does not have an initializer.'''
+formal_spec = '''explicit_instantiation(E) && !is_class(E) && !is_member_class(E) => simple_declaration(E) && single_init_declarator(E) && !has_initializer(E)'''
+layer = "cpp20_language"
+confidence = 0.9
+source_file = "temp.explicit"
+source_module = "[temp.explicit]/4"
+tags = ['template', 'explicit_instantiation', 'syntax']
+
+[[axioms]]
+id = "cpp20_temp_explicit_type_mismatch_error_d7e8f9a0"
+content = '''The declaration in an explicit instantiation and the declaration produced by the corresponding substitution into the templated entity must have matching types, otherwise the program is ill-formed.'''
+formal_spec = '''explicit_instantiation(E) && substitution_result(template_of(E), args_of(E), D) && !matching_types(E, D) => ill_formed'''
+layer = "cpp20_language"
+confidence = 0.9
+source_file = "temp.explicit"
+source_module = "[temp.explicit]/6"
+tags = ['template', 'explicit_instantiation', 'type_matching']
+
+[[axioms]]
+id = "cpp20_temp_explicit_deduced_return_type_mismatch_b1c2d3e4"
+content = '''An explicit instantiation of a function with a deduced return type redeclared with a non-deduced return type is ill-formed.'''
+formal_spec = '''explicit_instantiation(E) && is_function(E) && has_deduced_return_type(template_of(E)) && !has_deduced_return_type(E) => ill_formed'''
+layer = "cpp20_language"
+confidence = 0.95
+source_file = "temp.explicit"
+source_module = "[temp.explicit]/6"
+tags = ['template', 'explicit_instantiation', 'deduced_return_type', 'auto']
+
+[[axioms]]
+id = "cpp20_temp_expl_spec_member_explicit_definition_required_e5f6a7b8"
+content = '''A member of an explicitly specialized class is not implicitly instantiated from the class template; the member shall itself be explicitly defined if its definition is required.'''
+formal_spec = '''explicit_specialization(C) && is_class_template_specialization(C) && member(M, C) && definition_required(M) => must_be_explicitly_defined(M)'''
+layer = "cpp20_language"
+confidence = 0.95
+source_file = "temp.expl.spec"
+source_module = "[temp.expl.spec]/6"
+tags = ['template', 'explicit_specialization', 'member', 'definition']
+
+[[axioms]]
+id = "cpp20_temp_expl_spec_after_use_error_f9a0b1c2"
+content = '''If a specialization is declared after a use of the primary template that would cause an implicit instantiation, and no declaration of the explicit specialization was reachable from that use, the program is ill-formed.'''
+formal_spec = '''explicit_specialization(E, Args) && use(primary_template(E), Args, point_of_use) && causes_implicit_instantiation(use) && !reachable(declaration_of(E), point_of_use) && precedes(point_of_use, declaration_of(E)) => ill_formed'''
+layer = "cpp20_language"
+confidence = 0.95
+source_file = "temp.expl.spec"
+source_module = "[temp.expl.spec]/7"
+tags = ['template', 'explicit_specialization', 'ordering']
+
+[[axioms]]
+id = "cpp20_temp_expl_spec_each_enclosing_template_prefix_c3d4e5f6"
+content = '''In an explicit specialization for a member nested within many enclosing class templates, the member declaration shall be preceded by a template<> for each enclosing class template that is explicitly specialized.'''
+formal_spec = '''explicit_specialization(M) && nested_in_class_templates(M, [C1, ..., Cn]) && explicitly_specialized(Ci) => preceded_by_template_empty(M, count(explicitly_specialized(Ci)))'''
+layer = "cpp20_language"
+confidence = 0.9
+source_file = "temp.expl.spec"
+source_module = "[temp.expl.spec]/15"
+tags = ['template', 'explicit_specialization', 'nested', 'syntax']
+
+[[axioms]]
+id = "cpp20_temp_expl_spec_unspecialized_enclosing_template_param_a7b8c9d0"
+content = '''In an explicit specialization where some enclosing class templates remain unspecialized, the keyword template followed by a template-parameter-list shall be provided instead of the template<> preceding the member, and the types of template-parameters shall be the same as in the primary template definition.'''
+formal_spec = '''explicit_specialization(M) && unspecialized_enclosing_templates(M, [T1, ..., Tn]) => uses_template_with_param_list(M, matching_params(primary_template))'''
+layer = "cpp20_language"
+confidence = 0.9
+source_file = "temp.expl.spec"
+source_module = "[temp.expl.spec]/16"
+tags = ['template', 'explicit_specialization', 'nested', 'syntax']
+
+[[axioms]]
+id = "cpp20_temp_inst_constant_evaluation_affects_semantics_d1e2f3a4"
+content = '''The existence of a definition of a variable or function is considered to affect the semantics of the program if the variable or function is needed for constant evaluation by an expression, even if constant evaluation is not required or does not use the definition.'''
+formal_spec = '''(is_variable(E) || is_function(E)) && needed_for_constant_evaluation(E, expr) => definition_affects_semantics(E)'''
+layer = "cpp20_language"
+confidence = 0.95
+source_file = "temp.inst"
+source_module = "[temp.inst]/8"
+tags = ['template', 'instantiation', 'constant_evaluation', 'constexpr']
+
+[[axioms]]
+id = "cpp20_temp_inst_narrowing_instantiation_error_b5c6d7e8"
+content = '''A function template specialization is implicitly instantiated when referenced in a context that requires the definition to exist, including when needed for constant evaluation in a narrowing conversion context.'''
+formal_spec = '''function_template_specialization(F) && referenced_in_context_requiring_definition(F) => implicitly_instantiated(F)'''
+layer = "cpp20_language"
+confidence = 0.9
+source_file = "temp.inst"
+source_module = "[temp.inst]/8"
+tags = ['template', 'instantiation', 'narrowing', 'constexpr']
+
+[[axioms]]
+id = "cpp20_except_throw_control_transfer_nearest_handler_5a7c3d9e"
+content = '''When an exception is thrown, control is transferred to the nearest handler with a matching type, where "nearest" means the handler whose try block was most recently entered and not yet exited.'''
+formal_spec = '''throw_expr(E) && handlers(H1, ..., Hn) && matching_type(Hi, type(E)) && most_recently_entered(Hi) && not_yet_exited(Hi) => control_transfer(Hi)'''
+layer = "cpp20_language"
+confidence = 0.9
+source_file = "except.throw"
+source_module = "[except.throw]/2"
+tags = ['exception', 'control_flow', 'handler']
+
+[[axioms]]
+id = "cpp20_except_throw_exception_object_dynamic_storage_8b2f4e1a"
+content = '''Throwing an exception initializes an object with dynamic storage duration, called the exception object.'''
+formal_spec = '''throw_expr(E) => exists(exception_object(E)) && storage_duration(exception_object(E)) == dynamic'''
+layer = "cpp20_language"
+confidence = 0.95
+source_file = "except.throw"
+source_module = "[except.throw]/3"
+tags = ['exception', 'storage_duration', 'initialization']
+
+[[axioms]]
+id = "cpp20_except_throw_rethrow_same_object_7f3a2c8d"
+content = '''If a handler exits by rethrowing, control is passed to another handler for the same exception object.'''
+formal_spec = '''handler_exit_rethrow(H) => control_transfer(H2) && exception_object(H2) == exception_object(H)'''
+layer = "cpp20_language"
+confidence = 0.95
+source_file = "except.throw"
+source_module = "[except.throw]/4"
+tags = ['exception', 'rethrow', 'handler']
+
+[[axioms]]
+id = "cpp20_except_throw_destruction_after_handler_exit_c4a9f2e6"
+content = '''The exception object is potentially destroyed when an active handler exits by any means other than rethrowing, immediately after destruction of the exception-declaration object.'''
+formal_spec = '''active_handler(H) && handler_exit(H) && !rethrow(H) => potential_destruction_point(exception_object(H)) && happens_after(destruction(exception_object(H)), destruction(exception_declaration_object(H)))'''
+layer = "cpp20_language"
+confidence = 0.9
+source_file = "except.throw"
+source_module = "[except.throw]/4.1"
+tags = ['exception', 'lifetime', 'destruction']
+
+[[axioms]]
+id = "cpp20_except_throw_destruction_exception_ptr_2b7d8a3f"
+content = '''The exception object is potentially destroyed when an object of type std::exception_ptr that refers to the exception object is destroyed, before the destructor of std::exception_ptr returns.'''
+formal_spec = '''exception_ptr_refers_to(ptr, exception_object(E)) && destructor_call(ptr) => potential_destruction_point(exception_object(E)) && happens_before(destruction(exception_object(E)), destructor_return(ptr))'''
+layer = "cpp20_language"
+confidence = 0.9
+source_file = "except.throw"
+source_module = "[except.throw]/4.2"
+tags = ['exception', 'lifetime', 'destruction', 'exception_ptr']
+
+[[axioms]]
+id = "cpp20_except_throw_destruction_ordering_d5e1c7b9"
+content = '''Among all points of potential destruction for the exception object, there is an unspecified last one where the exception object is destroyed. All other points happen before that last one.'''
+formal_spec = '''potential_destruction_points(E, P1, ..., Pn) => exists(Pi) && actual_destruction(E, Pi) && forall(Pj != Pi) => happens_before(Pj, Pi)'''
+layer = "cpp20_language"
+confidence = 0.85
+source_file = "except.throw"
+source_module = "[except.throw]/4"
+tags = ['exception', 'lifetime', 'destruction', 'ordering']
+
+[[axioms]]
+id = "cpp20_except_throw_uncaught_after_init_before_activation_1c8e5a4b"
+content = '''An exception is considered uncaught after completing the initialization of the exception object until completing the activation of a handler for the exception.'''
+formal_spec = '''exception(E) && after(initialization_complete(E)) && before(handler_activation_complete(E)) => uncaught(E)'''
+layer = "cpp20_language"
+confidence = 0.95
+source_file = "except.throw"
+source_module = "[except.throw]/6"
+tags = ['exception', 'uncaught', 'state']
+
+[[axioms]]
+id = "cpp20_except_throw_rethrow_uncaught_until_caught_9d4f3a2c"
+content = '''If an exception is rethrown, it is considered uncaught from the point of rethrow until the rethrown exception is caught.'''
+formal_spec = '''rethrow(E) => uncaught(E) until caught(E)'''
+layer = "cpp20_language"
+confidence = 0.95
+source_file = "except.throw"
+source_module = "[except.throw]/7"
+tags = ['exception', 'rethrow', 'uncaught', 'state']
+
+[[axioms]]
+id = "cpp20_except_throw_caught_when_handler_active_6e2a8b7d"
+content = '''An exception is considered caught when a handler for that exception becomes active.'''
+formal_spec = '''handler_becomes_active(H, E) => caught(E)'''
+layer = "cpp20_language"
+confidence = 0.95
+source_file = "except.throw"
+source_module = "[except.throw]/8"
+tags = ['exception', 'caught', 'handler', 'state']
+
+[[axioms]]
+id = "cpp20_except_throw_active_handler_still_uncaught_if_rethrown_3b5c9d1a"
+content = '''An exception can have active handlers and still be considered uncaught if it is rethrown.'''
+formal_spec = '''has_active_handler(E) && rethrown(E) => uncaught(E)'''
+layer = "cpp20_language"
+confidence = 0.9
+source_file = "except.throw"
+source_module = "[except.throw]/8"
+tags = ['exception', 'rethrow', 'uncaught', 'handler', 'state']
+
+[[axioms]]
+id = "cpp20_except_ctor_auto_storage_destroy_order_a7c3f8b2"
+content = '''During stack unwinding, objects with automatic storage duration are destroyed in the reverse order of the completion of their construction.'''
+formal_spec = '''stack_unwinding() && auto_storage(obj1) && auto_storage(obj2) && construction_completed(obj1) < construction_completed(obj2) => destruction_order(obj2) < destruction_order(obj1)'''
+layer = "cpp20_language"
+confidence = 0.95
+source_file = "except.ctor"
+source_module = "[except.ctor]/2"
+tags = ['exception', 'stack-unwinding', 'destructor', 'automatic-storage', 'lifetime']
+
+[[axioms]]
+id = "cpp20_except_ctor_auto_destroy_condition_b8d4e9c3"
+content = '''During stack unwinding, each object with automatic storage duration is destroyed if it has been constructed, but not yet destroyed, since the try block was entered.'''
+formal_spec = '''stack_unwinding() && auto_storage(obj) && constructed_after_try_entry(obj) && !already_destroyed(obj) => must_destroy(obj)'''
+layer = "cpp20_language"
+confidence = 0.95
+source_file = "except.ctor"
+source_module = "[except.ctor]/2"
+tags = ['exception', 'stack-unwinding', 'destructor', 'automatic-storage', 'try-block']
+
+[[axioms]]
+id = "cpp20_except_ctor_return_obj_destroy_on_throw_c9e5f0d4"
+content = '''If an exception is thrown during the destruction of temporaries or local variables for a return statement, the destructor for the returned object (if any) is also invoked.'''
+formal_spec = '''exception_during_return_cleanup() && exists(returned_object) => invoke_destructor(returned_object)'''
+layer = "cpp20_language"
+confidence = 0.95
+source_file = "except.ctor"
+source_module = "[except.ctor]/2"
+tags = ['exception', 'stack-unwinding', 'destructor', 'return-statement', 'temporary']
+
+[[axioms]]
+id = "cpp20_except_ctor_init_except_subobj_destroy_d0f6a1e5"
+content = '''If the initialization of an object other than by delegating constructor is terminated by an exception, the destructor is invoked for each of the object's subobjects that were known to be initialized and whose initialization has completed.'''
+formal_spec = '''exception_terminates_init(obj) && !delegating_constructor_init(obj) && subobject(sub, obj) && known_to_be_initialized(sub) && initialization_completed(sub) => invoke_destructor(sub)'''
+layer = "cpp20_language"
+confidence = 0.95
+source_file = "except.ctor"
+source_module = "[except.ctor]/3"
+tags = ['exception', 'constructor', 'destructor', 'initialization', 'subobject']
+
+[[axioms]]
+id = "cpp20_except_ctor_subobj_destroy_reverse_order_e1a7b2f6"
+content = '''When initialization is terminated by an exception, the subobjects are destroyed in the reverse order of the completion of their construction.'''
+formal_spec = '''exception_terminates_init(obj) && subobject(sub1, obj) && subobject(sub2, obj) && construction_completed(sub1) < construction_completed(sub2) => destruction_order(sub2) < destruction_order(sub1)'''
+layer = "cpp20_language"
+confidence = 0.95
+source_file = "except.ctor"
+source_module = "[except.ctor]/3"
+tags = ['exception', 'constructor', 'destructor', 'subobject', 'ordering']
+
+[[axioms]]
+id = "cpp20_except_ctor_known_init_not_anon_union_f2b8c3a7"
+content = '''A subobject is known to be initialized only if it is not an anonymous union member.'''
+formal_spec = '''anonymous_union_member(sub) => !known_to_be_initialized(sub)'''
+layer = "cpp20_language"
+confidence = 0.95
+source_file = "except.ctor"
+source_module = "[except.ctor]/3"
+tags = ['exception', 'initialization', 'subobject', 'anonymous-union']
+
+[[axioms]]
+id = "cpp20_except_ctor_dtor_except_continue_a3c9d4b8"
+content = '''If the destructor of an object is terminated by an exception, each destructor invocation that would be performed after executing the body of the destructor and that has not yet begun execution is performed.'''
+formal_spec = '''exception_terminates_destructor(obj) && pending_destructor_after_body(sub, obj) && !execution_begun(destructor(sub)) => invoke_destructor(sub)'''
+layer = "cpp20_language"
+confidence = 0.95
+source_file = "except.ctor"
+source_module = "[except.ctor]/3"
+tags = ['exception', 'destructor', 'subobject', 'unwinding']
+
+[[axioms]]
+id = "cpp20_except_ctor_destroy_before_handler_b4dae5c9"
+content = '''Subobject destruction during exception unwinding is sequenced before entering a handler of the function-try-block of the constructor or destructor, if any.'''
+formal_spec = '''exception_unwinding(ctor_or_dtor) && has_function_try_block(ctor_or_dtor) && subobject_destruction(sub) => sequenced_before(destruction(sub), handler_entry(ctor_or_dtor))'''
+layer = "cpp20_language"
+confidence = 0.95
+source_file = "except.ctor"
+source_module = "[except.ctor]/3"
+tags = ['exception', 'constructor', 'destructor', 'function-try-block', 'sequencing']
+
+[[axioms]]
+id = "cpp20_except_ctor_delegating_dtor_invoke_c5ebf6da"
+content = '''If the compound-statement of the function-body of a delegating constructor for an object exits via an exception, the object's destructor is invoked.'''
+formal_spec = '''delegating_constructor(ctor, obj) && exception_exits_function_body(ctor) => invoke_destructor(obj)'''
+layer = "cpp20_language"
+confidence = 0.95
+source_file = "except.ctor"
+source_module = "[except.ctor]/4"
+tags = ['exception', 'delegating-constructor', 'destructor', 'function-body']
+
+[[axioms]]
+id = "cpp20_except_ctor_delegating_destroy_before_handler_d6fca7eb"
+content = '''For a delegating constructor, object destruction is sequenced before entering a handler of the function-try-block of the delegating constructor, if any.'''
+formal_spec = '''delegating_constructor(ctor, obj) && exception_exits_function_body(ctor) && has_function_try_block(ctor) => sequenced_before(destruction(obj), handler_entry(ctor))'''
+layer = "cpp20_language"
+confidence = 0.95
+source_file = "except.ctor"
+source_module = "[except.ctor]/4"
+tags = ['exception', 'delegating-constructor', 'destructor', 'function-try-block', 'sequencing']
+
+[[axioms]]
+id = "cpp20_except_ctor_ref_member_temp_lifetime_e7adb8fc"
+content = '''If an object being destroyed due to exception has a reference member that extends the lifetime of a temporary object, the lifetime of the reference member ends, so the lifetime of the temporary object is effectively not extended.'''
+formal_spec = '''exception_terminates_init(obj) && reference_member(ref, obj) && extends_lifetime(ref, temp) => lifetime_ends(ref) && !lifetime_extended(temp)'''
+layer = "cpp20_language"
+confidence = 0.85
+source_file = "except.ctor"
+source_module = "[except.ctor]/3"
+tags = ['exception', 'reference', 'temporary', 'lifetime-extension']
+
+[[axioms]]
+id = "cpp20_intro_multithread_signal_handler_thread_unspecified_a3f7b2c1"
+content = '''For a signal handler that is not executed as a result of a call to std::raise, it is unspecified which thread of execution contains the signal handler invocation.'''
+formal_spec = '''signal_handler(H) && !invoked_by_std_raise(H) => unspecified(thread_of(H))'''
+layer = "cpp20_language"
+confidence = 0.95
+source_file = "intro.multithread"
+source_module = "[intro.multithread.general]/2"
+tags = ['signal', 'thread', 'unspecified']
+
+[[axioms]]
+id = "cpp20_intro_progress_thread_assumption_d4e8f3a2"
+content = '''The implementation may assume that any thread will eventually terminate, yield, make a library I/O call, access volatile, perform a non-RMW atomic/sync operation, or continue a trivial infinite loop.'''
+formal_spec = '''thread(T) => eventually(terminate(T) || yield(T) || library_io(T) || volatile_access(T) || (atomic_or_sync_op(T) && !atomic_rmw(T)) || trivial_infinite_loop(T))'''
+layer = "cpp20_language"
+confidence = 0.95
+source_file = "intro.progress"
+source_module = "[intro.progress]/1"
+tags = ['forward_progress', 'thread', 'termination', 'optimization']
+
+[[axioms]]
+id = "cpp20_intro_progress_lockfree_single_thread_completion_e5f9a4b3"
+content = '''If there is only one thread that is not blocked in a standard library function, a lock-free execution in that thread shall complete.'''
+formal_spec = '''lock_free_execution(E, T) && single_unblocked_thread(T) => completes(E)'''
+layer = "cpp20_language"
+confidence = 0.95
+source_file = "intro.progress"
+source_module = "[intro.progress]/2.1"
+tags = ['lock_free', 'forward_progress', 'obstruction_free']
+
+[[axioms]]
+id = "cpp20_intro_progress_lockfree_concurrent_progress_f6a0b5c4"
+content = '''When one or more lock-free executions run concurrently, at least one should complete.'''
+formal_spec = '''concurrent_lock_free_executions(S) && !empty(S) => exists(E, E in S && should_complete(E))'''
+layer = "cpp20_language"
+confidence = 0.85
+source_file = "intro.progress"
+source_module = "[intro.progress]/2.2"
+tags = ['lock_free', 'forward_progress', 'concurrency']
+
+[[axioms]]
+id = "cpp20_intro_progress_concurrent_guarantee_a7b1c6d5"
+content = '''For a thread providing concurrent forward progress guarantees, the implementation ensures that the thread will eventually make progress for as long as it has not terminated.'''
+formal_spec = '''concurrent_forward_progress_guarantee(T) && !terminated(T) => eventually(makes_progress(T))'''
+layer = "cpp20_language"
+confidence = 0.95
+source_file = "intro.progress"
+source_module = "[intro.progress]/6"
+tags = ['forward_progress', 'concurrent', 'guarantee']
+
+[[axioms]]
+id = "cpp20_intro_progress_main_thread_impl_defined_b8c2d7e6"
+content = '''It is implementation-defined whether the thread executing main() and threads created by std::thread or std::jthread provide concurrent forward progress guarantees.'''
+formal_spec = '''(main_thread(T) || std_thread_created(T) || std_jthread_created(T)) => implementation_defined(concurrent_forward_progress_guarantee(T))'''
+layer = "cpp20_language"
+confidence = 0.95
+source_file = "intro.progress"
+source_module = "[intro.progress]/7"
+tags = ['forward_progress', 'implementation_defined', 'std_thread', 'main']
+
+[[axioms]]
+id = "cpp20_intro_progress_parallel_guarantee_c9d3e8f7"
+content = '''For a thread providing parallel forward progress guarantees, the implementation is not required to ensure progress until the thread has executed at least one execution step; after that, it provides concurrent forward progress guarantees.'''
+formal_spec = '''parallel_forward_progress_guarantee(T) && executed_step(T) => concurrent_forward_progress_guarantee(T)'''
+layer = "cpp20_language"
+confidence = 0.95
+source_file = "intro.progress"
+source_module = "[intro.progress]/8"
+tags = ['forward_progress', 'parallel', 'guarantee']
+
+[[axioms]]
+id = "cpp20_intro_progress_weakly_parallel_no_guarantee_d0e4f9a8"
+content = '''For a thread providing weakly parallel forward progress guarantees, the implementation does not ensure that the thread will eventually make progress.'''
+formal_spec = '''weakly_parallel_forward_progress_guarantee(T) => !guaranteed(eventually(makes_progress(T)))'''
+layer = "cpp20_language"
+confidence = 0.95
+source_file = "intro.progress"
+source_module = "[intro.progress]/10"
+tags = ['forward_progress', 'weakly_parallel', 'guarantee']
+
+[[axioms]]
+id = "cpp20_intro_progress_guarantee_ordering_e1f5a0b9"
+content = '''Concurrent forward progress guarantees are stronger than parallel forward progress guarantees, which in turn are stronger than weakly parallel forward progress guarantees.'''
+formal_spec = '''stronger(concurrent_forward_progress, parallel_forward_progress) && stronger(parallel_forward_progress, weakly_parallel_forward_progress)'''
+layer = "cpp20_language"
+confidence = 0.95
+source_file = "intro.progress"
+source_module = "[intro.progress]/12"
+tags = ['forward_progress', 'guarantee', 'ordering']
+
+[[axioms]]
+id = "cpp20_intro_progress_delegation_strengthening_f2a6b1c0"
+content = '''When thread P blocks with forward progress guarantee delegation on set S, the implementation shall ensure at least one thread in S has forward progress guarantees at least as strong as P.'''
+formal_spec = '''blocks_with_delegation(P, S) => exists(T, T in S && forward_progress_strength(T) >= forward_progress_strength(P))'''
+layer = "cpp20_language"
+confidence = 0.95
+source_file = "intro.progress"
+source_module = "[intro.progress]/13"
+tags = ['forward_progress', 'delegation', 'blocking']
+
+[[axioms]]
+id = "cpp20_intro_progress_delegation_unblock_a3b7c2d1"
+content = '''When a thread in set S terminates, it is removed from S. Once S is empty, thread P that was blocking with forward progress guarantee delegation on S is unblocked.'''
+formal_spec = '''blocks_with_delegation(P, S) && empty(S) => unblocked(P)'''
+layer = "cpp20_language"
+confidence = 0.95
+source_file = "intro.progress"
+source_module = "[intro.progress]/13"
+tags = ['forward_progress', 'delegation', 'unblock']
+
+[[axioms]]
+id = "cpp20_intro_progress_visibility_recommendation_b4c8d3e2"
+content = '''An implementation should ensure that the last value in modification order assigned by an atomic or synchronization operation will become visible to all other threads in a finite period of time.'''
+formal_spec = '''atomic_or_sync_write(W, M, V) && last_in_modification_order(W, M) => should(eventually(visible_to_all_threads(V, M)))'''
+layer = "cpp20_language"
+confidence = 0.85
+source_file = "intro.progress"
+source_module = "[intro.progress]/17"
+tags = ['atomic', 'visibility', 'recommendation', 'forward_progress']
+
+[[axioms]]
+id = "cpp20_intro_multithread_freestanding_threads_impl_defined_c5d9e4f3"
+content = '''Under a freestanding implementation, it is implementation-defined whether a program can have more than one thread of execution.'''
+formal_spec = '''freestanding_implementation() => implementation_defined(multi_threaded_allowed())'''
+layer = "cpp20_language"
+confidence = 0.95
+source_file = "intro.multithread"
+source_module = "[intro.multithread.general]/1"
+tags = ['freestanding', 'implementation_defined', 'thread']
+
+[[axioms]]
+id = "cpp20_intro_multithread_thread_object_access_d6e0f5a4"
+content = '''Every thread in a program can potentially use every object and function in a program, though objects with automatic or thread storage duration can only be accessed by other threads indirectly through pointers or references.'''
+formal_spec = '''thread(T) && object(O) => can_potentially_access(T, O) && ((automatic_storage(O) || thread_storage(O)) && thread_of(O) != T => requires_indirection(T, O))'''
+layer = "cpp20_language"
+confidence = 0.85
+source_file = "intro.multithread"
+source_module = "[intro.multithread.general]/1"
+tags = ['thread', 'object_access', 'storage_duration']
+
+[[axioms]]
+id = "cpp20_intro_races_object_value_visibility_a3b7c9e1"
+content = '''The value of an object visible to a thread T at a particular point is either the initial value of the object, a value assigned to the object by T, or a value assigned to the object by another thread according to the visibility rules.'''
+formal_spec = '''visible_value(T, obj, point) <=> (initial_value(obj) || assigned_by(T, obj) || (assigned_by(other_thread, obj) && visibility_rules_satisfied(other_thread, T, obj)))'''
+layer = "cpp20_language"
+confidence = 0.85
+source_file = "intro.races"
+source_module = "[intro.races]/1"
+tags = ['concurrency', 'visibility', 'memory-model']
+
+[[axioms]]
+id = "cpp20_intro_races_modification_no_value_change_f2d4e6a8"
+content = '''A modification can still conflict even if it does not alter the value of any bits in the memory location.'''
+formal_spec = '''modifies(A, loc) => conflict_potential(A, loc) /* regardless of value change */'''
+layer = "cpp20_language"
+confidence = 0.85
+source_file = "intro.races"
+source_module = "[intro.races]/2"
+tags = ['concurrency', 'conflict', 'memory-model']
+
+[[axioms]]
+id = "cpp20_intro_races_sync_op_categories_c5a7b9d3"
+content = '''A synchronization operation on one or more memory locations is either an acquire operation, a release operation, or both an acquire and release operation.'''
+formal_spec = '''synchronization_operation(op, locs) => (acquire_operation(op) xor release_operation(op) xor (acquire_operation(op) && release_operation(op)))'''
+layer = "cpp20_language"
+confidence = 0.9
+source_file = "intro.races"
+source_module = "[intro.races]/3"
+tags = ['concurrency', 'synchronization', 'acquire-release']
+
+[[axioms]]
+id = "cpp20_intro_races_fence_categories_d6b8c0e4"
+content = '''A synchronization operation without an associated memory location is a fence and can be either an acquire fence, a release fence, or both an acquire and release fence.'''
+formal_spec = '''fence(op) <=> (synchronization_operation(op) && !has_memory_location(op)) && (acquire_fence(op) xor release_fence(op) xor (acquire_fence(op) && release_fence(op)))'''
+layer = "cpp20_language"
+confidence = 0.9
+source_file = "intro.races"
+source_module = "[intro.races]/3"
+tags = ['concurrency', 'synchronization', 'fence']
+
+[[axioms]]
+id = "cpp20_intro_races_relaxed_not_sync_e7c9d1f5"
+content = '''Relaxed atomic operations are not synchronization operations, but they cannot contribute to data races.'''
+formal_spec = '''relaxed_atomic(op) => (!synchronization_operation(op) && !can_contribute_to_data_race(op))'''
+layer = "cpp20_language"
+confidence = 0.9
+source_file = "intro.races"
+source_module = "[intro.races]/3"
+tags = ['concurrency', 'atomic', 'relaxed']
+
+[[axioms]]
+id = "cpp20_intro_races_store_release_load_acquire_sync_f8d0e2g6"
+content = '''An atomic store-release synchronizes with a load-acquire that takes its value from the store.'''
+formal_spec = '''(store_release(A, M, val) && load_acquire(B, M) && takes_value_from(B, A)) => synchronizes_with(A, B)'''
+layer = "cpp20_language"
+confidence = 0.95
+source_file = "intro.races"
+source_module = "[intro.races]/6"
+tags = ['concurrency', 'synchronization', 'atomic', 'acquire-release']
+
+[[axioms]]
+id = "cpp20_intro_races_visible_ambiguity_ub_g9e1f3h7"
+content = '''If there is ambiguity about which side effect to a non-atomic object or bit-field is visible, then the behavior is either unspecified or undefined.'''
+formal_spec = '''(non_atomic(M) && ambiguous_visible_side_effect(M, B)) => (unspecified_behavior || undefined_behavior)'''
+layer = "cpp20_language"
+confidence = 0.9
+source_file = "intro.races"
+source_module = "[intro.races]/9"
+tags = ['concurrency', 'visibility', 'undefined-behavior']
+
+[[axioms]]
+id = "cpp20_intro_races_signal_handler_ordering_h0f2g4i8"
+content = '''For each signal handler invocation, evaluations performed by the thread invoking a signal handler can be divided into two groups A and B, such that no evaluations in B happen before evaluations in A, and evaluations of volatile sig_atomic_t objects take values as though all evaluations in A happened before the signal handler and the signal handler happened before all evaluations in B.'''
+formal_spec = '''signal_handler_invocation(H, thread) => exists(A, B, partition(evaluations(thread), A, B) && !exists(eval_a in A, eval_b in B, happens_before(eval_b, eval_a)) && volatile_sig_atomic_ordering(A, H, B))'''
+layer = "cpp20_language"
+confidence = 0.85
+source_file = "intro.races"
+source_module = "[intro.races]/18"
+tags = ['concurrency', 'signal-handler', 'sig_atomic_t']
+
+[[axioms]]
+id = "cpp20_intro_races_compiler_no_spurious_write_i1g3h5j9"
+content = '''Compiler transformations that introduce assignments to a potentially shared memory location that would not be modified by the abstract machine are generally precluded, since such an assignment might overwrite another assignment by a different thread in cases where the abstract machine execution would not have encountered a data race.'''
+formal_spec = '''compiler_transformation(T) && introduces_write(T, loc) && potentially_shared(loc) && !abstract_machine_modifies(loc) => precluded(T)'''
+layer = "cpp20_language"
+confidence = 0.85
+source_file = "intro.races"
+source_module = "[intro.races]/19"
+tags = ['concurrency', 'compiler', 'optimization', 'memory-model']
+
+[[axioms]]
+id = "cpp20_intro_races_no_adjacent_member_overwrite_j2h4i6k0"
+content = '''Implementations of data member assignment that overwrite adjacent members in separate memory locations are precluded by the data race rules.'''
+formal_spec = '''member_assignment(m, obj) && overwrites_adjacent_member(m, m2) && separate_memory_location(m, m2) => precluded'''
+layer = "cpp20_language"
+confidence = 0.85
+source_file = "intro.races"
+source_module = "[intro.races]/19"
+tags = ['concurrency', 'memory-location', 'data-member']
+
+[[axioms]]
+id = "cpp20_intro_races_atomic_reorder_precluded_k3i5j7l1"
+content = '''Reordering of atomic loads in cases in which the atomics in question might alias is generally precluded, since this could violate the coherence rules.'''
+formal_spec = '''compiler_transformation(T) && reorders_atomic_loads(T, A, B) && might_alias(A, B) => precluded(T)'''
+layer = "cpp20_language"
+confidence = 0.85
+source_file = "intro.races"
+source_module = "[intro.races]/19"
+tags = ['concurrency', 'atomic', 'coherence', 'optimization']
+
+[[axioms]]
+id = "cpp20_atomics_order_timely_visibility_2f8a3b4c"
+content = '''The implementation should make atomic stores visible to atomic loads, and atomic loads should observe atomic stores, within a reasonable amount of time.'''
+formal_spec = '''forall store : AtomicStore, load : AtomicLoad, M : AtomicObject .
+  operates_on(store, M) && operates_on(load, M) =>
+  should_be_visible_within_reasonable_time(store, load)'''
+layer = "cpp20_language"
+confidence = 0.75
+source_file = "atomics.order"
+source_module = "[atomics.order]/12"
+tags = ['concurrency', 'atomics', 'visibility', 'quality-of-implementation']
+
+[[axioms]]
+id = "cpp20_atomics_fences_release_acquire_sync_2a8f1b3c"
+content = '''A release fence A synchronizes with an acquire fence B if there exist atomic operations X and Y, where Y is not an atomic read-modify-write operation, both operating on some atomic object M, such that A is sequenced before X, X modifies M, Y is sequenced before B, and Y reads the value written by X or a value written by any side effect in the hypothetical release sequence X would head if it were a release operation.'''
+formal_spec = '''release_fence(A) && acquire_fence(B) && atomic_op(X) && atomic_op(Y) && !is_rmw(Y) && atomic_object(M) && operates_on(X, M) && operates_on(Y, M) && sequenced_before(A, X) && modifies(X, M) && sequenced_before(Y, B) && (reads_value_written_by(Y, X) || reads_from_hypothetical_release_sequence(Y, X)) => synchronizes_with(A, B)'''
+layer = "cpp20_language"
+confidence = 0.95
+source_file = "atomics.fences"
+source_module = "[atomics.fences]/2"
+tags = ['concurrency', 'synchronization', 'fence', 'memory_order', 'release', 'acquire']
+
+[[axioms]]
+id = "cpp20_atomics_fences_release_fence_acquire_op_sync_7d4e2a9f"
+content = '''A release fence A synchronizes with an atomic operation B that performs an acquire operation on an atomic object M if there exists an atomic operation X such that A is sequenced before X, X modifies M, and B reads the value written by X or a value written by any side effect in the hypothetical release sequence X would head if it were a release operation.'''
+formal_spec = '''release_fence(A) && atomic_op(B) && is_acquire_op(B) && atomic_object(M) && operates_on(B, M) && atomic_op(X) && sequenced_before(A, X) && modifies(X, M) && (reads_value_written_by(B, X) || reads_from_hypothetical_release_sequence(B, X)) => synchronizes_with(A, B)'''
+layer = "cpp20_language"
+confidence = 0.95
+source_file = "atomics.fences"
+source_module = "[atomics.fences]/3"
+tags = ['concurrency', 'synchronization', 'fence', 'memory_order', 'release', 'acquire']
+
+[[axioms]]
+id = "cpp20_atomics_fences_release_op_acquire_fence_sync_c3b5f8e1"
+content = '''An atomic operation A that is a release operation on an atomic object M synchronizes with an acquire fence B if there exists some atomic operation X on M such that X is sequenced before B and reads the value written by A or a value written by any side effect in the release sequence headed by A.'''
+formal_spec = '''atomic_op(A) && is_release_op(A) && atomic_object(M) && operates_on(A, M) && acquire_fence(B) && atomic_op(X) && operates_on(X, M) && sequenced_before(X, B) && (reads_value_written_by(X, A) || reads_from_release_sequence(X, A)) => synchronizes_with(A, B)'''
+layer = "cpp20_language"
+confidence = 0.95
+source_file = "atomics.fences"
+source_module = "[atomics.fences]/4"
+tags = ['concurrency', 'synchronization', 'fence', 'memory_order', 'release', 'acquire']
+
+[[axioms]]
+id = "cpp20_atomics_fences_thread_fence_relaxed_no_effect_1e9a4c7b"
+content = '''atomic_thread_fence with memory_order::relaxed has no synchronization effects.'''
+formal_spec = '''call(atomic_thread_fence, order) && order == memory_order::relaxed => no_fence_effect'''
+layer = "cpp20_stdlib"
+confidence = 0.95
+source_file = "atomics.fences"
+source_module = "[atomics.fences]/5.1"
+tags = ['concurrency', 'fence', 'memory_order', 'relaxed']
+function = "atomic_thread_fence"
+header = "<atomic>"
+signature = '''extern "C" constexpr void atomic_thread_fence(memory_order order) noexcept'''
+
+[[axioms]]
+id = "cpp20_atomics_fences_thread_fence_acquire_effect_8f2d6a3e"
+content = '''atomic_thread_fence with memory_order::acquire is an acquire fence.'''
+formal_spec = '''call(atomic_thread_fence, order) && order == memory_order::acquire => acquire_fence(call_result)'''
+layer = "cpp20_stdlib"
+confidence = 0.95
+source_file = "atomics.fences"
+source_module = "[atomics.fences]/5.2"
+tags = ['concurrency', 'fence', 'memory_order', 'acquire']
+function = "atomic_thread_fence"
+header = "<atomic>"
+signature = '''extern "C" constexpr void atomic_thread_fence(memory_order order) noexcept'''
+
+[[axioms]]
+id = "cpp20_atomics_fences_thread_fence_release_effect_4b7c9e2d"
+content = '''atomic_thread_fence with memory_order::release is a release fence.'''
+formal_spec = '''call(atomic_thread_fence, order) && order == memory_order::release => release_fence(call_result)'''
+layer = "cpp20_stdlib"
+confidence = 0.95
+source_file = "atomics.fences"
+source_module = "[atomics.fences]/5.3"
+tags = ['concurrency', 'fence', 'memory_order', 'release']
+function = "atomic_thread_fence"
+header = "<atomic>"
+signature = '''extern "C" constexpr void atomic_thread_fence(memory_order order) noexcept'''
+
+[[axioms]]
+id = "cpp20_atomics_fences_thread_fence_acq_rel_effect_5a1d8b4f"
+content = '''atomic_thread_fence with memory_order::acq_rel is both an acquire fence and a release fence.'''
+formal_spec = '''call(atomic_thread_fence, order) && order == memory_order::acq_rel => acquire_fence(call_result) && release_fence(call_result)'''
+layer = "cpp20_stdlib"
+confidence = 0.95
+source_file = "atomics.fences"
+source_module = "[atomics.fences]/5.4"
+tags = ['concurrency', 'fence', 'memory_order', 'acquire', 'release']
+function = "atomic_thread_fence"
+header = "<atomic>"
+signature = '''extern "C" constexpr void atomic_thread_fence(memory_order order) noexcept'''
+
+[[axioms]]
+id = "cpp20_atomics_fences_thread_fence_seq_cst_effect_9c3e7f1a"
+content = '''atomic_thread_fence with memory_order::seq_cst is a sequentially consistent acquire and release fence.'''
+formal_spec = '''call(atomic_thread_fence, order) && order == memory_order::seq_cst => acquire_fence(call_result) && release_fence(call_result) && seq_cst_fence(call_result)'''
+layer = "cpp20_stdlib"
+confidence = 0.95
+source_file = "atomics.fences"
+source_module = "[atomics.fences]/5.5"
+tags = ['concurrency', 'fence', 'memory_order', 'seq_cst', 'acquire', 'release']
+function = "atomic_thread_fence"
+header = "<atomic>"
+signature = '''extern "C" constexpr void atomic_thread_fence(memory_order order) noexcept'''
+
+[[axioms]]
+id = "cpp20_atomics_fences_signal_fence_scope_6d2b8e5c"
+content = '''atomic_signal_fence is equivalent to atomic_thread_fence except that the resulting ordering constraints are established only between a thread and a signal handler executed in the same thread.'''
+formal_spec = '''call(atomic_signal_fence, order) => ordering_constraints_apply_only_within_same_thread_and_signal_handler && equivalent_ordering_semantics(atomic_thread_fence, order)'''
+layer = "cpp20_stdlib"
+confidence = 0.95
+source_file = "atomics.fences"
+source_module = "[atomics.fences]/6"
+tags = ['concurrency', 'fence', 'memory_order', 'signal_handler']
+function = "atomic_signal_fence"
+header = "<atomic>"
+signature = '''extern "C" constexpr void atomic_signal_fence(memory_order order) noexcept'''
+
+[[axioms]]
+id = "cpp20_atomics_fences_signal_fence_no_hw_fence_a4f2c9d7"
+content = '''atomic_signal_fence inhibits compiler optimizations and reorderings like atomic_thread_fence but does not emit hardware fence instructions.'''
+formal_spec = '''call(atomic_signal_fence, order) => inhibits_compiler_reordering && !emits_hardware_fence_instruction'''
+layer = "cpp20_stdlib"
+confidence = 0.85
+source_file = "atomics.fences"
+source_module = "[atomics.fences]/7"
+tags = ['concurrency', 'fence', 'memory_order', 'signal_handler', 'optimization']
+function = "atomic_signal_fence"
+header = "<atomic>"
+signature = '''extern "C" constexpr void atomic_signal_fence(memory_order order) noexcept'''
+
+[[axioms]]
+id = "cpp20_concept_same_definition_symmetric_a7c3e1f2"
+content = '''The same_as concept is satisfied if and only if T and U denote the same type, with the definition ensuring symmetric subsumption.'''
+formal_spec = '''same_as<T, U> <=> is_same_v<T, U> && is_same_v<U, T>'''
+layer = "cpp20_stdlib"
+confidence = 0.95
+source_file = "concept.same"
+source_module = "[concept.same]/1"
+tags = ['concepts', 'type_traits', 'same_as', 'subsumption']
+header = "<concepts>"
+
+[[axioms]]
+id = "cpp20_concept_same_is_same_v_equivalence_d4b8f6a1"
+content = '''same_as<T, U> is true precisely when is_same_v<T, U> is true, meaning T and U are the same type including cv-qualifications.'''
+formal_spec = '''same_as<T, U> => is_same_v<T, U>'''
+layer = "cpp20_stdlib"
+confidence = 0.95
+source_file = "concept.same"
+source_module = "[concept.same]/1"
+tags = ['concepts', 'type_traits', 'same_as', 'type_identity']
+header = "<concepts>"
+
+[[axioms]]
+id = "cpp20_concept_same_subsumption_bidirectional_c2e9d5b3"
+content = '''same_as<T, U> subsumes same_as<U, T> and vice versa, enabling symmetric constraint satisfaction in overload resolution.'''
+formal_spec = '''subsumes(same_as<T, U>, same_as<U, T>) && subsumes(same_as<U, T>, same_as<T, U>)'''
+layer = "cpp20_stdlib"
+confidence = 0.95
+source_file = "concept.same"
+source_module = "[concept.same]/1"
+tags = ['concepts', 'subsumption', 'same_as', 'overload_resolution']
+header = "<concepts>"
+
+[[axioms]]
+id = "cpp20_concept_same_reflexive_e8a4c7d9"
+content = '''same_as is reflexive: same_as<T, T> is always satisfied for any type T.'''
+formal_spec = '''forall T: same_as<T, T> == true'''
+layer = "cpp20_stdlib"
+confidence = 0.95
+source_file = "concept.same"
+source_module = "[concept.same]/1"
+tags = ['concepts', 'same_as', 'reflexivity', 'type_identity']
+header = "<concepts>"
+
+[[axioms]]
+id = "cpp20_concept_same_symmetric_f1b2a3c4"
+content = '''same_as is symmetric: same_as<T, U> implies same_as<U, T> and vice versa.'''
+formal_spec = '''same_as<T, U> <=> same_as<U, T>'''
+layer = "cpp20_stdlib"
+confidence = 0.95
+source_file = "concept.same"
+source_module = "[concept.same]/1"
+tags = ['concepts', 'same_as', 'symmetry', 'type_identity']
+header = "<concepts>"
+
+[[axioms]]
+id = "cpp20_dcl_init_list_std_initializer_list_not_predefined_e8f7d6c5"
+content = '''The template std::initializer_list is not predefined; if a standard library declaration of std::initializer_list is not reachable from a use of std::initializer_list (even an implicit use where the type is not named), the program is ill-formed.'''
+formal_spec = '''uses_initializer_list(expr, implicit_or_explicit) && !is_reachable(std_initializer_list_declaration, expr) => ill_formed'''
+layer = "cpp20_language"
+confidence = 0.95
+source_file = "dcl.init.list"
+source_module = "[dcl.init.list]/2"
+tags = ['initialization', 'initializer_list', 'templates', 'module']
+
+[[axioms]]
+id = "cpp20_dcl_init_list_designated_aggregate_class_required_b4c5d6e7"
+content = '''If a braced-init-list contains a designated-initializer-list and T is not a reference type, T shall be an aggregate class. Otherwise the program is ill-formed.'''
+formal_spec = '''has_designated_initializer_list(braced_init) && !is_reference_type(T) && !is_aggregate_class(T) => ill_formed'''
+layer = "cpp20_language"
+confidence = 0.95
+source_file = "dcl.init.list"
+source_module = "[dcl.init.list]/3.1"
+tags = ['initialization', 'designated_initializer', 'aggregate', 'constraint']
+
+[[axioms]]
+id = "cpp20_dcl_init_list_designator_order_constraint_a3b4c5d6"
+content = '''The ordered identifiers in the designators of the designated-initializer-list shall form a subsequence of the ordered identifiers in the direct non-static data members of the aggregate class T. Violation makes the program ill-formed.'''
+formal_spec = '''has_designated_initializer_list(init) && is_aggregate_class(T) && !is_subsequence(designator_order(init), member_declaration_order(T)) => ill_formed'''
+layer = "cpp20_language"
+confidence = 0.95
+source_file = "dcl.init.list"
+source_module = "[dcl.init.list]/3.1"
+tags = ['initialization', 'designated_initializer', 'aggregate', 'order']
+
+[[axioms]]
+id = "cpp20_dcl_init_list_class_constructor_narrowing_d5e6f7a8"
+content = '''When T is a class type and constructors are considered for list-initialization, if a narrowing conversion is required to convert any of the arguments, the program is ill-formed.'''
+formal_spec = '''is_class_type(T) && list_init(T, init) && constructor_overload_resolution(T, init, ctor) && exists(arg in converted_args(init, ctor), requires_narrowing_conversion(arg)) => ill_formed'''
+layer = "cpp20_language"
+confidence = 0.95
+source_file = "dcl.init.list"
+source_module = "[dcl.init.list]/3.7"
+tags = ['initialization', 'narrowing', 'constructor', 'overload_resolution']
+
+[[axioms]]
+id = "cpp20_dcl_init_list_enum_direct_only_c7d8e9f0"
+content = '''For an enumeration with a fixed underlying type U, list-initialization from a single scalar element v that can be implicitly converted to U is only allowed via direct-list-initialization, not copy-list-initialization.'''
+formal_spec = '''is_enum_with_fixed_underlying_type(T, U) && copy_list_init(T, {v}) && is_scalar(v) && implicitly_convertible(v, U) => ill_formed'''
+layer = "cpp20_language"
+confidence = 0.95
+source_file = "dcl.init.list"
+source_module = "[dcl.init.list]/3.8"
+tags = ['initialization', 'enumeration', 'copy_list_init', 'constraint']
+
+[[axioms]]
+id = "cpp20_dcl_init_list_enum_narrowing_conversion_b8c9d0e1"
+content = '''For direct-list-initialization of an enumeration T with a fixed underlying type U from a single scalar element v, if a narrowing conversion is required to convert v to U, the program is ill-formed.'''
+formal_spec = '''is_enum_with_fixed_underlying_type(T, U) && direct_list_init(T, {v}) && is_scalar(v) && requires_narrowing_conversion(v, U) => ill_formed'''
+layer = "cpp20_language"
+confidence = 0.95
+source_file = "dcl.init.list"
+source_module = "[dcl.init.list]/3.8"
+tags = ['initialization', 'enumeration', 'narrowing', 'constraint']
+
+[[axioms]]
+id = "cpp20_dcl_init_list_single_element_narrowing_f9a0b1c2"
+content = '''When the initializer list has a single element of type E and either T is not a reference type or its referenced type is reference-related to E, if a narrowing conversion is required to convert the element to T, the program is ill-formed.'''
+formal_spec = '''list_init(T, {e}) && !is_designated_init({e}) && type_of(e) == E && (!is_reference_type(T) || reference_related(referenced_type(T), E)) && requires_narrowing_conversion(e, T) => ill_formed'''
+layer = "cpp20_language"
+confidence = 0.95
+source_file = "dcl.init.list"
+source_module = "[dcl.init.list]/3.9"
+tags = ['initialization', 'narrowing', 'single_element', 'constraint']
+
+[[axioms]]
+id = "cpp20_dcl_init_list_ref_lvalue_nonconst_prvalue_d0e1f2a3"
+content = '''When T is a reference type and list-initialization generates a prvalue for binding, the binding fails and the program is ill-formed if T is an lvalue reference to a non-const type.'''
+formal_spec = '''list_init(T, init) && is_lvalue_reference(T) && !is_const(referenced_type(T)) && list_init_generates_prvalue(T, init) => ill_formed'''
+layer = "cpp20_language"
+confidence = 0.85
+source_file = "dcl.init.list"
+source_module = "[dcl.init.list]/3.10"
+tags = ['initialization', 'reference', 'lvalue', 'binding', 'constraint']
+
+[[axioms]]
+id = "cpp20_dcl_init_list_ref_narrowing_conversion_e1f2a3b4"
+content = '''When T is a reference type and list-initialization involves copy-list-initialization to produce a prvalue, if a narrowing conversion is required, the program is ill-formed.'''
+formal_spec = '''is_reference_type(T) && list_init(T, init) && list_init_generates_prvalue(T, init) && requires_narrowing_in_prvalue_init(init, referenced_type(T)) => ill_formed'''
+layer = "cpp20_language"
+confidence = 0.95
+source_file = "dcl.init.list"
+source_module = "[dcl.init.list]/3.10"
+tags = ['initialization', 'reference', 'narrowing', 'prvalue']
+
+[[axioms]]
+id = "cpp20_dcl_init_list_copy_list_init_explicit_ctor_f2a3b4c5"
+content = '''Copy-list-initialization that would select an explicit constructor is ill-formed; the binding cannot copy-list-initialize from the source type if only an explicit constructor is available.'''
+formal_spec = '''copy_list_init(T, init) && is_class_type(T) && constructor_overload_resolution(T, init, ctor) && is_explicit(ctor) => ill_formed'''
+layer = "cpp20_language"
+confidence = 0.95
+source_file = "dcl.init.list"
+source_module = "[dcl.init.list]/3.10"
+tags = ['initialization', 'copy_list_init', 'explicit', 'constructor']
+
+[[axioms]]
+id = "cpp20_dcl_init_list_no_applicable_rule_a4b5c6d7"
+content = '''If none of the list-initialization rules (3.1 through 3.11) apply to initialize an object or reference of type T from the initializer list, the program is ill-formed.'''
+formal_spec = '''list_init(T, init) && !matches_rule_3_1(T, init) && !matches_rule_3_2(T, init) && !matches_rule_3_3(T, init) && !matches_rule_3_4(T, init) && !matches_rule_3_5(T, init) && !matches_rule_3_6(T, init) && !matches_rule_3_7(T, init) && !matches_rule_3_8(T, init) && !matches_rule_3_9(T, init) && !matches_rule_3_10(T, init) && !matches_rule_3_11(T, init) => ill_formed'''
+layer = "cpp20_language"
+confidence = 0.95
+source_file = "dcl.init.list"
+source_module = "[dcl.init.list]/3.12"
+tags = ['initialization', 'constraint', 'fallthrough']
+
+[[axioms]]
+id = "cpp20_dcl_init_list_evaluation_order_guarantee_c5d6e7f8"
+content = '''Within the initializer-list of a braced-init-list, the initializer-clauses are evaluated in the order in which they appear. Every value computation and side effect of an initializer-clause is sequenced before those of any following initializer-clause.'''
+formal_spec = '''in_braced_init_list(init) && clause_at_position(init, i, ci) && clause_at_position(init, j, cj) && i < j => sequenced_before(value_computation_and_side_effects(ci), value_computation_and_side_effects(cj))'''
+layer = "cpp20_language"
+confidence = 0.95
+source_file = "dcl.init.list"
+source_module = "[dcl.init.list]/4"
+tags = ['initialization', 'evaluation_order', 'sequencing']
+
+[[axioms]]
+id = "cpp20_dcl_init_list_backing_array_narrowing_d6e7f8a9"
+content = '''When constructing a std::initializer_list<E> object from an initializer list, if a narrowing conversion is required to initialize any of the elements of the backing array, the program is ill-formed.'''
+formal_spec = '''is_initializer_list_type(T, E) && list_init(T, init) && exists(elem in init, requires_narrowing_conversion(elem, E)) => ill_formed'''
+layer = "cpp20_language"
+confidence = 0.95
+source_file = "dcl.init.list"
+source_module = "[dcl.init.list]/5"
+tags = ['initialization', 'initializer_list', 'backing_array', 'narrowing']
+
+[[axioms]]
+id = "cpp20_dcl_init_list_backing_array_lifetime_e7f8a9b0"
+content = '''The backing array for std::initializer_list has the same lifetime as any other temporary object, except that initializing an initializer_list object from the array extends the lifetime of the array exactly like binding a reference to a temporary.'''
+formal_spec = '''is_backing_array(arr, init_list_obj) && !extends_lifetime(context, arr) => lifetime(arr) == temporary_lifetime'''
+layer = "cpp20_language"
+confidence = 0.85
+source_file = "dcl.init.list"
+source_module = "[dcl.init.list]/6"
+tags = ['initialization', 'initializer_list', 'backing_array', 'lifetime', 'temporary']
+
+[[axioms]]
+id = "cpp20_dcl_init_list_ctor_initializer_dangling_ref_f8a9b0c1"
+content = '''Initializing an initializer_list member in a constructor's ctor-initializer creates a dangling reference because the backing array's lifetime is not extended, making the program ill-formed.'''
+formal_spec = '''is_initializer_list_type(member_type) && initialized_in_mem_initializer(member, braced_init_list) => dangling_reference(member) && ill_formed'''
+layer = "cpp20_language"
+confidence = 0.95
+source_file = "dcl.init.list"
+source_module = "[dcl.init.list]/6"
+tags = ['initialization', 'initializer_list', 'constructor', 'dangling', 'lifetime']
+
+[[axioms]]
+id = "cpp20_dcl_init_list_narrowing_float_to_int_a9b0c1d2"
+content = '''A narrowing conversion is an implicit conversion from a floating-point type to an integer type.'''
+formal_spec = '''is_floating_point_type(src_type) && is_integer_type(dst_type) && implicit_conversion(src_type, dst_type) => is_narrowing_conversion'''
+layer = "cpp20_language"
+confidence = 0.95
+source_file = "dcl.init.list"
+source_module = "[dcl.init.list]/7.1"
+tags = ['narrowing', 'conversion', 'floating_point', 'integer']
+
+[[axioms]]
+id = "cpp20_dcl_init_list_narrowing_float_to_lower_rank_b0c1d2e3"
+content = '''A narrowing conversion is an implicit conversion from a floating-point type T to another floating-point type whose floating-point conversion rank is neither greater than nor equal to that of T, except where the result of the conversion is a constant expression and either its value is finite and the conversion did not overflow, or the values before and after the conversion are not finite.'''
+formal_spec = '''is_floating_point_type(T) && is_floating_point_type(U) && !rank_greater_or_equal(U, T) && implicit_conversion(T, U) && !(is_constant_expression(result) && ((is_finite(result) && !overflow(conversion)) || (!is_finite(before) && !is_finite(after)))) => is_narrowing_conversion'''
+layer = "cpp20_language"
+confidence = 0.95
+source_file = "dcl.init.list"
+source_module = "[dcl.init.list]/7.2"
+tags = ['narrowing', 'conversion', 'floating_point', 'rank']
+
+[[axioms]]
+id = "cpp20_dcl_init_list_narrowing_int_to_float_c1d2e3f4"
+content = '''A narrowing conversion is an implicit conversion from an integer type or unscoped enumeration type to a floating-point type, except where the source is a constant expression and the actual value after conversion will fit into the target type and will produce the original value when converted back to the original type.'''
+formal_spec = '''(is_integer_type(src) || is_unscoped_enumeration(src)) && is_floating_point_type(dst) && implicit_conversion(src, dst) && !(is_constant_expression(src) && fits_in_target(src, dst) && roundtrip_preserves_value(src, dst)) => is_narrowing_conversion'''
+layer = "cpp20_language"
+confidence = 0.95
+source_file = "dcl.init.list"
+source_module = "[dcl.init.list]/7.3"
+tags = ['narrowing', 'conversion', 'integer', 'floating_point', 'enumeration']
+
+[[axioms]]
+id = "cpp20_dcl_init_list_narrowing_int_to_smaller_int_d2e3f4a5"
+content = '''A narrowing conversion is an implicit conversion from an integer type or unscoped enumeration type to an integer type that cannot represent all the values of the original type, except where the source is a bit-field whose width w is less than that of its type and the target type can represent all values of the hypothetical extended integer type with width w and same signedness, or the source is a constant expression whose value after integral promotions will fit into the target type.'''
+formal_spec = '''(is_integer_type(src) || is_unscoped_enumeration(src)) && is_integer_type(dst) && !can_represent_all_values(dst, src) && implicit_conversion(src, dst) && !(is_bitfield(src) && bitfield_width(src) < type_width(src) && can_represent_hypothetical_width(dst, bitfield_width(src), signedness(src))) && !(is_constant_expression(src) && value_fits_after_promotion(src, dst)) => is_narrowing_conversion'''
+layer = "cpp20_language"
+confidence = 0.95
+source_file = "dcl.init.list"
+source_module = "[dcl.init.list]/7.4"
+tags = ['narrowing', 'conversion', 'integer', 'bit_field', 'constant_expression']
+
+[[axioms]]
+id = "cpp20_dcl_init_list_narrowing_ptr_to_bool_e3f4a5b6"
+content = '''A narrowing conversion is an implicit conversion from a pointer type or a pointer-to-member type to bool.'''
+formal_spec = '''(is_pointer_type(src) || is_pointer_to_member_type(src)) && dst == bool && implicit_conversion(src, dst) => is_narrowing_conversion'''
+layer = "cpp20_language"
+confidence = 0.95
+source_file = "dcl.init.list"
+source_module = "[dcl.init.list]/7.5"
+tags = ['narrowing', 'conversion', 'pointer', 'bool']
+
+[[axioms]]
+id = "cpp20_dcl_init_list_aggregate_narrowing_illformed_f4a5b6c7"
+content = '''Aggregate initialization via list-initialization is ill-formed if a narrowing conversion is required to convert any element to its corresponding member type.'''
+formal_spec = '''is_aggregate(T) && list_init(T, init) && exists(elem in init, exists(member in T, requires_narrowing_conversion(elem, member_type(member)))) => ill_formed'''
+layer = "cpp20_language"
+confidence = 0.95
+source_file = "dcl.init.list"
+source_module = "[dcl.init.list]/3.4"
+tags = ['initialization', 'aggregate', 'narrowing', 'constraint']
+
+[[axioms]]
+id = "cpp20_expr_prim_req_general_prvalue_bool_a1c2e3f4"
+content = '''A requires-expression is a prvalue of type bool.'''
+formal_spec = '''requires_expression(R) => prvalue(R) && type(R) == bool'''
+layer = "cpp20_language"
+confidence = 0.95
+source_file = "expr.prim.req.general"
+source_module = "[expr.prim.req.general]/2"
+tags = ['requires-expression', 'type', 'prvalue', 'bool']
+
+[[axioms]]
+id = "cpp20_expr_prim_req_general_success_true_b2d3f4a5"
+content = '''If substitution (if any) and semantic constraint checking succeed in a requires-expression, the requires-expression evaluates to true.'''
+formal_spec = '''requires_expression(R) && substitution_succeeds(R) && semantic_constraint_checking_succeeds(R) => evaluates_to(R, true)'''
+layer = "cpp20_language"
+confidence = 0.95
+source_file = "expr.prim.req.general"
+source_module = "[expr.prim.req.general]/5"
+tags = ['requires-expression', 'substitution', 'constraint', 'evaluation']

@@ -1,6 +1,6 @@
 version = "1.0"
 source = "kframework/c-semantics/cpp_stdlib"
-extracted_at = "2025-12-29T21:35:42.843148+00:00"
+extracted_at = "2025-12-29T23:07:19.804381+00:00"
 
 [[axioms]]
 id = "c11_libcpp_new_comparison_4463afd0"
