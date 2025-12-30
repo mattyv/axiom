@@ -106,6 +106,49 @@ def get_existing_axioms(section: str) -> list[dict]:
         return []
 
 
+def get_type_axioms_for_section() -> dict[str, list[dict]]:
+    """Get axioms organized by type category for dependency linking.
+
+    Returns axioms for common types that should be linked in depends_on:
+    - pointer: pointer dereference, null, void*, memory
+    - iterator: iterator operations
+    - exception: throws, bad_alloc, bad_access
+    - lifetime: storage duration, destroy
+    - allocator: allocate, deallocate
+    - reference: lvalue, rvalue, bind
+
+    Returns:
+        Dict mapping category name to list of axiom dicts with id and content
+    """
+    try:
+        lance = LanceDBLoader(str(Path("./data/lancedb")))
+    except Exception:
+        return {}
+
+    # Type categories relevant to stdlib
+    type_queries = {
+        "pointer": "pointer dereference null void* memory address",
+        "iterator": "iterator begin end increment dereference traverse",
+        "exception": "throws exception bad_alloc bad_access bad_optional",
+        "lifetime": "lifetime storage duration destroy object",
+        "allocator": "allocator allocate deallocate memory allocation",
+        "reference": "reference bind dangle lvalue rvalue",
+        "optional": "optional value has_value nullopt empty",
+        "variant": "variant valueless visit holds_alternative",
+    }
+
+    results = {}
+    for category, query in type_queries.items():
+        try:
+            axioms = lance.search(query, limit=10)
+            if axioms:
+                results[category] = axioms
+        except Exception:
+            pass
+
+    return results
+
+
 def extract_section(section: str, output_file: Path, dry_run: bool = False) -> int:
     """Extract axioms from a section using Claude CLI."""
     print(f"\n{'=' * 60}")
@@ -120,6 +163,13 @@ def extract_section(section: str, output_file: Path, dry_run: bool = False) -> i
     existing = get_existing_axioms(section)
     print(f"  Existing axioms: {len(existing)}")
 
+    # Get type axioms for dependency linking (library sections only)
+    type_axioms = None
+    if section in HIGH_SIGNAL_LIBRARY_SECTIONS:
+        type_axioms = get_type_axioms_for_section()
+        total_type_axioms = sum(len(v) for v in type_axioms.values())
+        print(f"  Type axioms for depends_on: {total_type_axioms} across {len(type_axioms)} categories")
+
     # Build prompt
     timestamp = datetime.now(UTC).isoformat()
     prompt = generate_extraction_prompt(
@@ -127,6 +177,7 @@ def extract_section(section: str, output_file: Path, dry_run: bool = False) -> i
         html_content=html_content,
         existing_axioms=existing,
         timestamp=timestamp,
+        type_axioms=type_axioms,
     )
 
     if dry_run:

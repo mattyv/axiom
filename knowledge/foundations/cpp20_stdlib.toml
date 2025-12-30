@@ -1,1654 +1,576 @@
 version = "1.0"
 source = "eel.is/c++draft"
-extracted_at = "2025-12-30T00:31:17.294100+00:00"
+extracted_at = "2025-12-30T02:09:16.597755+00:00"
 
 [[axioms]]
-id = "cpp20_iterator_operations_advance_negative_precondition_7a3c8b1d"
-content = '''Calling std::advance with a negative distance n requires the iterator to be a bidirectional iterator. Using a negative n with an input or forward iterator is undefined behavior.'''
-formal_spec = '''advance(i, n) && n < 0 && !bidirectional_iterator(i) => undefined_behavior'''
+id = "cpp20_container_reqmts_value_type_erasable_a1b2c3d4"
+content = '''Container value_type T must be Cpp17Erasable from container X.'''
+formal_spec = '''container(X) && value_type(X, T) => Cpp17Erasable(T, X)'''
 layer = "cpp20_stdlib"
 confidence = 0.95
-source_file = "iterator.operations"
-source_module = "[iterator.operations]/2"
-tags = ['iterator', 'precondition', 'bidirectional']
-function = "std::advance"
-header = "<iterator>"
-signature = '''template<class InputIterator, class Distance> constexpr void advance(InputIterator& i, Distance n)'''
+source_file = "container.reqmts"
+source_module = "[container.reqmts]/2-3"
+tags = ['container', 'requirements', 'precondition', 'erasable']
 
 [[axioms]]
-id = "cpp20_iterator_operations_advance_effects_a2b4c6d8"
-content = '''std::advance increments the iterator i by n if n is non-negative, and decrements i by -n otherwise.'''
-formal_spec = '''advance(i, n) => (n >= 0 ? increment(i, n) : decrement(i, -n))'''
+id = "cpp20_container_reqmts_copy_ctor_precondition_b2c3d4e5"
+content = '''Copy constructing a container requires T to be Cpp17CopyInsertable into X.'''
+formal_spec = '''copy_construct(container(X)) => Cpp17CopyInsertable(T, X)'''
 layer = "cpp20_stdlib"
 confidence = 0.95
-source_file = "iterator.operations"
-source_module = "[iterator.operations]/3"
-tags = ['iterator', 'effects', 'increment', 'decrement']
-function = "std::advance"
-header = "<iterator>"
-signature = '''template<class InputIterator, class Distance> constexpr void advance(InputIterator& i, Distance n)'''
+source_file = "container.reqmts"
+source_module = "[container.reqmts]/12"
+tags = ['container', 'requirements', 'precondition', 'copy']
 
 [[axioms]]
-id = "cpp20_iterator_operations_distance_reachability_precondition_f1e2d3c4"
-content = '''For std::distance, last must be reachable from first. Alternatively, if InputIterator meets Cpp17RandomAccessIterator requirements, first may be reachable from last instead.'''
-formal_spec = '''distance(first, last) => (reachable(first, last) || (random_access_iterator(InputIterator) && reachable(last, first)))'''
+id = "cpp20_container_reqmts_equality_precondition_c3d4e5f6"
+content = '''Container equality comparison requires T to meet Cpp17EqualityComparable requirements.'''
+formal_spec = '''equality_compare(container(X, T)) => Cpp17EqualityComparable(T)'''
 layer = "cpp20_stdlib"
 confidence = 0.95
-source_file = "iterator.operations"
-source_module = "[iterator.operations]/4"
-tags = ['iterator', 'precondition', 'reachability', 'random_access']
-function = "std::distance"
-header = "<iterator>"
-signature = '''template<class InputIterator> constexpr typename iterator_traits<InputIterator>::difference_type distance(InputIterator first, InputIterator last)'''
+source_file = "container.reqmts"
+source_module = "[container.reqmts]/42"
+tags = ['container', 'requirements', 'precondition', 'equality']
 
 [[axioms]]
-id = "cpp20_iterator_operations_distance_unreachable_ub_b5a6c7d8"
-content = '''Calling std::distance when last is not reachable from first (and for non-random-access iterators, or first not reachable from last for random-access iterators) is undefined behavior.'''
-formal_spec = '''distance(first, last) && !reachable(first, last) && !(random_access_iterator(InputIterator) && reachable(last, first)) => undefined_behavior'''
+id = "cpp20_container_reqmts_swap_allocator_ub_d4e5f6a7"
+content = '''Swapping containers with unequal allocators when propagate_on_container_swap is false is undefined behavior.'''
+formal_spec = '''swap(container(a), container(b)) && !propagate_on_container_swap(allocator_type) && a.get_allocator() != b.get_allocator() => undefined_behavior'''
 layer = "cpp20_stdlib"
 confidence = 0.95
-source_file = "iterator.operations"
-source_module = "[iterator.operations]/4"
-tags = ['iterator', 'precondition', 'undefined_behavior', 'reachability']
-function = "std::distance"
-header = "<iterator>"
-signature = '''template<class InputIterator> constexpr typename iterator_traits<InputIterator>::difference_type distance(InputIterator first, InputIterator last)'''
+source_file = "container.reqmts"
+source_module = "[container.reqmts]/65"
+tags = ['container', 'swap', 'allocator', 'undefined-behavior']
 
 [[axioms]]
-id = "cpp20_iterator_operations_distance_effects_e4f5a6b7"
-content = '''For random access iterators, std::distance returns (last - first). For other iterators, it increments first until last is reached and returns the number of increments.'''
-formal_spec = '''distance(first, last) => (random_access_iterator(InputIterator) ? (last - first) : count_increments_until(first, last))'''
+id = "cpp20_container_reqmts_insert_single_exception_safety_e5f6a7b8"
+content = '''If an exception is thrown by insert() or emplace() while inserting a single element, the function has no effects (strong exception guarantee).'''
+formal_spec = '''(insert_single(container, elem) || emplace_single(container, args)) && throws_exception => no_effects'''
 layer = "cpp20_stdlib"
 confidence = 0.95
-source_file = "iterator.operations"
-source_module = "[iterator.operations]/5"
-tags = ['iterator', 'effects', 'random_access', 'linear']
-function = "std::distance"
-header = "<iterator>"
-signature = '''template<class InputIterator> constexpr typename iterator_traits<InputIterator>::difference_type distance(InputIterator first, InputIterator last)'''
+source_file = "container.reqmts"
+source_module = "[container.reqmts]/66.1"
+tags = ['container', 'exception-safety', 'insert', 'emplace']
 
 [[axioms]]
-id = "cpp20_iterator_operations_next_effects_c8d9e0f1"
-content = '''std::next returns a copy of iterator x advanced by n positions. Equivalent to: advance(x, n); return x;'''
-formal_spec = '''next(x, n) => (let y = x in (advance(y, n), y))'''
+id = "cpp20_container_reqmts_push_exception_safety_f6a7b8c9"
+content = '''If an exception is thrown by push_back(), push_front(), emplace_back(), or emplace_front(), the function has no effects (strong exception guarantee).'''
+formal_spec = '''(push_back(container) || push_front(container) || emplace_back(container) || emplace_front(container)) && throws_exception => no_effects'''
 layer = "cpp20_stdlib"
 confidence = 0.95
-source_file = "iterator.operations"
-source_module = "[iterator.operations]/6"
-tags = ['iterator', 'effects', 'advance']
-function = "std::next"
-header = "<iterator>"
-signature = '''template<class InputIterator> constexpr InputIterator next(InputIterator x, typename iterator_traits<InputIterator>::difference_type n = 1)'''
-depends_on = ['cpp20_iterator_operations_advance_negative_precondition_7a3c8b1d', 'cpp20_iterator_operations_advance_effects_a2b4c6d8']
+source_file = "container.reqmts"
+source_module = "[container.reqmts]/66.2"
+tags = ['container', 'exception-safety', 'push']
 
 [[axioms]]
-id = "cpp20_iterator_operations_prev_effects_a1b2c3d4"
-content = '''std::prev returns a copy of iterator x decremented by n positions. Equivalent to: advance(x, -n); return x;'''
-formal_spec = '''prev(x, n) => (let y = x in (advance(y, -n), y))'''
+id = "cpp20_container_reqmts_erase_nothrow_a7b8c9d0"
+content = '''Container erase(), clear(), pop_back(), and pop_front() functions do not throw exceptions.'''
+formal_spec = '''(erase(container) || clear(container) || pop_back(container) || pop_front(container)) => nothrow'''
 layer = "cpp20_stdlib"
 confidence = 0.95
-source_file = "iterator.operations"
-source_module = "[iterator.operations]/7"
-tags = ['iterator', 'effects', 'advance', 'bidirectional']
-function = "std::prev"
-header = "<iterator>"
-signature = '''template<class BidirectionalIterator> constexpr BidirectionalIterator prev(BidirectionalIterator x, typename iterator_traits<BidirectionalIterator>::difference_type n = 1)'''
-depends_on = ['cpp20_iterator_operations_advance_negative_precondition_7a3c8b1d', 'cpp20_iterator_operations_advance_effects_a2b4c6d8']
+source_file = "container.reqmts"
+source_module = "[container.reqmts]/66.3"
+tags = ['container', 'exception-safety', 'erase', 'nothrow']
 
 [[axioms]]
-id = "cpp20_iterator_operations_prev_requires_bidirectional_9e8f7a6b"
-content = '''std::prev requires a BidirectionalIterator because it internally calls advance with a negative value (-n). Using prev with a non-bidirectional iterator is undefined behavior.'''
-formal_spec = '''prev(x, n) && !bidirectional_iterator(x) => undefined_behavior'''
+id = "cpp20_container_reqmts_iterator_copy_nothrow_b8c9d0e1"
+content = '''No copy constructor or assignment operator of a returned container iterator throws an exception.'''
+formal_spec = '''(copy_construct(iterator) || copy_assign(iterator)) && is_container_iterator(iterator) => nothrow'''
 layer = "cpp20_stdlib"
 confidence = 0.95
-source_file = "iterator.operations"
-source_module = "[iterator.operations]/7"
-tags = ['iterator', 'precondition', 'bidirectional', 'undefined_behavior']
-function = "std::prev"
-header = "<iterator>"
-signature = '''template<class BidirectionalIterator> constexpr BidirectionalIterator prev(BidirectionalIterator x, typename iterator_traits<BidirectionalIterator>::difference_type n = 1)'''
-depends_on = ['cpp20_iterator_operations_advance_negative_precondition_7a3c8b1d']
+source_file = "container.reqmts"
+source_module = "[container.reqmts]/66.4"
+tags = ['container', 'iterator', 'exception-safety', 'nothrow']
 
 [[axioms]]
-id = "cpp20_iterator_operations_advance_complexity_d5e6f7a8"
-content = '''std::advance has constant time complexity for random access iterators (using + and -), and linear time complexity for input, forward, and bidirectional iterators (using ++).'''
-formal_spec = '''advance(i, n) => (random_access_iterator(i) ? O(1) : O(|n|))'''
+id = "cpp20_container_reqmts_swap_nothrow_c9d0e1f2"
+content = '''Container swap() function does not throw an exception.'''
+formal_spec = '''swap(container) => nothrow'''
 layer = "cpp20_stdlib"
-confidence = 0.9
-source_file = "iterator.operations"
-source_module = "[iterator.operations]/1"
-tags = ['iterator', 'complexity', 'random_access', 'linear']
-function = "std::advance"
-header = "<iterator>"
-signature = '''template<class InputIterator, class Distance> constexpr void advance(InputIterator& i, Distance n)'''
-
-[[axioms]]
-id = "cpp20_iterator_operations_distance_complexity_b4c5d6e7"
-content = '''std::distance has constant time complexity for random access iterators (using -), and linear time complexity for other iterators (using ++).'''
-formal_spec = '''distance(first, last) => (random_access_iterator(InputIterator) ? O(1) : O(|last - first|))'''
-layer = "cpp20_stdlib"
-confidence = 0.9
-source_file = "iterator.operations"
-source_module = "[iterator.operations]/1"
-tags = ['iterator', 'complexity', 'random_access', 'linear']
-function = "std::distance"
-header = "<iterator>"
-signature = '''template<class InputIterator> constexpr typename iterator_traits<InputIterator>::difference_type distance(InputIterator first, InputIterator last)'''
-
-[[axioms]]
-id = "cpp20_allocator_requirements_allocate_zero_unspecified_a3b4c5d6"
-content = '''If n==0 is passed to a.allocate(n), the return value is unspecified.'''
-formal_spec = '''allocator_type(X) && a: X && n == 0 && call(a.allocate(n)) => unspecified(return_value)'''
-layer = "cpp20_stdlib"
-confidence = 0.95
-source_file = "allocator.requirements.general"
-source_module = "[allocator.requirements.general]/39"
-tags = ['allocator', 'allocation', 'zero-size']
-function = "allocator::allocate"
-header = "<memory>"
-signature = '''XX::pointer X::allocate(XX::size_type n)'''
-
-[[axioms]]
-id = "cpp20_allocator_requirements_allocate_at_least_zero_unspecified_b4c5d6e7"
-content = '''If n==0 is passed to a.allocate_at_least(n), the return value is unspecified.'''
-formal_spec = '''allocator_type(X) && a: X && n == 0 && call(a.allocate_at_least(n)) => unspecified(return_value)'''
-layer = "cpp20_stdlib"
-confidence = 0.95
-source_file = "allocator.requirements.general"
-source_module = "[allocator.requirements.general]/44"
-tags = ['allocator', 'allocation', 'zero-size']
-function = "allocator::allocate_at_least"
-header = "<memory>"
-signature = '''allocation_result<XX::pointer, XX::size_type> X::allocate_at_least(XX::size_type n)'''
-
-[[axioms]]
-id = "cpp20_allocator_requirements_rebind_postcondition_c5d6e7f8"
-content = '''For all U (including T), after rebinding an allocator X to type U yielding Y, YY::rebind_alloc<T> must be X.'''
-formal_spec = '''allocator_for(X, T) && rebind(X, U) == Y && YY = allocator_traits<Y> => YY::rebind_alloc<T> == X'''
-layer = "cpp20_stdlib"
-confidence = 0.95
-source_file = "allocator.requirements.general"
-source_module = "[allocator.requirements.general]/17"
-tags = ['allocator', 'rebind', 'type-traits']
-
-[[axioms]]
-id = "cpp20_allocator_requirements_type_constraint_instantiation_d6e7f8a9"
-content = '''An allocator may constrain the types on which it can be instantiated; if a type cannot be used with a particular allocator, the allocator class or the call to construct/destroy may fail to instantiate.'''
-formal_spec = '''allocator_type(X) && type_constrained(X, T) && !compatible_type(X, T) => may_fail_instantiate(X) || may_fail_instantiate(call(construct)) || may_fail_instantiate(call(destroy))'''
-layer = "cpp20_stdlib"
-confidence = 0.85
-source_file = "allocator.requirements.general"
-source_module = "[allocator.requirements.general]/96"
-tags = ['allocator', 'instantiation', 'constraints']
-
-[[axioms]]
-id = "cpp20_allocator_requirements_overaligned_instantiation_e7f8a9b0"
-content = '''If the alignment associated with a specific over-aligned type is not supported by an allocator, instantiation of the allocator for that type may fail, or the allocator may silently ignore the requested alignment.'''
-formal_spec = '''allocator_type(X) && over_aligned_type(T) && !supports_alignment(X, alignment_of(T)) => may_fail_instantiate(X) || may_ignore_alignment(X, T)'''
-layer = "cpp20_stdlib"
-confidence = 0.85
-source_file = "allocator.requirements.general"
-source_module = "[allocator.requirements.general]/97"
-tags = ['allocator', 'alignment', 'over-aligned']
-
-[[axioms]]
-id = "cpp20_allocator_requirements_overaligned_allocate_bad_alloc_f8a9b0c1"
-content = '''For an over-aligned type with unsupported alignment, the member function allocate may fail by throwing an object of type bad_alloc.'''
-formal_spec = '''allocator_type(X) && over_aligned_type(T) && !supports_alignment(X, alignment_of(T)) && call(a.allocate(n)) => may_throw(bad_alloc)'''
-layer = "cpp20_stdlib"
-confidence = 0.85
-source_file = "allocator.requirements.general"
-source_module = "[allocator.requirements.general]/97"
-tags = ['allocator', 'alignment', 'over-aligned', 'exception']
-
-[[axioms]]
-id = "cpp20_allocator_requirements_allocate_at_least_count_geq_n_a9b0c1d2"
-content = '''The allocate_at_least function returns an allocation_result where count >= n (the requested size).'''
-formal_spec = '''allocator_type(X) && a: X && n > 0 && ret = a.allocate_at_least(n) => ret.count >= n'''
-layer = "cpp20_stdlib"
-confidence = 0.95
-source_file = "allocator.requirements.general"
-source_module = "[allocator.requirements.general]/44"
-tags = ['allocator', 'allocation']
-function = "allocator::allocate_at_least"
-header = "<memory>"
-signature = '''allocation_result<XX::pointer, XX::size_type> X::allocate_at_least(XX::size_type n)'''
-
-[[axioms]]
-id = "cpp20_allocator_requirements_equality_storage_interop_b0c1d2e3"
-content = '''Allocator equality (a1 == a2) returns true only if storage allocated from each can be deallocated via the other.'''
-formal_spec = '''allocator_type(X) && a1: X && a2: X && (a1 == a2) => forall p. (allocated_by(p, a1) => can_deallocate(a2, p)) && (allocated_by(p, a2) => can_deallocate(a1, p))'''
-layer = "cpp20_stdlib"
-confidence = 0.95
-source_file = "allocator.requirements.general"
-source_module = "[allocator.requirements.general]/54"
-tags = ['allocator', 'equality', 'deallocation']
-
-[[axioms]]
-id = "cpp20_allocator_requirements_is_always_equal_guarantee_c1d2e3f4"
-content = '''If X::is_always_equal is true_type, then a1 == a2 is guaranteed to be true for any two (possibly const) values a1, a2 of type X.'''
-formal_spec = '''allocator_type(X) && X::is_always_equal == true_type => forall a1: X, a2: X. (a1 == a2) == true'''
-layer = "cpp20_stdlib"
-confidence = 0.95
-source_file = "allocator.requirements.general"
-source_module = "[allocator.requirements.general]/90"
-tags = ['allocator', 'equality', 'type-traits']
-
-[[axioms]]
-id = "cpp20_allocator_requirements_copy_postcondition_d2e3f4a5"
-content = '''After copy construction of allocator u from a, u == a must hold.'''
-formal_spec = '''allocator_type(X) && a: X && copy_construct(u, a) => u == a'''
-layer = "cpp20_stdlib"
-confidence = 0.95
-source_file = "allocator.requirements.general"
-source_module = "[allocator.requirements.general]/63"
-tags = ['allocator', 'copy-construction', 'postcondition']
-
-[[axioms]]
-id = "cpp20_allocator_requirements_move_postcondition_e3f4a5b6"
-content = '''After move construction of allocator u from a, the value of a is unchanged and is equal to u.'''
-formal_spec = '''allocator_type(X) && a: X && prev_a = a && move_construct(u, std::move(a)) => a == prev_a && a == u'''
-layer = "cpp20_stdlib"
-confidence = 0.95
-source_file = "allocator.requirements.general"
-source_module = "[allocator.requirements.general]/67"
-tags = ['allocator', 'move-construction', 'postcondition']
-
-[[axioms]]
-id = "cpp20_allocator_requirements_converting_copy_postcondition_f4a5b6c7"
-content = '''After converting copy construction of allocator u of type X from b of related type Y, Y(u) == b and u == X(b) must hold.'''
-formal_spec = '''allocator_type(X) && allocator_type(Y) && rebind_related(X, Y) && b: Y && convert_construct(u, b) => Y(u) == b && u == X(b)'''
-layer = "cpp20_stdlib"
-confidence = 0.95
-source_file = "allocator.requirements.general"
-source_module = "[allocator.requirements.general]/65"
-tags = ['allocator', 'converting-construction', 'postcondition']
-
-[[axioms]]
-id = "cpp20_allocator_requirements_converting_move_postcondition_a5b6c7d8"
-content = '''After converting move construction of allocator u of type X from b of related type Y, u is equal to the prior value of X(b).'''
-formal_spec = '''allocator_type(X) && allocator_type(Y) && rebind_related(X, Y) && b: Y && prior_xb = X(b) && move_convert_construct(u, std::move(b)) => u == prior_xb'''
-layer = "cpp20_stdlib"
-confidence = 0.95
-source_file = "allocator.requirements.general"
-source_module = "[allocator.requirements.general]/69"
-tags = ['allocator', 'converting-construction', 'move', 'postcondition']
-
-[[axioms]]
-id = "cpp20_allocator_requirements_max_size_semantics_b6c7d8e9"
-content = '''a.max_size() returns the largest value n that can meaningfully be passed to a.allocate(n).'''
-formal_spec = '''allocator_type(X) && a: X && max_n = a.max_size() => forall n. (n > max_n => !meaningful_allocate(a, n))'''
-layer = "cpp20_stdlib"
-confidence = 0.85
-source_file = "allocator.requirements.general"
-source_module = "[allocator.requirements.general]/51"
-tags = ['allocator', 'limits', 'allocation']
-function = "allocator::max_size"
-header = "<memory>"
-signature = '''XX::size_type X::max_size() const'''
-
-[[axioms]]
-id = "cpp20_allocator_requirements_static_cast_pointer_roundtrip_c7d8e9f0"
-content = '''static_cast<XX::pointer>(w) where w is a void_pointer obtained by conversion from p, yields a pointer equal to the original p.'''
-formal_spec = '''allocator_type(X) && XX = allocator_traits<X> && p: XX::pointer && w = static_cast<XX::void_pointer>(p) => static_cast<XX::pointer>(w) == p'''
-layer = "cpp20_stdlib"
-confidence = 0.95
-source_file = "allocator.requirements.general"
-source_module = "[allocator.requirements.general]/30"
-tags = ['allocator', 'pointer', 'conversion']
-
-[[axioms]]
-id = "cpp20_allocator_requirements_static_cast_const_pointer_roundtrip_d8e9f0a1"
-content = '''static_cast<XX::const_pointer>(x) where x is a const_void_pointer obtained by conversion from q, yields a pointer equal to the original q.'''
-formal_spec = '''allocator_type(X) && XX = allocator_traits<X> && q: XX::const_pointer && x = static_cast<XX::const_void_pointer>(q) => static_cast<XX::const_pointer>(x) == q'''
-layer = "cpp20_stdlib"
-confidence = 0.95
-source_file = "allocator.requirements.general"
-source_module = "[allocator.requirements.general]/32"
-tags = ['allocator', 'pointer', 'conversion']
-
-[[axioms]]
-id = "cpp20_allocator_requirements_pointer_to_postcondition_e9f0a1b2"
-content = '''pointer_traits<XX::pointer>::pointer_to(r) returns a pointer with the same value as p, where r is *p.'''
-formal_spec = '''allocator_type(X) && XX = allocator_traits<X> && p: XX::pointer && r = *p => pointer_traits<XX::pointer>::pointer_to(r) == p'''
-layer = "cpp20_stdlib"
-confidence = 0.95
-source_file = "allocator.requirements.general"
-source_module = "[allocator.requirements.general]/34"
-tags = ['allocator', 'pointer', 'pointer_traits']
-
-[[axioms]]
-id = "cpp20_allocator_requirements_const_pointer_deref_same_object_f0a1b2c3"
-content = '''When q is a const_pointer obtained by conversion from p, *q refers to the same object as *p.'''
-formal_spec = '''allocator_type(X) && XX = allocator_traits<X> && p: XX::pointer && q = static_cast<XX::const_pointer>(p) => same_object(*q, *p)'''
-layer = "cpp20_stdlib"
-confidence = 0.95
-source_file = "allocator.requirements.general"
-source_module = "[allocator.requirements.general]/22"
-tags = ['allocator', 'pointer', 'const']
-
-[[axioms]]
-id = "cpp20_allocator_requirements_equivalently_valued_substitution_void_a1b2c3d4"
-content = '''In void_pointer comparisons (w1==w2, w1!=w2), either or both objects may be replaced by an equivalently-valued const_void_pointer with no change in semantics.'''
-formal_spec = '''allocator_type(X) && XX = allocator_traits<X> && w1: XX::void_pointer && w2: XX::void_pointer && equivalently_valued(w1, x1) && x1: XX::const_void_pointer => (w1 == w2) == (x1 == w2)'''
-layer = "cpp20_stdlib"
-confidence = 0.85
-source_file = "allocator.requirements.general"
-source_module = "[allocator.requirements.general]/94"
-tags = ['allocator', 'pointer', 'comparison']
-
-[[axioms]]
-id = "cpp20_allocator_requirements_equivalently_valued_substitution_pointer_b2c3d4e5"
-content = '''In pointer comparisons and arithmetic (==, !=, <, <=, >=, >, -), either or both pointer objects may be replaced by an equivalently-valued const_pointer with no change in semantics.'''
-formal_spec = '''allocator_type(X) && XX = allocator_traits<X> && p1: XX::pointer && p2: XX::pointer && equivalently_valued(p1, q1) && q1: XX::const_pointer => (p1 == p2) == (q1 == p2) && (p1 - p2) == (q1 - p2)'''
-layer = "cpp20_stdlib"
-confidence = 0.85
-source_file = "allocator.requirements.general"
-source_module = "[allocator.requirements.general]/95"
-tags = ['allocator', 'pointer', 'comparison', 'arithmetic']
-
-[[axioms]]
-id = "cpp20_optional_observe_arrow_precondition_3f8a2b1c"
-content = '''Calling operator-> on an optional requires that the optional contains a value.'''
-formal_spec = '''call(optional<T>::operator->) => has_value() == true'''
-layer = "cpp20_stdlib"
-confidence = 0.95
-source_file = "optional.observe"
-source_module = "[optional.observe]/1"
-tags = ['optional', 'precondition', 'observer', 'hardened']
-function = "std::optional::operator->"
-header = "<optional>"
-signature = '''T* std::optional<T>::operator->() noexcept'''
-
-[[axioms]]
-id = "cpp20_optional_observe_arrow_const_precondition_4e9b3c2d"
-content = '''Calling const operator-> on an optional requires that the optional contains a value.'''
-formal_spec = '''call(optional<T>::operator->() const) => has_value() == true'''
-layer = "cpp20_stdlib"
-confidence = 0.95
-source_file = "optional.observe"
-source_module = "[optional.observe]/1"
-tags = ['optional', 'precondition', 'observer', 'hardened']
-function = "std::optional::operator->"
-header = "<optional>"
-signature = '''const T* std::optional<T>::operator->() const noexcept'''
-
-[[axioms]]
-id = "cpp20_optional_observe_deref_lvalue_precondition_5f0c4d3e"
-content = '''Calling operator* (lvalue overloads) on an optional requires that the optional contains a value.'''
-formal_spec = '''call(optional<T>::operator*() &) || call(optional<T>::operator*() const&) => has_value() == true'''
-layer = "cpp20_stdlib"
-confidence = 0.95
-source_file = "optional.observe"
-source_module = "[optional.observe]/4"
-tags = ['optional', 'precondition', 'observer', 'hardened']
-function = "std::optional::operator*"
-header = "<optional>"
-signature = '''T& std::optional<T>::operator*() & noexcept'''
-
-[[axioms]]
-id = "cpp20_optional_observe_deref_rvalue_precondition_6a1d5e4f"
-content = '''Calling operator* (rvalue overloads) on an optional requires that the optional contains a value.'''
-formal_spec = '''call(optional<T>::operator*() &&) || call(optional<T>::operator*() const&&) => has_value() == true'''
-layer = "cpp20_stdlib"
-confidence = 0.95
-source_file = "optional.observe"
-source_module = "[optional.observe]/7"
-tags = ['optional', 'precondition', 'observer', 'hardened']
-function = "std::optional::operator*"
-header = "<optional>"
-signature = '''T&& std::optional<T>::operator*() && noexcept'''
-
-[[axioms]]
-id = "cpp20_optional_value_throws_bad_access_7b2e6f50"
-content = '''Calling value() on an optional that does not contain a value throws bad_optional_access.'''
-formal_spec = '''!has_value() && call(optional<T>::value()) => throws(bad_optional_access)'''
-layer = "cpp20_stdlib"
-confidence = 0.95
-source_file = "optional.observe"
-source_module = "[optional.observe]/13"
-tags = ['optional', 'exception', 'observer', 'value']
-function = "std::optional::value"
-header = "<optional>"
-signature = '''T& std::optional<T>::value() &'''
-
-[[axioms]]
-id = "cpp20_optional_value_const_throws_bad_access_8c3f7061"
-content = '''Calling const lvalue value() on an optional that does not contain a value throws bad_optional_access.'''
-formal_spec = '''!has_value() && call(optional<T>::value() const&) => throws(bad_optional_access)'''
-layer = "cpp20_stdlib"
-confidence = 0.95
-source_file = "optional.observe"
-source_module = "[optional.observe]/13"
-tags = ['optional', 'exception', 'observer', 'value']
-function = "std::optional::value"
-header = "<optional>"
-signature = '''const T& std::optional<T>::value() const &'''
-
-[[axioms]]
-id = "cpp20_optional_value_rvalue_throws_bad_access_9d408172"
-content = '''Calling rvalue value() on an optional that does not contain a value throws bad_optional_access.'''
-formal_spec = '''!has_value() && call(optional<T>::value() &&) => throws(bad_optional_access)'''
-layer = "cpp20_stdlib"
-confidence = 0.95
-source_file = "optional.observe"
-source_module = "[optional.observe]/14"
-tags = ['optional', 'exception', 'observer', 'value']
-function = "std::optional::value"
-header = "<optional>"
-signature = '''T&& std::optional<T>::value() &&'''
-
-[[axioms]]
-id = "cpp20_optional_valid_contained_type_a0e5f918"
-content = '''A type X is a valid contained type for optional if X is an lvalue reference type or a complete non-array object type, and remove_cvref_t<X> is not in_place_t or nullopt_t.'''
-formal_spec = '''valid_contained_type(X) <=> (is_lvalue_reference_v<X> || (is_complete_object_type(X) && !is_array_v<X>)) && remove_cvref_t<X> != in_place_t && remove_cvref_t<X> != nullopt_t'''
-layer = "cpp20_stdlib"
-confidence = 0.95
-source_file = "optional.optional.general"
-source_module = "[optional.optional.general]/2"
-tags = ['optional', 'type_constraint', 'ill-formed']
-function = "std::optional"
-header = "<optional>"
-signature = '''template<class T> class optional'''
-
-[[axioms]]
-id = "cpp20_optional_invalid_type_ill_formed_b1f6a029"
-content = '''If a specialization of optional is instantiated with a type T that is not a valid contained type for optional, the program is ill-formed.'''
-formal_spec = '''instantiate(optional<T>) && !valid_contained_type(T) => ill_formed'''
-layer = "cpp20_stdlib"
-confidence = 0.95
-source_file = "optional.optional.general"
-source_module = "[optional.optional.general]/2"
-tags = ['optional', 'type_constraint', 'ill-formed']
-function = "std::optional"
-header = "<optional>"
-signature = '''template<class T> class optional'''
-depends_on = ['cpp20_optional_valid_contained_type_a0e5f918']
-
-[[axioms]]
-id = "cpp20_optional_object_type_destructible_c2073a13"
-content = '''If T is an object type used with optional, T shall meet the Cpp17Destructible requirements.'''
-formal_spec = '''is_object_v<T> && instantiate(optional<T>) => is_destructible_v<T>'''
-layer = "cpp20_stdlib"
-confidence = 0.95
-source_file = "optional.optional.general"
-source_module = "[optional.optional.general]/2"
-tags = ['optional', 'type_constraint', 'destructible']
-function = "std::optional"
-header = "<optional>"
-signature = '''template<class T> class optional'''
-
-[[axioms]]
-id = "cpp20_optional_swap_precondition_swappable_d3184b24"
-content = '''The swap member function of optional requires that T meets the Cpp17Swappable requirements.'''
-formal_spec = '''call(optional<T>::swap) => is_swappable_v<T>'''
-layer = "cpp20_stdlib"
-confidence = 0.95
-source_file = "optional.swap"
-source_module = "[optional.swap]/2"
-tags = ['optional', 'swap', 'precondition']
-function = "std::optional::swap"
-header = "<optional>"
-signature = '''void std::optional<T>::swap(optional& rhs) noexcept(see below)'''
-
-[[axioms]]
-id = "cpp20_optional_swap_mandates_move_constructible_e4295c35"
-content = '''The swap member function of optional mandates that is_move_constructible_v<T> is true.'''
-formal_spec = '''call(optional<T>::swap) => is_move_constructible_v<T> == true'''
-layer = "cpp20_stdlib"
-confidence = 0.95
-source_file = "optional.swap"
-source_module = "[optional.swap]/1"
-tags = ['optional', 'swap', 'mandates']
-function = "std::optional::swap"
-header = "<optional>"
-signature = '''void std::optional<T>::swap(optional& rhs) noexcept(see below)'''
-
-[[axioms]]
-id = "cpp20_optional_iterator_invalidation_f5306d46"
-content = '''Any operation that initializes or destroys the contained value of an optional object invalidates all iterators into that object.'''
-formal_spec = '''(initialize_contained_value(opt) || destroy_contained_value(opt)) => invalidates_all_iterators(opt)'''
-layer = "cpp20_stdlib"
-confidence = 0.95
-source_file = "optional.iterators"
-source_module = "[optional.iterators]/3"
-tags = ['optional', 'iterator', 'invalidation']
-function = "std::optional::iterator"
-header = "<optional>"
-signature = '''iterator std::optional<T>::begin() noexcept'''
-
-[[axioms]]
-id = "cpp20_optional_emplace_exception_leaves_empty_06417e57"
-content = '''If an exception is thrown during the call to T's constructor in emplace, *this does not contain a value, and the previous val (if any) has been destroyed.'''
-formal_spec = '''call(optional<T>::emplace(args...)) && throws_during_construction => !has_value() && previous_value_destroyed'''
-layer = "cpp20_stdlib"
-confidence = 0.95
-source_file = "optional.assign"
-source_module = "[optional.assign]/34"
-tags = ['optional', 'emplace', 'exception_safety']
-function = "std::optional::emplace"
-header = "<optional>"
-signature = '''template<class... Args> T& std::optional<T>::emplace(Args&&... args)'''
-
-[[axioms]]
-id = "cpp20_optional_ref_arrow_precondition_17528f68"
-content = '''Calling operator-> on an optional<T&> requires that the optional contains a value.'''
-formal_spec = '''call(optional<T&>::operator->) => has_value() == true'''
-layer = "cpp20_stdlib"
-confidence = 0.95
-source_file = "optional.ref.observe"
-source_module = "[optional.ref.observe]/1"
-tags = ['optional', 'reference', 'precondition', 'observer', 'hardened']
-function = "std::optional<T&>::operator->"
-header = "<optional>"
-signature = '''T* std::optional<T&>::operator->() const noexcept'''
-
-[[axioms]]
-id = "cpp20_optional_ref_deref_precondition_28639079"
-content = '''Calling operator* on an optional<T&> requires that the optional contains a value.'''
-formal_spec = '''call(optional<T&>::operator*) => has_value() == true'''
-layer = "cpp20_stdlib"
-confidence = 0.95
-source_file = "optional.ref.observe"
-source_module = "[optional.ref.observe]/3"
-tags = ['optional', 'reference', 'precondition', 'observer', 'hardened']
-function = "std::optional<T&>::operator*"
-header = "<optional>"
-signature = '''T& std::optional<T&>::operator*() const noexcept'''
-
-[[axioms]]
-id = "cpp20_optional_ref_value_throws_bad_access_3974a180"
-content = '''Calling value() on an optional<T&> that does not contain a value throws bad_optional_access.'''
-formal_spec = '''!has_value() && call(optional<T&>::value()) => throws(bad_optional_access)'''
-layer = "cpp20_stdlib"
-confidence = 0.95
-source_file = "optional.ref.observe"
-source_module = "[optional.ref.observe]/7"
-tags = ['optional', 'reference', 'exception', 'observer', 'value']
-function = "std::optional<T&>::value"
-header = "<optional>"
-signature = '''T& std::optional<T&>::value() const'''
-
-[[axioms]]
-id = "cpp20_optional_ref_ctor_deleted_if_dangling_4a85b291"
-content = '''The converting constructor from U&& for optional<T&> is defined as deleted if reference_constructs_from_temporary_v<T&, U> is true, preventing dangling references.'''
-formal_spec = '''reference_constructs_from_temporary_v<T&, U> == true => deleted(optional<T&>::optional(U&&))'''
-layer = "cpp20_stdlib"
-confidence = 0.95
-source_file = "optional.ref.ctor"
-source_module = "[optional.ref.ctor]/7"
-tags = ['optional', 'reference', 'dangling', 'deleted']
-function = "std::optional<T&>::optional"
-header = "<optional>"
-signature = '''template<class U> std::optional<T&>::optional(U&& u)'''
-
-[[axioms]]
-id = "cpp20_optional_ref_in_place_deleted_if_dangling_5b96c3a2"
-content = '''The in_place constructor for optional<T&> is defined as deleted if reference_constructs_from_temporary_v<T&, Arg> is true, preventing dangling references.'''
-formal_spec = '''reference_constructs_from_temporary_v<T&, Arg> == true => deleted(optional<T&>::optional(in_place_t, Arg&&))'''
-layer = "cpp20_stdlib"
-confidence = 0.95
-source_file = "optional.ref.ctor"
-source_module = "[optional.ref.ctor]/1-2"
-tags = ['optional', 'reference', 'dangling', 'deleted', 'in_place']
-function = "std::optional<T&>::optional"
-header = "<optional>"
-signature = '''template<class Arg> std::optional<T&>::optional(in_place_t, Arg&& arg)'''
-
-[[axioms]]
-id = "cpp20_optional_and_then_mandates_optional_6ca7d4b3"
-content = '''The and_then monadic operation mandates that remove_cvref_t<U> (where U is invoke_result_t<F, decltype((val))>) is a specialization of optional.'''
-formal_spec = '''call(optional<T>::and_then(F)) => is_specialization_of_optional(remove_cvref_t<invoke_result_t<F, decltype(val)>>)'''
-layer = "cpp20_stdlib"
-confidence = 0.95
-source_file = "optional.monadic"
-source_module = "[optional.monadic]/2"
-tags = ['optional', 'monadic', 'and_then', 'mandates']
-function = "std::optional::and_then"
-header = "<optional>"
-signature = '''template<class F> auto std::optional<T>::and_then(F&& f) &'''
-
-[[axioms]]
-id = "cpp20_optional_transform_mandates_valid_type_7db8e5c4"
-content = '''The transform monadic operation mandates that U (where U is remove_cv_t<invoke_result_t<F, decltype((val))>>) is a valid contained type for optional.'''
-formal_spec = '''call(optional<T>::transform(F)) => valid_contained_type(remove_cv_t<invoke_result_t<F, decltype(val)>>)'''
-layer = "cpp20_stdlib"
-confidence = 0.95
-source_file = "optional.monadic"
-source_module = "[optional.monadic]/8"
-tags = ['optional', 'monadic', 'transform', 'mandates']
-function = "std::optional::transform"
-header = "<optional>"
-signature = '''template<class F> auto std::optional<T>::transform(F&& f) &'''
-depends_on = ['cpp20_optional_valid_contained_type_a0e5f918']
-
-[[axioms]]
-id = "cpp20_optional_or_else_mandates_same_optional_8ec9f6d5"
-content = '''The or_else monadic operation mandates that is_same_v<remove_cvref_t<invoke_result_t<F>>, optional> is true.'''
-formal_spec = '''call(optional<T>::or_else(F)) => is_same_v<remove_cvref_t<invoke_result_t<F>>, optional<T>>'''
-layer = "cpp20_stdlib"
-confidence = 0.95
-source_file = "optional.monadic"
-source_module = "[optional.monadic]/14"
-tags = ['optional', 'monadic', 'or_else', 'mandates']
-function = "std::optional::or_else"
-header = "<optional>"
-signature = '''template<class F> optional std::optional<T>::or_else(F&& f) const &'''
-
-[[axioms]]
-id = "cpp20_nullopt_no_default_ctor_9fda07e6"
-content = '''Type nullopt_t shall not have a default constructor or an initializer-list constructor, and shall not be an aggregate.'''
-formal_spec = '''!is_default_constructible_v<nullopt_t> && !has_initializer_list_ctor(nullopt_t) && !is_aggregate_v<nullopt_t>'''
-layer = "cpp20_stdlib"
-confidence = 0.95
-source_file = "optional.nullopt"
-source_module = "[optional.nullopt]/2"
-tags = ['optional', 'nullopt', 'type_constraint']
-function = "nullopt_t"
-header = "<optional>"
-signature = '''struct nullopt_t'''
-
-[[axioms]]
-id = "cpp20_optional_copy_ctor_deleted_unless_copy_constructible_a0eb18f7"
-content = '''The copy constructor of optional is defined as deleted unless is_copy_constructible_v<T> is true.'''
-formal_spec = '''!is_copy_constructible_v<T> => deleted(optional<T>::optional(const optional&))'''
-layer = "cpp20_stdlib"
-confidence = 0.95
-source_file = "optional.ctor"
-source_module = "[optional.ctor]/7"
-tags = ['optional', 'copy_constructor', 'deleted']
-function = "std::optional::optional"
-header = "<optional>"
-signature = '''std::optional<T>::optional(const optional& rhs)'''
-
-[[axioms]]
-id = "cpp20_optional_copy_assign_deleted_unless_copyable_b1fc29a8"
-content = '''The copy assignment operator of optional is defined as deleted unless is_copy_constructible_v<T> is true and is_copy_assignable_v<T> is true.'''
-formal_spec = '''(!is_copy_constructible_v<T> || !is_copy_assignable_v<T>) => deleted(optional<T>::operator=(const optional&))'''
-layer = "cpp20_stdlib"
-confidence = 0.95
-source_file = "optional.assign"
-source_module = "[optional.assign]/7"
-tags = ['optional', 'copy_assignment', 'deleted']
-function = "std::optional::operator="
-header = "<optional>"
-signature = '''optional<T>& std::optional<T>::operator=(const optional& rhs)'''
-
-[[axioms]]
-id = "cpp20_optional_emplace_mandates_constructible_c20d3ab9"
-content = '''The emplace member function mandates that is_constructible_v<T, Args...> is true.'''
-formal_spec = '''call(optional<T>::emplace(Args...)) => is_constructible_v<T, Args...> == true'''
-layer = "cpp20_stdlib"
-confidence = 0.95
-source_file = "optional.assign"
-source_module = "[optional.assign]/29"
-tags = ['optional', 'emplace', 'mandates']
-function = "std::optional::emplace"
-header = "<optional>"
-signature = '''template<class... Args> T& std::optional<T>::emplace(Args&&... args)'''
-
-[[axioms]]
-id = "cpp20_optional_value_or_mandates_copy_convertible_d31e4bca"
-content = '''The value_or const& member function mandates that is_copy_constructible_v<T> && is_convertible_v<U&&, T> is true.'''
-formal_spec = '''call(optional<T>::value_or(U&&) const&) => is_copy_constructible_v<T> && is_convertible_v<U&&, T>'''
-layer = "cpp20_stdlib"
-confidence = 0.95
-source_file = "optional.observe"
-source_module = "[optional.observe]/15"
-tags = ['optional', 'value_or', 'mandates']
-function = "std::optional::value_or"
-header = "<optional>"
-signature = '''template<class U> T std::optional<T>::value_or(U&& v) const &'''
-
-[[axioms]]
-id = "cpp20_optional_value_or_mandates_move_convertible_e42f5cdb"
-content = '''The value_or && member function mandates that is_move_constructible_v<T> && is_convertible_v<U&&, T> is true.'''
-formal_spec = '''call(optional<T>::value_or(U&&) &&) => is_move_constructible_v<T> && is_convertible_v<U&&, T>'''
-layer = "cpp20_stdlib"
-confidence = 0.95
-source_file = "optional.observe"
-source_module = "[optional.observe]/17"
-tags = ['optional', 'value_or', 'mandates']
-function = "std::optional::value_or"
-header = "<optional>"
-signature = '''template<class U> T std::optional<T>::value_or(U&& v) &&'''
-
-[[axioms]]
-id = "cpp20_optional_assign_exception_safety_f5306dec"
-content = '''If any exception is thrown during copy/move assignment, the result of the expression this->has_value() remains unchanged.'''
-formal_spec = '''call(optional<T>::operator=(rhs)) && throws_exception => has_value_unchanged'''
-layer = "cpp20_stdlib"
-confidence = 0.95
-source_file = "optional.assign"
-source_module = "[optional.assign]/7"
-tags = ['optional', 'assignment', 'exception_safety']
-function = "std::optional::operator="
-header = "<optional>"
-signature = '''optional<T>& std::optional<T>::operator=(const optional& rhs)'''
-
-[[axioms]]
-id = "cpp20_optional_ref_emplace_no_dangling_06418fef"
-content = '''The emplace member function of optional<T&> is constrained so that reference_constructs_from_temporary_v<T&, U> is false, preventing dangling references.'''
-formal_spec = '''call(optional<T&>::emplace(U&&)) => reference_constructs_from_temporary_v<T&, U> == false'''
-layer = "cpp20_stdlib"
-confidence = 0.95
-source_file = "optional.ref.assign"
-source_module = "[optional.ref.assign]/4"
-tags = ['optional', 'reference', 'emplace', 'dangling', 'constraint']
-function = "std::optional<T&>::emplace"
-header = "<optional>"
-signature = '''template<class U> T& std::optional<T&>::emplace(U&& u) noexcept(see below)'''
-
-[[axioms]]
-id = "cpp20_optional_ref_value_or_object_type_17529100"
-content = '''The value_or member function of optional<T&> is constrained to require that T is a non-array object type.'''
-formal_spec = '''call(optional<T&>::value_or) => is_object_v<T> && !is_array_v<T>'''
-layer = "cpp20_stdlib"
-confidence = 0.95
-source_file = "optional.ref.observe"
-source_module = "[optional.ref.observe]/8"
-tags = ['optional', 'reference', 'value_or', 'constraint']
-function = "std::optional<T&>::value_or"
-header = "<optional>"
-signature = '''template<class U> remove_cv_t<T> std::optional<T&>::value_or(U&& u) const'''
-
-[[axioms]]
-id = "cpp20_optional_ref_value_or_mandates_2863a211"
-content = '''The value_or member function of optional<T&> mandates that is_constructible_v<X, T&> && is_convertible_v<U, X> is true where X is remove_cv_t<T>.'''
-formal_spec = '''call(optional<T&>::value_or(U&&)) => is_constructible_v<remove_cv_t<T>, T&> && is_convertible_v<U, remove_cv_t<T>>'''
-layer = "cpp20_stdlib"
-confidence = 0.95
-source_file = "optional.ref.observe"
-source_module = "[optional.ref.observe]/10"
-tags = ['optional', 'reference', 'value_or', 'mandates']
-function = "std::optional<T&>::value_or"
-header = "<optional>"
-signature = '''template<class U> remove_cv_t<T> std::optional<T&>::value_or(U&& u) const'''
-
-[[axioms]]
-id = "cpp20_optional_ref_and_then_mandates_optional_3974b322"
-content = '''The and_then monadic operation for optional<T&> mandates that remove_cvref_t<U> (where U is invoke_result_t<F, T&>) is a specialization of optional.'''
-formal_spec = '''call(optional<T&>::and_then(F)) => is_specialization_of_optional(remove_cvref_t<invoke_result_t<F, T&>>)'''
-layer = "cpp20_stdlib"
-confidence = 0.95
-source_file = "optional.ref.monadic"
-source_module = "[optional.ref.monadic]/2"
-tags = ['optional', 'reference', 'monadic', 'and_then', 'mandates']
-function = "std::optional<T&>::and_then"
-header = "<optional>"
-signature = '''template<class F> auto std::optional<T&>::and_then(F&& f) const'''
-
-[[axioms]]
-id = "cpp20_optional_ref_transform_mandates_valid_type_4a85c433"
-content = '''The transform monadic operation for optional<T&> mandates that U (where U is remove_cv_t<invoke_result_t<F, T&>>) is a valid contained type for optional.'''
-formal_spec = '''call(optional<T&>::transform(F)) => valid_contained_type(remove_cv_t<invoke_result_t<F, T&>>)'''
-layer = "cpp20_stdlib"
-confidence = 0.95
-source_file = "optional.ref.monadic"
-source_module = "[optional.ref.monadic]/5"
-tags = ['optional', 'reference', 'monadic', 'transform', 'mandates']
-function = "std::optional<T&>::transform"
-header = "<optional>"
-signature = '''template<class F> optional<remove_cv_t<invoke_result_t<F, T&>>> std::optional<T&>::transform(F&& f) const'''
-depends_on = ['cpp20_optional_valid_contained_type_a0e5f918']
-
-[[axioms]]
-id = "cpp20_optional_ref_or_else_mandates_same_optional_5b96d544"
-content = '''The or_else monadic operation for optional<T&> mandates that is_same_v<remove_cvref_t<invoke_result_t<F>>, optional> is true.'''
-formal_spec = '''call(optional<T&>::or_else(F)) => is_same_v<remove_cvref_t<invoke_result_t<F>>, optional<T&>>'''
-layer = "cpp20_stdlib"
-confidence = 0.95
-source_file = "optional.ref.monadic"
-source_module = "[optional.ref.monadic]/8"
-tags = ['optional', 'reference', 'monadic', 'or_else', 'mandates']
-function = "std::optional<T&>::or_else"
-header = "<optional>"
-signature = '''template<class F> optional std::optional<T&>::or_else(F&& f) const'''
-
-[[axioms]]
-id = "cpp20_optional_ref_iterator_object_type_6ca7e655"
-content = '''The iterator type for optional<T&> is present only if T is an object type other than an array of unknown bound.'''
-formal_spec = '''has_iterator_type(optional<T&>) <=> is_object_v<T> && !is_array_of_unknown_bound_v<T>'''
-layer = "cpp20_stdlib"
-confidence = 0.95
-source_file = "optional.ref.iterators"
-source_module = "[optional.ref.iterators]/1"
-tags = ['optional', 'reference', 'iterator', 'constraint']
-function = "std::optional<T&>::iterator"
-header = "<optional>"
-signature = '''iterator'''
-
-[[axioms]]
-id = "cpp20_optional_ref_begin_end_object_type_7db8f766"
-content = '''The begin() and end() member functions of optional<T&> are constrained to require that T is an object type other than an array of unknown bound.'''
-formal_spec = '''call(optional<T&>::begin()) || call(optional<T&>::end()) => is_object_v<T> && !is_array_of_unknown_bound_v<T>'''
-layer = "cpp20_stdlib"
-confidence = 0.95
-source_file = "optional.ref.iterators"
-source_module = "[optional.ref.iterators]/3,5"
-tags = ['optional', 'reference', 'iterator', 'constraint']
-function = "std::optional<T&>::begin"
-header = "<optional>"
-signature = '''auto std::optional<T&>::begin() const noexcept'''
-
-[[axioms]]
-id = "cpp20_any_bad_any_cast_exception_a1b2c3d4"
-content = '''Objects of type bad_any_cast are thrown by a failed any_cast operation.'''
-formal_spec = '''any_cast_fails(operand) => throws(bad_any_cast)'''
-layer = "cpp20_stdlib"
-confidence = 0.95
-source_file = "any.bad.any.cast"
-source_module = "[any.bad.any.cast]/1"
-tags = ['exception', 'type-erasure', 'cast']
-function = "bad_any_cast"
-header = "<any>"
-signature = '''class bad_any_cast : public bad_cast'''
-
-[[axioms]]
-id = "cpp20_any_cast_type_mismatch_throws_e7f8a9b0"
-content = '''any_cast throws bad_any_cast if the operand's type does not match the requested type.'''
-formal_spec = '''operand.type() != typeid(remove_reference_t<T>) => throws(bad_any_cast)'''
-layer = "cpp20_stdlib"
-confidence = 0.95
-source_file = "any.nonmembers"
-source_module = "[any.nonmembers]/7"
-tags = ['exception', 'type-erasure', 'cast', 'type-safety']
-function = "std::any_cast"
-header = "<any>"
-signature = '''template<class T> T any_cast(const any& operand)'''
-depends_on = ['cpp20_any_bad_any_cast_exception_a1b2c3d4']
-
-[[axioms]]
-id = "cpp20_any_cast_ref_type_mismatch_throws_c2d3e4f5"
-content = '''any_cast with reference operand throws bad_any_cast if the operand's type does not match the requested type.'''
-formal_spec = '''operand.type() != typeid(remove_reference_t<T>) => throws(bad_any_cast)'''
-layer = "cpp20_stdlib"
-confidence = 0.95
-source_file = "any.nonmembers"
-source_module = "[any.nonmembers]/7"
-tags = ['exception', 'type-erasure', 'cast', 'type-safety']
-function = "std::any_cast"
-header = "<any>"
-signature = '''template<class T> T any_cast(any& operand)'''
-depends_on = ['cpp20_any_bad_any_cast_exception_a1b2c3d4']
-
-[[axioms]]
-id = "cpp20_any_cast_rvalue_type_mismatch_throws_d4e5f6a7"
-content = '''any_cast with rvalue operand throws bad_any_cast if the operand's type does not match the requested type.'''
-formal_spec = '''operand.type() != typeid(remove_reference_t<T>) => throws(bad_any_cast)'''
-layer = "cpp20_stdlib"
-confidence = 0.95
-source_file = "any.nonmembers"
-source_module = "[any.nonmembers]/7"
-tags = ['exception', 'type-erasure', 'cast', 'type-safety']
-function = "std::any_cast"
-header = "<any>"
-signature = '''template<class T> T any_cast(any&& operand)'''
-depends_on = ['cpp20_any_bad_any_cast_exception_a1b2c3d4']
-
-[[axioms]]
-id = "cpp20_any_cast_const_ref_mandates_b3c4d5e6"
-content = '''For any_cast with const any& operand, is_constructible_v<T, const U&> must be true where U is remove_cvref_t<T>.'''
-formal_spec = '''any_cast<T>(const any&) => is_constructible_v<T, const remove_cvref_t<T>&> == true'''
-layer = "cpp20_stdlib"
-confidence = 0.95
-source_file = "any.nonmembers"
-source_module = "[any.nonmembers]/5"
-tags = ['constraint', 'type-erasure', 'cast', 'mandates']
-function = "std::any_cast"
-header = "<any>"
-signature = '''template<class T> T any_cast(const any& operand)'''
-
-[[axioms]]
-id = "cpp20_any_cast_ref_mandates_c4d5e6f7"
-content = '''For any_cast with any& operand, is_constructible_v<T, U&> must be true where U is remove_cvref_t<T>.'''
-formal_spec = '''any_cast<T>(any&) => is_constructible_v<T, remove_cvref_t<T>&> == true'''
-layer = "cpp20_stdlib"
-confidence = 0.95
-source_file = "any.nonmembers"
-source_module = "[any.nonmembers]/5"
-tags = ['constraint', 'type-erasure', 'cast', 'mandates']
-function = "std::any_cast"
-header = "<any>"
-signature = '''template<class T> T any_cast(any& operand)'''
-
-[[axioms]]
-id = "cpp20_any_cast_rvalue_mandates_d5e6f7a8"
-content = '''For any_cast with any&& operand, is_constructible_v<T, U> must be true where U is remove_cvref_t<T>.'''
-formal_spec = '''any_cast<T>(any&&) => is_constructible_v<T, remove_cvref_t<T>> == true'''
-layer = "cpp20_stdlib"
-confidence = 0.95
-source_file = "any.nonmembers"
-source_module = "[any.nonmembers]/5"
-tags = ['constraint', 'type-erasure', 'cast', 'mandates']
-function = "std::any_cast"
-header = "<any>"
-signature = '''template<class T> T any_cast(any&& operand)'''
-
-[[axioms]]
-id = "cpp20_any_cast_ptr_void_mandates_e6f7a8b9"
-content = '''For any_cast with pointer operand, is_void_v<T> must be false.'''
-formal_spec = '''any_cast<T>(any*) || any_cast<T>(const any*) => is_void_v<T> == false'''
-layer = "cpp20_stdlib"
-confidence = 0.95
-source_file = "any.nonmembers"
-source_module = "[any.nonmembers]/9"
-tags = ['constraint', 'type-erasure', 'cast', 'mandates', 'void']
-function = "std::any_cast"
-header = "<any>"
-signature = '''template<class T> T* any_cast(any* operand) noexcept'''
-
-[[axioms]]
-id = "cpp20_any_ctor_value_precondition_f7a8b9c0"
-content = '''Template constructor any(T&& value) requires that decay_t<T> meets the Cpp17CopyConstructible requirements.'''
-formal_spec = '''any(T&& value) => Cpp17CopyConstructible(decay_t<T>)'''
-layer = "cpp20_stdlib"
-confidence = 0.95
-source_file = "any.cons"
-source_module = "[any.cons]/7"
-tags = ['precondition', 'type-erasure', 'constructor', 'copy-constructible']
-function = "std::any::any"
-header = "<any>"
-signature = '''template<class T> any(T&& value)'''
-
-[[axioms]]
-id = "cpp20_any_ctor_value_constraint_a8b9c0d1"
-content = '''Template constructor any(T&& value) is constrained: VT is not any, VT is not in_place_type_t specialization, and is_copy_constructible_v<VT> is true.'''
-formal_spec = '''any(T&& value) requires !same_as<decay_t<T>, any> && !is_in_place_type_t<decay_t<T>> && is_copy_constructible_v<decay_t<T>>'''
-layer = "cpp20_stdlib"
-confidence = 0.95
-source_file = "any.cons"
-source_module = "[any.cons]/6"
-tags = ['constraint', 'type-erasure', 'constructor', 'sfinae']
-function = "std::any::any"
-header = "<any>"
-signature = '''template<class T> any(T&& value)'''
-
-[[axioms]]
-id = "cpp20_any_ctor_inplace_precondition_b9c0d1e2"
-content = '''Template constructor any(in_place_type_t<T>, Args&&...) requires that decay_t<T> meets the Cpp17CopyConstructible requirements.'''
-formal_spec = '''any(in_place_type_t<T>, Args&&...) => Cpp17CopyConstructible(decay_t<T>)'''
-layer = "cpp20_stdlib"
-confidence = 0.95
-source_file = "any.cons"
-source_module = "[any.cons]/12"
-tags = ['precondition', 'type-erasure', 'constructor', 'copy-constructible', 'in-place']
-function = "std::any::any"
-header = "<any>"
-signature = '''template<class T, class... Args> explicit any(in_place_type_t<T>, Args&&... args)'''
-
-[[axioms]]
-id = "cpp20_any_ctor_inplace_constraint_c0d1e2f3"
-content = '''Template constructor any(in_place_type_t<T>, Args&&...) is constrained: is_copy_constructible_v<VT> is true and is_constructible_v<VT, Args...> is true.'''
-formal_spec = '''any(in_place_type_t<T>, Args&&...) requires is_copy_constructible_v<decay_t<T>> && is_constructible_v<decay_t<T>, Args...>'''
-layer = "cpp20_stdlib"
-confidence = 0.95
-source_file = "any.cons"
-source_module = "[any.cons]/11"
-tags = ['constraint', 'type-erasure', 'constructor', 'sfinae', 'in-place']
-function = "std::any::any"
-header = "<any>"
-signature = '''template<class T, class... Args> explicit any(in_place_type_t<T>, Args&&... args)'''
-
-[[axioms]]
-id = "cpp20_any_ctor_inplace_il_precondition_d1e2f3a4"
-content = '''Template constructor any(in_place_type_t<T>, initializer_list<U>, Args&&...) requires that decay_t<T> meets the Cpp17CopyConstructible requirements.'''
-formal_spec = '''any(in_place_type_t<T>, initializer_list<U>, Args&&...) => Cpp17CopyConstructible(decay_t<T>)'''
-layer = "cpp20_stdlib"
-confidence = 0.95
-source_file = "any.cons"
-source_module = "[any.cons]/18"
-tags = ['precondition', 'type-erasure', 'constructor', 'copy-constructible', 'in-place', 'initializer-list']
-function = "std::any::any"
-header = "<any>"
-signature = '''template<class T, class U, class... Args> explicit any(in_place_type_t<T>, initializer_list<U> il, Args&&... args)'''
-
-[[axioms]]
-id = "cpp20_any_ctor_inplace_il_constraint_e2f3a4b5"
-content = '''Template constructor any(in_place_type_t<T>, initializer_list<U>, Args&&...) is constrained: is_copy_constructible_v<VT> is true and is_constructible_v<VT, initializer_list<U>&, Args...> is true.'''
-formal_spec = '''any(in_place_type_t<T>, initializer_list<U>, Args&&...) requires is_copy_constructible_v<decay_t<T>> && is_constructible_v<decay_t<T>, initializer_list<U>&, Args...>'''
-layer = "cpp20_stdlib"
-confidence = 0.95
-source_file = "any.cons"
-source_module = "[any.cons]/17"
-tags = ['constraint', 'type-erasure', 'constructor', 'sfinae', 'in-place', 'initializer-list']
-function = "std::any::any"
-header = "<any>"
-signature = '''template<class T, class U, class... Args> explicit any(in_place_type_t<T>, initializer_list<U> il, Args&&... args)'''
-
-[[axioms]]
-id = "cpp20_any_assign_value_precondition_f3a4b5c6"
-content = '''Template assignment operator any::operator=(T&&) requires that decay_t<T> meets the Cpp17CopyConstructible requirements.'''
-formal_spec = '''operator=(T&& rhs) => Cpp17CopyConstructible(decay_t<T>)'''
-layer = "cpp20_stdlib"
-confidence = 0.95
-source_file = "any.assign"
-source_module = "[any.assign]/9"
-tags = ['precondition', 'type-erasure', 'assignment', 'copy-constructible']
-function = "std::any::operator="
-header = "<any>"
-signature = '''template<class T> any& operator=(T&& rhs)'''
-
-[[axioms]]
-id = "cpp20_any_assign_value_constraint_a4b5c6d7"
-content = '''Template assignment operator any::operator=(T&&) is constrained: VT is not any and is_copy_constructible_v<VT> is true.'''
-formal_spec = '''operator=(T&& rhs) requires !same_as<decay_t<T>, any> && is_copy_constructible_v<decay_t<T>>'''
-layer = "cpp20_stdlib"
-confidence = 0.95
-source_file = "any.assign"
-source_module = "[any.assign]/8"
-tags = ['constraint', 'type-erasure', 'assignment', 'sfinae']
-function = "std::any::operator="
-header = "<any>"
-signature = '''template<class T> any& operator=(T&& rhs)'''
-
-[[axioms]]
-id = "cpp20_any_emplace_precondition_b5c6d7e8"
-content = '''any::emplace<T>(Args&&...) requires that decay_t<T> meets the Cpp17CopyConstructible requirements.'''
-formal_spec = '''emplace<T>(Args&&...) => Cpp17CopyConstructible(decay_t<T>)'''
-layer = "cpp20_stdlib"
-confidence = 0.95
-source_file = "any.modifiers"
-source_module = "[any.modifiers]/3"
-tags = ['precondition', 'type-erasure', 'emplace', 'copy-constructible']
-function = "std::any::emplace"
-header = "<any>"
-signature = '''template<class T, class... Args> decay_t<T>& emplace(Args&&... args)'''
-
-[[axioms]]
-id = "cpp20_any_emplace_constraint_c6d7e8f9"
-content = '''any::emplace<T>(Args&&...) is constrained: is_copy_constructible_v<VT> is true and is_constructible_v<VT, Args...> is true.'''
-formal_spec = '''emplace<T>(Args&&...) requires is_copy_constructible_v<decay_t<T>> && is_constructible_v<decay_t<T>, Args...>'''
-layer = "cpp20_stdlib"
-confidence = 0.95
-source_file = "any.modifiers"
-source_module = "[any.modifiers]/2"
-tags = ['constraint', 'type-erasure', 'emplace', 'sfinae']
-function = "std::any::emplace"
-header = "<any>"
-signature = '''template<class T, class... Args> decay_t<T>& emplace(Args&&... args)'''
-
-[[axioms]]
-id = "cpp20_any_emplace_exception_state_d7e8f9a0"
-content = '''If an exception is thrown during the call to VT's constructor in emplace, the any object does not contain a value, and any previously contained value has been destroyed.'''
-formal_spec = '''emplace<T>(args...) && throws_during_construction => !has_value() && previously_contained_destroyed'''
-layer = "cpp20_stdlib"
-confidence = 0.95
-source_file = "any.modifiers"
-source_module = "[any.modifiers]/8"
-tags = ['exception-safety', 'type-erasure', 'emplace', 'state']
-function = "std::any::emplace"
-header = "<any>"
-signature = '''template<class T, class... Args> decay_t<T>& emplace(Args&&... args)'''
-
-[[axioms]]
-id = "cpp20_any_emplace_il_precondition_e8f9a0b1"
-content = '''any::emplace<T>(initializer_list<U>, Args&&...) requires that decay_t<T> meets the Cpp17CopyConstructible requirements.'''
-formal_spec = '''emplace<T>(initializer_list<U>, Args&&...) => Cpp17CopyConstructible(decay_t<T>)'''
-layer = "cpp20_stdlib"
-confidence = 0.95
-source_file = "any.modifiers"
-source_module = "[any.modifiers]/11"
-tags = ['precondition', 'type-erasure', 'emplace', 'copy-constructible', 'initializer-list']
-function = "std::any::emplace"
-header = "<any>"
-signature = '''template<class T, class U, class... Args> decay_t<T>& emplace(initializer_list<U> il, Args&&... args)'''
-
-[[axioms]]
-id = "cpp20_any_emplace_il_constraint_f9a0b1c2"
-content = '''any::emplace<T>(initializer_list<U>, Args&&...) is constrained: is_copy_constructible_v<VT> is true and is_constructible_v<VT, initializer_list<U>&, Args...> is true.'''
-formal_spec = '''emplace<T>(initializer_list<U>, Args&&...) requires is_copy_constructible_v<decay_t<T>> && is_constructible_v<decay_t<T>, initializer_list<U>&, Args...>'''
-layer = "cpp20_stdlib"
 confidence = 0.95
-source_file = "any.modifiers"
-source_module = "[any.modifiers]/10"
-tags = ['constraint', 'type-erasure', 'emplace', 'sfinae', 'initializer-list']
-function = "std::any::emplace"
-header = "<any>"
-signature = '''template<class T, class U, class... Args> decay_t<T>& emplace(initializer_list<U> il, Args&&... args)'''
+source_file = "container.reqmts"
+source_module = "[container.reqmts]/66.5"
+tags = ['container', 'swap', 'exception-safety', 'nothrow']
 
 [[axioms]]
-id = "cpp20_any_emplace_il_exception_state_a0b1c2d3"
-content = '''If an exception is thrown during the call to VT's constructor in emplace with initializer_list, the any object does not contain a value, and any previously contained value has been destroyed.'''
-formal_spec = '''emplace<T>(il, args...) && throws_during_construction => !has_value() && previously_contained_destroyed'''
+id = "cpp20_container_reqmts_swap_no_invalidate_d0e1f2a3"
+content = '''Container swap() does not invalidate any references, pointers, or iterators referring to elements of the swapped containers (end() iterator may be invalidated).'''
+formal_spec = '''swap(container(a), container(b)) => valid(element_references(a)) && valid(element_references(b))'''
 layer = "cpp20_stdlib"
 confidence = 0.95
-source_file = "any.modifiers"
-source_module = "[any.modifiers]/16"
-tags = ['exception-safety', 'type-erasure', 'emplace', 'state', 'initializer-list']
-function = "std::any::emplace"
-header = "<any>"
-signature = '''template<class T, class U, class... Args> decay_t<T>& emplace(initializer_list<U> il, Args&&... args)'''
+source_file = "container.reqmts"
+source_module = "[container.reqmts]/66.6"
+tags = ['container', 'swap', 'iterator-validity']
 
 [[axioms]]
-id = "cpp20_any_small_object_optimization_b1c2d3e4"
-content = '''Small-object optimization for any shall only be applied to types T for which is_nothrow_move_constructible_v<T> is true.'''
-formal_spec = '''small_object_optimization_applied<T> => is_nothrow_move_constructible_v<T> == true'''
+id = "cpp20_container_alloc_reqmts_allocator_type_value_match_e1f2a3b4"
+content = '''Container allocator_type::value_type must be the same as container value_type.'''
+formal_spec = '''allocator_aware_container(X) => allocator_type(X)::value_type == value_type(X)'''
 layer = "cpp20_stdlib"
 confidence = 0.95
-source_file = "any.class.general"
-source_module = "[any.class.general]/3"
-tags = ['optimization', 'type-erasure', 'move-constructible', 'implementation']
-function = "std::any"
-header = "<any>"
-signature = '''class any'''
+source_file = "container.alloc.reqmts"
+source_module = "[container.alloc.reqmts]/5"
+tags = ['container', 'allocator', 'mandates']
 
 [[axioms]]
-id = "cpp20_any_copy_assignment_exception_safety_c2d3e4f5"
-content = '''Copy assignment operator any::operator=(const any&) has no effects if an exception is thrown.'''
-formal_spec = '''operator=(const any& rhs) && throws => no_effects'''
+id = "cpp20_container_alloc_reqmts_default_ctor_precondition_f2a3b4c5"
+content = '''Default constructing an allocator-aware container requires the allocator type to meet Cpp17DefaultConstructible requirements.'''
+formal_spec = '''default_construct(allocator_aware_container(X)) => Cpp17DefaultConstructible(allocator_type(X))'''
 layer = "cpp20_stdlib"
 confidence = 0.95
-source_file = "any.assign"
-source_module = "[any.assign]/1"
-tags = ['exception-safety', 'type-erasure', 'assignment', 'strong-guarantee']
-function = "std::any::operator="
-header = "<any>"
-signature = '''any& operator=(const any& rhs)'''
+source_file = "container.alloc.reqmts"
+source_module = "[container.alloc.reqmts]/8"
+tags = ['container', 'allocator', 'precondition', 'default-constructor']
 
 [[axioms]]
-id = "cpp20_any_value_assignment_exception_safety_d3e4f5a6"
-content = '''Template assignment operator any::operator=(T&&) has no effects if an exception is thrown.'''
-formal_spec = '''operator=(T&& rhs) && throws => no_effects'''
+id = "cpp20_container_alloc_reqmts_copy_ctor_alloc_precondition_a3b4c5d6"
+content = '''Copy constructing an allocator-aware container with a specified allocator requires T to be Cpp17CopyInsertable into X.'''
+formal_spec = '''copy_construct_with_allocator(allocator_aware_container(X), m) => Cpp17CopyInsertable(T, X)'''
 layer = "cpp20_stdlib"
 confidence = 0.95
-source_file = "any.assign"
-source_module = "[any.assign]/10"
-tags = ['exception-safety', 'type-erasure', 'assignment', 'strong-guarantee']
-function = "std::any::operator="
-header = "<any>"
-signature = '''template<class T> any& operator=(T&& rhs)'''
+source_file = "container.alloc.reqmts"
+source_module = "[container.alloc.reqmts]/13"
+tags = ['container', 'allocator', 'precondition', 'copy']
 
 [[axioms]]
-id = "cpp20_any_cast_ptr_returns_nullptr_e4f5a6b7"
-content = '''any_cast with pointer operand returns nullptr if operand is nullptr or if the type does not match.'''
-formal_spec = '''(operand == nullptr || operand->type() != typeid(T)) => any_cast<T>(operand) == nullptr'''
+id = "cpp20_container_alloc_reqmts_move_ctor_alloc_precondition_b4c5d6e7"
+content = '''Move constructing an allocator-aware container with a different allocator requires T to be Cpp17MoveInsertable into X.'''
+formal_spec = '''move_construct_with_allocator(allocator_aware_container(X), rv, m) => Cpp17MoveInsertable(T, X)'''
 layer = "cpp20_stdlib"
 confidence = 0.95
-source_file = "any.nonmembers"
-source_module = "[any.nonmembers]/10"
-tags = ['pointer', 'type-erasure', 'cast', 'nullptr']
-function = "std::any_cast"
-header = "<any>"
-signature = '''template<class T> T* any_cast(any* operand) noexcept'''
+source_file = "container.alloc.reqmts"
+source_module = "[container.alloc.reqmts]/18"
+tags = ['container', 'allocator', 'precondition', 'move']
 
 [[axioms]]
-id = "cpp20_any_cast_const_ptr_returns_nullptr_f5a6b7c8"
-content = '''any_cast with const pointer operand returns nullptr if operand is nullptr or if the type does not match.'''
-formal_spec = '''(operand == nullptr || operand->type() != typeid(T)) => any_cast<T>(operand) == nullptr'''
+id = "cpp20_container_alloc_reqmts_copy_assign_precondition_c5d6e7f8"
+content = '''Copy assignment of an allocator-aware container requires T to be Cpp17CopyInsertable and Cpp17CopyAssignable.'''
+formal_spec = '''copy_assign(allocator_aware_container(X)) => Cpp17CopyInsertable(T, X) && Cpp17CopyAssignable(T)'''
 layer = "cpp20_stdlib"
 confidence = 0.95
-source_file = "any.nonmembers"
-source_module = "[any.nonmembers]/10"
-tags = ['pointer', 'type-erasure', 'cast', 'nullptr', 'const']
-function = "std::any_cast"
-header = "<any>"
-signature = '''template<class T> const T* any_cast(const any* operand) noexcept'''
+source_file = "container.alloc.reqmts"
+source_module = "[container.alloc.reqmts]/22"
+tags = ['container', 'allocator', 'precondition', 'copy-assignment']
 
 [[axioms]]
-id = "cpp20_any_default_ctor_postcondition_a6b7c8d9"
-content = '''Default constructor of any results in has_value() being false.'''
-formal_spec = '''any() => has_value() == false'''
+id = "cpp20_container_alloc_reqmts_move_assign_precondition_d6e7f8a9"
+content = '''Move assignment of an allocator-aware container requires T to be Cpp17MoveInsertable and Cpp17MoveAssignable if propagate_on_container_move_assignment is false.'''
+formal_spec = '''move_assign(allocator_aware_container(X)) && !propagate_on_container_move_assignment(allocator_type) => Cpp17MoveInsertable(T, X) && Cpp17MoveAssignable(T)'''
 layer = "cpp20_stdlib"
 confidence = 0.95
-source_file = "any.cons"
-source_module = "[any.cons]/1"
-tags = ['postcondition', 'type-erasure', 'constructor', 'default']
-function = "std::any::any"
-header = "<any>"
-signature = '''constexpr any() noexcept'''
+source_file = "container.alloc.reqmts"
+source_module = "[container.alloc.reqmts]/26"
+tags = ['container', 'allocator', 'precondition', 'move-assignment']
 
 [[axioms]]
-id = "cpp20_any_reset_postcondition_b7c8d9e0"
-content = '''After calling reset(), has_value() is false.'''
-formal_spec = '''reset() => has_value() == false'''
+id = "cpp20_container_dataraces_concurrent_element_modification_e7f8a9b0"
+content = '''Implementations must avoid data races when contents of different elements in the same container are modified concurrently (except for vector<bool>).'''
+formal_spec = '''container(X) && !is_vector_bool(X) && modify_concurrent(element(i), element(j)) && i != j => no_data_race'''
 layer = "cpp20_stdlib"
 confidence = 0.95
-source_file = "any.modifiers"
-source_module = "[any.modifiers]/18"
-tags = ['postcondition', 'type-erasure', 'modifier', 'reset']
-function = "std::any::reset"
-header = "<any>"
-signature = '''void reset() noexcept'''
+source_file = "container.requirements.dataraces"
+source_module = "[container.requirements.dataraces]/2"
+tags = ['container', 'concurrency', 'data-race']
 
 [[axioms]]
-id = "cpp20_any_inplace_ctor_postcondition_c8d9e0f1"
-content = '''After calling any(in_place_type_t<T>, Args&&...), the any object contains a value of type VT where VT is decay_t<T>.'''
-formal_spec = '''any(in_place_type_t<T>, Args&&...) => has_value() && type() == typeid(decay_t<T>)'''
+id = "cpp20_container_dataraces_vector_bool_exception_f8a9b0c1"
+content = '''For vector<bool>, modifying different elements concurrently can result in a data race (exception to general container rule).'''
+formal_spec = '''is_vector_bool(X) && modify_concurrent(element(i), element(j)) => possible_data_race'''
 layer = "cpp20_stdlib"
 confidence = 0.95
-source_file = "any.cons"
-source_module = "[any.cons]/14"
-tags = ['postcondition', 'type-erasure', 'constructor', 'in-place']
-function = "std::any::any"
-header = "<any>"
-signature = '''template<class T, class... Args> explicit any(in_place_type_t<T>, Args&&... args)'''
+source_file = "container.requirements.dataraces"
+source_module = "[container.requirements.dataraces]/3"
+tags = ['container', 'concurrency', 'data-race', 'vector-bool']
 
 [[axioms]]
-id = "cpp20_any_emplace_postcondition_d9e0f1a2"
-content = '''After calling emplace<T>(Args&&...), the any object contains a value.'''
-formal_spec = '''emplace<T>(Args&&...) => has_value() == true'''
+id = "cpp20_sequence_reqmts_n_copies_precondition_a9b0c1d2"
+content = '''Constructing a sequence container with n copies of t requires T to be Cpp17CopyInsertable into X.'''
+formal_spec = '''construct(sequence_container(X), n, t) => Cpp17CopyInsertable(T, X)'''
 layer = "cpp20_stdlib"
 confidence = 0.95
-source_file = "any.modifiers"
-source_module = "[any.modifiers]/5"
-tags = ['postcondition', 'type-erasure', 'emplace']
-function = "std::any::emplace"
-header = "<any>"
-signature = '''template<class T, class... Args> decay_t<T>& emplace(Args&&... args)'''
+source_file = "sequence.reqmts"
+source_module = "[sequence.reqmts]/5"
+tags = ['sequence-container', 'precondition', 'copy']
 
 [[axioms]]
-id = "cpp20_any_type_void_when_empty_e0f1a2b3"
-content = '''If an any object has no contained value, type() returns typeid(void).'''
-formal_spec = '''!has_value() => type() == typeid(void)'''
+id = "cpp20_sequence_reqmts_iterator_range_precondition_b0c1d2e3"
+content = '''Constructing a sequence container from iterator range [i,j) requires T to be Cpp17EmplaceConstructible from *i.'''
+formal_spec = '''construct(sequence_container(X), i, j) => Cpp17EmplaceConstructible(T, X, *i)'''
 layer = "cpp20_stdlib"
 confidence = 0.95
-source_file = "any.observers"
-source_module = "[any.observers]/2"
-tags = ['observer', 'type-erasure', 'type-info', 'empty']
-function = "std::any::type"
-header = "<any>"
-signature = '''const type_info& type() const noexcept'''
+source_file = "sequence.reqmts"
+source_module = "[sequence.reqmts]/8"
+tags = ['sequence-container', 'precondition', 'iterator']
+depends_on = ['cpp20_iterator_operations_distance_effects_e4f5a6b7']
 
 [[axioms]]
-id = "cpp20_any_type_returns_contained_type_f1a2b3c4"
-content = '''If an any object has a contained value of type T, type() returns typeid(T).'''
-formal_spec = '''has_value() && contained_type<T> => type() == typeid(T)'''
+id = "cpp20_sequence_reqmts_assign_il_precondition_c1d2e3f4"
+content = '''Assignment from initializer_list requires T to be Cpp17CopyInsertable and Cpp17CopyAssignable.'''
+formal_spec = '''assign(sequence_container(X), initializer_list) => Cpp17CopyInsertable(T, X) && Cpp17CopyAssignable(T)'''
 layer = "cpp20_stdlib"
 confidence = 0.95
-source_file = "any.observers"
-source_module = "[any.observers]/2"
-tags = ['observer', 'type-erasure', 'type-info']
-function = "std::any::type"
-header = "<any>"
-signature = '''const type_info& type() const noexcept'''
+source_file = "sequence.reqmts"
+source_module = "[sequence.reqmts]/17"
+tags = ['sequence-container', 'precondition', 'initializer-list']
 
 [[axioms]]
-id = "cpp20_range_access_begin_rvalue_non_borrowed_illformed_a1c3e5f7"
-content = '''Calling ranges::begin on an rvalue of a type that does not model enable_borrowed_range is ill-formed.'''
-formal_spec = '''is_rvalue(E) && !enable_borrowed_range<remove_cv_t<T>> => ill_formed(ranges::begin(E))'''
+id = "cpp20_sequence_reqmts_emplace_precondition_d2e3f4a5"
+content = '''Calling emplace(p, args) requires T to be Cpp17EmplaceConstructible from args. For vector, inplace_vector, and deque, T must also be Cpp17MoveInsertable and Cpp17MoveAssignable.'''
+formal_spec = '''emplace(sequence_container(X), p, args) => Cpp17EmplaceConstructible(T, X, args) && ((is_vector(X) || is_inplace_vector(X) || is_deque(X)) => (Cpp17MoveInsertable(T, X) && Cpp17MoveAssignable(T)))'''
 layer = "cpp20_stdlib"
 confidence = 0.95
-source_file = "range.access.begin"
-source_module = "[range.access.begin]/2.1"
-tags = ['ranges', 'begin', 'borrowed_range', 'ill-formed']
-function = "ranges::begin"
-header = "<ranges>"
-signature = '''auto ranges::begin(E)'''
+source_file = "sequence.reqmts"
+source_module = "[sequence.reqmts]/21"
+tags = ['sequence-container', 'emplace', 'precondition']
 
 [[axioms]]
-id = "cpp20_range_access_begin_incomplete_array_ndr_b2d4f6a8"
-content = '''Calling ranges::begin on an array type where remove_all_extents_t is an incomplete type is ill-formed with no diagnostic required.'''
-formal_spec = '''is_array<T> && is_incomplete<remove_all_extents_t<T>> => ill_formed_ndr(ranges::begin(E))'''
+id = "cpp20_sequence_reqmts_insert_copy_precondition_e3f4a5b6"
+content = '''Calling insert(p, t) requires T to be Cpp17CopyInsertable. For vector, inplace_vector, and deque, T must also be Cpp17CopyAssignable.'''
+formal_spec = '''insert(sequence_container(X), p, t) => Cpp17CopyInsertable(T, X) && ((is_vector(X) || is_inplace_vector(X) || is_deque(X)) => Cpp17CopyAssignable(T))'''
 layer = "cpp20_stdlib"
 confidence = 0.95
-source_file = "range.access.begin"
-source_module = "[range.access.begin]/2.2"
-tags = ['ranges', 'begin', 'array', 'incomplete_type', 'ndr']
-function = "ranges::begin"
-header = "<ranges>"
-signature = '''auto ranges::begin(E)'''
+source_file = "sequence.reqmts"
+source_module = "[sequence.reqmts]/25"
+tags = ['sequence-container', 'insert', 'precondition']
 
 [[axioms]]
-id = "cpp20_range_access_end_rvalue_non_borrowed_illformed_c3e5f7a9"
-content = '''Calling ranges::end on an rvalue of a type that does not model enable_borrowed_range is ill-formed.'''
-formal_spec = '''is_rvalue(E) && !enable_borrowed_range<remove_cv_t<T>> => ill_formed(ranges::end(E))'''
+id = "cpp20_sequence_reqmts_insert_move_precondition_f4a5b6c7"
+content = '''Calling insert(p, rv) requires T to be Cpp17MoveInsertable. For vector, inplace_vector, and deque, T must also be Cpp17MoveAssignable.'''
+formal_spec = '''insert(sequence_container(X), p, rv) && is_rvalue(rv) => Cpp17MoveInsertable(T, X) && ((is_vector(X) || is_inplace_vector(X) || is_deque(X)) => Cpp17MoveAssignable(T))'''
 layer = "cpp20_stdlib"
 confidence = 0.95
-source_file = "range.access.end"
-source_module = "[range.access.end]/2.1"
-tags = ['ranges', 'end', 'borrowed_range', 'ill-formed']
-function = "ranges::end"
-header = "<ranges>"
-signature = '''auto ranges::end(E)'''
+source_file = "sequence.reqmts"
+source_module = "[sequence.reqmts]/29"
+tags = ['sequence-container', 'insert', 'precondition', 'move']
 
 [[axioms]]
-id = "cpp20_range_access_end_incomplete_array_ndr_d4f6a8b0"
-content = '''Calling ranges::end on an array type where remove_all_extents_t is an incomplete type is ill-formed with no diagnostic required.'''
-formal_spec = '''is_array<T> && is_incomplete<remove_all_extents_t<T>> => ill_formed_ndr(ranges::end(E))'''
+id = "cpp20_sequence_reqmts_insert_n_precondition_a5b6c7d8"
+content = '''Calling insert(p, n, t) requires T to be Cpp17CopyInsertable and Cpp17CopyAssignable.'''
+formal_spec = '''insert(sequence_container(X), p, n, t) => Cpp17CopyInsertable(T, X) && Cpp17CopyAssignable(T)'''
 layer = "cpp20_stdlib"
 confidence = 0.95
-source_file = "range.access.end"
-source_module = "[range.access.end]/2.2"
-tags = ['ranges', 'end', 'array', 'incomplete_type', 'ndr']
-function = "ranges::end"
-header = "<ranges>"
-signature = '''auto ranges::end(E)'''
+source_file = "sequence.reqmts"
+source_module = "[sequence.reqmts]/33"
+tags = ['sequence-container', 'insert', 'precondition']
 
 [[axioms]]
-id = "cpp20_range_access_end_unknown_bound_array_illformed_e5a7b9c1"
-content = '''Calling ranges::end on an array of unknown bound is ill-formed.'''
-formal_spec = '''is_array_of_unknown_bound<T> => ill_formed(ranges::end(E))'''
+id = "cpp20_sequence_reqmts_insert_range_no_self_b6c7d8e9"
+content = '''Calling insert(p, i, j) with iterators i and j that are iterators into the container a is undefined behavior.'''
+formal_spec = '''insert(sequence_container(a), p, i, j) && (is_iterator_into(i, a) || is_iterator_into(j, a)) => undefined_behavior'''
 layer = "cpp20_stdlib"
 confidence = 0.95
-source_file = "range.access.end"
-source_module = "[range.access.end]/2.3"
-tags = ['ranges', 'end', 'array', 'unknown_bound', 'ill-formed']
-function = "ranges::end"
-header = "<ranges>"
-signature = '''auto ranges::end(E)'''
+source_file = "sequence.reqmts"
+source_module = "[sequence.reqmts]/37"
+tags = ['sequence-container', 'insert', 'precondition', 'iterator']
 
 [[axioms]]
-id = "cpp20_range_access_cbegin_rvalue_non_borrowed_illformed_f6b8c0d2"
-content = '''Calling ranges::cbegin on an rvalue of a type that does not model enable_borrowed_range is ill-formed.'''
-formal_spec = '''is_rvalue(E) && !enable_borrowed_range<remove_cv_t<T>> => ill_formed(ranges::cbegin(E))'''
+id = "cpp20_sequence_reqmts_insert_range_rg_no_overlap_c7d8e9f0"
+content = '''Calling insert_range(p, rg) requires that rg and the container a do not overlap.'''
+formal_spec = '''insert_range(sequence_container(a), p, rg) && overlaps(rg, a) => undefined_behavior'''
 layer = "cpp20_stdlib"
 confidence = 0.95
-source_file = "range.access.cbegin"
-source_module = "[range.access.cbegin]/1.1"
-tags = ['ranges', 'cbegin', 'borrowed_range', 'ill-formed']
-function = "ranges::cbegin"
-header = "<ranges>"
-signature = '''auto ranges::cbegin(E)'''
+source_file = "sequence.reqmts"
+source_module = "[sequence.reqmts]/41"
+tags = ['sequence-container', 'insert', 'precondition', 'range']
 
 [[axioms]]
-id = "cpp20_range_access_cend_rvalue_non_borrowed_illformed_a7c9d1e3"
-content = '''Calling ranges::cend on an rvalue of a type that does not model enable_borrowed_range is ill-formed.'''
-formal_spec = '''is_rvalue(E) && !enable_borrowed_range<remove_cv_t<T>> => ill_formed(ranges::cend(E))'''
+id = "cpp20_sequence_reqmts_erase_precondition_d8e9f0a1"
+content = '''Calling erase(q) on vector, inplace_vector, and deque requires T to be Cpp17MoveAssignable.'''
+formal_spec = '''erase(sequence_container(X), q) && (is_vector(X) || is_inplace_vector(X) || is_deque(X)) => Cpp17MoveAssignable(T)'''
 layer = "cpp20_stdlib"
 confidence = 0.95
-source_file = "range.access.cend"
-source_module = "[range.access.cend]/1.1"
-tags = ['ranges', 'cend', 'borrowed_range', 'ill-formed']
-function = "ranges::cend"
-header = "<ranges>"
-signature = '''auto ranges::cend(E)'''
+source_file = "sequence.reqmts"
+source_module = "[sequence.reqmts]/46"
+tags = ['sequence-container', 'erase', 'precondition']
 
 [[axioms]]
-id = "cpp20_range_access_rbegin_rvalue_non_borrowed_illformed_b8d0e2f4"
-content = '''Calling ranges::rbegin on an rvalue of a type that does not model enable_borrowed_range is ill-formed.'''
-formal_spec = '''is_rvalue(E) && !enable_borrowed_range<remove_cv_t<T>> => ill_formed(ranges::rbegin(E))'''
+id = "cpp20_sequence_reqmts_assign_range_no_overlap_e9f0a1b2"
+content = '''Calling assign(i, j) with iterators i and j that are iterators into the container a is undefined behavior.'''
+formal_spec = '''assign(sequence_container(a), i, j) && (is_iterator_into(i, a) || is_iterator_into(j, a)) => undefined_behavior'''
 layer = "cpp20_stdlib"
 confidence = 0.95
-source_file = "range.access.rbegin"
-source_module = "[range.access.rbegin]/2.1"
-tags = ['ranges', 'rbegin', 'borrowed_range', 'ill-formed']
-function = "ranges::rbegin"
-header = "<ranges>"
-signature = '''auto ranges::rbegin(E)'''
+source_file = "sequence.reqmts"
+source_module = "[sequence.reqmts]/58"
+tags = ['sequence-container', 'assign', 'precondition', 'iterator']
 
 [[axioms]]
-id = "cpp20_range_access_rbegin_incomplete_array_ndr_c9e1f3a5"
-content = '''Calling ranges::rbegin on an array type where remove_all_extents_t is an incomplete type is ill-formed with no diagnostic required.'''
-formal_spec = '''is_array<T> && is_incomplete<remove_all_extents_t<T>> => ill_formed_ndr(ranges::rbegin(E))'''
+id = "cpp20_sequence_reqmts_assign_range_rg_no_overlap_f0a1b2c3"
+content = '''Calling assign_range(rg) requires that rg and the container a do not overlap.'''
+formal_spec = '''assign_range(sequence_container(a), rg) && overlaps(rg, a) => undefined_behavior'''
 layer = "cpp20_stdlib"
 confidence = 0.95
-source_file = "range.access.rbegin"
-source_module = "[range.access.rbegin]/2.2"
-tags = ['ranges', 'rbegin', 'array', 'incomplete_type', 'ndr']
-function = "ranges::rbegin"
-header = "<ranges>"
-signature = '''auto ranges::rbegin(E)'''
+source_file = "sequence.reqmts"
+source_module = "[sequence.reqmts]/62"
+tags = ['sequence-container', 'assign', 'precondition', 'range']
 
 [[axioms]]
-id = "cpp20_range_access_rend_rvalue_non_borrowed_illformed_d0f2a4b6"
-content = '''Calling ranges::rend on an rvalue of a type that does not model enable_borrowed_range is ill-formed.'''
-formal_spec = '''is_rvalue(E) && !enable_borrowed_range<remove_cv_t<T>> => ill_formed(ranges::rend(E))'''
+id = "cpp20_sequence_reqmts_assign_n_no_self_ref_a1b2c3d4"
+content = '''Calling assign(n, t) requires that t is not a reference into the container a.'''
+formal_spec = '''assign(sequence_container(a), n, t) && is_reference_into(t, a) => undefined_behavior'''
 layer = "cpp20_stdlib"
 confidence = 0.95
-source_file = "range.access.rend"
-source_module = "[range.access.rend]/2.1"
-tags = ['ranges', 'rend', 'borrowed_range', 'ill-formed']
-function = "ranges::rend"
-header = "<ranges>"
-signature = '''auto ranges::rend(E)'''
+source_file = "sequence.reqmts"
+source_module = "[sequence.reqmts]/67"
+tags = ['sequence-container', 'assign', 'precondition']
 
 [[axioms]]
-id = "cpp20_range_access_rend_incomplete_array_ndr_e1a3b5c7"
-content = '''Calling ranges::rend on an array type where remove_all_extents_t is an incomplete type is ill-formed with no diagnostic required.'''
-formal_spec = '''is_array<T> && is_incomplete<remove_all_extents_t<T>> => ill_formed_ndr(ranges::rend(E))'''
+id = "cpp20_sequence_reqmts_front_precondition_b2c3d4e5"
+content = '''Calling front() on a container requires the container to be non-empty (hardened precondition).'''
+formal_spec = '''call(front, container(a)) && a.empty() => hardened_precondition_violation'''
 layer = "cpp20_stdlib"
 confidence = 0.95
-source_file = "range.access.rend"
-source_module = "[range.access.rend]/2.2"
-tags = ['ranges', 'rend', 'array', 'incomplete_type', 'ndr']
-function = "ranges::rend"
-header = "<ranges>"
-signature = '''auto ranges::rend(E)'''
+source_file = "sequence.reqmts"
+source_module = "[sequence.reqmts]/72"
+tags = ['sequence-container', 'front', 'precondition', 'hardened']
+function = "front"
+header = "<vector>"
+signature = '''reference front()'''
+depends_on = ['cpp20_dcl_init_ref_assign_to_referent_e4f5a6b7', 'cpp20_dcl_init_ref_reference_related_def_c8d9e0f1', 'cpp20_dcl_init_ref_rvalue_or_func_lvalue_bind_2o3p4q5r']
 
 [[axioms]]
-id = "cpp20_range_access_crbegin_rvalue_non_borrowed_illformed_f2b4c6d8"
-content = '''Calling ranges::crbegin on an rvalue of a type that does not model enable_borrowed_range is ill-formed.'''
-formal_spec = '''is_rvalue(E) && !enable_borrowed_range<remove_cv_t<T>> => ill_formed(ranges::crbegin(E))'''
+id = "cpp20_sequence_reqmts_back_precondition_c3d4e5f6"
+content = '''Calling back() on a container requires the container to be non-empty (hardened precondition).'''
+formal_spec = '''call(back, container(a)) && a.empty() => hardened_precondition_violation'''
 layer = "cpp20_stdlib"
 confidence = 0.95
-source_file = "range.access.crbegin"
-source_module = "[range.access.crbegin]/1.1"
-tags = ['ranges', 'crbegin', 'borrowed_range', 'ill-formed']
-function = "ranges::crbegin"
-header = "<ranges>"
-signature = '''auto ranges::crbegin(E)'''
+source_file = "sequence.reqmts"
+source_module = "[sequence.reqmts]/76"
+tags = ['sequence-container', 'back', 'precondition', 'hardened']
+function = "back"
+header = "<vector>"
+signature = '''reference back()'''
+depends_on = ['cpp20_dcl_init_ref_assign_to_referent_e4f5a6b7', 'cpp20_dcl_init_ref_reference_related_def_c8d9e0f1', 'cpp20_dcl_init_ref_rvalue_or_func_lvalue_bind_2o3p4q5r']
 
 [[axioms]]
-id = "cpp20_range_access_crend_rvalue_non_borrowed_illformed_a3c5d7e9"
-content = '''Calling ranges::crend on an rvalue of a type that does not model enable_borrowed_range is ill-formed.'''
-formal_spec = '''is_rvalue(E) && !enable_borrowed_range<remove_cv_t<T>> => ill_formed(ranges::crend(E))'''
+id = "cpp20_sequence_reqmts_emplace_front_precondition_d4e5f6a7"
+content = '''Calling emplace_front(args) requires T to be Cpp17EmplaceConstructible into X from args.'''
+formal_spec = '''emplace_front(sequence_container(X), args) => Cpp17EmplaceConstructible(T, X, args)'''
 layer = "cpp20_stdlib"
 confidence = 0.95
-source_file = "range.access.crend"
-source_module = "[range.access.crend]/1.1"
-tags = ['ranges', 'crend', 'borrowed_range', 'ill-formed']
-function = "ranges::crend"
-header = "<ranges>"
-signature = '''auto ranges::crend(E)'''
+source_file = "sequence.reqmts"
+source_module = "[sequence.reqmts]/80"
+tags = ['sequence-container', 'emplace_front', 'precondition']
+function = "emplace_front"
+header = "<deque>"
+signature = '''reference emplace_front(Args&&... args)'''
+depends_on = ['cpp20_dcl_init_ref_assign_to_referent_e4f5a6b7', 'cpp20_dcl_init_ref_reference_related_def_c8d9e0f1', 'cpp20_dcl_init_ref_rvalue_or_func_lvalue_bind_2o3p4q5r']
 
 [[axioms]]
-id = "cpp20_range_prim_size_unknown_bound_array_illformed_b4d6e8f0"
-content = '''Calling ranges::size on an array of unknown bound is ill-formed.'''
-formal_spec = '''is_array_of_unknown_bound<T> => ill_formed(ranges::size(E))'''
+id = "cpp20_sequence_reqmts_emplace_back_precondition_e5f6a7b8"
+content = '''Calling emplace_back(args) requires T to be Cpp17EmplaceConstructible into X from args. For vector, T must also be Cpp17MoveInsertable.'''
+formal_spec = '''emplace_back(sequence_container(X), args) => Cpp17EmplaceConstructible(T, X, args) && (is_vector(X) => Cpp17MoveInsertable(T, X))'''
 layer = "cpp20_stdlib"
 confidence = 0.95
-source_file = "range.prim.size"
-source_module = "[range.prim.size]/2.1"
-tags = ['ranges', 'size', 'array', 'unknown_bound', 'ill-formed']
-function = "ranges::size"
-header = "<ranges>"
-signature = '''auto ranges::size(E)'''
+source_file = "sequence.reqmts"
+source_module = "[sequence.reqmts]/85"
+tags = ['sequence-container', 'emplace_back', 'precondition']
+function = "emplace_back"
+header = "<vector>"
+signature = '''reference emplace_back(Args&&... args)'''
+depends_on = ['cpp20_dcl_init_ref_assign_to_referent_e4f5a6b7', 'cpp20_dcl_init_ref_reference_related_def_c8d9e0f1', 'cpp20_dcl_init_ref_rvalue_or_func_lvalue_bind_2o3p4q5r']
 
 [[axioms]]
-id = "cpp20_range_prim_size_result_integer_like_c5e7f9a1"
-content = '''Whenever ranges::size(E) is a valid expression, its type is integer-like.'''
-formal_spec = '''valid_expr(ranges::size(E)) => is_integer_like<decltype(ranges::size(E))>'''
+id = "cpp20_sequence_reqmts_push_front_copy_precondition_f6a7b8c9"
+content = '''Calling push_front(t) requires T to be Cpp17CopyInsertable into X.'''
+formal_spec = '''push_front(sequence_container(X), t) => Cpp17CopyInsertable(T, X)'''
 layer = "cpp20_stdlib"
 confidence = 0.95
-source_file = "range.prim.size"
-source_module = "[range.prim.size]/4"
-tags = ['ranges', 'size', 'integer-like', 'postcondition']
-function = "ranges::size"
-header = "<ranges>"
-signature = '''auto ranges::size(E)'''
+source_file = "sequence.reqmts"
+source_module = "[sequence.reqmts]/90"
+tags = ['sequence-container', 'push_front', 'precondition']
+function = "push_front"
+header = "<deque>"
+signature = '''void push_front(const T& t)'''
+depends_on = ['cpp20_dcl_init_ref_assign_to_referent_e4f5a6b7', 'cpp20_dcl_init_ref_reference_related_def_c8d9e0f1', 'cpp20_dcl_init_ref_rvalue_or_func_lvalue_bind_2o3p4q5r']
 
 [[axioms]]
-id = "cpp20_range_prim_ssize_requires_valid_size_d6f8a0b2"
-content = '''ranges::ssize(E) is ill-formed if ranges::size(t) is ill-formed, where t is an lvalue denoting the reified object for E.'''
-formal_spec = '''ill_formed(ranges::size(t)) => ill_formed(ranges::ssize(E))'''
+id = "cpp20_sequence_reqmts_push_front_move_precondition_a7b8c9d0"
+content = '''Calling push_front(rv) requires T to be Cpp17MoveInsertable into X.'''
+formal_spec = '''push_front(sequence_container(X), rv) && is_rvalue(rv) => Cpp17MoveInsertable(T, X)'''
 layer = "cpp20_stdlib"
 confidence = 0.95
-source_file = "range.prim.ssize"
-source_module = "[range.prim.ssize]/2"
-tags = ['ranges', 'ssize', 'size', 'precondition']
-function = "ranges::ssize"
-header = "<ranges>"
-signature = '''auto ranges::ssize(E)'''
+source_file = "sequence.reqmts"
+source_module = "[sequence.reqmts]/94"
+tags = ['sequence-container', 'push_front', 'precondition', 'move']
+function = "push_front"
+header = "<deque>"
+signature = '''void push_front(T&& rv)'''
+depends_on = ['cpp20_dcl_init_ref_assign_to_referent_e4f5a6b7', 'cpp20_dcl_init_ref_reference_related_def_c8d9e0f1', 'cpp20_dcl_init_ref_rvalue_or_func_lvalue_bind_2o3p4q5r']
 
 [[axioms]]
-id = "cpp20_range_prim_empty_unknown_bound_array_illformed_e7a9b1c3"
-content = '''Calling ranges::empty on an array of unknown bound is ill-formed.'''
-formal_spec = '''is_array_of_unknown_bound<T> => ill_formed(ranges::empty(E))'''
+id = "cpp20_sequence_reqmts_push_back_copy_precondition_b8c9d0e1"
+content = '''Calling push_back(t) requires T to be Cpp17CopyInsertable into X.'''
+formal_spec = '''push_back(sequence_container(X), t) => Cpp17CopyInsertable(T, X)'''
 layer = "cpp20_stdlib"
 confidence = 0.95
-source_file = "range.prim.empty"
-source_module = "[range.prim.empty]/2.1"
-tags = ['ranges', 'empty', 'array', 'unknown_bound', 'ill-formed']
-function = "ranges::empty"
-header = "<ranges>"
-signature = '''bool ranges::empty(E)'''
+source_file = "sequence.reqmts"
+source_module = "[sequence.reqmts]/102"
+tags = ['sequence-container', 'push_back', 'precondition']
+function = "push_back"
+header = "<vector>"
+signature = '''void push_back(const T& t)'''
+depends_on = ['cpp20_dcl_init_ref_assign_to_referent_e4f5a6b7', 'cpp20_dcl_init_ref_reference_related_def_c8d9e0f1', 'cpp20_dcl_init_ref_rvalue_or_func_lvalue_bind_2o3p4q5r']
 
 [[axioms]]
-id = "cpp20_range_prim_empty_result_bool_f8b0c2d4"
-content = '''Whenever ranges::empty(E) is a valid expression, it has type bool.'''
-formal_spec = '''valid_expr(ranges::empty(E)) => is_same<decltype(ranges::empty(E)), bool>'''
+id = "cpp20_sequence_reqmts_push_back_move_precondition_c9d0e1f2"
+content = '''Calling push_back(rv) requires T to be Cpp17MoveInsertable into X.'''
+formal_spec = '''push_back(sequence_container(X), rv) && is_rvalue(rv) => Cpp17MoveInsertable(T, X)'''
 layer = "cpp20_stdlib"
 confidence = 0.95
-source_file = "range.prim.empty"
-source_module = "[range.prim.empty]/4"
-tags = ['ranges', 'empty', 'bool', 'postcondition']
-function = "ranges::empty"
-header = "<ranges>"
-signature = '''bool ranges::empty(E)'''
+source_file = "sequence.reqmts"
+source_module = "[sequence.reqmts]/106"
+tags = ['sequence-container', 'push_back', 'precondition', 'move']
+function = "push_back"
+header = "<vector>"
+signature = '''void push_back(T&& rv)'''
+depends_on = ['cpp20_dcl_init_ref_assign_to_referent_e4f5a6b7', 'cpp20_dcl_init_ref_reference_related_def_c8d9e0f1', 'cpp20_dcl_init_ref_rvalue_or_func_lvalue_bind_2o3p4q5r']
 
 [[axioms]]
-id = "cpp20_range_prim_data_rvalue_non_borrowed_illformed_a9c1d3e5"
-content = '''Calling ranges::data on an rvalue of a type that does not model enable_borrowed_range is ill-formed.'''
-formal_spec = '''is_rvalue(E) && !enable_borrowed_range<remove_cv_t<T>> => ill_formed(ranges::data(E))'''
+id = "cpp20_sequence_reqmts_pop_front_precondition_d0e1f2a3"
+content = '''Calling pop_front() on a container requires the container to be non-empty (hardened precondition).'''
+formal_spec = '''call(pop_front, container(a)) && a.empty() => hardened_precondition_violation'''
 layer = "cpp20_stdlib"
 confidence = 0.95
-source_file = "range.prim.data"
-source_module = "[range.prim.data]/2.1"
-tags = ['ranges', 'data', 'borrowed_range', 'ill-formed']
-function = "ranges::data"
-header = "<ranges>"
-signature = '''auto ranges::data(E)'''
+source_file = "sequence.reqmts"
+source_module = "[sequence.reqmts]/114"
+tags = ['sequence-container', 'pop_front', 'precondition', 'hardened']
+function = "pop_front"
+header = "<deque>"
+signature = '''void pop_front()'''
 
 [[axioms]]
-id = "cpp20_range_prim_data_incomplete_array_ndr_b0d2e4f6"
-content = '''Calling ranges::data on an array type where remove_all_extents_t is an incomplete type is ill-formed with no diagnostic required.'''
-formal_spec = '''is_array<T> && is_incomplete<remove_all_extents_t<T>> => ill_formed_ndr(ranges::data(E))'''
+id = "cpp20_sequence_reqmts_pop_back_precondition_e1f2a3b4"
+content = '''Calling pop_back() on a container requires the container to be non-empty (hardened precondition).'''
+formal_spec = '''call(pop_back, container(a)) && a.empty() => hardened_precondition_violation'''
 layer = "cpp20_stdlib"
 confidence = 0.95
-source_file = "range.prim.data"
-source_module = "[range.prim.data]/2.2"
-tags = ['ranges', 'data', 'array', 'incomplete_type', 'ndr']
-function = "ranges::data"
-header = "<ranges>"
-signature = '''auto ranges::data(E)'''
+source_file = "sequence.reqmts"
+source_module = "[sequence.reqmts]/118"
+tags = ['sequence-container', 'pop_back', 'precondition', 'hardened']
+function = "pop_back"
+header = "<vector>"
+signature = '''void pop_back()'''
 
 [[axioms]]
-id = "cpp20_range_prim_data_result_object_pointer_c1e3f5a7"
-content = '''Whenever ranges::data(E) is a valid expression, it has pointer to object type.'''
-formal_spec = '''valid_expr(ranges::data(E)) => is_pointer_to_object<decltype(ranges::data(E))>'''
+id = "cpp20_sequence_reqmts_subscript_precondition_f2a3b4c5"
+content = '''Calling operator[](n) on a container requires n < a.size() (hardened precondition).'''
+formal_spec = '''call(operator[], container(a), n) && n >= a.size() => hardened_precondition_violation'''
 layer = "cpp20_stdlib"
 confidence = 0.95
-source_file = "range.prim.data"
-source_module = "[range.prim.data]/4"
-tags = ['ranges', 'data', 'pointer', 'postcondition']
-function = "ranges::data"
-header = "<ranges>"
-signature = '''auto ranges::data(E)'''
+source_file = "sequence.reqmts"
+source_module = "[sequence.reqmts]/122"
+tags = ['sequence-container', 'subscript', 'precondition', 'hardened']
+function = "operator[]"
+header = "<vector>"
+signature = '''reference operator[](size_type n)'''
+depends_on = ['c11_c_typing_compatibility_syntax_operation_30a47902', 'cpp20_range_prim_size_result_integer_like_c5e7f9a1', 'cpp20_dcl_init_ref_reference_related_def_c8d9e0f1', 'cpp20_expr_sizeof_char_is_one_69c0d34e', 'cpp20_dcl_init_ref_rvalue_or_func_lvalue_bind_2o3p4q5r', 'cpp20_dcl_init_ref_assign_to_referent_e4f5a6b7']
 
 [[axioms]]
-id = "cpp20_range_prim_cdata_rvalue_non_borrowed_illformed_d2f4a6b8"
-content = '''Calling ranges::cdata on an rvalue of a type that does not model enable_borrowed_range is ill-formed.'''
-formal_spec = '''is_rvalue(E) && !enable_borrowed_range<remove_cv_t<T>> => ill_formed(ranges::cdata(E))'''
+id = "cpp20_sequence_reqmts_at_throws_out_of_range_a3b4c5d6"
+content = '''Calling at(n) throws out_of_range if n >= a.size().'''
+formal_spec = '''call(at, container(a), n) && n >= a.size() => throws(out_of_range)'''
 layer = "cpp20_stdlib"
 confidence = 0.95
-source_file = "range.prim.cdata"
-source_module = "[range.prim.cdata]/1.1"
-tags = ['ranges', 'cdata', 'borrowed_range', 'ill-formed']
-function = "ranges::cdata"
-header = "<ranges>"
-signature = '''auto ranges::cdata(E)'''
+source_file = "sequence.reqmts"
+source_module = "[sequence.reqmts]/127"
+tags = ['sequence-container', 'at', 'exception']
+function = "at"
+header = "<vector>"
+signature = '''reference at(size_type n)'''
+depends_on = ['c11_c_typing_compatibility_syntax_operation_30a47902', 'cpp20_range_prim_size_result_integer_like_c5e7f9a1', 'cpp20_dcl_init_ref_reference_related_def_c8d9e0f1', 'cpp20_expr_sizeof_char_is_one_69c0d34e', 'cpp20_dcl_init_ref_rvalue_or_func_lvalue_bind_2o3p4q5r', 'cpp20_dcl_init_ref_assign_to_referent_e4f5a6b7']
 
 [[axioms]]
-id = "cpp20_range_prim_cdata_result_const_object_pointer_e3a5b7c9"
-content = '''Whenever ranges::cdata(E) is a valid expression, it has pointer to constant object type.'''
-formal_spec = '''valid_expr(ranges::cdata(E)) => is_pointer_to_const_object<decltype(ranges::cdata(E))>'''
+id = "cpp20_container_opt_reqmts_threeway_precondition_b4c5d6e7"
+content = '''Container three-way comparison requires either T models three_way_comparable, or operator< is defined for T and is a total ordering relationship.'''
+formal_spec = '''three_way_compare(container(X, T)) => (three_way_comparable(T) || (defined(operator<, T) && total_ordering(operator<, T)))'''
 layer = "cpp20_stdlib"
 confidence = 0.95
-source_file = "range.prim.cdata"
-source_module = "[range.prim.cdata]/2"
-tags = ['ranges', 'cdata', 'const_pointer', 'postcondition']
-function = "ranges::cdata"
-header = "<ranges>"
-signature = '''auto ranges::cdata(E)'''
+source_file = "container.opt.reqmts"
+source_module = "[container.opt.reqmts]/3"
+tags = ['container', 'comparison', 'precondition']
 
 [[axioms]]
-id = "cpp20_range_access_begin_result_models_iterator_f4b6c8d0"
-content = '''Whenever ranges::begin(E) is a valid expression, its type models input_or_output_iterator.'''
-formal_spec = '''valid_expr(ranges::begin(E)) => models<decltype(ranges::begin(E)), input_or_output_iterator>'''
+id = "cpp20_container_node_pair_specialization_ub_c5d6e7f8"
+content = '''If a user-defined specialization of pair exists for pair<const Key, T> or pair<Key, T>, where Key is the container's key_type and T is the container's mapped_type, the behavior of operations involving node handles is undefined.'''
+formal_spec = '''user_specialization(pair<const Key, T>) || user_specialization(pair<Key, T>) => node_handle_operations_undefined_behavior'''
 layer = "cpp20_stdlib"
 confidence = 0.95
-source_file = "range.access.begin"
-source_module = "[range.access.begin]/4"
-tags = ['ranges', 'begin', 'iterator', 'postcondition']
-function = "ranges::begin"
-header = "<ranges>"
-signature = '''auto ranges::begin(E)'''
+source_file = "container.node.overview"
+source_module = "[container.node.overview]/4"
+tags = ['container', 'node-handle', 'undefined-behavior', 'pair']
 
 [[axioms]]
-id = "cpp20_range_access_end_result_models_sentinel_a5c7d9e1"
-content = '''Whenever ranges::end(E) is a valid expression, the types S and I of ranges::end(E) and ranges::begin(E) model sentinel_for<S, I>.'''
-formal_spec = '''valid_expr(ranges::end(E)) && valid_expr(ranges::begin(E)) => models<pair<decltype(ranges::end(E)), decltype(ranges::begin(E))>, sentinel_for>'''
+id = "cpp20_container_node_move_assign_precondition_d6e7f8a9"
+content = '''Node handle move assignment requires either the target is empty, or propagate_on_container_move_assignment is true, or the allocators are equal.'''
+formal_spec = '''move_assign(node_handle, nh) && alloc_.has_value() && !propagate_on_container_move_assignment && alloc_ != nh.alloc_ => undefined_behavior'''
 layer = "cpp20_stdlib"
 confidence = 0.95
-source_file = "range.access.end"
-source_module = "[range.access.end]/4"
-tags = ['ranges', 'end', 'sentinel', 'postcondition']
-function = "ranges::end"
-header = "<ranges>"
-signature = '''auto ranges::end(E)'''
+source_file = "container.node.cons"
+source_module = "[container.node.cons]/2"
+tags = ['container', 'node-handle', 'precondition', 'move-assignment']
 
 [[axioms]]
-id = "cpp20_range_access_cbegin_result_models_constant_iterator_b6d8e0f2"
-content = '''Whenever ranges::cbegin(E) is a valid expression, its type models input_or_output_iterator and constant-iterator.'''
-formal_spec = '''valid_expr(ranges::cbegin(E)) => models<decltype(ranges::cbegin(E)), input_or_output_iterator> && models<decltype(ranges::cbegin(E)), constant_iterator>'''
+id = "cpp20_container_node_value_precondition_e7f8a9b0"
+content = '''Calling value() on a node handle requires the node handle to be non-empty.'''
+formal_spec = '''call(value, node_handle(nh)) && nh.empty() => undefined_behavior'''
 layer = "cpp20_stdlib"
 confidence = 0.95
-source_file = "range.access.cbegin"
-source_module = "[range.access.cbegin]/2"
-tags = ['ranges', 'cbegin', 'const_iterator', 'postcondition']
-function = "ranges::cbegin"
-header = "<ranges>"
-signature = '''auto ranges::cbegin(E)'''
+source_file = "container.node.observers"
+source_module = "[container.node.observers]/1"
+tags = ['container', 'node-handle', 'precondition']
+function = "node_handle::value"
+header = "<map>"
+signature = '''value_type& value() const'''
+depends_on = ['cpp20_range_prim_data_rvalue_non_borrowed_illformed_a9c1d3e5', 'c11_cpp_conversion_syntax_convertType_33986b29', 'cpp20_optional_value_or_mandates_copy_convertible_d31e4bca', 'cpp20_dcl_init_ref_reference_related_def_c8d9e0f1', 'cpp20_dcl_init_ref_rvalue_or_func_lvalue_bind_2o3p4q5r', 'cpp20_dcl_init_ref_assign_to_referent_e4f5a6b7']
 
 [[axioms]]
-id = "cpp20_range_access_rbegin_result_models_iterator_c7e9f1a3"
-content = '''Whenever ranges::rbegin(E) is a valid expression, its type models input_or_output_iterator.'''
-formal_spec = '''valid_expr(ranges::rbegin(E)) => models<decltype(ranges::rbegin(E)), input_or_output_iterator>'''
+id = "cpp20_container_node_key_precondition_f8a9b0c1"
+content = '''Calling key() on a node handle requires the node handle to be non-empty.'''
+formal_spec = '''call(key, node_handle(nh)) && nh.empty() => undefined_behavior'''
 layer = "cpp20_stdlib"
 confidence = 0.95
-source_file = "range.access.rbegin"
-source_module = "[range.access.rbegin]/4"
-tags = ['ranges', 'rbegin', 'iterator', 'postcondition']
-function = "ranges::rbegin"
-header = "<ranges>"
-signature = '''auto ranges::rbegin(E)'''
+source_file = "container.node.observers"
+source_module = "[container.node.observers]/4"
+tags = ['container', 'node-handle', 'precondition']
+function = "node_handle::key"
+header = "<map>"
+signature = '''key_type& key() const'''
+depends_on = ['c11_typing_canonicalization_operation_31fc14ab', 'c11_c_decl_global_syntax_comparison_b1c4e110', 'c11_c_typing_effective_syntax_comparison_5b005edd', 'cpp20_dcl_init_ref_reference_related_def_c8d9e0f1', 'cpp20_dcl_init_ref_rvalue_or_func_lvalue_bind_2o3p4q5r', 'cpp20_dcl_init_ref_assign_to_referent_e4f5a6b7']
 
 [[axioms]]
-id = "cpp20_range_access_rend_result_models_sentinel_d8f0a2b4"
-content = '''Whenever ranges::rend(E) is a valid expression, the types S and I of ranges::rend(E) and ranges::rbegin(E) model sentinel_for<S, I>.'''
-formal_spec = '''valid_expr(ranges::rend(E)) && valid_expr(ranges::rbegin(E)) => models<pair<decltype(ranges::rend(E)), decltype(ranges::rbegin(E))>, sentinel_for>'''
+id = "cpp20_container_node_mapped_precondition_a9b0c1d2"
+content = '''Calling mapped() on a node handle requires the node handle to be non-empty.'''
+formal_spec = '''call(mapped, node_handle(nh)) && nh.empty() => undefined_behavior'''
 layer = "cpp20_stdlib"
 confidence = 0.95
-source_file = "range.access.rend"
-source_module = "[range.access.rend]/4"
-tags = ['ranges', 'rend', 'sentinel', 'postcondition']
-function = "ranges::rend"
-header = "<ranges>"
-signature = '''auto ranges::rend(E)'''
+source_file = "container.node.observers"
+source_module = "[container.node.observers]/8"
+tags = ['container', 'node-handle', 'precondition']
+function = "node_handle::mapped"
+header = "<map>"
+signature = '''mapped_type& mapped() const'''
+depends_on = ['cpp20_dcl_init_ref_assign_to_referent_e4f5a6b7', 'cpp20_dcl_init_ref_reference_related_def_c8d9e0f1', 'cpp20_dcl_init_ref_rvalue_or_func_lvalue_bind_2o3p4q5r']
 
 [[axioms]]
-id = "cpp20_range_access_crbegin_result_models_constant_iterator_e9a1b3c5"
-content = '''Whenever ranges::crbegin(E) is a valid expression, its type models input_or_output_iterator and constant-iterator.'''
-formal_spec = '''valid_expr(ranges::crbegin(E)) => models<decltype(ranges::crbegin(E)), input_or_output_iterator> && models<decltype(ranges::crbegin(E)), constant_iterator>'''
+id = "cpp20_container_node_get_allocator_precondition_b0c1d2e3"
+content = '''Calling get_allocator() on a node handle requires the node handle to be non-empty.'''
+formal_spec = '''call(get_allocator, node_handle(nh)) && nh.empty() => undefined_behavior'''
 layer = "cpp20_stdlib"
 confidence = 0.95
-source_file = "range.access.crbegin"
-source_module = "[range.access.crbegin]/2"
-tags = ['ranges', 'crbegin', 'const_iterator', 'postcondition']
-function = "ranges::crbegin"
-header = "<ranges>"
-signature = '''auto ranges::crbegin(E)'''
+source_file = "container.node.observers"
+source_module = "[container.node.observers]/11"
+tags = ['container', 'node-handle', 'precondition']
+function = "node_handle::get_allocator"
+header = "<map>"
+signature = '''allocator_type get_allocator() const'''
+depends_on = ['cpp20_allocator_requirements_allocate_at_least_count_geq_n_a9b0c1d2', 'cpp20_allocator_requirements_type_constraint_instantiation_d6e7f8a9', 'cpp20_allocator_requirements_overaligned_instantiation_e7f8a9b0']
 
 [[axioms]]
-id = "cpp20_range_prim_reserve_hint_result_integer_like_f0b2c4d6"
-content = '''Whenever ranges::reserve_hint(E) is a valid expression, its type is integer-like.'''
-formal_spec = '''valid_expr(ranges::reserve_hint(E)) => is_integer_like<decltype(ranges::reserve_hint(E))>'''
+id = "cpp20_container_node_swap_precondition_c1d2e3f4"
+content = '''Swapping node handles requires either both are empty, or propagate_on_container_swap is true, or the allocators are equal.'''
+formal_spec = '''swap(node_handle(nh1), node_handle(nh2)) && nh1.alloc_.has_value() && nh2.alloc_.has_value() && !propagate_on_container_swap && nh1.alloc_ != nh2.alloc_ => undefined_behavior'''
 layer = "cpp20_stdlib"
 confidence = 0.95
-source_file = "range.prim.size.hint"
-source_module = "[range.prim.size.hint]/2"
-tags = ['ranges', 'reserve_hint', 'integer-like', 'postcondition']
-function = "ranges::reserve_hint"
-header = "<ranges>"
-signature = '''auto ranges::reserve_hint(E)'''
+source_file = "container.node.modifiers"
+source_module = "[container.node.modifiers]/1"
+tags = ['container', 'node-handle', 'precondition', 'swap']

@@ -138,6 +138,16 @@ The following axioms already exist in the knowledge base. Do NOT create duplicat
 
 {existing_axioms}
 
+## Type Dependency Reference (REQUIRED for depends_on)
+
+For library functions, you MUST populate `depends_on` with axiom IDs from this list.
+Match return types and argument types to these foundation axioms:
+
+{type_axioms}
+
+IMPORTANT: Every library axiom with a signature MUST have depends_on linking to relevant type axioms above.
+For example, if a function returns a pointer, link to pointer axioms. If it throws an exception, link to exception axioms.
+
 ## Output
 
 Output ONLY valid TOML with [[axioms]] entries. No markdown, no explanation.
@@ -298,6 +308,7 @@ def generate_extraction_prompt(
     html_content: str,
     existing_axioms: list[dict],
     timestamp: str,
+    type_axioms: dict[str, list[dict]] | None = None,
 ) -> str:
     """Generate extraction prompt with existing axioms for dedup.
 
@@ -306,6 +317,7 @@ def generate_extraction_prompt(
         html_content: HTML content of the section
         existing_axioms: List of existing axiom dicts from search
         timestamp: ISO timestamp for extraction
+        type_axioms: Dict mapping type category to list of axiom dicts
 
     Returns:
         Formatted extraction prompt
@@ -319,10 +331,23 @@ def generate_extraction_prompt(
     else:
         existing_str = "(No existing axioms found for this section)"
 
+    # Format type axioms by category
+    if type_axioms:
+        type_str_parts = []
+        for category, axioms in type_axioms.items():
+            if axioms:
+                type_str_parts.append(f"### {category.upper()} axioms:")
+                for a in axioms[:8]:  # Limit per category
+                    type_str_parts.append(f"- {a['id']}: {a['content'][:80]}")
+        type_str = "\n".join(type_str_parts)
+    else:
+        type_str = "(No type axioms available - skip depends_on)"
+
     return EXTRACTION_PROMPT.format(
         section_ref=section_ref,
         html_content=html_content,
         existing_axioms=existing_str,
+        type_axioms=type_str,
         timestamp=timestamp,
     )
 
