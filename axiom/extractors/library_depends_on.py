@@ -73,6 +73,188 @@ EXCEPTION_PATTERNS = [
     r"\bsystem_error\b",
 ]
 
+# C++ language concepts to extract from content (for macro/template libraries)
+# Maps regex pattern -> search query for foundation axioms
+# Comprehensive coverage of C++20 language concepts
+CPP_CONCEPT_PATTERNS = {
+    # === Object Lifetime (basic.life) ===
+    r"\blifetime\b": "object lifetime",
+    r"\bstorage\s+duration\b": "storage duration",
+    r"\bdestruct": "destructor",
+    r"\bconstruct": "constructor",
+
+    # === Value Categories (basic.lval) ===
+    r"\blvalue\b": "lvalue",
+    r"\brvalue\b": "rvalue",
+    r"\bxvalue\b": "xvalue",
+    r"\bprvalue\b": "prvalue",
+    r"\bglvalue\b": "glvalue",
+
+    # === Storage Duration (basic.stc) ===
+    r"\bstatic\s+storage\b": "static storage duration",
+    r"\bthread\s+local\b": "thread storage duration",
+    r"\bautomatic\s+storage\b": "automatic storage duration",
+    r"\bdynamic\s+storage\b": "dynamic storage duration",
+    r"\bblock\s+scope\b": "block scope automatic",
+
+    # === Initialization (dcl.init) ===
+    r"\binitializ": "initialization",
+    r"\bdefault[- ]initializ": "default initialization",
+    r"\bvalue[- ]initializ": "value initialization",
+    r"\bdirect[- ]initializ": "direct initialization",
+    r"\bcopy[- ]initializ": "copy initialization",
+    r"\blist[- ]initializ": "list initialization",
+    r"\baggregate[- ]initializ": "aggregate initialization",
+    r"\breference\s+initializ": "reference initialization",
+    r"\bzero[- ]initializ": "zero initialization",
+
+    # === References ===
+    r"\breference\b": "reference",
+    r"\bforwarding\s+reference\b": "forwarding reference",
+    r"\buniversal\s+reference\b": "forwarding reference",
+    r"\brvalue\s+reference\b": "rvalue reference",
+    r"\blvalue\s+reference\b": "lvalue reference",
+    r"\bdangling\s+reference\b": "reference lifetime",
+
+    # === Expressions (expr.*) ===
+    r"\blambda\b": "lambda expression",
+    r"\bcapture\b": "lambda capture",
+    r"\bclosure\b": "lambda closure",
+    r"\bco_await\b": "await expression",
+    r"\bcoroutine\b": "coroutine await",
+    r"\bcast\b": "cast expression",
+    r"\bstatic_cast\b": "static cast",
+    r"\bdynamic_cast\b": "dynamic cast",
+    r"\breinterpret_cast\b": "reinterpret cast",
+    r"\bconst_cast\b": "const cast",
+    r"\bsizeof\b": "sizeof expression",
+    r"\balignof\b": "alignof expression",
+    r"\bnew\s+expression\b": "new expression",
+    r"\bdelete\s+expression\b": "delete expression",
+    r"\boperator\s+new\b": "new expression",
+    r"\boperator\s+delete\b": "delete expression",
+    r"\boperator\b": "operator",
+    r"\bconversion\b": "conversion",
+    r"\bimplicit\s+conversion\b": "implicit conversion",
+    r"\bexplicit\s+conversion\b": "explicit conversion",
+    r"\bnarrowing\s+conversion\b": "narrowing conversion",
+
+    # === Overloading (over.*) ===
+    r"\boverload\b": "overload resolution",
+    r"\boverload\s+resolution\b": "overload resolution match",
+    r"\bcandidate\s+function\b": "overload candidate",
+    r"\bviable\s+function\b": "overload viable",
+    r"\bbest\s+viable\b": "overload match best",
+    r"\bambiguous\b": "overload ambiguous",
+
+    # === Templates (temp.*) ===
+    r"\btemplate\b": "template",
+    r"\btemplate\s+parameter\b": "template parameter",
+    r"\btemplate\s+argument\b": "template argument",
+    r"\btemplate\s+instantiation\b": "template instantiation",
+    r"\bexplicit\s+specialization\b": "template explicit specialization",
+    r"\bpartial\s+specialization\b": "template partial specialization",
+    r"\bSFINAE\b": "template substitution failure",
+    r"\bsubstitution\s+failure\b": "template substitution failure",
+    r"\btype\s+deduction\b": "template type deduction",
+    r"\bauto\b": "auto type deduction",
+    r"\bdecltype\b": "decltype",
+
+    # === Concepts (concept.*) ===
+    r"\bconcept\b": "concept",
+    r"\bconstraint\b": "concept constraint",
+    r"\brequires\s+clause\b": "requires clause",
+    r"\brequires\s+expression\b": "requires expression",
+    r"\bsatisf": "concept satisfies",
+    r"\bsame_as\b": "same_as concept",
+
+    # === Exceptions (except.*) ===
+    r"\bexception\b": "exception",
+    r"\bthrow\b": "throw expression",
+    r"\bcatch\b": "exception catch",
+    r"\btry\b": "exception try",
+    r"\bnoexcept\b": "noexcept",
+    r"\bstack\s+unwinding\b": "exception stack unwinding",
+    r"\bexception\s+specification\b": "exception specification",
+
+    # === Special Member Functions (special.*) ===
+    r"\bcopy\s+constructor\b": "copy constructor",
+    r"\bmove\s+constructor\b": "move constructor",
+    r"\bcopy\s+assignment\b": "copy assignment",
+    r"\bmove\s+assignment\b": "move assignment",
+    r"\bdefault\s+constructor\b": "default constructor",
+    r"\bdestructor\b": "destructor",
+    r"\bimplicitly[- ]declared\b": "implicit special member",
+    r"\bdefaulted\b": "defaulted special member",
+    r"\bdeleted\b": "deleted special member",
+    r"\btrivial\b": "trivial special member",
+
+    # === Classes (class.*) ===
+    r"\bclass\b": "class",
+    r"\bstruct\b": "class struct",
+    r"\bbase\s+class\b": "base class",
+    r"\bderived\s+class\b": "derived class",
+    r"\binheritance\b": "inheritance",
+    r"\bvirtual\b": "virtual",
+    r"\bpure\s+virtual\b": "pure virtual",
+    r"\babstract\s+class\b": "abstract class",
+    r"\baccess\s+specifier\b": "access specifier",
+    r"\bpublic\b": "public access",
+    r"\bprotected\b": "protected access",
+    r"\bprivate\b": "private access",
+
+    # === Memory & Atomics (atomics.*, intro.races) ===
+    r"\batomic\b": "atomic",
+    r"\bmemory\s+order\b": "memory order",
+    r"\bsequentially[- ]consistent\b": "sequentially consistent",
+    r"\bacquire\b": "acquire",
+    r"\brelease\b": "release",
+    r"\bfence\b": "fence",
+    r"\bdata\s+race\b": "data race",
+    r"\bhappens[- ]before\b": "happens before",
+    r"\bsynchroniz": "synchronization",
+
+    # === Multithreading (intro.multithread, intro.progress) ===
+    r"\bthread\b": "thread",
+    r"\bforward\s+progress\b": "forward progress",
+    r"\bblocking\b": "blocking",
+    r"\bdeadlock\b": "deadlock",
+
+    # === Iterators ===
+    r"\biterator\b": "iterator",
+    r"\binput\s+iterator\b": "input iterator",
+    r"\boutput\s+iterator\b": "output iterator",
+    r"\bforward\s+iterator\b": "forward iterator",
+    r"\bbidirectional\s+iterator\b": "bidirectional iterator",
+    r"\brandom\s+access\s+iterator\b": "random access iterator",
+    r"\bcontiguous\s+iterator\b": "contiguous iterator",
+    r"\bbegin\b": "begin iterator",
+    r"\bend\b": "end iterator",
+
+    # === Ranges ===
+    r"\brange\b": "range",
+    r"\brange[- ]based\s+for\b": "range-based for",
+    r"\bview\b": "range view",
+
+    # === Control Flow ===
+    r"\bfor\s+loop\b": "for statement",
+    r"\bwhile\s+loop\b": "while statement",
+    r"\bif\s+statement\b": "if statement",
+    r"\bswitch\s+statement\b": "switch statement",
+    r"\breturn\s+statement\b": "return statement",
+
+    # === Types ===
+    r"\bintegral\b": "integral type",
+    r"\bfloating[- ]point\b": "floating point type",
+    r"\bvoid\b": "void type",
+    r"\bbool\b": "bool type",
+    r"\bpointer\b": "pointer",
+    r"\bnullptr\b": "nullptr",
+    r"\barray\b": "array",
+    r"\bfunction\s+pointer\b": "function pointer",
+    r"\bmember\s+pointer\b": "member pointer",
+}
+
 
 def parse_cpp_signature_types(signature: str | None) -> set[str]:
     """Extract type references from a C++ function signature.
@@ -132,6 +314,32 @@ def extract_exception_types(content: str | None) -> set[str]:
     return exceptions
 
 
+def extract_cpp_concepts(content: str | None) -> set[str]:
+    """Extract C++ language concepts from axiom content.
+
+    Scans content for mentions of C++ language features like "lambda",
+    "iterator", "reference", etc. and returns search queries to find
+    matching foundation axioms.
+
+    Args:
+        content: Axiom content text.
+
+    Returns:
+        Set of search queries for C++ concepts found.
+    """
+    if not content:
+        return set()
+
+    concepts = set()
+    content_lower = content.lower()
+
+    for pattern, search_query in CPP_CONCEPT_PATTERNS.items():
+        if re.search(pattern, content_lower, re.IGNORECASE):
+            concepts.add(search_query)
+
+    return concepts
+
+
 def parse_formal_spec_types(formal_spec: str | None) -> set[str]:
     """Extract type references from formal_spec.
 
@@ -165,14 +373,14 @@ def extract_type_references(axiom: Axiom) -> set[str]:
 
     Combines types from:
     - signature: return types, parameter types
-    - content: exception types mentioned
+    - content: exception types mentioned, C++ language concepts
     - formal_spec: throws() clauses, type predicates
 
     Args:
         axiom: The axiom to extract types from
 
     Returns:
-        Set of all type names found
+        Set of all type names/search queries found
     """
     refs = set()
 
@@ -180,9 +388,13 @@ def extract_type_references(axiom: Axiom) -> set[str]:
     if axiom.signature:
         refs.update(parse_cpp_signature_types(axiom.signature))
 
-    # From content
+    # From content - exception types
     if axiom.content:
         refs.update(extract_exception_types(axiom.content))
+
+    # From content - C++ language concepts
+    if axiom.content:
+        refs.update(extract_cpp_concepts(axiom.content))
 
     # From formal_spec
     if axiom.formal_spec:

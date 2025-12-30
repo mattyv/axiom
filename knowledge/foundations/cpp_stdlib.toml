@@ -1,6 +1,6 @@
 version = "1.0"
 source = "kframework/c-semantics/cpp_stdlib"
-extracted_at = "2025-12-29T23:07:19.804381+00:00"
+extracted_at = "2025-12-30T21:28:26.352835+00:00"
 
 [[axioms]]
 id = "c11_libcpp_new_comparison_4463afd0"
@@ -15,6 +15,7 @@ source_line_end = 24
 tags = ['comparison']
 function = "builtin"
 axiom_type = "precondition"
+depends_on = ['c11_cpp_translation_expr_logical_bitwise_de59d8dc', 'c11_cpp_translation_expr_logical_bitwise_de59d8dc', 'c11_cpp_translation_expr_logical_operation_cd26b717', 'c11_cpp_translation_expr_logical_bitwise_de59d8dc', 'c11_cpp_translation_expr_logical_bitwise_de59d8dc', 'c11_cpp_translation_expr_logical_operation_cd26b717', 'c11_cpp_expr_bitwise_bitwise_ebdd3b30', 'c11_cpp_expr_bitwise_bitwise_ebdd3b30', 'c11_cpp_execution_expr_logical_bitwise_52b09a2a', 'c11_cpp_execution_expr_logical_bitwise_52b09a2a', 'c11_cpp_execution_expr_logical_operation_4c047bdb', 'c11_cpp_execution_expr_logical_bitwise_52b09a2a', 'c11_cpp_execution_expr_logical_bitwise_52b09a2a', 'c11_cpp_execution_expr_logical_operation_55d8b3a8']
 
 [[error_codes]]
 code = "UB-CB1"

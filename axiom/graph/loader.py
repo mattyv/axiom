@@ -269,8 +269,9 @@ class Neo4jLoader:
         with self.driver.session() as session:
             result = session.run(
                 """
-                MATCH path = (a:Axiom {id: $id})-[:DEPENDS_ON*]->(foundation:Axiom)
+                MATCH path = (a:Axiom {id: $id})-[:DEPENDS_ON*1..10]->(foundation:Axiom)
                 WHERE foundation.layer IN ['c11_core', 'c11_stdlib', 'cpp_core', 'cpp_stdlib', 'cpp20_language', 'cpp20_stdlib']
+                  AND ALL(n IN nodes(path) WHERE single(x IN nodes(path) WHERE x = n))
                 WITH path, length(path) as depth
                 ORDER BY depth DESC
                 LIMIT 1

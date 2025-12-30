@@ -163,8 +163,8 @@ class KSemanticsExtractor:
         """
         rules = []
         lines = content.split("\n")
-        current_rule = []
-        current_comment = []
+        current_rule: list[str] = []
+        current_comment: list[str] = []
         rule_start = 0
         in_rule = False
         in_comment = False
@@ -174,16 +174,21 @@ class KSemanticsExtractor:
             stripped = line.strip()
 
             # Track comment blocks (/*@ ... */)
-            if "/*@" in line and not in_rule:
+            if "/*@" in line:
+                # A documentation comment starts - end current rule if any
+                if in_rule and current_rule:
+                    rules.append(("\n".join(current_rule), rule_start, preceding_for_rule))
+                    current_rule = []
+                    in_rule = False
+                    preceding_for_rule = None
                 in_comment = True
                 current_comment = [line]
             elif in_comment:
                 current_comment.append(line)
                 if "*/" in line:
                     in_comment = False
-
             # Detect rule start
-            if stripped.startswith("rule ") or (stripped.startswith("rule(") and not in_rule):
+            elif stripped.startswith("rule ") or stripped.startswith("rule("):
                 if current_rule and in_rule:
                     # Save the previous rule
                     rules.append(("\n".join(current_rule), rule_start, preceding_for_rule))
@@ -197,7 +202,7 @@ class KSemanticsExtractor:
                 # Continue collecting rule
                 current_rule.append(line)
 
-                # Check for rule end (attribute or next rule or endmodule)
+                # Check for rule end (attribute or endmodule)
                 if stripped.startswith("[") and stripped.endswith("]"):
                     rules.append(("\n".join(current_rule), rule_start, preceding_for_rule))
                     current_rule = []

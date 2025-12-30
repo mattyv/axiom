@@ -21,3 +21,9 @@ def error_codes_csv(c_semantics_root: Path) -> Path:
 def multiplicative_k(c_semantics_root: Path) -> Path:
     """Path to the multiplicative.k file (good test case)."""
     return c_semantics_root / "semantics" / "c" / "language" / "common" / "expr" / "multiplicative.k"
+
+
+@pytest.fixture
+def stdlib_k(c_semantics_root: Path) -> Path:
+    """Path to the stdlib.k file (has \\fromStandard comments)."""
+    return c_semantics_root / "semantics" / "c" / "library" / "stdlib.k"

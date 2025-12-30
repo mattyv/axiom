@@ -193,8 +193,13 @@ class KDependencyExtractor:
             calls = extract_function_calls(rhs)
             deps = resolve_depends_on(calls, index)
 
-            # Remove self-reference
-            deps = [d for d in deps if d != axiom.id]
+            # Remove self-reference AND other axioms for the same function
+            # This prevents cycles where A depends on B and B depends on A
+            # when both are axioms for the same function
+            same_function_axioms = set()
+            if axiom.function:
+                same_function_axioms = set(index.get(axiom.function, []))
+            deps = [d for d in deps if d != axiom.id and d not in same_function_axioms]
 
             axiom.depends_on = deps
 

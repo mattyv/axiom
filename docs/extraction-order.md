@@ -39,9 +39,9 @@ python scripts/bootstrap.py --layer cpp_stdlib --output knowledge/foundations/cp
 ```
 
 ### Expected Axiom Counts
-- c11_core: ~790 axioms
-- c11_stdlib: ~290 axioms
-- cpp_core: ~743 axioms
+- c11_core: ~890 axioms (includes ~53 human-readable axioms from `\fromStandard` comments)
+- c11_stdlib: ~590 axioms
+- cpp_core: ~825 axioms
 - cpp_stdlib: ~1 axiom (K-Framework C++ stdlib is minimal)
 
 ## 2. C++20 Axioms (LLM-extracted from eel.is/c++draft)

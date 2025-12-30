@@ -1,6 +1,6 @@
 version = "1.0"
 source = "kframework/c-semantics/c11_stdlib"
-extracted_at = "2025-12-29T22:51:53.799820+00:00"
+extracted_at = "2025-12-30T21:27:39.030301+00:00"
 
 [[axioms]]
 id = "c11_libc_stdarg___kcc_va_start_2690c6fb"
@@ -76,7 +76,7 @@ source_line_end = 116
 function = "filterVarArgs"
 header = "stdarg.h"
 axiom_type = "effect"
-depends_on = ['c11_libc_stdarg_filterVarArgs_4f20f630', 'c11_libc_stdarg_filterVarArgs_a903e704', 'c11_libc_stdarg_filterVarArgs_4f20f630', 'c11_libc_stdarg_filterVarArgs_a903e704', 'c11_libc_stdarg_lookupInCaller_b2236634', 'c11_libc_stdarg_lookupInCaller_b2236634']
+depends_on = ['c11_libc_stdarg_lookupInCaller_b2236634', 'c11_libc_stdarg_lookupInCaller_b2236634']
 
 [[axioms]]
 id = "c11_libc_stdarg_filterVarArgs_4f20f630"
@@ -105,7 +105,6 @@ source_line_end = 120
 function = "filterVarArgs"
 header = "stdarg.h"
 axiom_type = "effect"
-depends_on = ['c11_libc_stdarg_filterVarArgs_4cc95fdd', 'c11_libc_stdarg_filterVarArgs_4f20f630', 'c11_libc_stdarg_filterVarArgs_4cc95fdd', 'c11_libc_stdarg_filterVarArgs_4f20f630']
 
 [[axioms]]
 id = "c11_libc_stdarg_lookupInCaller_b2236634"
@@ -158,7 +157,7 @@ header = "stdarg.h"
 signature = '''void *__kcc_va_inc(va_list ap)'''
 axiom_type = "constraint"
 on_violation = '''UNDEF: STDARG3'''
-depends_on = ['c11_libc_stdarg___kcc_va_inc_2d19fac5', 'c11_libc_stdarg___kcc_va_inc_b4dbb203', 'c11_libc_stdarg___kcc_va_inc_2d19fac5', 'c11_libc_stdarg___kcc_va_inc_b4dbb203', 'c11_libc_ctype_operation_31b75e36', 'c11_libc_ctype_operation_31b75e36']
+depends_on = ['c11_libc_ctype_operation_31b75e36', 'c11_libc_ctype_operation_31b75e36']
 
 [[axioms]]
 id = "c11_libc_stdarg___kcc_va_inc_b4dbb203"
@@ -176,7 +175,7 @@ header = "stdarg.h"
 signature = '''void *__kcc_va_inc(va_list ap)'''
 axiom_type = "constraint"
 on_violation = '''UNDEF: STDARG6'''
-depends_on = ['c11_libc_stdarg___kcc_va_inc_2d19fac5', 'c11_libc_stdarg___kcc_va_inc_6acd22f5', 'c11_libc_stdarg___kcc_va_inc_2d19fac5', 'c11_libc_stdarg___kcc_va_inc_6acd22f5', 'c11_libc_ctype_operation_31b75e36', 'c11_libc_ctype_operation_31b75e36']
+depends_on = ['c11_libc_ctype_operation_31b75e36', 'c11_libc_ctype_operation_31b75e36']
 
 [[axioms]]
 id = "c11_libc_stdarg___kcc_va_copy_41dc65b1"
@@ -213,7 +212,7 @@ header = "stdarg.h"
 signature = '''void __kcc_va_copy(va_list *dst, va_list src)'''
 axiom_type = "constraint"
 on_violation = '''UNDEF: STDARG4'''
-depends_on = ['c11_libc_stdarg___kcc_va_copy_41dc65b1', 'c11_libc_stdarg___kcc_va_copy_41dc65b1', 'c11_libc_ctype_operation_31b75e36', 'c11_libc_ctype_operation_31b75e36']
+depends_on = ['c11_libc_ctype_operation_31b75e36', 'c11_libc_ctype_operation_31b75e36']
 
 [[axioms]]
 id = "c11_libc_stdarg___kcc_va_end_33595808"
@@ -249,7 +248,7 @@ header = "stdarg.h"
 signature = '''void __kcc_va_end(va_list ap)'''
 axiom_type = "constraint"
 on_violation = '''UNDEF: STDARG5'''
-depends_on = ['c11_libc_stdarg___kcc_va_end_33595808', 'c11_libc_stdarg___kcc_va_end_33595808', 'c11_libc_ctype_operation_31b75e36', 'c11_libc_ctype_operation_31b75e36']
+depends_on = ['c11_libc_ctype_operation_31b75e36', 'c11_libc_ctype_operation_31b75e36']
 
 [[axioms]]
 id = "c11_libc_stdarg_comparison_6a88fb49"
@@ -489,7 +488,7 @@ header = "stdlib.h"
 signature = '''_Noreturn void exit(int status)'''
 axiom_type = "constraint"
 on_violation = '''UNDEF: STDLIB4'''
-depends_on = ['c11_libc_ctype_operation_31b75e36', 'c11_libc_ctype_operation_31b75e36', 'c11_libc_stdlib_syntax_exit_8cd9b843', 'c11_libc_stdlib_syntax_exit_8cd9b843']
+depends_on = ['c11_libc_ctype_operation_31b75e36', 'c11_libc_ctype_operation_31b75e36']
 
 [[axioms]]
 id = "c11_libc_stdlib_syntax_quick_exit_f61f63cc"
@@ -525,7 +524,7 @@ header = "stdlib.h"
 signature = '''_Noreturn void quick_exit(int status)'''
 axiom_type = "constraint"
 on_violation = '''UNDEF: STDLIB5'''
-depends_on = ['c11_libc_ctype_operation_31b75e36', 'c11_libc_ctype_operation_31b75e36', 'c11_libc_stdlib_syntax_quick_exit_f61f63cc', 'c11_libc_stdlib_syntax_quick_exit_f61f63cc']
+depends_on = ['c11_libc_ctype_operation_31b75e36', 'c11_libc_ctype_operation_31b75e36']
 
 [[axioms]]
 id = "c11_libc_stdlib_syntax_abort_55928485"
@@ -538,7 +537,7 @@ confidence = 1.0
 source_file = "stdlib.k"
 source_module = "LIBC-STDLIB-SYNTAX"
 source_line_start = 52
-source_line_end = 65
+source_line_end = 58
 tags = ['comparison']
 function = "abort"
 header = "stdlib.h"
@@ -547,8 +546,8 @@ axiom_type = "effect"
 depends_on = ['c11_libc_io_syntax_flush_9167d370', 'c11_libc_io_syntax_comparison_58511875', 'c11_libc_io_syntax_flush_9167d370', 'c11_libc_io_syntax_comparison_58511875', 'c11_libc_io_syntax_writeFD_2a3bf46f', 'c11_libc_io_syntax_comparison_3d878b21', 'c11_libc_io_syntax_comparison_f8494e96', 'c11_libc_io_syntax_comparison_5bb03633', 'c11_libc_io_syntax_comparison_4039576a', 'c11_libc_io_syntax_comparison_74369e53', 'c11_libc_io_syntax_writeFD_2a3bf46f', 'c11_libc_io_syntax_comparison_3d878b21', 'c11_libc_io_syntax_comparison_f8494e96', 'c11_libc_io_syntax_comparison_5bb03633', 'c11_libc_io_syntax_comparison_4039576a', 'c11_libc_io_syntax_comparison_74369e53']
 
 [[axioms]]
-id = "c11_libc_stdlib_syntax_malloc_6c5a728e"
-content = '''malloc transforms to alignedAlloc(cfg:alignofMalloc, Sz)'''
+id = "c11_libc_stdlib_syntax_malloc_c1551473"
+content = '''The malloc function allocates space for an object whose size is specified by size and whose value is indeterminate. The malloc function returns either a null pointer or a pointer to the allocated space.'''
 formal_spec = ''''''
 layer = "c11_stdlib"
 confidence = 1.0
@@ -556,10 +555,11 @@ source_file = "stdlib.k"
 source_module = "LIBC-STDLIB-SYNTAX"
 source_line_start = 66
 source_line_end = 67
+c_standard_refs = ['7.22.3.4/2--3']
 function = "malloc"
 header = "stdlib.h"
 signature = '''void *malloc(size_t size)'''
-axiom_type = "effect"
+axiom_type = "postcondition"
 depends_on = ['c11_libc_stdlib_syntax_comparison_8ad81d8f', 'c11_libc_stdlib_syntax_comparison_5f542db6', 'c11_libc_stdlib_syntax_comparison_8ad81d8f', 'c11_libc_stdlib_syntax_comparison_5f542db6']
 
 [[axioms]]
@@ -591,7 +591,7 @@ function = "aligned_alloc"
 header = "stdlib.h"
 axiom_type = "constraint"
 on_violation = '''IMPL: STDLIB8'''
-depends_on = ['c11_libc_stdlib_syntax_operation_774154a5', 'c11_libc_stdlib_syntax_operation_774154a5', 'c11_libc_ctype_operation_31b75e36', 'c11_libc_ctype_operation_31b75e36']
+depends_on = ['c11_libc_ctype_operation_31b75e36', 'c11_libc_ctype_operation_31b75e36']
 
 [[axioms]]
 id = "c11_libc_stdlib_syntax_comparison_8ad81d8f"
@@ -672,7 +672,7 @@ header = "stdlib.h"
 signature = '''void *realloc(void *ptr, size_t size)'''
 axiom_type = "constraint"
 on_violation = '''UNDEF: STDLIB1'''
-depends_on = ['c11_libc_ctype_operation_31b75e36', 'c11_libc_ctype_operation_31b75e36', 'c11_libc_stdlib_syntax_realloc_94b91083', 'c11_libc_stdlib_syntax_comparison_84c63abe', 'c11_libc_stdlib_syntax_realloc_5902cc0a', 'c11_libc_stdlib_syntax_realloc_94b91083', 'c11_libc_stdlib_syntax_comparison_84c63abe', 'c11_libc_stdlib_syntax_realloc_5902cc0a']
+depends_on = ['c11_libc_ctype_operation_31b75e36', 'c11_libc_ctype_operation_31b75e36']
 
 [[axioms]]
 id = "c11_libc_stdlib_syntax_realloc_5902cc0a"
@@ -689,7 +689,7 @@ function = "realloc"
 header = "stdlib.h"
 signature = '''void *realloc(void *ptr, size_t size)'''
 axiom_type = "effect"
-depends_on = ['c11_libc_ctype_operation_31b75e36', 'c11_libc_ctype_operation_31b75e36', 'c11_libc_stdlib_syntax_malloc_6c5a728e', 'c11_libc_stdlib_syntax_malloc_6c5a728e']
+depends_on = ['c11_libc_ctype_operation_31b75e36', 'c11_libc_ctype_operation_31b75e36', 'c11_libc_stdlib_syntax_malloc_c1551473', 'c11_libc_stdlib_syntax_malloc_c1551473']
 
 [[axioms]]
 id = "c11_libc_stdlib_syntax_calloc_f2c846a8"
@@ -706,7 +706,7 @@ function = "calloc"
 header = "stdlib.h"
 signature = '''void *calloc(size_t nelem, size_t elsize)'''
 axiom_type = "effect"
-depends_on = ['c11_libc_ctype_operation_31b75e36', 'c11_libc_ctype_operation_31b75e36', 'c11_libc_stdlib_syntax_malloc_6c5a728e', 'c11_libc_stdlib_syntax_malloc_6c5a728e']
+depends_on = ['c11_libc_ctype_operation_31b75e36', 'c11_libc_ctype_operation_31b75e36', 'c11_libc_stdlib_syntax_malloc_c1551473', 'c11_libc_stdlib_syntax_malloc_c1551473']
 
 [[axioms]]
 id = "c11_libc_stdlib_syntax_free_76737398"
@@ -755,7 +755,7 @@ header = "stdlib.h"
 signature = '''void free(void *pointer)'''
 axiom_type = "constraint"
 on_violation = '''UNDEF: STDLIB2'''
-depends_on = ['c11_libc_ctype_operation_31b75e36', 'c11_libc_ctype_operation_31b75e36', 'c11_libc_stdlib_syntax_free_76737398', 'c11_libc_stdlib_syntax_comparison_84c63abe', 'c11_libc_stdlib_syntax_operation_6154a8b7', 'c11_c_native_bridge_syntax_operation_5ddcabac', 'c11_libc_stdlib_syntax_free_76737398', 'c11_libc_stdlib_syntax_comparison_84c63abe', 'c11_libc_stdlib_syntax_operation_6154a8b7', 'c11_c_native_bridge_syntax_operation_5ddcabac']
+depends_on = ['c11_libc_ctype_operation_31b75e36', 'c11_libc_ctype_operation_31b75e36']
 
 [[axioms]]
 id = "c11_libc_stdlib_syntax_operation_6154a8b7"
@@ -837,7 +837,7 @@ header = "stdlib.h"
 signature = '''int atexit(void (*func)(void))'''
 axiom_type = "constraint"
 on_violation = '''UNSPEC: STDLIB3'''
-depends_on = ['c11_libc_stdlib_syntax_atexit_c1d11a77', 'c11_libc_stdlib_syntax_atexit_c1d11a77', 'c11_libc_ctype_operation_31b75e36', 'c11_libc_ctype_operation_31b75e36']
+depends_on = ['c11_libc_ctype_operation_31b75e36', 'c11_libc_ctype_operation_31b75e36']
 
 [[axioms]]
 id = "c11_libc_stdlib_syntax_at_quick_exit_06750088"
@@ -873,7 +873,7 @@ header = "stdlib.h"
 signature = '''int at_quick_exit(void (*func)(void))'''
 axiom_type = "constraint"
 on_violation = '''UNSPEC: STDLIB6'''
-depends_on = ['c11_libc_stdlib_syntax_at_quick_exit_06750088', 'c11_libc_stdlib_syntax_at_quick_exit_06750088', 'c11_libc_ctype_operation_31b75e36', 'c11_libc_ctype_operation_31b75e36']
+depends_on = ['c11_libc_ctype_operation_31b75e36', 'c11_libc_ctype_operation_31b75e36']
 
 [[axioms]]
 id = "c11_libc_stdlib_syntax_strtof_65344ecc"
@@ -945,7 +945,7 @@ source_line_end = 215
 function = "getenv"
 header = "stdlib.h"
 axiom_type = "effect"
-depends_on = ['c11_libc_ctype_operation_31b75e36', 'c11_libc_ctype_operation_31b75e36', 'c11_libc_stdlib_syntax_comparison_e8247ed0', 'c11_libc_stdlib_syntax_comparison_e38c0dc3', 'c11_libc_stdlib_syntax_comparison_e8247ed0', 'c11_libc_stdlib_syntax_comparison_e38c0dc3', 'c11_libc_io_syntax_operation_79695fbd', 'c11_libc_io_syntax_newFixedObject_27f3ed1d', 'c11_libc_io_syntax_operation_79e24239', 'c11_libc_io_syntax_operation_b8e82b73', 'c11_libc_io_syntax_operation_79695fbd', 'c11_libc_io_syntax_newFixedObject_27f3ed1d', 'c11_libc_io_syntax_operation_79e24239', 'c11_libc_io_syntax_operation_b8e82b73']
+depends_on = ['c11_libc_ctype_operation_31b75e36', 'c11_libc_ctype_operation_31b75e36', 'c11_libc_io_syntax_operation_79695fbd', 'c11_libc_io_syntax_newFixedObject_27f3ed1d', 'c11_libc_io_syntax_operation_79e24239', 'c11_libc_io_syntax_operation_b8e82b73', 'c11_libc_io_syntax_operation_79695fbd', 'c11_libc_io_syntax_newFixedObject_27f3ed1d', 'c11_libc_io_syntax_operation_79e24239', 'c11_libc_io_syntax_operation_b8e82b73']
 
 [[axioms]]
 id = "c11_libc_stdlib_syntax_comparison_e8247ed0"
@@ -1022,7 +1022,7 @@ source_line_end = 111
 function = "longjmp"
 header = "setjmp.h"
 axiom_type = "effect"
-depends_on = ['c11_libc_setjmp_getJmpBuf_d277a552', 'c11_libc_setjmp_getJmpBuf_d277a552', 'c11_libc_setjmp_comparison_9873e961', 'c11_libc_setjmp_comparison_9873e961']
+depends_on = ['c11_libc_setjmp_getJmpBuf_d277a552', 'c11_libc_setjmp_getJmpBuf_d277a552']
 
 [[axioms]]
 id = "c11_libc_setjmp_getJmpBuf_d277a552"
@@ -1786,7 +1786,6 @@ source_line_end = 65
 function = "raise"
 header = "signal.h"
 axiom_type = "effect"
-depends_on = ['c11_libc_signal_syntax_comparison_ba5623a1', 'c11_libc_signal_syntax_comparison_ba5623a1']
 
 [[axioms]]
 id = "c11_libc_signal_syntax_comparison_ba5623a1"
@@ -1880,7 +1879,7 @@ function = "setlocale"
 header = "locale.h"
 signature = '''char *setlocale(int category, const char *locale)'''
 axiom_type = "effect"
-depends_on = ['c11_libc_ctype_operation_31b75e36', 'c11_libc_ctype_operation_31b75e36', 'c11_libc_io_syntax_operation_79695fbd', 'c11_libc_io_syntax_newFixedObject_27f3ed1d', 'c11_libc_io_syntax_operation_79e24239', 'c11_libc_io_syntax_operation_b8e82b73', 'c11_libc_io_syntax_operation_79695fbd', 'c11_libc_io_syntax_newFixedObject_27f3ed1d', 'c11_libc_io_syntax_operation_79e24239', 'c11_libc_io_syntax_operation_b8e82b73', 'c11_libc_locale_comparison_cc3cebcf', 'c11_libc_locale_comparison_ba197411', 'c11_libc_locale_comparison_cc3cebcf', 'c11_libc_locale_comparison_ba197411']
+depends_on = ['c11_libc_ctype_operation_31b75e36', 'c11_libc_ctype_operation_31b75e36', 'c11_libc_io_syntax_operation_79695fbd', 'c11_libc_io_syntax_newFixedObject_27f3ed1d', 'c11_libc_io_syntax_operation_79e24239', 'c11_libc_io_syntax_operation_b8e82b73', 'c11_libc_io_syntax_operation_79695fbd', 'c11_libc_io_syntax_newFixedObject_27f3ed1d', 'c11_libc_io_syntax_operation_79e24239', 'c11_libc_io_syntax_operation_b8e82b73']
 
 [[axioms]]
 id = "c11_libc_locale_comparison_cc3cebcf"
@@ -1929,7 +1928,7 @@ function = "localeconv"
 header = "locale.h"
 signature = '''struct lconv *localeconv(void)'''
 axiom_type = "effect"
-depends_on = ['c11_libc_ctype_operation_31b75e36', 'c11_libc_ctype_operation_31b75e36', 'c11_libc_locale_comparison_cc3cebcf', 'c11_libc_locale_comparison_ba197411', 'c11_libc_locale_comparison_cc3cebcf', 'c11_libc_locale_comparison_ba197411', 'c11_libc_io_syntax_operation_79695fbd', 'c11_libc_io_syntax_newFixedObject_27f3ed1d', 'c11_libc_io_syntax_operation_79e24239', 'c11_libc_io_syntax_operation_b8e82b73', 'c11_libc_io_syntax_operation_79695fbd', 'c11_libc_io_syntax_newFixedObject_27f3ed1d', 'c11_libc_io_syntax_operation_79e24239', 'c11_libc_io_syntax_operation_b8e82b73']
+depends_on = ['c11_libc_ctype_operation_31b75e36', 'c11_libc_ctype_operation_31b75e36', 'c11_libc_io_syntax_operation_79695fbd', 'c11_libc_io_syntax_newFixedObject_27f3ed1d', 'c11_libc_io_syntax_operation_79e24239', 'c11_libc_io_syntax_operation_b8e82b73', 'c11_libc_io_syntax_operation_79695fbd', 'c11_libc_io_syntax_newFixedObject_27f3ed1d', 'c11_libc_io_syntax_operation_79e24239', 'c11_libc_io_syntax_operation_b8e82b73']
 
 [[axioms]]
 id = "c11_libc_locale_comparison_cc3cebcf"
@@ -1975,7 +1974,6 @@ source_line_start = 75
 source_line_end = 76
 function = "writeFD"
 axiom_type = "effect"
-depends_on = ['c11_libc_io_syntax_comparison_3d878b21', 'c11_libc_io_syntax_comparison_f8494e96', 'c11_libc_io_syntax_comparison_5bb03633', 'c11_libc_io_syntax_comparison_4039576a', 'c11_libc_io_syntax_comparison_74369e53', 'c11_libc_io_syntax_comparison_3d878b21', 'c11_libc_io_syntax_comparison_f8494e96', 'c11_libc_io_syntax_comparison_5bb03633', 'c11_libc_io_syntax_comparison_4039576a', 'c11_libc_io_syntax_comparison_74369e53']
 
 [[axioms]]
 id = "c11_libc_io_syntax_comparison_3d878b21"
@@ -2278,7 +2276,6 @@ source_line_end = 283
 tags = ['comparison']
 function = "close"
 axiom_type = "effect"
-depends_on = ['c11_libc_io_syntax_close_128ccd0e', 'c11_libc_io_syntax_close_128ccd0e']
 
 [[axioms]]
 id = "c11_libc_io_syntax_close_128ccd0e"
@@ -2308,7 +2305,6 @@ source_line_start = 289
 source_line_end = 291
 function = "seek"
 axiom_type = "effect"
-depends_on = ['c11_libc_io_syntax_seek_82632c74', 'c11_libc_io_syntax_seek_2eb408b5', 'c11_libc_io_syntax_seek_82632c74', 'c11_libc_io_syntax_seek_2eb408b5']
 
 [[axioms]]
 id = "c11_libc_io_syntax_seek_82632c74"
@@ -2326,7 +2322,6 @@ source_line_end = 298
 tags = ['comparison']
 function = "seek"
 axiom_type = "effect"
-depends_on = ['c11_libc_io_syntax_seek_ab27cb65', 'c11_libc_io_syntax_seek_2eb408b5', 'c11_libc_io_syntax_seek_ab27cb65', 'c11_libc_io_syntax_seek_2eb408b5']
 
 [[axioms]]
 id = "c11_libc_io_syntax_seek_2eb408b5"
@@ -2403,7 +2398,7 @@ source_line_end = 351
 tags = ['comparison']
 function = "sendString"
 axiom_type = "precondition"
-depends_on = ['c11_compat_sorts_operation_933fc7d6', 'c11_compat_sorts_operation_6b9723cd', 'c11_libc_stdio_putc_38e3c97c', 'c11_libc_stdio_putc_38e3c97c', 'c11_libc_io_syntax_comparison_0adc147d', 'c11_libc_io_syntax_comparison_0adc147d']
+depends_on = ['c11_compat_sorts_operation_933fc7d6', 'c11_compat_sorts_operation_6b9723cd', 'c11_libc_stdio_putc_38e3c97c', 'c11_libc_stdio_putc_38e3c97c']
 
 [[axioms]]
 id = "c11_libc_io_syntax_comparison_0adc147d"
@@ -2794,7 +2789,6 @@ function = "fseek"
 header = "stdio.h"
 signature = '''int fseek(FILE * stream, long int offset, int whence)'''
 axiom_type = "effect"
-depends_on = ['c11_libc_stdio_fseek_b9f81ad9', 'c11_libc_stdio_fseek_d502ab92', 'c11_libc_stdio_fseek_fb1b44b1', 'c11_libc_stdio_fseek_b9f81ad9', 'c11_libc_stdio_fseek_d502ab92', 'c11_libc_stdio_fseek_fb1b44b1']
 
 [[axioms]]
 id = "c11_libc_stdio_fsetpos_3acbfbfb"
@@ -2810,7 +2804,6 @@ function = "fsetpos"
 header = "stdio.h"
 signature = '''int fsetpos(FILE * stream, const fpos_t * pos)'''
 axiom_type = "effect"
-depends_on = ['c11_libc_stdio_fsetpos_720062c2', 'c11_libc_stdio_comparison_569cd15c', 'c11_libc_stdio_fsetpos_720062c2', 'c11_libc_stdio_comparison_569cd15c']
 
 [[axioms]]
 id = "c11_libc_stdio_operation_fe53f876"
@@ -2826,7 +2819,7 @@ function = "fflush"
 header = "stdio.h"
 signature = '''int fflush(FILE * stream)'''
 axiom_type = "precondition"
-depends_on = ['c11_libc_stdio_operation_4626b7b2', 'c11_libc_stdio_fclose_491e7adf', 'c11_libc_stdio_operation_4626b7b2', 'c11_libc_stdio_fclose_491e7adf']
+depends_on = ['c11_libc_stdio_fclose_491e7adf', 'c11_libc_stdio_fclose_491e7adf']
 
 [[axioms]]
 id = "c11_libc_stdio_operation_4626b7b2"
@@ -3054,7 +3047,6 @@ function = "fgetpos"
 header = "stdio.h"
 signature = '''int fgetpos(FILE * __restrict__ stream, fpos_t * __restrict__ pos)'''
 axiom_type = "effect"
-depends_on = ['c11_libc_stdio_comparison_569cd15c', 'c11_libc_stdio_comparison_569cd15c']
 
 [[axioms]]
 id = "c11_libc_stdio_comparison_00603046"
@@ -3101,7 +3093,6 @@ function = "fputc"
 header = "stdio.h"
 signature = '''int fputc(int c, FILE *stream)'''
 axiom_type = "effect"
-depends_on = ['c11_libc_stdio_comparison_88fbdc40', 'c11_libc_stdio_comparison_569cd15c', 'c11_libc_stdio_comparison_a6f33404', 'c11_libc_stdio_comparison_88fbdc40', 'c11_libc_stdio_comparison_569cd15c', 'c11_libc_stdio_comparison_a6f33404']
 
 [[axioms]]
 id = "c11_libc_stdio__IO_putc_a8a674db"
@@ -3213,7 +3204,6 @@ function = "fgetc"
 header = "stdio.h"
 signature = '''int fgetc(FILE *stream)'''
 axiom_type = "effect"
-depends_on = ['c11_libc_stdio_comparison_569cd15c', 'c11_libc_stdio_comparison_8f694147', 'c11_libc_stdio_comparison_569cd15c', 'c11_libc_stdio_comparison_8f694147']
 
 [[axioms]]
 id = "c11_libc_stdio__IO_getc_5489e587"
@@ -3275,7 +3265,6 @@ function = "ungetc"
 header = "stdio.h"
 signature = '''int ungetc(int c, FILE * stream)'''
 axiom_type = "precondition"
-depends_on = ['c11_libc_stdio_operation_a76ff940', 'c11_libc_stdio_comparison_00603046', 'c11_libc_stdio_comparison_569cd15c', 'c11_libc_stdio_operation_a76ff940', 'c11_libc_stdio_comparison_00603046', 'c11_libc_stdio_comparison_569cd15c']
 
 [[axioms]]
 id = "c11_libc_stdio_operation_a76ff940"
@@ -3418,7 +3407,6 @@ function = "feof"
 header = "stdio.h"
 signature = '''int feof(FILE * stream)'''
 axiom_type = "effect"
-depends_on = ['c11_libc_stdio_feof_3b491f06', 'c11_libc_stdio_comparison_d306af59', 'c11_libc_stdio_comparison_569cd15c', 'c11_libc_stdio_feof_3b491f06', 'c11_libc_stdio_comparison_d306af59', 'c11_libc_stdio_comparison_569cd15c']
 
 [[axioms]]
 id = "c11_libc_stdio_ferror_609e6fb0"
@@ -3434,7 +3422,6 @@ function = "ferror"
 header = "stdio.h"
 signature = '''int ferror(FILE *stream)'''
 axiom_type = "effect"
-depends_on = ['c11_libc_stdio_comparison_1f1781c5', 'c11_libc_stdio_ferror_f704a15d', 'c11_libc_stdio_comparison_569cd15c', 'c11_libc_stdio_comparison_1f1781c5', 'c11_libc_stdio_ferror_f704a15d', 'c11_libc_stdio_comparison_569cd15c']
 
 [[axioms]]
 id = "c11_libc_stdio_fileno_2a4da90d"
@@ -3450,7 +3437,6 @@ function = "fileno"
 header = "stdio.h"
 signature = '''int fileno(FILE * stream)'''
 axiom_type = "effect"
-depends_on = ['c11_libc_stdio_comparison_00603046', 'c11_libc_stdio_comparison_6b25d743', 'c11_libc_stdio_comparison_00603046', 'c11_libc_stdio_comparison_6b25d743']
 
 [[axioms]]
 id = "c11_libc_stdio_feof_3b491f06"
@@ -3600,7 +3586,6 @@ function = "clearerr"
 header = "stdio.h"
 signature = '''void clearerr(FILE *stream)'''
 axiom_type = "effect"
-depends_on = ['c11_libc_stdio_clearerr_6e9bf7bd', 'c11_libc_stdio_comparison_6b25d743', 'c11_libc_stdio_clearerr_6e9bf7bd', 'c11_libc_stdio_comparison_6b25d743']
 
 [[axioms]]
 id = "c11_libc_stdio_clearerr_6e9bf7bd"
@@ -3669,7 +3654,6 @@ function = "fclose"
 header = "stdio.h"
 signature = '''int fclose(FILE *stream)'''
 axiom_type = "precondition"
-depends_on = ['c11_libc_stdio_operation_4626b7b2', 'c11_libc_stdio_fclose_491e7adf', 'c11_libc_stdio_operation_4626b7b2', 'c11_libc_stdio_fclose_491e7adf']
 
 [[axioms]]
 id = "c11_libc_stdio_operation_4626b7b2"
@@ -3746,7 +3730,7 @@ function = "fopen"
 header = "stdio.h"
 signature = '''FILE* fopen(const char * __restrict__ filename, const char * __restrict__ mode)'''
 axiom_type = "effect"
-depends_on = ['c11_c_memory_alloc_syntax_comparison_94b636b2', 'c11_libc_stdio_operation_2ee93b8c', 'c11_libc_stdio_operation_2ee93b8c', 'c11_libc_io_syntax_getString_6bf7be57', 'c11_libc_io_syntax_getString_6bf7be57']
+depends_on = ['c11_c_memory_alloc_syntax_comparison_94b636b2', 'c11_libc_io_syntax_getString_6bf7be57', 'c11_libc_io_syntax_getString_6bf7be57']
 
 [[axioms]]
 id = "c11_libc_stdio_operation_1643cb22"
@@ -3762,7 +3746,6 @@ function = "freopen"
 header = "stdio.h"
 signature = '''FILE * freopen(const char * __restrict__ filename, const char * __restrict__ mode, FILE * __restrict__ stream)'''
 axiom_type = "precondition"
-depends_on = ['c11_libc_stdio_operation_4626b7b2', 'c11_libc_stdio_operation_8a281bbd', 'c11_libc_stdio_comparison_df1c5d24', 'c11_libc_stdio_operation_4626b7b2', 'c11_libc_stdio_operation_8a281bbd', 'c11_libc_stdio_comparison_df1c5d24']
 
 [[axioms]]
 id = "c11_libc_stdio_operation_4626b7b2"
@@ -3807,7 +3790,7 @@ source_line_end = 387
 function = "tmpfile"
 header = "stdio.h"
 axiom_type = "effect"
-depends_on = ['c11_libc_ctype_operation_31b75e36', 'c11_libc_ctype_operation_31b75e36', 'c11_libc_stdio_tmpfile_87bec954', 'c11_libc_stdio_tmpfile_87bec954']
+depends_on = ['c11_libc_ctype_operation_31b75e36', 'c11_libc_ctype_operation_31b75e36']
 
 [[axioms]]
 id = "c11_libc_stdio_tmpfile_87bec954"
@@ -3888,7 +3871,7 @@ function = "setbuf"
 header = "stdio.h"
 signature = '''void setbuf(FILE * __restrict__ stream, char * __restrict__ buf)'''
 axiom_type = "precondition"
-depends_on = ['c11_libc_stdio_operation_5e0f9297', 'c11_libc_stdio_comparison_00603046', 'c11_libc_stdio_comparison_6b25d743', 'c11_libc_stdio_operation_5e0f9297', 'c11_libc_stdio_comparison_00603046', 'c11_libc_stdio_comparison_6b25d743', 'c11_libc_stdio_operation_846051d3', 'c11_libc_stdio_trapBuf_2ec69eb1', 'c11_libc_stdio_operation_846051d3', 'c11_libc_stdio_trapBuf_2ec69eb1']
+depends_on = ['c11_libc_stdio_operation_846051d3', 'c11_libc_stdio_trapBuf_2ec69eb1', 'c11_libc_stdio_operation_846051d3', 'c11_libc_stdio_trapBuf_2ec69eb1']
 
 [[axioms]]
 id = "c11_libc_stdio_operation_5e0f9297"
@@ -3904,7 +3887,6 @@ function = "setbuf"
 header = "stdio.h"
 signature = '''void setbuf(FILE * __restrict__ stream, char * __restrict__ buf)'''
 axiom_type = "precondition"
-depends_on = ['c11_libc_stdio_operation_1368450b', 'c11_libc_stdio_comparison_00603046', 'c11_libc_stdio_comparison_6b25d743', 'c11_libc_stdio_operation_1368450b', 'c11_libc_stdio_comparison_00603046', 'c11_libc_stdio_comparison_6b25d743']
 
 [[axioms]]
 id = "c11_libc_stdio_operation_1368450b"
@@ -3920,7 +3902,7 @@ function = "setbuffer"
 header = "stdio.h"
 signature = '''int setbuffer(FILE * __restrict__ stream, char * __restrict__ buf, size_t size)'''
 axiom_type = "precondition"
-depends_on = ['c11_libc_stdio_operation_5e0f9297', 'c11_libc_stdio_comparison_00603046', 'c11_libc_stdio_comparison_6b25d743', 'c11_libc_stdio_operation_5e0f9297', 'c11_libc_stdio_comparison_00603046', 'c11_libc_stdio_comparison_6b25d743', 'c11_libc_stdio_operation_846051d3', 'c11_libc_stdio_trapBuf_2ec69eb1', 'c11_libc_stdio_operation_846051d3', 'c11_libc_stdio_trapBuf_2ec69eb1']
+depends_on = ['c11_libc_stdio_comparison_00603046', 'c11_libc_stdio_comparison_6b25d743', 'c11_libc_stdio_comparison_00603046', 'c11_libc_stdio_comparison_6b25d743', 'c11_libc_stdio_operation_846051d3', 'c11_libc_stdio_trapBuf_2ec69eb1', 'c11_libc_stdio_operation_846051d3', 'c11_libc_stdio_trapBuf_2ec69eb1']
 
 [[axioms]]
 id = "c11_libc_stdio_operation_5e0f9297"
@@ -3936,7 +3918,7 @@ function = "setbuffer"
 header = "stdio.h"
 signature = '''int setbuffer(FILE * __restrict__ stream, char * __restrict__ buf, size_t size)'''
 axiom_type = "precondition"
-depends_on = ['c11_libc_stdio_operation_1368450b', 'c11_libc_stdio_comparison_00603046', 'c11_libc_stdio_comparison_6b25d743', 'c11_libc_stdio_operation_1368450b', 'c11_libc_stdio_comparison_00603046', 'c11_libc_stdio_comparison_6b25d743']
+depends_on = ['c11_libc_stdio_comparison_00603046', 'c11_libc_stdio_comparison_6b25d743', 'c11_libc_stdio_comparison_00603046', 'c11_libc_stdio_comparison_6b25d743']
 
 [[axioms]]
 id = "c11_libc_stdio_setvbuf_83a05991"
@@ -4016,7 +3998,7 @@ source_file = "stdio.k"
 source_module = "LIBC-STDIO"
 source_line_start = 489
 source_line_end = 492
-error_codes = ['CCV7', 'CCV11', 'CEA2', 'ECL4', 'EFNC1', 'TDG12', 'FD6', 'STDIO1', 'CCV9', 'CEA7', 'CEA8', 'CEA9', 'CEB1', 'CEB5', 'CEB9', 'CEB10', 'CEB11', 'CERL5', 'TEAS2', 'TSE2', 'TTE2', 'TTE3', 'CTI4', 'CEA1', 'CEA5', 'CEE3', 'CER3', 'CER4', 'CERL1', 'CERL2', 'CERL3', 'CERL4', 'CERL6', 'ECL3', 'CEER1', 'EEA2', 'EEA3', 'EEA4', 'EEA5', 'EFNC2', 'STRING1', 'CER6', 'CCV13', 'CCV13-H', 'CCVE4', 'CEMX4', 'STDLIBE1', 'STDLIBE2', 'STDLIBE3', 'CEE6', 'CER7', 'EXC3']
+error_codes = ['CCV7', 'CCV11', 'CEA1', 'CEA5', 'CEA2', 'CEE3', 'CER3', 'CER4', 'CERL1', 'CERL2', 'CERL3', 'CERL4', 'CERL6', 'ECL3', 'ECL4', 'CEER1', 'EEA2', 'EEA3', 'EEA4', 'EEA5', 'EFNC1', 'EFNC2', 'TDG12', 'FD6', 'STDIO1', 'STRING1', 'CCV9', 'CEA7', 'CEA8', 'CEA9', 'CEB1', 'CEB5', 'CEB9', 'CEB10', 'CEB11', 'CER6', 'CERL5', 'TEAS2', 'TSE2', 'TTE2', 'TTE3', 'CCV13', 'CCV13-H', 'CCVE4', 'CEMX4', 'CTI4', 'STDLIBE1', 'STDLIBE2', 'STDLIBE3', 'CEE6', 'CER7', 'EXC3']
 function = "trapBuf"
 header = "stdio.h"
 axiom_type = "precondition"
@@ -4083,7 +4065,6 @@ function = "fread"
 header = "stdio.h"
 signature = '''size_t fread(void * __restrict__ ptr, size_t size, size_t nmemb, FILE * __restrict__ stream)'''
 axiom_type = "effect"
-depends_on = ['c11_libc_stdio_comparison_04717146', 'c11_libc_stdio_comparison_8f694147', 'c11_libc_stdio_comparison_6b25d743', 'c11_libc_stdio_comparison_04717146', 'c11_libc_stdio_comparison_8f694147', 'c11_libc_stdio_comparison_6b25d743']
 
 [[axioms]]
 id = "c11_libc_stdio_gets_ea276180"
@@ -4100,7 +4081,7 @@ function = "gets"
 header = "stdio.h"
 signature = '''char * gets(char *)'''
 axiom_type = "effect"
-depends_on = ['c11_libc_ctype_operation_31b75e36', 'c11_libc_ctype_operation_31b75e36', 'c11_libc_stdio_comparison_00603046', 'c11_libc_stdio_comparison_6b25d743', 'c11_libc_stdio_fscanf_9cd49e53', 'c11_libc_stdio_comparison_00603046', 'c11_libc_stdio_comparison_6b25d743', 'c11_libc_stdio_fscanf_9cd49e53', 'c11_libc_stdio_gets_031c2755', 'c11_libc_stdio_comparison_e83421a4', 'c11_libc_stdio_gets_031c2755', 'c11_libc_stdio_comparison_e83421a4', 'c11_libc_stdio_comparison_5777f556', 'c11_libc_stdio_str_39e822a3', 'c11_libc_stdio_comparison_717ec562', 'c11_libc_stdio_comparison_b1b7e021', 'c11_libc_stdio_comparison_7ad3e18a', 'c11_libc_stdio_modulus_c2df4b3d', 'c11_libc_stdio_modulus_c2df4b3d', 'c11_libc_stdio_comparison_4a80cd9c', 'c11_libc_stdio_str_511422b8', 'c11_libc_stdio_comparison_5777f556', 'c11_libc_stdio_str_39e822a3', 'c11_libc_stdio_comparison_717ec562', 'c11_libc_stdio_comparison_b1b7e021', 'c11_libc_stdio_comparison_7ad3e18a', 'c11_libc_stdio_modulus_c2df4b3d', 'c11_libc_stdio_modulus_c2df4b3d', 'c11_libc_stdio_comparison_4a80cd9c', 'c11_libc_stdio_str_511422b8']
+depends_on = ['c11_libc_ctype_operation_31b75e36', 'c11_libc_ctype_operation_31b75e36', 'c11_libc_stdio_comparison_00603046', 'c11_libc_stdio_comparison_6b25d743', 'c11_libc_stdio_fscanf_9cd49e53', 'c11_libc_stdio_comparison_00603046', 'c11_libc_stdio_comparison_6b25d743', 'c11_libc_stdio_fscanf_9cd49e53', 'c11_libc_stdio_comparison_5777f556', 'c11_libc_stdio_str_39e822a3', 'c11_libc_stdio_comparison_717ec562', 'c11_libc_stdio_comparison_b1b7e021', 'c11_libc_stdio_comparison_7ad3e18a', 'c11_libc_stdio_modulus_c2df4b3d', 'c11_libc_stdio_modulus_c2df4b3d', 'c11_libc_stdio_comparison_4a80cd9c', 'c11_libc_stdio_str_511422b8', 'c11_libc_stdio_comparison_5777f556', 'c11_libc_stdio_str_39e822a3', 'c11_libc_stdio_comparison_717ec562', 'c11_libc_stdio_comparison_b1b7e021', 'c11_libc_stdio_comparison_7ad3e18a', 'c11_libc_stdio_modulus_c2df4b3d', 'c11_libc_stdio_modulus_c2df4b3d', 'c11_libc_stdio_comparison_4a80cd9c', 'c11_libc_stdio_str_511422b8']
 
 [[axioms]]
 id = "c11_libc_stdio_gets_031c2755"
@@ -4148,7 +4129,6 @@ function = "fgets"
 header = "stdio.h"
 signature = '''char * fgets(char* __restrict__ str, int size, FILE* __restrict__ stream)'''
 axiom_type = "effect"
-depends_on = ['c11_libc_stdio_operation_b3669d54', 'c11_libc_stdio_fgets_02cd0288', 'c11_libc_stdio_operation_b3669d54', 'c11_libc_stdio_fgets_02cd0288']
 
 [[axioms]]
 id = "c11_libc_stdio_comparison_04717146"
@@ -4393,7 +4373,7 @@ function = "fwrite"
 header = "stdio.h"
 signature = '''size_t fwrite(const void * __restrict__ ptr, size_t size, size_t nmemb, FILE * __restrict__ stream)'''
 axiom_type = "effect"
-depends_on = ['c11_libc_stdio_comparison_88fbdc40', 'c11_libc_stdio_comparison_a6f33404', 'c11_libc_stdio_comparison_6b25d743', 'c11_libc_stdio_comparison_88fbdc40', 'c11_libc_stdio_comparison_a6f33404', 'c11_libc_stdio_comparison_6b25d743', 'c11_libc_io_syntax_getBytes_e10ef84e', 'c11_libc_io_syntax_getBytes_e10ef84e']
+depends_on = ['c11_libc_io_syntax_getBytes_e10ef84e', 'c11_libc_io_syntax_getBytes_e10ef84e']
 
 [[axioms]]
 id = "c11_libc_stdio_comparison_88fbdc40"
@@ -4522,7 +4502,6 @@ source_line_end = 703
 function = "derefList"
 header = "stdio.h"
 axiom_type = "effect"
-depends_on = ['c11_libc_stdio_derefList_ffde25f0', 'c11_libc_stdio_derefList_ffde25f0']
 
 [[axioms]]
 id = "c11_libc_stdio_vprintf_f445b474"
@@ -4540,7 +4519,7 @@ function = "vprintf"
 header = "stdio.h"
 signature = '''int vprintf(const char * __restrict__ format, va_list)'''
 axiom_type = "effect"
-depends_on = ['c11_libc_ctype_operation_31b75e36', 'c11_libc_ctype_operation_31b75e36', 'c11_libc_stdio_derefList_ffde25f0', 'c11_libc_stdio_derefList_5a37a99c', 'c11_libc_stdio_derefList_ffde25f0', 'c11_libc_stdio_derefList_5a37a99c', 'c11_libc_stdio_operation_c635e2d1', 'c11_libc_stdio_comparison_55b9bc4b', 'c11_libc_stdio_comparison_e1ddb32f', 'c11_libc_stdio_operation_c635e2d1', 'c11_libc_stdio_comparison_55b9bc4b', 'c11_libc_stdio_comparison_e1ddb32f']
+depends_on = ['c11_libc_ctype_operation_31b75e36', 'c11_libc_ctype_operation_31b75e36', 'c11_libc_stdio_derefList_ffde25f0', 'c11_libc_stdio_derefList_5a37a99c', 'c11_libc_stdio_derefList_ffde25f0', 'c11_libc_stdio_derefList_5a37a99c']
 
 [[axioms]]
 id = "c11_libc_stdio_operation_c635e2d1"
@@ -4556,7 +4535,7 @@ function = "vprintf"
 header = "stdio.h"
 signature = '''int vprintf(const char * __restrict__ format, va_list)'''
 axiom_type = "precondition"
-depends_on = ['c11_libc_ctype_operation_31b75e36', 'c11_libc_ctype_operation_31b75e36', 'c11_libc_stdio_vsnprintf_322a96ed', 'c11_libc_stdio_comparison_55b9bc4b', 'c11_libc_stdio_comparison_e1ddb32f', 'c11_libc_stdio_vsnprintf_322a96ed', 'c11_libc_stdio_comparison_55b9bc4b', 'c11_libc_stdio_comparison_e1ddb32f']
+depends_on = ['c11_libc_ctype_operation_31b75e36', 'c11_libc_ctype_operation_31b75e36', 'c11_libc_stdio_vsnprintf_322a96ed', 'c11_libc_stdio_vsnprintf_322a96ed']
 
 [[axioms]]
 id = "c11_libc_stdio_comparison_55b9bc4b"
@@ -4573,7 +4552,7 @@ function = "vprintf"
 header = "stdio.h"
 signature = '''int vprintf(const char * __restrict__ format, va_list)'''
 axiom_type = "precondition"
-depends_on = ['c11_libc_ctype_operation_31b75e36', 'c11_libc_ctype_operation_31b75e36', 'c11_libc_stdio_vsnprintf_322a96ed', 'c11_libc_stdio_operation_c635e2d1', 'c11_libc_stdio_comparison_e1ddb32f', 'c11_libc_stdio_vsnprintf_322a96ed', 'c11_libc_stdio_operation_c635e2d1', 'c11_libc_stdio_comparison_e1ddb32f']
+depends_on = ['c11_libc_ctype_operation_31b75e36', 'c11_libc_ctype_operation_31b75e36', 'c11_libc_stdio_vsnprintf_322a96ed', 'c11_libc_stdio_vsnprintf_322a96ed']
 
 [[axioms]]
 id = "c11_libc_stdio_comparison_e1ddb32f"
@@ -4608,7 +4587,7 @@ function = "vfprintf"
 header = "stdio.h"
 signature = '''int vfprintf(FILE * __restrict__ stream, const char * __restrict__ format, va_list)'''
 axiom_type = "effect"
-depends_on = ['c11_libc_ctype_operation_31b75e36', 'c11_libc_ctype_operation_31b75e36', 'c11_libc_stdio_derefList_ffde25f0', 'c11_libc_stdio_derefList_5a37a99c', 'c11_libc_stdio_derefList_ffde25f0', 'c11_libc_stdio_derefList_5a37a99c', 'c11_libc_stdio_operation_c635e2d1', 'c11_libc_stdio_comparison_55b9bc4b', 'c11_libc_stdio_comparison_e1ddb32f', 'c11_libc_stdio_operation_c635e2d1', 'c11_libc_stdio_comparison_55b9bc4b', 'c11_libc_stdio_comparison_e1ddb32f']
+depends_on = ['c11_libc_ctype_operation_31b75e36', 'c11_libc_ctype_operation_31b75e36', 'c11_libc_stdio_derefList_ffde25f0', 'c11_libc_stdio_derefList_5a37a99c', 'c11_libc_stdio_derefList_ffde25f0', 'c11_libc_stdio_derefList_5a37a99c']
 
 [[axioms]]
 id = "c11_libc_stdio_operation_c635e2d1"
@@ -4624,7 +4603,7 @@ function = "vfprintf"
 header = "stdio.h"
 signature = '''int vfprintf(FILE * __restrict__ stream, const char * __restrict__ format, va_list)'''
 axiom_type = "precondition"
-depends_on = ['c11_libc_ctype_operation_31b75e36', 'c11_libc_ctype_operation_31b75e36', 'c11_libc_stdio_vsnprintf_322a96ed', 'c11_libc_stdio_comparison_55b9bc4b', 'c11_libc_stdio_comparison_e1ddb32f', 'c11_libc_stdio_vsnprintf_322a96ed', 'c11_libc_stdio_comparison_55b9bc4b', 'c11_libc_stdio_comparison_e1ddb32f']
+depends_on = ['c11_libc_ctype_operation_31b75e36', 'c11_libc_ctype_operation_31b75e36', 'c11_libc_stdio_vsnprintf_322a96ed', 'c11_libc_stdio_vsnprintf_322a96ed']
 
 [[axioms]]
 id = "c11_libc_stdio_comparison_55b9bc4b"
@@ -4641,7 +4620,7 @@ function = "vfprintf"
 header = "stdio.h"
 signature = '''int vfprintf(FILE * __restrict__ stream, const char * __restrict__ format, va_list)'''
 axiom_type = "precondition"
-depends_on = ['c11_libc_ctype_operation_31b75e36', 'c11_libc_ctype_operation_31b75e36', 'c11_libc_stdio_vsnprintf_322a96ed', 'c11_libc_stdio_operation_c635e2d1', 'c11_libc_stdio_comparison_e1ddb32f', 'c11_libc_stdio_vsnprintf_322a96ed', 'c11_libc_stdio_operation_c635e2d1', 'c11_libc_stdio_comparison_e1ddb32f']
+depends_on = ['c11_libc_ctype_operation_31b75e36', 'c11_libc_ctype_operation_31b75e36', 'c11_libc_stdio_vsnprintf_322a96ed', 'c11_libc_stdio_vsnprintf_322a96ed']
 
 [[axioms]]
 id = "c11_libc_stdio_comparison_e1ddb32f"
@@ -4709,7 +4688,7 @@ function = "vsprintf"
 header = "stdio.h"
 signature = '''int vsprintf(char * __restrict__ s, const char * __restrict__ format, va_list)'''
 axiom_type = "effect"
-depends_on = ['c11_libc_ctype_operation_31b75e36', 'c11_libc_ctype_operation_31b75e36', 'c11_libc_stdio_derefList_ffde25f0', 'c11_libc_stdio_derefList_5a37a99c', 'c11_libc_stdio_derefList_ffde25f0', 'c11_libc_stdio_derefList_5a37a99c', 'c11_libc_stdio_operation_c635e2d1', 'c11_libc_stdio_comparison_55b9bc4b', 'c11_libc_stdio_comparison_e1ddb32f', 'c11_libc_stdio_operation_c635e2d1', 'c11_libc_stdio_comparison_55b9bc4b', 'c11_libc_stdio_comparison_e1ddb32f']
+depends_on = ['c11_libc_ctype_operation_31b75e36', 'c11_libc_ctype_operation_31b75e36', 'c11_libc_stdio_derefList_ffde25f0', 'c11_libc_stdio_derefList_5a37a99c', 'c11_libc_stdio_derefList_ffde25f0', 'c11_libc_stdio_derefList_5a37a99c']
 
 [[axioms]]
 id = "c11_libc_stdio_operation_c635e2d1"
@@ -4725,7 +4704,7 @@ function = "vsprintf"
 header = "stdio.h"
 signature = '''int vsprintf(char * __restrict__ s, const char * __restrict__ format, va_list)'''
 axiom_type = "precondition"
-depends_on = ['c11_libc_ctype_operation_31b75e36', 'c11_libc_ctype_operation_31b75e36', 'c11_libc_stdio_vsnprintf_322a96ed', 'c11_libc_stdio_comparison_55b9bc4b', 'c11_libc_stdio_comparison_e1ddb32f', 'c11_libc_stdio_vsnprintf_322a96ed', 'c11_libc_stdio_comparison_55b9bc4b', 'c11_libc_stdio_comparison_e1ddb32f']
+depends_on = ['c11_libc_ctype_operation_31b75e36', 'c11_libc_ctype_operation_31b75e36', 'c11_libc_stdio_vsnprintf_322a96ed', 'c11_libc_stdio_vsnprintf_322a96ed']
 
 [[axioms]]
 id = "c11_libc_stdio_comparison_55b9bc4b"
@@ -4742,7 +4721,7 @@ function = "vsprintf"
 header = "stdio.h"
 signature = '''int vsprintf(char * __restrict__ s, const char * __restrict__ format, va_list)'''
 axiom_type = "precondition"
-depends_on = ['c11_libc_ctype_operation_31b75e36', 'c11_libc_ctype_operation_31b75e36', 'c11_libc_stdio_vsnprintf_322a96ed', 'c11_libc_stdio_operation_c635e2d1', 'c11_libc_stdio_comparison_e1ddb32f', 'c11_libc_stdio_vsnprintf_322a96ed', 'c11_libc_stdio_operation_c635e2d1', 'c11_libc_stdio_comparison_e1ddb32f']
+depends_on = ['c11_libc_ctype_operation_31b75e36', 'c11_libc_ctype_operation_31b75e36', 'c11_libc_stdio_vsnprintf_322a96ed', 'c11_libc_stdio_vsnprintf_322a96ed']
 
 [[axioms]]
 id = "c11_libc_stdio_comparison_e1ddb32f"
@@ -4776,7 +4755,7 @@ tags = ['comparison']
 function = "vasprintf"
 header = "stdio.h"
 axiom_type = "effect"
-depends_on = ['c11_libc_ctype_operation_31b75e36', 'c11_libc_ctype_operation_31b75e36', 'c11_libc_stdio_derefList_ffde25f0', 'c11_libc_stdio_derefList_5a37a99c', 'c11_libc_stdio_derefList_ffde25f0', 'c11_libc_stdio_derefList_5a37a99c', 'c11_libc_stdio_operation_c635e2d1', 'c11_libc_stdio_comparison_55b9bc4b', 'c11_libc_stdio_comparison_e1ddb32f', 'c11_libc_stdio_operation_c635e2d1', 'c11_libc_stdio_comparison_55b9bc4b', 'c11_libc_stdio_comparison_e1ddb32f']
+depends_on = ['c11_libc_ctype_operation_31b75e36', 'c11_libc_ctype_operation_31b75e36', 'c11_libc_stdio_derefList_ffde25f0', 'c11_libc_stdio_derefList_5a37a99c', 'c11_libc_stdio_derefList_ffde25f0', 'c11_libc_stdio_derefList_5a37a99c']
 
 [[axioms]]
 id = "c11_libc_stdio_operation_c635e2d1"
@@ -4791,7 +4770,7 @@ source_line_end = 798
 function = "vasprintf"
 header = "stdio.h"
 axiom_type = "precondition"
-depends_on = ['c11_libc_ctype_operation_31b75e36', 'c11_libc_ctype_operation_31b75e36', 'c11_libc_stdio_vsnprintf_322a96ed', 'c11_libc_stdio_comparison_55b9bc4b', 'c11_libc_stdio_comparison_e1ddb32f', 'c11_libc_stdio_vsnprintf_322a96ed', 'c11_libc_stdio_comparison_55b9bc4b', 'c11_libc_stdio_comparison_e1ddb32f']
+depends_on = ['c11_libc_ctype_operation_31b75e36', 'c11_libc_ctype_operation_31b75e36', 'c11_libc_stdio_vsnprintf_322a96ed', 'c11_libc_stdio_vsnprintf_322a96ed']
 
 [[axioms]]
 id = "c11_libc_stdio_comparison_55b9bc4b"
@@ -4807,7 +4786,7 @@ tags = ['comparison']
 function = "vasprintf"
 header = "stdio.h"
 axiom_type = "precondition"
-depends_on = ['c11_libc_ctype_operation_31b75e36', 'c11_libc_ctype_operation_31b75e36', 'c11_libc_stdio_vsnprintf_322a96ed', 'c11_libc_stdio_operation_c635e2d1', 'c11_libc_stdio_comparison_e1ddb32f', 'c11_libc_stdio_vsnprintf_322a96ed', 'c11_libc_stdio_operation_c635e2d1', 'c11_libc_stdio_comparison_e1ddb32f']
+depends_on = ['c11_libc_ctype_operation_31b75e36', 'c11_libc_ctype_operation_31b75e36', 'c11_libc_stdio_vsnprintf_322a96ed', 'c11_libc_stdio_vsnprintf_322a96ed']
 
 [[axioms]]
 id = "c11_libc_stdio_comparison_e1ddb32f"
@@ -4856,7 +4835,7 @@ function = "vsnprintf"
 header = "stdio.h"
 signature = '''int vsnprintf(char * __restrict__ s, size_t n, const char * __restrict__ format, va_list)'''
 axiom_type = "effect"
-depends_on = ['c11_libc_ctype_operation_31b75e36', 'c11_libc_ctype_operation_31b75e36', 'c11_libc_stdio_derefList_ffde25f0', 'c11_libc_stdio_derefList_5a37a99c', 'c11_libc_stdio_derefList_ffde25f0', 'c11_libc_stdio_derefList_5a37a99c', 'c11_libc_stdio_operation_c635e2d1', 'c11_libc_stdio_comparison_55b9bc4b', 'c11_libc_stdio_comparison_e1ddb32f', 'c11_libc_stdio_operation_c635e2d1', 'c11_libc_stdio_comparison_55b9bc4b', 'c11_libc_stdio_comparison_e1ddb32f']
+depends_on = ['c11_libc_ctype_operation_31b75e36', 'c11_libc_ctype_operation_31b75e36', 'c11_libc_stdio_derefList_ffde25f0', 'c11_libc_stdio_derefList_5a37a99c', 'c11_libc_stdio_derefList_ffde25f0', 'c11_libc_stdio_derefList_5a37a99c']
 
 [[axioms]]
 id = "c11_libc_stdio_operation_c635e2d1"
@@ -4872,7 +4851,7 @@ function = "vsnprintf"
 header = "stdio.h"
 signature = '''int vsnprintf(char * __restrict__ s, size_t n, const char * __restrict__ format, va_list)'''
 axiom_type = "precondition"
-depends_on = ['c11_libc_ctype_operation_31b75e36', 'c11_libc_ctype_operation_31b75e36', 'c11_libc_stdio_vsnprintf_322a96ed', 'c11_libc_stdio_comparison_55b9bc4b', 'c11_libc_stdio_comparison_e1ddb32f', 'c11_libc_stdio_vsnprintf_322a96ed', 'c11_libc_stdio_comparison_55b9bc4b', 'c11_libc_stdio_comparison_e1ddb32f']
+depends_on = ['c11_libc_ctype_operation_31b75e36', 'c11_libc_ctype_operation_31b75e36']
 
 [[axioms]]
 id = "c11_libc_stdio_comparison_55b9bc4b"
@@ -4889,7 +4868,7 @@ function = "vsnprintf"
 header = "stdio.h"
 signature = '''int vsnprintf(char * __restrict__ s, size_t n, const char * __restrict__ format, va_list)'''
 axiom_type = "precondition"
-depends_on = ['c11_libc_ctype_operation_31b75e36', 'c11_libc_ctype_operation_31b75e36', 'c11_libc_stdio_vsnprintf_322a96ed', 'c11_libc_stdio_operation_c635e2d1', 'c11_libc_stdio_comparison_e1ddb32f', 'c11_libc_stdio_vsnprintf_322a96ed', 'c11_libc_stdio_operation_c635e2d1', 'c11_libc_stdio_comparison_e1ddb32f']
+depends_on = ['c11_libc_ctype_operation_31b75e36', 'c11_libc_ctype_operation_31b75e36']
 
 [[axioms]]
 id = "c11_libc_stdio_comparison_e1ddb32f"
@@ -4938,7 +4917,7 @@ function = "vfscanf"
 header = "stdio.h"
 signature = '''int vfscanf(FILE * __restrict__ stream, const char * __restrict__ format, va_list)'''
 axiom_type = "effect"
-depends_on = ['c11_libc_ctype_operation_31b75e36', 'c11_libc_ctype_operation_31b75e36', 'c11_libc_stdio_derefList_ffde25f0', 'c11_libc_stdio_derefList_5a37a99c', 'c11_libc_stdio_derefList_ffde25f0', 'c11_libc_stdio_derefList_5a37a99c', 'c11_libc_stdio_comparison_e1ddb32f', 'c11_libc_stdio_comparison_e1ddb32f']
+depends_on = ['c11_libc_ctype_operation_31b75e36', 'c11_libc_ctype_operation_31b75e36', 'c11_libc_stdio_derefList_ffde25f0', 'c11_libc_stdio_derefList_5a37a99c', 'c11_libc_stdio_derefList_ffde25f0', 'c11_libc_stdio_derefList_5a37a99c']
 
 [[axioms]]
 id = "c11_libc_stdio_comparison_e1ddb32f"
@@ -4987,7 +4966,7 @@ function = "vscanf"
 header = "stdio.h"
 signature = '''int vscanf(const char * __restrict__ format, va_list)'''
 axiom_type = "effect"
-depends_on = ['c11_libc_ctype_operation_31b75e36', 'c11_libc_ctype_operation_31b75e36', 'c11_libc_stdio_derefList_ffde25f0', 'c11_libc_stdio_derefList_5a37a99c', 'c11_libc_stdio_derefList_ffde25f0', 'c11_libc_stdio_derefList_5a37a99c', 'c11_libc_stdio_comparison_e1ddb32f', 'c11_libc_stdio_comparison_e1ddb32f']
+depends_on = ['c11_libc_ctype_operation_31b75e36', 'c11_libc_ctype_operation_31b75e36', 'c11_libc_stdio_derefList_ffde25f0', 'c11_libc_stdio_derefList_5a37a99c', 'c11_libc_stdio_derefList_ffde25f0', 'c11_libc_stdio_derefList_5a37a99c']
 
 [[axioms]]
 id = "c11_libc_stdio_comparison_e1ddb32f"
@@ -5036,7 +5015,7 @@ function = "vsscanf"
 header = "stdio.h"
 signature = '''int vsscanf(const char * __restrict__ s, const char * __restrict__ format, va_list)'''
 axiom_type = "effect"
-depends_on = ['c11_libc_ctype_operation_31b75e36', 'c11_libc_ctype_operation_31b75e36', 'c11_libc_stdio_derefList_ffde25f0', 'c11_libc_stdio_derefList_5a37a99c', 'c11_libc_stdio_derefList_ffde25f0', 'c11_libc_stdio_derefList_5a37a99c', 'c11_libc_stdio_comparison_e1ddb32f', 'c11_libc_stdio_comparison_e1ddb32f']
+depends_on = ['c11_libc_ctype_operation_31b75e36', 'c11_libc_ctype_operation_31b75e36', 'c11_libc_stdio_derefList_ffde25f0', 'c11_libc_stdio_derefList_5a37a99c', 'c11_libc_stdio_derefList_ffde25f0', 'c11_libc_stdio_derefList_5a37a99c']
 
 [[axioms]]
 id = "c11_libc_stdio_comparison_e1ddb32f"
@@ -5359,7 +5338,7 @@ tags = ['modulus']
 function = "writeItem"
 header = "stdio.h"
 axiom_type = "effect"
-depends_on = ['c11_libc_stdlib_syntax_comparison_8ad81d8f', 'c11_libc_stdlib_syntax_comparison_5f542db6', 'c11_libc_stdlib_syntax_comparison_8ad81d8f', 'c11_libc_stdlib_syntax_comparison_5f542db6', 'c11_libc_stdio_writeItem_ba567546', 'c11_libc_stdio_writeItem_2910ef3f', 'c11_libc_stdio_writeItem_ba567546', 'c11_libc_stdio_modulus_1ec1187f', 'c11_libc_stdio_modulus_1ec1187f', 'c11_libc_stdio_writeItem_ac3bf864', 'c11_libc_stdio_writeItem_9106c30c', 'c11_libc_stdio_writeItem_74ad96e9', 'c11_libc_stdio_writeItem_a9a13575', 'c11_libc_stdio_modulus_1ec1187f', 'c11_libc_stdio_modulus_1ec1187f', 'c11_libc_stdio_writeItem_1c5b5b11', 'c11_libc_stdio_modulus_c954664d', 'c11_libc_stdio_modulus_269bdb6f', 'c11_libc_stdio_writeItem_4594d0f3', 'c11_libc_stdio_writeItem_1c5b5b11', 'c11_libc_stdio_modulus_c954664d', 'c11_libc_stdio_modulus_269bdb6f', 'c11_libc_stdio_modulus_fc019bf0', 'c11_libc_stdio_modulus_5302b047', 'c11_libc_stdio_modulus_847ecb7f', 'c11_libc_stdio_modulus_663350f9', 'c11_libc_stdio_writeItem_43b2d59e', 'c11_libc_stdio_writeItem_ba567546', 'c11_libc_stdio_writeItem_2910ef3f', 'c11_libc_stdio_writeItem_ba567546', 'c11_libc_stdio_modulus_1ec1187f', 'c11_libc_stdio_modulus_1ec1187f', 'c11_libc_stdio_writeItem_ac3bf864', 'c11_libc_stdio_writeItem_9106c30c', 'c11_libc_stdio_writeItem_74ad96e9', 'c11_libc_stdio_writeItem_a9a13575', 'c11_libc_stdio_modulus_1ec1187f', 'c11_libc_stdio_modulus_1ec1187f', 'c11_libc_stdio_writeItem_1c5b5b11', 'c11_libc_stdio_modulus_c954664d', 'c11_libc_stdio_modulus_269bdb6f', 'c11_libc_stdio_writeItem_4594d0f3', 'c11_libc_stdio_writeItem_1c5b5b11', 'c11_libc_stdio_modulus_c954664d', 'c11_libc_stdio_modulus_269bdb6f', 'c11_libc_stdio_modulus_fc019bf0', 'c11_libc_stdio_modulus_5302b047', 'c11_libc_stdio_modulus_847ecb7f', 'c11_libc_stdio_modulus_663350f9', 'c11_libc_stdio_writeItem_43b2d59e']
+depends_on = ['c11_libc_stdlib_syntax_comparison_8ad81d8f', 'c11_libc_stdlib_syntax_comparison_5f542db6', 'c11_libc_stdlib_syntax_comparison_8ad81d8f', 'c11_libc_stdlib_syntax_comparison_5f542db6']
 
 [[axioms]]
 id = "c11_libc_stdio_writeItem_ba567546"
@@ -5375,7 +5354,7 @@ tags = ['modulus']
 function = "writeItem"
 header = "stdio.h"
 axiom_type = "effect"
-depends_on = ['c11_libc_stdlib_syntax_comparison_8ad81d8f', 'c11_libc_stdlib_syntax_comparison_5f542db6', 'c11_libc_stdlib_syntax_comparison_8ad81d8f', 'c11_libc_stdlib_syntax_comparison_5f542db6', 'c11_libc_stdio_writeItem_771ecc0a', 'c11_libc_stdio_writeItem_2910ef3f', 'c11_libc_stdio_modulus_1ec1187f', 'c11_libc_stdio_modulus_1ec1187f', 'c11_libc_stdio_writeItem_ac3bf864', 'c11_libc_stdio_writeItem_9106c30c', 'c11_libc_stdio_writeItem_74ad96e9', 'c11_libc_stdio_writeItem_a9a13575', 'c11_libc_stdio_modulus_1ec1187f', 'c11_libc_stdio_modulus_1ec1187f', 'c11_libc_stdio_writeItem_1c5b5b11', 'c11_libc_stdio_modulus_c954664d', 'c11_libc_stdio_modulus_269bdb6f', 'c11_libc_stdio_writeItem_4594d0f3', 'c11_libc_stdio_writeItem_1c5b5b11', 'c11_libc_stdio_modulus_c954664d', 'c11_libc_stdio_modulus_269bdb6f', 'c11_libc_stdio_modulus_fc019bf0', 'c11_libc_stdio_modulus_5302b047', 'c11_libc_stdio_modulus_847ecb7f', 'c11_libc_stdio_modulus_663350f9', 'c11_libc_stdio_writeItem_43b2d59e', 'c11_libc_stdio_writeItem_771ecc0a', 'c11_libc_stdio_writeItem_2910ef3f', 'c11_libc_stdio_modulus_1ec1187f', 'c11_libc_stdio_modulus_1ec1187f', 'c11_libc_stdio_writeItem_ac3bf864', 'c11_libc_stdio_writeItem_9106c30c', 'c11_libc_stdio_writeItem_74ad96e9', 'c11_libc_stdio_writeItem_a9a13575', 'c11_libc_stdio_modulus_1ec1187f', 'c11_libc_stdio_modulus_1ec1187f', 'c11_libc_stdio_writeItem_1c5b5b11', 'c11_libc_stdio_modulus_c954664d', 'c11_libc_stdio_modulus_269bdb6f', 'c11_libc_stdio_writeItem_4594d0f3', 'c11_libc_stdio_writeItem_1c5b5b11', 'c11_libc_stdio_modulus_c954664d', 'c11_libc_stdio_modulus_269bdb6f', 'c11_libc_stdio_modulus_fc019bf0', 'c11_libc_stdio_modulus_5302b047', 'c11_libc_stdio_modulus_847ecb7f', 'c11_libc_stdio_modulus_663350f9', 'c11_libc_stdio_writeItem_43b2d59e']
+depends_on = ['c11_libc_stdlib_syntax_comparison_8ad81d8f', 'c11_libc_stdlib_syntax_comparison_5f542db6', 'c11_libc_stdlib_syntax_comparison_8ad81d8f', 'c11_libc_stdlib_syntax_comparison_5f542db6']
 
 [[axioms]]
 id = "c11_libc_stdio_writeItem_2910ef3f"
@@ -5391,7 +5370,7 @@ tags = ['modulus']
 function = "writeItem"
 header = "stdio.h"
 axiom_type = "effect"
-depends_on = ['c11_libc_stdlib_syntax_comparison_8ad81d8f', 'c11_libc_stdlib_syntax_comparison_5f542db6', 'c11_libc_stdlib_syntax_comparison_8ad81d8f', 'c11_libc_stdlib_syntax_comparison_5f542db6', 'c11_libc_stdio_writeItem_771ecc0a', 'c11_libc_stdio_writeItem_ba567546', 'c11_libc_stdio_writeItem_ba567546', 'c11_libc_stdio_modulus_1ec1187f', 'c11_libc_stdio_modulus_1ec1187f', 'c11_libc_stdio_writeItem_ac3bf864', 'c11_libc_stdio_writeItem_9106c30c', 'c11_libc_stdio_writeItem_74ad96e9', 'c11_libc_stdio_writeItem_a9a13575', 'c11_libc_stdio_modulus_1ec1187f', 'c11_libc_stdio_modulus_1ec1187f', 'c11_libc_stdio_writeItem_1c5b5b11', 'c11_libc_stdio_modulus_c954664d', 'c11_libc_stdio_modulus_269bdb6f', 'c11_libc_stdio_writeItem_4594d0f3', 'c11_libc_stdio_writeItem_1c5b5b11', 'c11_libc_stdio_modulus_c954664d', 'c11_libc_stdio_modulus_269bdb6f', 'c11_libc_stdio_modulus_fc019bf0', 'c11_libc_stdio_modulus_5302b047', 'c11_libc_stdio_modulus_847ecb7f', 'c11_libc_stdio_modulus_663350f9', 'c11_libc_stdio_writeItem_43b2d59e', 'c11_libc_stdio_writeItem_771ecc0a', 'c11_libc_stdio_writeItem_ba567546', 'c11_libc_stdio_writeItem_ba567546', 'c11_libc_stdio_modulus_1ec1187f', 'c11_libc_stdio_modulus_1ec1187f', 'c11_libc_stdio_writeItem_ac3bf864', 'c11_libc_stdio_writeItem_9106c30c', 'c11_libc_stdio_writeItem_74ad96e9', 'c11_libc_stdio_writeItem_a9a13575', 'c11_libc_stdio_modulus_1ec1187f', 'c11_libc_stdio_modulus_1ec1187f', 'c11_libc_stdio_writeItem_1c5b5b11', 'c11_libc_stdio_modulus_c954664d', 'c11_libc_stdio_modulus_269bdb6f', 'c11_libc_stdio_writeItem_4594d0f3', 'c11_libc_stdio_writeItem_1c5b5b11', 'c11_libc_stdio_modulus_c954664d', 'c11_libc_stdio_modulus_269bdb6f', 'c11_libc_stdio_modulus_fc019bf0', 'c11_libc_stdio_modulus_5302b047', 'c11_libc_stdio_modulus_847ecb7f', 'c11_libc_stdio_modulus_663350f9', 'c11_libc_stdio_writeItem_43b2d59e']
+depends_on = ['c11_libc_stdlib_syntax_comparison_8ad81d8f', 'c11_libc_stdlib_syntax_comparison_5f542db6', 'c11_libc_stdlib_syntax_comparison_8ad81d8f', 'c11_libc_stdlib_syntax_comparison_5f542db6']
 
 [[axioms]]
 id = "c11_libc_stdio_writeItem_ba567546"
@@ -5407,7 +5386,7 @@ tags = ['modulus']
 function = "writeItem"
 header = "stdio.h"
 axiom_type = "effect"
-depends_on = ['c11_libc_stdlib_syntax_comparison_8ad81d8f', 'c11_libc_stdlib_syntax_comparison_5f542db6', 'c11_libc_stdlib_syntax_comparison_8ad81d8f', 'c11_libc_stdlib_syntax_comparison_5f542db6', 'c11_libc_stdio_writeItem_771ecc0a', 'c11_libc_stdio_writeItem_2910ef3f', 'c11_libc_stdio_modulus_1ec1187f', 'c11_libc_stdio_modulus_1ec1187f', 'c11_libc_stdio_writeItem_ac3bf864', 'c11_libc_stdio_writeItem_9106c30c', 'c11_libc_stdio_writeItem_74ad96e9', 'c11_libc_stdio_writeItem_a9a13575', 'c11_libc_stdio_modulus_1ec1187f', 'c11_libc_stdio_modulus_1ec1187f', 'c11_libc_stdio_writeItem_1c5b5b11', 'c11_libc_stdio_modulus_c954664d', 'c11_libc_stdio_modulus_269bdb6f', 'c11_libc_stdio_writeItem_4594d0f3', 'c11_libc_stdio_writeItem_1c5b5b11', 'c11_libc_stdio_modulus_c954664d', 'c11_libc_stdio_modulus_269bdb6f', 'c11_libc_stdio_modulus_fc019bf0', 'c11_libc_stdio_modulus_5302b047', 'c11_libc_stdio_modulus_847ecb7f', 'c11_libc_stdio_modulus_663350f9', 'c11_libc_stdio_writeItem_43b2d59e', 'c11_libc_stdio_writeItem_771ecc0a', 'c11_libc_stdio_writeItem_2910ef3f', 'c11_libc_stdio_modulus_1ec1187f', 'c11_libc_stdio_modulus_1ec1187f', 'c11_libc_stdio_writeItem_ac3bf864', 'c11_libc_stdio_writeItem_9106c30c', 'c11_libc_stdio_writeItem_74ad96e9', 'c11_libc_stdio_writeItem_a9a13575', 'c11_libc_stdio_modulus_1ec1187f', 'c11_libc_stdio_modulus_1ec1187f', 'c11_libc_stdio_writeItem_1c5b5b11', 'c11_libc_stdio_modulus_c954664d', 'c11_libc_stdio_modulus_269bdb6f', 'c11_libc_stdio_writeItem_4594d0f3', 'c11_libc_stdio_writeItem_1c5b5b11', 'c11_libc_stdio_modulus_c954664d', 'c11_libc_stdio_modulus_269bdb6f', 'c11_libc_stdio_modulus_fc019bf0', 'c11_libc_stdio_modulus_5302b047', 'c11_libc_stdio_modulus_847ecb7f', 'c11_libc_stdio_modulus_663350f9', 'c11_libc_stdio_writeItem_43b2d59e']
+depends_on = ['c11_libc_stdlib_syntax_comparison_8ad81d8f', 'c11_libc_stdlib_syntax_comparison_5f542db6', 'c11_libc_stdlib_syntax_comparison_8ad81d8f', 'c11_libc_stdlib_syntax_comparison_5f542db6']
 
 [[axioms]]
 id = "c11_libc_stdio_modulus_1ec1187f"
@@ -5547,7 +5526,7 @@ tags = ['modulus']
 function = "writeItem"
 header = "stdio.h"
 axiom_type = "effect"
-depends_on = ['c11_c_conversion_syntax_operation_71beb31f', 'c11_c_conversion_syntax_operation_c943b988', 'c11_c_conversion_syntax_operation_f99c8a80', 'c11_c_conversion_syntax_operation_1eb241f8', 'c11_c_conversion_syntax_operation_7e61a670', 'c11_c_conversion_syntax_operation_9fc9c1bc', 'c11_c_conversion_syntax_operation_0dec620e', 'c11_c_conversion_syntax_operation_bedaf002', 'c11_c_conversion_syntax_operation_3d050282', 'c11_c_conversion_syntax_operation_b4d2cc43', 'c11_c_conversion_syntax_operation_7eae9055', 'c11_c_conversion_syntax_operation_0d439ded', 'c11_c_conversion_syntax_operation_57debbb7', 'c11_c_conversion_syntax_operation_9e248f04']
+depends_on = ['c11_c_conversion_syntax_operation_2533bd8c', 'c11_c_conversion_syntax_cast_ba372452', 'c11_c_conversion_syntax_operation_c943b988', 'c11_c_conversion_syntax_operation_f99c8a80', 'c11_c_conversion_syntax_operation_f99c8a80', 'c11_c_conversion_syntax_operation_7e61a670', 'c11_c_conversion_syntax_operation_1be65e90', 'c11_c_conversion_syntax_operation_190f1be4', 'c11_c_conversion_syntax_operation_bedaf002', 'c11_c_conversion_syntax_operation_244d5a84', 'c11_c_conversion_syntax_operation_b4d2cc43', 'c11_c_conversion_syntax_operation_7eae9055', 'c11_c_conversion_syntax_operation_bc3d1923', 'c11_c_conversion_syntax_operation_57debbb7', 'c11_c_conversion_syntax_operation_9e248f04']
 
 [[axioms]]
 id = "c11_libc_stdio_modulus_c954664d"
@@ -5563,7 +5542,7 @@ tags = ['modulus']
 function = "writeItem"
 header = "stdio.h"
 axiom_type = "precondition"
-depends_on = ['c11_c_conversion_syntax_operation_71beb31f', 'c11_c_conversion_syntax_operation_c943b988', 'c11_c_conversion_syntax_operation_f99c8a80', 'c11_c_conversion_syntax_operation_1eb241f8', 'c11_c_conversion_syntax_operation_7e61a670', 'c11_c_conversion_syntax_operation_9fc9c1bc', 'c11_c_conversion_syntax_operation_0dec620e', 'c11_c_conversion_syntax_operation_bedaf002', 'c11_c_conversion_syntax_operation_3d050282', 'c11_c_conversion_syntax_operation_b4d2cc43', 'c11_c_conversion_syntax_operation_7eae9055', 'c11_c_conversion_syntax_operation_0d439ded', 'c11_c_conversion_syntax_operation_57debbb7', 'c11_c_conversion_syntax_operation_9e248f04']
+depends_on = ['c11_c_conversion_syntax_operation_2533bd8c', 'c11_c_conversion_syntax_cast_ba372452', 'c11_c_conversion_syntax_operation_c943b988', 'c11_c_conversion_syntax_operation_f99c8a80', 'c11_c_conversion_syntax_operation_f99c8a80', 'c11_c_conversion_syntax_operation_7e61a670', 'c11_c_conversion_syntax_operation_1be65e90', 'c11_c_conversion_syntax_operation_190f1be4', 'c11_c_conversion_syntax_operation_bedaf002', 'c11_c_conversion_syntax_operation_244d5a84', 'c11_c_conversion_syntax_operation_b4d2cc43', 'c11_c_conversion_syntax_operation_7eae9055', 'c11_c_conversion_syntax_operation_bc3d1923', 'c11_c_conversion_syntax_operation_57debbb7', 'c11_c_conversion_syntax_operation_9e248f04']
 
 [[axioms]]
 id = "c11_libc_stdio_modulus_269bdb6f"
@@ -5579,7 +5558,7 @@ tags = ['modulus']
 function = "writeItem"
 header = "stdio.h"
 axiom_type = "precondition"
-depends_on = ['c11_c_conversion_syntax_operation_71beb31f', 'c11_c_conversion_syntax_operation_c943b988', 'c11_c_conversion_syntax_operation_f99c8a80', 'c11_c_conversion_syntax_operation_1eb241f8', 'c11_c_conversion_syntax_operation_7e61a670', 'c11_c_conversion_syntax_operation_9fc9c1bc', 'c11_c_conversion_syntax_operation_0dec620e', 'c11_c_conversion_syntax_operation_bedaf002', 'c11_c_conversion_syntax_operation_3d050282', 'c11_c_conversion_syntax_operation_b4d2cc43', 'c11_c_conversion_syntax_operation_7eae9055', 'c11_c_conversion_syntax_operation_0d439ded', 'c11_c_conversion_syntax_operation_57debbb7', 'c11_c_conversion_syntax_operation_9e248f04', 'c11_libc_stdio_operation_d87a774f', 'c11_libc_stdio_operation_b7f3f8c0', 'c11_libc_stdio_operation_3c8b114e', 'c11_libc_stdio_strip0xPrefix_8deb9c74', 'c11_libc_stdio_operation_d87a774f', 'c11_libc_stdio_operation_b7f3f8c0', 'c11_libc_stdio_operation_3c8b114e', 'c11_libc_stdio_strip0xPrefix_8deb9c74']
+depends_on = ['c11_c_conversion_syntax_operation_2533bd8c', 'c11_c_conversion_syntax_cast_ba372452', 'c11_c_conversion_syntax_operation_c943b988', 'c11_c_conversion_syntax_operation_f99c8a80', 'c11_c_conversion_syntax_operation_f99c8a80', 'c11_c_conversion_syntax_operation_7e61a670', 'c11_c_conversion_syntax_operation_1be65e90', 'c11_c_conversion_syntax_operation_190f1be4', 'c11_c_conversion_syntax_operation_bedaf002', 'c11_c_conversion_syntax_operation_244d5a84', 'c11_c_conversion_syntax_operation_b4d2cc43', 'c11_c_conversion_syntax_operation_7eae9055', 'c11_c_conversion_syntax_operation_bc3d1923', 'c11_c_conversion_syntax_operation_57debbb7', 'c11_c_conversion_syntax_operation_9e248f04', 'c11_libc_stdio_operation_d87a774f', 'c11_libc_stdio_operation_b7f3f8c0', 'c11_libc_stdio_operation_3c8b114e', 'c11_libc_stdio_strip0xPrefix_8deb9c74', 'c11_libc_stdio_operation_d87a774f', 'c11_libc_stdio_operation_b7f3f8c0', 'c11_libc_stdio_operation_3c8b114e', 'c11_libc_stdio_strip0xPrefix_8deb9c74']
 
 [[axioms]]
 id = "c11_libc_stdio_writeItem_4594d0f3"
@@ -5595,7 +5574,7 @@ tags = ['modulus']
 function = "writeItem"
 header = "stdio.h"
 axiom_type = "effect"
-depends_on = ['c11_c_conversion_syntax_operation_71beb31f', 'c11_c_conversion_syntax_operation_c943b988', 'c11_c_conversion_syntax_operation_f99c8a80', 'c11_c_conversion_syntax_operation_1eb241f8', 'c11_c_conversion_syntax_operation_7e61a670', 'c11_c_conversion_syntax_operation_9fc9c1bc', 'c11_c_conversion_syntax_operation_0dec620e', 'c11_c_conversion_syntax_operation_bedaf002', 'c11_c_conversion_syntax_operation_3d050282', 'c11_c_conversion_syntax_operation_b4d2cc43', 'c11_c_conversion_syntax_operation_7eae9055', 'c11_c_conversion_syntax_operation_0d439ded', 'c11_c_conversion_syntax_operation_57debbb7', 'c11_c_conversion_syntax_operation_9e248f04']
+depends_on = ['c11_c_conversion_syntax_operation_2533bd8c', 'c11_c_conversion_syntax_cast_ba372452', 'c11_c_conversion_syntax_operation_c943b988', 'c11_c_conversion_syntax_operation_f99c8a80', 'c11_c_conversion_syntax_operation_f99c8a80', 'c11_c_conversion_syntax_operation_7e61a670', 'c11_c_conversion_syntax_operation_1be65e90', 'c11_c_conversion_syntax_operation_190f1be4', 'c11_c_conversion_syntax_operation_bedaf002', 'c11_c_conversion_syntax_operation_244d5a84', 'c11_c_conversion_syntax_operation_b4d2cc43', 'c11_c_conversion_syntax_operation_7eae9055', 'c11_c_conversion_syntax_operation_bc3d1923', 'c11_c_conversion_syntax_operation_57debbb7', 'c11_c_conversion_syntax_operation_9e248f04']
 
 [[axioms]]
 id = "c11_libc_stdio_writeItem_1c5b5b11"
@@ -5611,7 +5590,7 @@ tags = ['modulus']
 function = "writeItem"
 header = "stdio.h"
 axiom_type = "effect"
-depends_on = ['c11_c_conversion_syntax_operation_71beb31f', 'c11_c_conversion_syntax_operation_c943b988', 'c11_c_conversion_syntax_operation_f99c8a80', 'c11_c_conversion_syntax_operation_1eb241f8', 'c11_c_conversion_syntax_operation_7e61a670', 'c11_c_conversion_syntax_operation_9fc9c1bc', 'c11_c_conversion_syntax_operation_0dec620e', 'c11_c_conversion_syntax_operation_bedaf002', 'c11_c_conversion_syntax_operation_3d050282', 'c11_c_conversion_syntax_operation_b4d2cc43', 'c11_c_conversion_syntax_operation_7eae9055', 'c11_c_conversion_syntax_operation_0d439ded', 'c11_c_conversion_syntax_operation_57debbb7', 'c11_c_conversion_syntax_operation_9e248f04']
+depends_on = ['c11_c_conversion_syntax_operation_2533bd8c', 'c11_c_conversion_syntax_cast_ba372452', 'c11_c_conversion_syntax_operation_c943b988', 'c11_c_conversion_syntax_operation_f99c8a80', 'c11_c_conversion_syntax_operation_f99c8a80', 'c11_c_conversion_syntax_operation_7e61a670', 'c11_c_conversion_syntax_operation_1be65e90', 'c11_c_conversion_syntax_operation_190f1be4', 'c11_c_conversion_syntax_operation_bedaf002', 'c11_c_conversion_syntax_operation_244d5a84', 'c11_c_conversion_syntax_operation_b4d2cc43', 'c11_c_conversion_syntax_operation_7eae9055', 'c11_c_conversion_syntax_operation_bc3d1923', 'c11_c_conversion_syntax_operation_57debbb7', 'c11_c_conversion_syntax_operation_9e248f04']
 
 [[axioms]]
 id = "c11_libc_stdio_modulus_c954664d"
@@ -5627,7 +5606,7 @@ tags = ['modulus']
 function = "writeItem"
 header = "stdio.h"
 axiom_type = "precondition"
-depends_on = ['c11_c_conversion_syntax_operation_71beb31f', 'c11_c_conversion_syntax_operation_c943b988', 'c11_c_conversion_syntax_operation_f99c8a80', 'c11_c_conversion_syntax_operation_1eb241f8', 'c11_c_conversion_syntax_operation_7e61a670', 'c11_c_conversion_syntax_operation_9fc9c1bc', 'c11_c_conversion_syntax_operation_0dec620e', 'c11_c_conversion_syntax_operation_bedaf002', 'c11_c_conversion_syntax_operation_3d050282', 'c11_c_conversion_syntax_operation_b4d2cc43', 'c11_c_conversion_syntax_operation_7eae9055', 'c11_c_conversion_syntax_operation_0d439ded', 'c11_c_conversion_syntax_operation_57debbb7', 'c11_c_conversion_syntax_operation_9e248f04']
+depends_on = ['c11_c_conversion_syntax_operation_2533bd8c', 'c11_c_conversion_syntax_cast_ba372452', 'c11_c_conversion_syntax_operation_c943b988', 'c11_c_conversion_syntax_operation_f99c8a80', 'c11_c_conversion_syntax_operation_f99c8a80', 'c11_c_conversion_syntax_operation_7e61a670', 'c11_c_conversion_syntax_operation_1be65e90', 'c11_c_conversion_syntax_operation_190f1be4', 'c11_c_conversion_syntax_operation_bedaf002', 'c11_c_conversion_syntax_operation_244d5a84', 'c11_c_conversion_syntax_operation_b4d2cc43', 'c11_c_conversion_syntax_operation_7eae9055', 'c11_c_conversion_syntax_operation_bc3d1923', 'c11_c_conversion_syntax_operation_57debbb7', 'c11_c_conversion_syntax_operation_9e248f04']
 
 [[axioms]]
 id = "c11_libc_stdio_modulus_269bdb6f"
@@ -5643,7 +5622,7 @@ tags = ['modulus']
 function = "writeItem"
 header = "stdio.h"
 axiom_type = "precondition"
-depends_on = ['c11_c_conversion_syntax_operation_71beb31f', 'c11_c_conversion_syntax_operation_c943b988', 'c11_c_conversion_syntax_operation_f99c8a80', 'c11_c_conversion_syntax_operation_1eb241f8', 'c11_c_conversion_syntax_operation_7e61a670', 'c11_c_conversion_syntax_operation_9fc9c1bc', 'c11_c_conversion_syntax_operation_0dec620e', 'c11_c_conversion_syntax_operation_bedaf002', 'c11_c_conversion_syntax_operation_3d050282', 'c11_c_conversion_syntax_operation_b4d2cc43', 'c11_c_conversion_syntax_operation_7eae9055', 'c11_c_conversion_syntax_operation_0d439ded', 'c11_c_conversion_syntax_operation_57debbb7', 'c11_c_conversion_syntax_operation_9e248f04', 'c11_libc_stdio_operation_d87a774f', 'c11_libc_stdio_operation_b7f3f8c0', 'c11_libc_stdio_operation_3c8b114e', 'c11_libc_stdio_strip0xPrefix_8deb9c74', 'c11_libc_stdio_operation_d87a774f', 'c11_libc_stdio_operation_b7f3f8c0', 'c11_libc_stdio_operation_3c8b114e', 'c11_libc_stdio_strip0xPrefix_8deb9c74']
+depends_on = ['c11_c_conversion_syntax_operation_2533bd8c', 'c11_c_conversion_syntax_cast_ba372452', 'c11_c_conversion_syntax_operation_c943b988', 'c11_c_conversion_syntax_operation_f99c8a80', 'c11_c_conversion_syntax_operation_f99c8a80', 'c11_c_conversion_syntax_operation_7e61a670', 'c11_c_conversion_syntax_operation_1be65e90', 'c11_c_conversion_syntax_operation_190f1be4', 'c11_c_conversion_syntax_operation_bedaf002', 'c11_c_conversion_syntax_operation_244d5a84', 'c11_c_conversion_syntax_operation_b4d2cc43', 'c11_c_conversion_syntax_operation_7eae9055', 'c11_c_conversion_syntax_operation_bc3d1923', 'c11_c_conversion_syntax_operation_57debbb7', 'c11_c_conversion_syntax_operation_9e248f04', 'c11_libc_stdio_operation_d87a774f', 'c11_libc_stdio_operation_b7f3f8c0', 'c11_libc_stdio_operation_3c8b114e', 'c11_libc_stdio_strip0xPrefix_8deb9c74', 'c11_libc_stdio_operation_d87a774f', 'c11_libc_stdio_operation_b7f3f8c0', 'c11_libc_stdio_operation_3c8b114e', 'c11_libc_stdio_strip0xPrefix_8deb9c74']
 
 [[axioms]]
 id = "c11_libc_stdio_modulus_fc019bf0"
@@ -5659,7 +5638,7 @@ tags = ['modulus']
 function = "writeItem"
 header = "stdio.h"
 axiom_type = "precondition"
-depends_on = ['c11_c_conversion_syntax_operation_71beb31f', 'c11_c_conversion_syntax_operation_c943b988', 'c11_c_conversion_syntax_operation_f99c8a80', 'c11_c_conversion_syntax_operation_1eb241f8', 'c11_c_conversion_syntax_operation_7e61a670', 'c11_c_conversion_syntax_operation_9fc9c1bc', 'c11_c_conversion_syntax_operation_0dec620e', 'c11_c_conversion_syntax_operation_bedaf002', 'c11_c_conversion_syntax_operation_3d050282', 'c11_c_conversion_syntax_operation_b4d2cc43', 'c11_c_conversion_syntax_operation_7eae9055', 'c11_c_conversion_syntax_operation_0d439ded', 'c11_c_conversion_syntax_operation_57debbb7', 'c11_c_conversion_syntax_operation_9e248f04']
+depends_on = ['c11_c_conversion_syntax_operation_2533bd8c', 'c11_c_conversion_syntax_cast_ba372452', 'c11_c_conversion_syntax_operation_c943b988', 'c11_c_conversion_syntax_operation_f99c8a80', 'c11_c_conversion_syntax_operation_f99c8a80', 'c11_c_conversion_syntax_operation_7e61a670', 'c11_c_conversion_syntax_operation_1be65e90', 'c11_c_conversion_syntax_operation_190f1be4', 'c11_c_conversion_syntax_operation_bedaf002', 'c11_c_conversion_syntax_operation_244d5a84', 'c11_c_conversion_syntax_operation_b4d2cc43', 'c11_c_conversion_syntax_operation_7eae9055', 'c11_c_conversion_syntax_operation_bc3d1923', 'c11_c_conversion_syntax_operation_57debbb7', 'c11_c_conversion_syntax_operation_9e248f04']
 
 [[axioms]]
 id = "c11_libc_stdio_modulus_5302b047"
@@ -5675,7 +5654,7 @@ tags = ['modulus']
 function = "writeItem"
 header = "stdio.h"
 axiom_type = "precondition"
-depends_on = ['c11_c_conversion_syntax_operation_71beb31f', 'c11_c_conversion_syntax_operation_c943b988', 'c11_c_conversion_syntax_operation_f99c8a80', 'c11_c_conversion_syntax_operation_1eb241f8', 'c11_c_conversion_syntax_operation_7e61a670', 'c11_c_conversion_syntax_operation_9fc9c1bc', 'c11_c_conversion_syntax_operation_0dec620e', 'c11_c_conversion_syntax_operation_bedaf002', 'c11_c_conversion_syntax_operation_3d050282', 'c11_c_conversion_syntax_operation_b4d2cc43', 'c11_c_conversion_syntax_operation_7eae9055', 'c11_c_conversion_syntax_operation_0d439ded', 'c11_c_conversion_syntax_operation_57debbb7', 'c11_c_conversion_syntax_operation_9e248f04', 'c11_libc_stdio_operation_d87a774f', 'c11_libc_stdio_operation_b7f3f8c0', 'c11_libc_stdio_operation_3c8b114e', 'c11_libc_stdio_strip0xPrefix_8deb9c74', 'c11_libc_stdio_operation_d87a774f', 'c11_libc_stdio_operation_b7f3f8c0', 'c11_libc_stdio_operation_3c8b114e', 'c11_libc_stdio_strip0xPrefix_8deb9c74']
+depends_on = ['c11_c_conversion_syntax_operation_2533bd8c', 'c11_c_conversion_syntax_cast_ba372452', 'c11_c_conversion_syntax_operation_c943b988', 'c11_c_conversion_syntax_operation_f99c8a80', 'c11_c_conversion_syntax_operation_f99c8a80', 'c11_c_conversion_syntax_operation_7e61a670', 'c11_c_conversion_syntax_operation_1be65e90', 'c11_c_conversion_syntax_operation_190f1be4', 'c11_c_conversion_syntax_operation_bedaf002', 'c11_c_conversion_syntax_operation_244d5a84', 'c11_c_conversion_syntax_operation_b4d2cc43', 'c11_c_conversion_syntax_operation_7eae9055', 'c11_c_conversion_syntax_operation_bc3d1923', 'c11_c_conversion_syntax_operation_57debbb7', 'c11_c_conversion_syntax_operation_9e248f04', 'c11_libc_stdio_operation_d87a774f', 'c11_libc_stdio_operation_b7f3f8c0', 'c11_libc_stdio_operation_3c8b114e', 'c11_libc_stdio_strip0xPrefix_8deb9c74', 'c11_libc_stdio_operation_d87a774f', 'c11_libc_stdio_operation_b7f3f8c0', 'c11_libc_stdio_operation_3c8b114e', 'c11_libc_stdio_strip0xPrefix_8deb9c74']
 
 [[axioms]]
 id = "c11_libc_stdio_modulus_847ecb7f"
@@ -5691,7 +5670,7 @@ tags = ['modulus']
 function = "writeItem"
 header = "stdio.h"
 axiom_type = "precondition"
-depends_on = ['c11_c_conversion_syntax_operation_71beb31f', 'c11_c_conversion_syntax_operation_c943b988', 'c11_c_conversion_syntax_operation_f99c8a80', 'c11_c_conversion_syntax_operation_1eb241f8', 'c11_c_conversion_syntax_operation_7e61a670', 'c11_c_conversion_syntax_operation_9fc9c1bc', 'c11_c_conversion_syntax_operation_0dec620e', 'c11_c_conversion_syntax_operation_bedaf002', 'c11_c_conversion_syntax_operation_3d050282', 'c11_c_conversion_syntax_operation_b4d2cc43', 'c11_c_conversion_syntax_operation_7eae9055', 'c11_c_conversion_syntax_operation_0d439ded', 'c11_c_conversion_syntax_operation_57debbb7', 'c11_c_conversion_syntax_operation_9e248f04']
+depends_on = ['c11_c_conversion_syntax_operation_2533bd8c', 'c11_c_conversion_syntax_cast_ba372452', 'c11_c_conversion_syntax_operation_c943b988', 'c11_c_conversion_syntax_operation_f99c8a80', 'c11_c_conversion_syntax_operation_f99c8a80', 'c11_c_conversion_syntax_operation_7e61a670', 'c11_c_conversion_syntax_operation_1be65e90', 'c11_c_conversion_syntax_operation_190f1be4', 'c11_c_conversion_syntax_operation_bedaf002', 'c11_c_conversion_syntax_operation_244d5a84', 'c11_c_conversion_syntax_operation_b4d2cc43', 'c11_c_conversion_syntax_operation_7eae9055', 'c11_c_conversion_syntax_operation_bc3d1923', 'c11_c_conversion_syntax_operation_57debbb7', 'c11_c_conversion_syntax_operation_9e248f04']
 
 [[axioms]]
 id = "c11_libc_stdio_modulus_663350f9"
@@ -5725,7 +5704,7 @@ tags = ['modulus']
 function = "writeItem"
 header = "stdio.h"
 axiom_type = "effect"
-depends_on = ['c11_c_conversion_syntax_operation_71beb31f', 'c11_c_conversion_syntax_operation_c943b988', 'c11_c_conversion_syntax_operation_f99c8a80', 'c11_c_conversion_syntax_operation_1eb241f8', 'c11_c_conversion_syntax_operation_7e61a670', 'c11_c_conversion_syntax_operation_9fc9c1bc', 'c11_c_conversion_syntax_operation_0dec620e', 'c11_c_conversion_syntax_operation_bedaf002', 'c11_c_conversion_syntax_operation_3d050282', 'c11_c_conversion_syntax_operation_b4d2cc43', 'c11_c_conversion_syntax_operation_7eae9055', 'c11_c_conversion_syntax_operation_0d439ded', 'c11_c_conversion_syntax_operation_57debbb7', 'c11_c_conversion_syntax_operation_9e248f04', 'c11_libc_stdio_stringToFloat_1a0bda86', 'c11_libc_stdio_stringToFloat_1a0bda86', 'c11_libc_stdio_stringToFloat_1a0bda86', 'c11_libc_stdio_stringToFloat_1a0bda86', 'c11_libc_stdio_stringToFloat_1a0bda86', 'c11_libc_stdio_stringToFloat_1a0bda86']
+depends_on = ['c11_c_conversion_syntax_operation_2533bd8c', 'c11_c_conversion_syntax_cast_ba372452', 'c11_c_conversion_syntax_operation_c943b988', 'c11_c_conversion_syntax_operation_f99c8a80', 'c11_c_conversion_syntax_operation_f99c8a80', 'c11_c_conversion_syntax_operation_7e61a670', 'c11_c_conversion_syntax_operation_1be65e90', 'c11_c_conversion_syntax_operation_190f1be4', 'c11_c_conversion_syntax_operation_bedaf002', 'c11_c_conversion_syntax_operation_244d5a84', 'c11_c_conversion_syntax_operation_b4d2cc43', 'c11_c_conversion_syntax_operation_7eae9055', 'c11_c_conversion_syntax_operation_bc3d1923', 'c11_c_conversion_syntax_operation_57debbb7', 'c11_c_conversion_syntax_operation_9e248f04', 'c11_libc_stdio_stringToFloat_1a0bda86', 'c11_libc_stdio_stringToFloat_1a0bda86', 'c11_libc_stdio_stringToFloat_1a0bda86', 'c11_libc_stdio_stringToFloat_1a0bda86', 'c11_libc_stdio_stringToFloat_1a0bda86', 'c11_libc_stdio_stringToFloat_1a0bda86']
 
 [[axioms]]
 id = "c11_libc_stdio_stringToFloat_1a0bda86"
@@ -6818,7 +6797,7 @@ source_line_end = 1423
 function = "stripSign"
 header = "stdio.h"
 axiom_type = "precondition"
-depends_on = ['c11_compat_sorts_operation_933fc7d6', 'c11_libc_stdio_stripSign_561e2e1e', 'c11_libc_stdio_stripSign_561e2e1e']
+depends_on = ['c11_compat_sorts_operation_933fc7d6']
 
 [[axioms]]
 id = "c11_libc_stdio_stripSign_561e2e1e"
@@ -7342,7 +7321,6 @@ source_line_end = 1537
 function = "isDigit"
 header = "stdio.h"
 axiom_type = "precondition"
-depends_on = ['c11_libc_stdio_operation_fc10a419', 'c11_libc_stdio_isDigit_904a0e8e', 'c11_libc_stdio_operation_fc10a419', 'c11_libc_stdio_isDigit_904a0e8e']
 
 [[axioms]]
 id = "c11_libc_stdio_isDigit_904a0e8e"
@@ -7415,7 +7393,6 @@ source_line_end = 1570
 function = "eatWhitespace"
 header = "stdio.h"
 axiom_type = "precondition"
-depends_on = ['c11_libc_stdio_eatWhitespace_d0bad781', 'c11_libc_stdio_eatWhitespace_d0bad781']
 
 [[axioms]]
 id = "c11_libc_stdio_eatWhitespace_d0bad781"
@@ -8005,6 +7982,7 @@ source_module = "LIBC-STDIO"
 source_line_start = 1934
 source_line_end = 1941
 tags = ['modulus']
+c_standard_refs = ['7.21.6.1/8']
 header = "stdio.h"
 axiom_type = "precondition"
 
@@ -8019,7 +7997,7 @@ source_module = "LIBC-STDIO"
 source_line_start = 1943
 source_line_end = 1946
 tags = ['pointer', 'division']
-error_codes = ['CCV7', 'CCV11', 'CEA2', 'ECL4', 'EFNC1', 'TDG12', 'FD6', 'STDIO1', 'CCV9', 'CEA7', 'CEA8', 'CEA9', 'CEB1', 'CEB5', 'CEB9', 'CEB10', 'CEB11', 'CERL5', 'TEAS2', 'TSE2', 'TTE2', 'TTE3', 'CTI4', 'CEA1', 'CEA5', 'CEE3', 'CER3', 'CER4', 'CERL1', 'CERL2', 'CERL3', 'CERL4', 'CERL6', 'ECL3', 'CEER1', 'EEA2', 'EEA3', 'EEA4', 'EEA5', 'EFNC2', 'STRING1', 'CER6', 'CCV13', 'CCV13-H', 'CCVE4', 'CEMX4', 'STDLIBE1', 'STDLIBE2', 'STDLIBE3', 'CEE6', 'CER7', 'EXC3']
+error_codes = ['CCV7', 'CCV11', 'CEA1', 'CEA5', 'CEA2', 'CEE3', 'CER3', 'CER4', 'CERL1', 'CERL2', 'CERL3', 'CERL4', 'CERL6', 'ECL3', 'ECL4', 'CEER1', 'EEA2', 'EEA3', 'EEA4', 'EEA5', 'EFNC1', 'EFNC2', 'TDG12', 'FD6', 'STDIO1', 'STRING1', 'CCV9', 'CEA7', 'CEA8', 'CEA9', 'CEB1', 'CEB5', 'CEB9', 'CEB10', 'CEB11', 'CER6', 'CERL5', 'TEAS2', 'TSE2', 'TTE2', 'TTE3', 'CCV13', 'CCV13-H', 'CCVE4', 'CEMX4', 'CTI4', 'STDLIBE1', 'STDLIBE2', 'STDLIBE3', 'CEE6', 'CER7', 'EXC3']
 header = "stdio.h"
 axiom_type = "precondition"
 
@@ -8034,7 +8012,7 @@ source_module = "LIBC-STDIO"
 source_line_start = 1947
 source_line_end = 1951
 tags = ['pointer', 'division']
-error_codes = ['CCV7', 'CCV11', 'CEA2', 'ECL4', 'EFNC1', 'TDG12', 'FD6', 'STDIO1', 'CCV9', 'CEA7', 'CEA8', 'CEA9', 'CEB1', 'CEB5', 'CEB9', 'CEB10', 'CEB11', 'CERL5', 'TEAS2', 'TSE2', 'TTE2', 'TTE3', 'CTI4', 'CEA1', 'CEA5', 'CEE3', 'CER3', 'CER4', 'CERL1', 'CERL2', 'CERL3', 'CERL4', 'CERL6', 'ECL3', 'CEER1', 'EEA2', 'EEA3', 'EEA4', 'EEA5', 'EFNC2', 'STRING1', 'CER6', 'CCV13', 'CCV13-H', 'CCVE4', 'CEMX4', 'STDLIBE1', 'STDLIBE2', 'STDLIBE3', 'CEE6', 'CER7', 'EXC3']
+error_codes = ['CCV7', 'CCV11', 'CEA1', 'CEA5', 'CEA2', 'CEE3', 'CER3', 'CER4', 'CERL1', 'CERL2', 'CERL3', 'CERL4', 'CERL6', 'ECL3', 'ECL4', 'CEER1', 'EEA2', 'EEA3', 'EEA4', 'EEA5', 'EFNC1', 'EFNC2', 'TDG12', 'FD6', 'STDIO1', 'STRING1', 'CCV9', 'CEA7', 'CEA8', 'CEA9', 'CEB1', 'CEB5', 'CEB9', 'CEB10', 'CEB11', 'CER6', 'CERL5', 'TEAS2', 'TSE2', 'TTE2', 'TTE3', 'CCV13', 'CCV13-H', 'CCVE4', 'CEMX4', 'CTI4', 'STDLIBE1', 'STDLIBE2', 'STDLIBE3', 'CEE6', 'CER7', 'EXC3']
 header = "stdio.h"
 axiom_type = "precondition"
 
@@ -8733,7 +8711,7 @@ function = "memset"
 header = "string.h"
 signature = '''void *memset(void *ptr, int value, size_t num )'''
 axiom_type = "precondition"
-depends_on = ['c11_libc_ctype_operation_31b75e36', 'c11_libc_ctype_operation_31b75e36', 'c11_c_conversion_syntax_operation_71beb31f', 'c11_c_conversion_syntax_operation_c943b988', 'c11_c_conversion_syntax_operation_f99c8a80', 'c11_c_conversion_syntax_operation_1eb241f8', 'c11_c_conversion_syntax_operation_7e61a670', 'c11_c_conversion_syntax_operation_9fc9c1bc', 'c11_c_conversion_syntax_operation_0dec620e', 'c11_c_conversion_syntax_operation_bedaf002', 'c11_c_conversion_syntax_operation_3d050282', 'c11_c_conversion_syntax_operation_b4d2cc43', 'c11_c_conversion_syntax_operation_7eae9055', 'c11_c_conversion_syntax_operation_0d439ded', 'c11_c_conversion_syntax_operation_57debbb7', 'c11_c_conversion_syntax_operation_9e248f04', 'c11_libc_string_memset_cff58efc', 'c11_libc_string_memset_cff58efc']
+depends_on = ['c11_libc_ctype_operation_31b75e36', 'c11_libc_ctype_operation_31b75e36', 'c11_c_conversion_syntax_operation_2533bd8c', 'c11_c_conversion_syntax_cast_ba372452', 'c11_c_conversion_syntax_operation_c943b988', 'c11_c_conversion_syntax_operation_f99c8a80', 'c11_c_conversion_syntax_operation_f99c8a80', 'c11_c_conversion_syntax_operation_7e61a670', 'c11_c_conversion_syntax_operation_1be65e90', 'c11_c_conversion_syntax_operation_190f1be4', 'c11_c_conversion_syntax_operation_bedaf002', 'c11_c_conversion_syntax_operation_244d5a84', 'c11_c_conversion_syntax_operation_b4d2cc43', 'c11_c_conversion_syntax_operation_7eae9055', 'c11_c_conversion_syntax_operation_bc3d1923', 'c11_c_conversion_syntax_operation_57debbb7', 'c11_c_conversion_syntax_operation_9e248f04']
 
 [[axioms]]
 id = "c11_libc_string_memset_cff58efc"
@@ -8766,7 +8744,6 @@ function = "strcpy"
 header = "string.h"
 signature = '''char *strcpy(char * __restrict__ s1, const char * __restrict__ s2)'''
 axiom_type = "precondition"
-depends_on = ['c11_libc_string_strcpy_db855a47', 'c11_libc_string_strcpy_db855a47']
 
 [[axioms]]
 id = "c11_libc_string_strcpy_db855a47"
@@ -8784,7 +8761,7 @@ header = "string.h"
 signature = '''char *strcpy(char * __restrict__ s1, const char * __restrict__ s2)'''
 axiom_type = "constraint"
 on_violation = '''UNDEF: STRING1'''
-depends_on = ['c11_libc_ctype_operation_31b75e36', 'c11_libc_ctype_operation_31b75e36', 'c11_libc_string_operation_022e9cfe', 'c11_libc_string_operation_022e9cfe']
+depends_on = ['c11_libc_ctype_operation_31b75e36', 'c11_libc_ctype_operation_31b75e36']
 
 [[axioms]]
 id = "c11_libc_string_operation_32679424"
@@ -8830,7 +8807,7 @@ tags = ['comparison']
 function = "strerror"
 header = "string.h"
 axiom_type = "precondition"
-depends_on = ['c11_libc_ctype_operation_31b75e36', 'c11_libc_ctype_operation_31b75e36', 'c11_libc_io_syntax_operation_79695fbd', 'c11_libc_io_syntax_newFixedObject_27f3ed1d', 'c11_libc_io_syntax_operation_79e24239', 'c11_libc_io_syntax_operation_b8e82b73', 'c11_libc_io_syntax_operation_79695fbd', 'c11_libc_io_syntax_newFixedObject_27f3ed1d', 'c11_libc_io_syntax_operation_79e24239', 'c11_libc_io_syntax_operation_b8e82b73', 'c11_libc_string_strerror_d787b013', 'c11_libc_string_strerror_a3d1cca3', 'c11_libc_string_strerror_d787b013', 'c11_libc_string_strerror_a3d1cca3']
+depends_on = ['c11_libc_ctype_operation_31b75e36', 'c11_libc_ctype_operation_31b75e36', 'c11_libc_io_syntax_operation_79695fbd', 'c11_libc_io_syntax_newFixedObject_27f3ed1d', 'c11_libc_io_syntax_operation_79e24239', 'c11_libc_io_syntax_operation_b8e82b73', 'c11_libc_io_syntax_operation_79695fbd', 'c11_libc_io_syntax_newFixedObject_27f3ed1d', 'c11_libc_io_syntax_operation_79e24239', 'c11_libc_io_syntax_operation_b8e82b73']
 
 [[axioms]]
 id = "c11_libc_string_strerror_a3d1cca3"
@@ -8892,7 +8869,7 @@ function = "strlen"
 header = "string.h"
 signature = '''size_t strlen(const char *str)'''
 axiom_type = "effect"
-depends_on = ['c11_libc_ctype_operation_31b75e36', 'c11_libc_ctype_operation_31b75e36', 'c11_libc_io_syntax_getString_6bf7be57', 'c11_libc_io_syntax_getString_6bf7be57', 'c11_libc_string_strlen_29991599', 'c11_libc_string_strlen_29991599']
+depends_on = ['c11_libc_ctype_operation_31b75e36', 'c11_libc_ctype_operation_31b75e36', 'c11_libc_io_syntax_getString_6bf7be57', 'c11_libc_io_syntax_getString_6bf7be57']
 
 [[axioms]]
 id = "c11_libc_string_strlen_29991599"
