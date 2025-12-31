@@ -6,7 +6,7 @@
 
 ## The Problem
 
-LLMs hallucinate about library code because they have no grounding in your library's actual constraints. When an LLM says "you can use `std::string` with `ILP_FOR_T`", there's no mechanism to validate this against the library's real requirements (which might require trivially destructible types).
+LLMs hallucinate about library code because they have no grounding in your library's actual constraints. When an LLM says "you can use `std::string` with `void foo()`", there's no mechanism to validate this against the library's real requirements (which might require trivially destructible types).
 
 ## The Solution
 
@@ -14,7 +14,7 @@ Axiom automatically extracts axioms (constraints, preconditions, undefined behav
 1. **Your library code** - via header analysis, comment annotations, and LLM-assisted extraction
 2. **C++20 foundations** - grounding library axioms in formal language semantics
 
-When an LLM makes a claim about your library, Axiom validates it against the extracted knowledge and returns a proof chain showing why it's valid or invalid.
+When an LLM makes a claim about your library, Axiom validates it against the extracted knowledge and returns a proof chain (potentially all the way to cpp standard) showing why it's valid or invalid.
 
 ## How It Works
 
@@ -90,15 +90,15 @@ name = "mylib"
 version = "1.0.0"
 
 [[pairing]]
-opener = "ILP_FOR"
-closer = "ILP_END"
+opener = "foo_begin"
+closer = "foo_end"
 required = true
-evidence = "Loop macro must be closed with ILP_END"
+evidence = "Streaming operation must be closed with foo_end"
 
 [[axiom]]
-function = "ILP_FOR_T"
+function = "foo"
 constraint = "trivially_destructible<T>"
-evidence = "SmallStorage optimization requires trivial types"
+evidence = "Internal buffer requires trivial types"
 ```
 
 ### Option 2: Header Annotations
@@ -106,20 +106,38 @@ evidence = "SmallStorage optimization requires trivial types"
 Add structured comments directly in your headers:
 
 ```cpp
-// @axiom:pairs_with ILP_END
+// @axiom:pairs_with foo_end
 // @axiom:required true
-#define ILP_FOR(type, var, start, end, N) ...
+void foo_begin(Context* ctx);
 
 // @axiom:constraint trivially_destructible
-// @axiom:evidence "SmallStorage requires trivial types"
+// @axiom:evidence "Internal buffer requires trivial types"
 template<typename T>
-class ILP_FOR_T { ... };
+void foo(T value);
+```
+
+### Option 3: `.axignore` File
+
+Control which files are analyzed during ingestion (gitignore-style syntax):
+
+```gitignore
+# .axignore
+build/
+tests/
+third_party/
+*.generated.cpp
 ```
 
 ### What Users Get
 
-When a user runs `python scripts/ingest_library.py /path/to/mylib`, Axiom automatically:
-1. Discovers your `.axiom.toml` or header annotations
+When a user clones a library that ships with `.axiom.toml` or axiom annotations, they can ingest it:
+
+```bash
+python scripts/ingest_library.py /path/to/mylib
+```
+
+Axiom automatically:
+1. Discovers your `.axiom.toml`, header annotations, or pre-extracted axiom files
 2. Links your constraints to C++20 foundations
 3. Loads into the knowledge graph (Neo4j + LanceDB)
 
@@ -145,26 +163,26 @@ This grounding means when Axiom says "your library function requires a non-null 
 
 When connected to Claude Code:
 
-- **`validate_claim`** - "Can I use std::string with ILP_FOR_T?" → Returns validity + proof chain
+- **`validate_claim`** - "Can I use std::string with foo()?" → Returns validity + proof chain
 - **`search_axioms`** - Find constraints relevant to a query
 - **`get_axiom`** - Get details of a specific axiom
 - **`get_stats`** - Knowledge base statistics
 
 ## Example Validation
 
-**Claim**: "std::string works with ILP_FOR_T"
+**Claim**: "std::string works with foo()"
 
 **Result**:
 ```
 INVALID
 
 Contradiction found:
-- ILP_FOR_T requires trivially_destructible types (library axiom)
+- foo() requires trivially_destructible types (library axiom)
 - std::string has non-trivial destructor (cpp20_stdlib)
 - trivially_destructible requires trivial destructor (cpp20_language)
 
 Proof chain:
-1. ILP_FOR_T<T> constraint (your_library, conf: 0.9)
+1. foo<T>() constraint (your_library, conf: 0.9)
 2. trivially_destructible concept (cpp20_language, conf: 1.0)
 3. std::string destructor (cpp20_stdlib, conf: 0.95)
 ```
@@ -175,25 +193,6 @@ Proof chain:
 - **Foundations**: 3,541 axioms across 6 layers
 - **Extraction**: Header parsing, comment annotations, LLM-assisted
 - **Integration**: MCP server for Claude Code
-
-## Project Structure
-
-```
-axiom/
-├── axiom/
-│   ├── extractors/      # Extract axioms from sources
-│   ├── graph/           # Neo4j graph operations
-│   ├── vectors/         # LanceDB semantic search
-│   ├── reasoning/       # Validation and proof chains
-│   └── mcp/             # Claude Code integration
-├── knowledge/
-│   ├── foundations/     # C++20 foundation axioms
-│   └── pairings/        # Function pairing definitions
-└── scripts/
-    ├── ingest_library.py    # Extract from your library
-    ├── ingest.py            # Load axioms to graph
-    └── load_pairings.py     # Load function pairings
-```
 
 ## License
 
