@@ -194,6 +194,11 @@ Proof chain:
 - **Extraction**: Header parsing, comment annotations, LLM-assisted
 - **Integration**: MCP server for Claude Code
 
+## Documentation
+
+- [Extraction Order](docs/extraction-order.md) - How to rebuild the knowledge base
+- [MCP Test Report](docs/mcp-test-report.md) - Little taster / sample demonstrating MCP tool functionality
+
 ## License
 
 BSL-1.0
