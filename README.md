@@ -14,7 +14,7 @@ LLMs hallucinate about library code because they have no grounding in your libra
 
 Axiom automatically extracts axioms (constraints, preconditions, undefined behavior) from:
 1. **Your library code** - via header analysis, comment annotations, and LLM-assisted extraction
-2. **C++20 foundations** - grounding library axioms in formal language semantics
+2. **C++20 foundations** - grounding library axioms in formal language semantics. Available as toml files in this repo
 
 When an LLM makes a claim about your library, Axiom validates it against the extracted knowledge and returns a proof chain (potentially all the way to cpp standard) showing why it's valid or invalid.
 
