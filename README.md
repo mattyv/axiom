@@ -2,7 +2,7 @@
 
 [![CI](https://github.com/mattyv/axiom/actions/workflows/ci.yml/badge.svg)](https://github.com/mattyv/axiom/actions/workflows/ci.yml)
 
-<img src="docs/axiom.png" alt="Axiom Knowledge Graph" width="400">
+<img src="docs/axiom.png" alt="Axiom Knowledge Graph" width="180">
 
 **Automatically build knowledge about your C++20 libraries so LLMs stop hallucinating about them.**
 
