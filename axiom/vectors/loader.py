@@ -20,18 +20,21 @@ class LanceDBLoader:
         self,
         db_path: str = "./data/lancedb",
         model_name: str = "all-MiniLM-L6-v2",
+        neo4j: "Neo4jLoader | None" = None,
     ) -> None:
         """Initialize LanceDB connection and embedding model.
 
         Args:
             db_path: Path to LanceDB database directory.
             model_name: Sentence transformer model name.
+            neo4j: Optional Neo4jLoader for pairing expansion.
         """
         self.db_path = Path(db_path)
         self.db_path.parent.mkdir(parents=True, exist_ok=True)
         self.db = lancedb.connect(str(self.db_path))
         self._model: SentenceTransformer | None = None
         self._model_name = model_name
+        self.neo4j = neo4j
 
     @property
     def model(self) -> SentenceTransformer:
@@ -314,3 +317,67 @@ class LanceDBLoader:
             return True
         except Exception:
             return False
+
+    def search_with_pairings(
+        self,
+        query: str,
+        table_name: str = "axioms",
+        limit: int = 10,
+    ) -> list[dict]:
+        """Search for axioms and auto-expand to include paired functions.
+
+        This method:
+        1. Performs regular semantic search
+        2. For each result, fetches paired axioms from Neo4j
+        3. Fetches idiom templates the axioms participate in
+        4. Returns expanded results without duplicates
+
+        Args:
+            query: Search query text.
+            table_name: Name of the LanceDB table.
+            limit: Maximum number of base results.
+
+        Returns:
+            List of results including base axioms, paired axioms (marked with
+            _paired_with), and idiom templates (marked with _idiom).
+        """
+        # Get base search results
+        base_results = self.search(query, table_name=table_name, limit=limit)
+
+        if not base_results:
+            return []
+
+        # If no Neo4j connection, just return base results
+        if self.neo4j is None:
+            return base_results
+
+        expanded: list[dict] = []
+        seen_ids: set[str] = set()
+
+        for axiom in base_results:
+            axiom_id = axiom.get("id")
+            if not axiom_id or axiom_id in seen_ids:
+                continue
+
+            expanded.append(axiom)
+            seen_ids.add(axiom_id)
+
+            # Get paired axioms from Neo4j
+            try:
+                paired = self.neo4j.get_paired_axioms(axiom_id)
+                for p in paired:
+                    paired_id = p.get("id")
+                    if paired_id and paired_id not in seen_ids:
+                        p["_paired_with"] = axiom_id
+                        expanded.append(p)
+                        seen_ids.add(paired_id)
+
+                # Get idiom templates
+                idioms = self.neo4j.get_idioms_for_axiom(axiom_id)
+                for idiom in idioms:
+                    expanded.append({"_idiom": idiom})
+            except Exception:
+                # Neo4j error - continue without expansion
+                pass
+
+        return expanded

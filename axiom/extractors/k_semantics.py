@@ -5,11 +5,17 @@
 
 """K Semantics extractor for parsing .k files."""
 
+from __future__ import annotations
+
 import re
 from dataclasses import dataclass
 from pathlib import Path
+from typing import TYPE_CHECKING
 
 from axiom.models import Axiom, AxiomType, SourceLocation
+
+if TYPE_CHECKING:
+    from axiom.models.pairing import Pairing
 
 # Module name to header file mapping
 MODULE_TO_HEADER: dict[str, str] = {
@@ -628,3 +634,38 @@ class KSemanticsExtractor:
             tags.append(operation)
 
         return tags
+
+    def extract_pairings_from_file(self, k_file: Path) -> list[Pairing]:
+        """Extract function pairings from a K file.
+
+        Analyzes cell access patterns to detect opener/closer relationships.
+
+        Args:
+            k_file: Path to .k file.
+
+        Returns:
+            List of Pairing objects.
+        """
+        from axiom.extractors.k_pairings import extract_pairings_from_rules
+
+        rules = self.parse_file(k_file)
+        return extract_pairings_from_rules(rules)
+
+    def extract_all_pairings(self) -> list[Pairing]:
+        """Extract pairings from all K files in the semantics directory.
+
+        Returns:
+            List of all extracted Pairing objects.
+        """
+        from axiom.extractors.k_pairings import extract_pairings_from_rules
+
+        all_rules: list[ParsedRule] = []
+
+        for k_file in self.semantics_root.rglob("*.k"):
+            try:
+                rules = self.parse_file(k_file)
+                all_rules.extend(rules)
+            except Exception as e:
+                print(f"Warning: Failed to parse {k_file}: {e}")
+
+        return extract_pairings_from_rules(all_rules)

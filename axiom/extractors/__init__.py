@@ -14,6 +14,12 @@ from .k_dependencies import (
     extract_function_calls,
     resolve_depends_on,
 )
+from .k_pairings import (
+    detect_cpp_stdlib_pairings,
+    detect_naming_pairings,
+    extract_cell_patterns,
+    extract_pairings_from_rules,
+)
 from .k_semantics import KSemanticsExtractor, ParsedRule
 from .linker import AxiomLinker
 from .prompts import (
@@ -30,8 +36,12 @@ __all__ = [
     "build_function_index",
     "ContentGenerator",
     "CSignatureExtractor",
+    "detect_cpp_stdlib_pairings",
+    "detect_naming_pairings",
     "ErrorCodesParser",
+    "extract_cell_patterns",
     "extract_function_calls",
+    "extract_pairings_from_rules",
     "EXTRACTION_PROMPT",
     "generate_dedup_prompt",
     "generate_extraction_prompt",

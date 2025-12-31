@@ -9,6 +9,7 @@
 from neo4j import Driver, GraphDatabase
 
 from axiom.models import Axiom, AxiomCollection, ErrorCode
+from axiom.models.pairing import Idiom, Pairing
 
 
 class Neo4jLoader:
@@ -374,3 +375,125 @@ class Neo4jLoader:
                 """
             )
             return [dict(record["a"]) for record in result]
+
+    # --- Pairing and Idiom methods ---
+
+    def create_pairing_relationship(self, pairing: Pairing) -> None:
+        """Create a PAIRS_WITH relationship between two axioms.
+
+        Args:
+            pairing: Pairing defining the opener/closer relationship.
+        """
+        query = """
+        MATCH (opener:Axiom {id: $opener_id})
+        MATCH (closer:Axiom {id: $closer_id})
+        MERGE (opener)-[r:PAIRS_WITH]->(closer)
+        SET r.required = $required,
+            r.source = $source,
+            r.confidence = $confidence,
+            r.cell = $cell,
+            r.evidence = $evidence
+        """
+        with self.driver.session() as session:
+            session.run(
+                query,
+                opener_id=pairing.opener_id,
+                closer_id=pairing.closer_id,
+                required=pairing.required,
+                source=pairing.source,
+                confidence=pairing.confidence,
+                cell=pairing.cell,
+                evidence=pairing.evidence,
+            )
+
+    def create_idiom_node(self, idiom: Idiom) -> None:
+        """Create an Idiom node and link it to participating axioms.
+
+        Args:
+            idiom: Idiom with template and participants.
+        """
+        query = """
+        MERGE (i:Idiom {id: $id})
+        SET i.name = $name,
+            i.template = $template,
+            i.source = $source
+        """
+        with self.driver.session() as session:
+            session.run(
+                query,
+                id=idiom.id,
+                name=idiom.name,
+                template=idiom.template,
+                source=idiom.source,
+            )
+
+            # Create PARTICIPATES_IN relationships
+            if idiom.participants:
+                session.run(
+                    """
+                    MATCH (i:Idiom {id: $id})
+                    UNWIND $participants AS participant_id
+                    MATCH (a:Axiom {id: participant_id})
+                    MERGE (a)-[:PARTICIPATES_IN]->(i)
+                    """,
+                    id=idiom.id,
+                    participants=idiom.participants,
+                )
+
+    def get_paired_axioms(self, axiom_id: str) -> list[dict]:
+        """Get axioms paired with the given axiom via PAIRS_WITH.
+
+        Searches in both directions (opener or closer).
+
+        Args:
+            axiom_id: Axiom ID to find pairs for.
+
+        Returns:
+            List of paired axiom dicts.
+        """
+        with self.driver.session() as session:
+            result = session.run(
+                """
+                MATCH (a:Axiom {id: $id})-[:PAIRS_WITH]-(paired:Axiom)
+                RETURN paired
+                """,
+                id=axiom_id,
+            )
+            return [dict(record["paired"]) for record in result]
+
+    def get_idioms_for_axiom(self, axiom_id: str) -> list[dict]:
+        """Get idioms that the given axiom participates in.
+
+        Args:
+            axiom_id: Axiom ID to find idioms for.
+
+        Returns:
+            List of idiom dicts with id, name, template, source.
+        """
+        with self.driver.session() as session:
+            result = session.run(
+                """
+                MATCH (a:Axiom {id: $id})-[:PARTICIPATES_IN]->(i:Idiom)
+                RETURN i
+                """,
+                id=axiom_id,
+            )
+            return [dict(record["i"]) for record in result]
+
+    def load_pairings(self, pairings: list[Pairing]) -> None:
+        """Load multiple pairings at once.
+
+        Args:
+            pairings: List of Pairing objects to create relationships for.
+        """
+        for pairing in pairings:
+            self.create_pairing_relationship(pairing)
+
+    def load_idioms(self, idioms: list[Idiom]) -> None:
+        """Load multiple idioms at once.
+
+        Args:
+            idioms: List of Idiom objects to create.
+        """
+        for idiom in idioms:
+            self.create_idiom_node(idiom)

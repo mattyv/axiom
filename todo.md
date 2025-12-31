@@ -460,181 +460,73 @@ Current axioms capture vocabulary (individual functions). Missing: grammar (how 
 Example failure: Claude generated ILP_FOR examples without ILP_END because axioms describe
 individual macros but not their required pairing.
 
+### Implementation Status
+
+| Component | Status | Files |
+|-----------|--------|-------|
+| Data model (Pairing/Idiom) | ✅ Done | `axiom/models/pairing.py` |
+| K semantics pairing extraction | ✅ Done | `axiom/extractors/k_pairings.py` |
+| TOML manifest loading | ✅ Done | `scripts/load_pairings.py` |
+| Graph schema (PAIRS_WITH) | ✅ Done | `axiom/graph/loader.py` |
+| Search expansion | ✅ Done | `axiom/vectors/loader.py` |
+| MCP integration | ✅ Done | `axiom/mcp/server.py` |
+| C11 pairings loaded | ✅ Done | malloc→free, malloc→realloc, realloc→free |
+| C++20 stdlib pairings TOML | ✅ Done | `knowledge/pairings/cpp20_stdlib.toml` |
+| Comment annotation extraction | ✅ Done | `axiom/extractors/comment_annotations.py` |
+| Spec text pairing extraction | ⏳ TODO | (parse C++ draft for pairing phrases) |
+| Test co-occurrence mining | ⏳ TODO | (analyze test files for pairing patterns) |
+
 ### Universal Pairing Detection (Multi-Source)
 
-| Source | Detection Method | Confidence | Example |
-|--------|------------------|------------|---------|
-| K semantics | Shared cell access | 1.0 | malloc/free share `<malloced>` cell |
-| C++ draft spec | Language patterns | 1.0 | "matching deallocation function" |
-| Library tests | Co-occurrence | 0.9 | ILP_FOR + ILP_END in all tests |
-| Naming heuristics | Pattern matching | 0.7 | `X_begin`/`X_end`, `X_open`/`X_close` |
-| Annotations | Author manifest | 1.0 | Explicit declaration |
+| Source | Detection Method | Confidence | Status |
+|--------|------------------|------------|--------|
+| K semantics | Shared cell access | 1.0 | ✅ Implemented |
+| TOML manifest | Author declaration | 1.0 | ✅ Implemented |
+| Naming heuristics | Pattern matching | 0.7 | ✅ Implemented |
+| Comment annotations | `@axiom:pairs_with` | 1.0 | ✅ Implemented |
+| C++ draft spec | Language patterns | 1.0 | ⏳ TODO |
+| Library tests | Co-occurrence | 0.9 | ⏳ TODO |
 
-### 1. K Semantics Pairing Extraction
+### Usage
 
-K tracks pairing through configuration cells. Example from `stdlib.k`:
+```bash
+# Load pairings from K semantics (C11 stdlib)
+python scripts/load_pairings.py --dry-run
 
-```k
-# malloc - WRITES to cell
-<malloced>... .Map => obj(!I, Align, alloc) |-> Sz ...</malloced>
+# Load pairings from TOML manifest (C++20 stdlib)
+python scripts/load_pairings.py --toml knowledge/pairings/cpp20_stdlib.toml --dry-run
 
-# free - REMOVES from cell, checks membership
-<malloced>... Base |-> _ => .Map ...</malloced>
-requires notBool Base in_keys(Malloced)
-  => UNDEF("STDLIB2", "Called free on memory not allocated by malloc")
+# Actually load (remove --dry-run)
+python scripts/load_pairings.py
+python scripts/load_pairings.py --toml knowledge/pairings/cpp20_stdlib.toml
 ```
 
-**Extraction algorithm:**
-```python
-def extract_pairings_from_k(k_rules):
-    cell_writers = {}  # cell -> [functions that add]
-    cell_readers = {}  # cell -> [functions that remove/check]
-
-    for rule in k_rules:
-        for cell in rule.cells:
-            if is_add_pattern(cell):      # .Map => X
-                cell_writers[cell.name].append(rule.function)
-            if is_remove_pattern(cell):   # X => .Map, in_keys check
-                cell_readers[cell.name].append(rule.function)
-
-    # Functions sharing same cell are paired
-    for cell, writers in cell_writers.items():
-        for w in writers:
-            for r in cell_readers.get(cell, []):
-                yield Pairing(opener=w, closer=r, cell=cell)
-```
-
-**Key files:**
-- `axiom/extractors/k_semantics.py` - parse K rule cells
-- `axiom/extractors/k_pairings.py` - new file for pairing extraction
-
-### 2. Draft Spec Pairing Extraction
-
-The C++ standard uses specific language patterns for pairing:
-
-```python
-PAIRING_PHRASES = [
-    r"matching (deallocation|allocation) function",
-    r"shall deallocate.*allocated by",
-    r"corresponding (constructor|destructor)",
-    r"shall be released by",
-    r"must be paired with",
-]
-
-def extract_pairings_from_spec(section_text, section_ref):
-    for pattern in PAIRING_PHRASES:
-        if match := re.search(pattern, section_text):
-            # Extract function names from surrounding context
-            yield Pairing(
-                opener=extract_opener(match),
-                closer=extract_closer(match),
-                source=f"spec:{section_ref}",
-                evidence=match.group(0)
-            )
-```
-
-**Key sections to parse:**
-- `[basic.stc.dynamic]` - new/delete pairing
-- `[class.ctor]` + `[class.dtor]` - constructor/destructor
-- `[thread.mutex]` - lock/unlock
-- `[utilities]` - RAII patterns
-
-### 3. Library Test Mining
-
-For libraries without K semantics or spec text:
-
-```python
-def extract_pairings_from_tests(test_files):
-    co_occurrence = defaultdict(Counter)
-
-    for file in test_files:
-        functions_used = extract_function_calls(file)
-        for f1, f2 in combinations(functions_used, 2):
-            co_occurrence[f1][f2] += 1
-            co_occurrence[f2][f1] += 1
-
-    # High co-occurrence suggests pairing
-    for func, partners in co_occurrence.items():
-        for partner, count in partners.most_common(3):
-            if count / total_uses[func] > 0.8:  # 80%+ co-occurrence
-                yield Pairing(
-                    opener=func,
-                    closer=partner,
-                    source="test_mining",
-                    confidence=count / total_uses[func]
-                )
-```
-
-### 4. Naming Heuristics
-
-Detect standard naming patterns:
-
-```python
-PAIRING_PATTERNS = [
-    (r"(.+)_begin$", r"\1_end"),
-    (r"(.+)_start$", r"\1_stop"),
-    (r"(.+)_open$", r"\1_close"),
-    (r"(.+)_lock$", r"\1_unlock"),
-    (r"(.+)_init$", r"\1_(cleanup|destroy|free|finish)"),
-    (r"(.+)_acquire$", r"\1_release"),
-    (r"create_(.+)$", r"destroy_\1"),
-    (r"^(.+)$", r"end_\1"),  # X / end_X pattern
-]
-```
-
-### 5. Library Author Annotations
-
-Minimal manifest format (separate file, no code changes):
+### TOML Manifest Format
 
 ```toml
-# my-library.axiom.toml
+# knowledge/pairings/my-library.toml
 
-[library]
-name = "ilp_for"
+[metadata]
+layer = "my_library"
 version = "1.0.0"
 
 [[pairing]]
-opener = "ILP_FOR"
-closer = "ILP_END"
+opener = "resource_acquire"
+closer = "resource_release"
 required = true
-role_opener = "loop_start"
-role_closer = "loop_end"
-
-[[pairing]]
-opener = "ILP_FOR_T"
-closer = "ILP_END"
-required = true
+evidence = "Resource lifecycle management"
 
 [[idiom]]
-name = "ilp_for_loop"
-participants = ["ILP_FOR", "ILP_END"]
+name = "scoped_resource"
+participants = ["resource_acquire", "resource_release"]
 template = '''
-ILP_FOR(${type} ${var}, ${start}, ${end}, ${N}) {
-    ${body}
-} ILP_END
+resource_acquire(r);
+// use r
+resource_release(r);
 '''
 ```
 
-### Auto-Generation + Review Workflow
-
-```bash
-# 1. Auto-detect pairings from all sources
-axiom extract-pairings ./my-library \
-    --tests ./tests \
-    --headers ./include \
-    --output pairings.toml
-
-# 2. Author reviews, fixes false positives/negatives
-
-# 3. Integrate into axiom extraction
-axiom extract ./my-library \
-    --pairings pairings.toml \
-    --output axioms.toml
-```
-
 ### Graph Schema for Pairings
-
-New relationship types in Neo4j:
 
 ```cypher
 // Pairing relationship
@@ -645,50 +537,11 @@ New relationship types in Neo4j:
     cell: "malloced"
 }]->(closer:Axiom)
 
-// Idiom participation
-(func:Axiom)-[:PARTICIPATES_IN {
-    role: "opener"
-}]->(idiom:Idiom)
+// Idiom node
+(:Idiom {id, name, template, source})
 
-// Idiom node with template
-CREATE (i:Idiom {
-    id: "ilp_for_loop",
-    name: "ILP FOR Loop",
-    template: "ILP_FOR(...) { ... } ILP_END"
-})
-```
-
-### Modified Search Behavior
-
-When searching for a function, auto-expand to include paired functions:
-
-```python
-def search_with_pairings(query):
-    results = semantic_search(query)
-
-    expanded = []
-    for axiom in results:
-        expanded.append(axiom)
-
-        # Get paired functions
-        paired = neo4j.query("""
-            MATCH (a:Axiom {id: $id})-[:PAIRS_WITH]-(paired:Axiom)
-            RETURN paired
-        """, id=axiom.id)
-
-        for p in paired:
-            expanded.append(p)
-
-        # Get idiom templates
-        idioms = neo4j.query("""
-            MATCH (a:Axiom {id: $id})-[:PARTICIPATES_IN]->(i:Idiom)
-            RETURN i
-        """, id=axiom.id)
-
-        for idiom in idioms:
-            expanded.append(idiom)  # Include template!
-
-    return dedupe(expanded)
+// Axiom participation in idiom
+(func:Axiom)-[:PARTICIPATES_IN]->(idiom:Idiom)
 ```
 
 ### Key Insight

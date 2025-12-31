@@ -1,0 +1,225 @@
+# C++20 Standard Library Function Pairings
+# These define semantic relationships between functions that must be used together.
+#
+# Format:
+# [[pairing]]
+# opener = "function_name"      # The function that initiates/acquires
+# closer = "function_name"      # The function that completes/releases
+# required = true/false         # Whether the closer MUST be called
+# evidence = "explanation"      # Why these are paired
+
+[metadata]
+layer = "cpp20_stdlib"
+version = "1.0.0"
+
+# =============================================================================
+# RAII: Constructor/Destructor Pairs
+# =============================================================================
+
+[[pairing]]
+opener = "std::any::any"
+closer = "std::any::~any"
+required = true
+evidence = "RAII: std::any constructor/destructor pair"
+
+[[pairing]]
+opener = "std::variant::variant"
+closer = "std::variant::~variant"
+required = true
+evidence = "RAII: std::variant constructor/destructor pair"
+
+[[pairing]]
+opener = "std::expected::expected"
+closer = "std::expected::~expected"
+required = true
+evidence = "RAII: std::expected constructor/destructor pair"
+
+[[pairing]]
+opener = "std::shared_ptr::shared_ptr"
+closer = "std::shared_ptr::~shared_ptr"
+required = true
+evidence = "RAII: shared_ptr constructor/destructor - ref count decremented on destruction"
+
+[[pairing]]
+opener = "std::weak_ptr::weak_ptr"
+closer = "std::weak_ptr::~weak_ptr"
+required = true
+evidence = "RAII: weak_ptr constructor/destructor pair"
+
+[[pairing]]
+opener = "std::condition_variable"
+closer = "std::condition_variable::~condition_variable"
+required = true
+evidence = "RAII: condition_variable constructor/destructor pair"
+
+[[pairing]]
+opener = "std::condition_variable_any"
+closer = "std::condition_variable_any::~condition_variable_any"
+required = true
+evidence = "RAII: condition_variable_any constructor/destructor pair"
+
+# =============================================================================
+# Smart Pointer Operations
+# =============================================================================
+
+[[pairing]]
+opener = "std::make_shared"
+closer = "std::shared_ptr::~shared_ptr"
+required = true
+evidence = "Memory: make_shared allocates, destructor deallocates when ref count reaches 0"
+
+[[pairing]]
+opener = "std::allocate_shared"
+closer = "std::shared_ptr::~shared_ptr"
+required = true
+evidence = "Memory: allocate_shared allocates with custom allocator, destructor deallocates"
+
+[[pairing]]
+opener = "std::make_shared_for_overwrite"
+closer = "std::shared_ptr::~shared_ptr"
+required = true
+evidence = "Memory: make_shared_for_overwrite allocates uninitialized, destructor deallocates"
+
+[[pairing]]
+opener = "std::weak_ptr::lock"
+closer = "std::shared_ptr::~shared_ptr"
+required = false
+evidence = "Acquire/release: lock() creates shared_ptr if object still exists"
+
+# =============================================================================
+# Container Operations
+# =============================================================================
+
+[[pairing]]
+opener = "push_back"
+closer = "pop_back"
+required = false
+evidence = "Container: add element to back / remove element from back"
+
+[[pairing]]
+opener = "push_front"
+closer = "pop_front"
+required = false
+evidence = "Container: add element to front / remove element from front"
+
+[[pairing]]
+opener = "emplace_back"
+closer = "pop_back"
+required = false
+evidence = "Container: construct element at back / remove element from back"
+
+[[pairing]]
+opener = "emplace_front"
+closer = "pop_front"
+required = false
+evidence = "Container: construct element at front / remove element from front"
+
+# =============================================================================
+# Range Access Pairs
+# =============================================================================
+
+[[pairing]]
+opener = "ranges::begin"
+closer = "ranges::end"
+required = true
+evidence = "Range: begin/end iterators define the valid range - must use matching pair"
+
+[[pairing]]
+opener = "ranges::rbegin"
+closer = "ranges::rend"
+required = true
+evidence = "Range: reverse begin/end iterators define reverse range"
+
+[[pairing]]
+opener = "ranges::cbegin"
+closer = "ranges::cend"
+required = true
+evidence = "Range: const begin/end iterators"
+
+[[pairing]]
+opener = "ranges::crbegin"
+closer = "ranges::crend"
+required = true
+evidence = "Range: const reverse begin/end iterators"
+
+# =============================================================================
+# Thread Synchronization
+# =============================================================================
+
+[[pairing]]
+opener = "std::condition_variable::wait"
+closer = "std::condition_variable::notify_one"
+required = false
+evidence = "Sync: wait blocks until notified - notify_one wakes one waiting thread"
+
+[[pairing]]
+opener = "std::condition_variable::wait_for"
+closer = "std::condition_variable::notify_one"
+required = false
+evidence = "Sync: wait_for blocks with timeout - notify_one wakes waiting thread"
+
+[[pairing]]
+opener = "std::condition_variable::wait_until"
+closer = "std::condition_variable::notify_one"
+required = false
+evidence = "Sync: wait_until blocks until time point - notify_one wakes waiting thread"
+
+[[pairing]]
+opener = "std::condition_variable_any::wait"
+closer = "std::condition_variable_any::notify_one"
+required = false
+evidence = "Sync: wait blocks until notified (any lock type)"
+
+# =============================================================================
+# Optional/Expected Value Access
+# =============================================================================
+
+[[pairing]]
+opener = "std::expected::value"
+closer = "std::expected::error"
+required = false
+evidence = "Monadic: value() for success case, error() for failure case - mutually exclusive"
+
+[[pairing]]
+opener = "std::expected::and_then"
+closer = "std::expected::or_else"
+required = false
+evidence = "Monadic: and_then chains success, or_else handles error"
+
+[[pairing]]
+opener = "std::expected::transform"
+closer = "std::expected::transform_error"
+required = false
+evidence = "Monadic: transform maps value, transform_error maps error"
+
+# =============================================================================
+# Idiom Templates
+# =============================================================================
+
+[[idiom]]
+name = "shared_ptr_scope"
+participants = ["std::make_shared", "std::shared_ptr::~shared_ptr"]
+template = """
+auto ptr = std::make_shared<T>(args...);
+// use ptr
+// destructor called automatically when ptr goes out of scope
+"""
+
+[[idiom]]
+name = "condition_variable_wait"
+participants = ["std::condition_variable::wait", "std::condition_variable::notify_one"]
+template = """
+std::unique_lock<std::mutex> lock(mutex);
+cv.wait(lock, [] { return condition; });
+// ... in another thread ...
+cv.notify_one();
+"""
+
+[[idiom]]
+name = "expected_monadic_chain"
+participants = ["std::expected::and_then", "std::expected::or_else"]
+template = """
+auto result = operation()
+    .and_then([](auto val) { return process(val); })
+    .or_else([](auto err) { return handle_error(err); });
+"""

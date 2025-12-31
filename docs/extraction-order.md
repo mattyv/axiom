@@ -13,6 +13,7 @@ When rebuilding the knowledge base from scratch, axioms must be extracted and lo
 | `scripts/ingest_stdlib.py` | Extract axioms from C++ stdlib headers |
 | `scripts/link_depends_on.py` | Regex-based linking (types from signatures) |
 | `scripts/link_semantic.py` | LLM-based linking (semantic grounding to foundations) |
+| `scripts/load_pairings.py` | Load function pairings into Neo4j (K semantics or TOML) |
 
 ## 1. Foundation Axioms (K-semantics based)
 
@@ -243,3 +244,87 @@ c11_core → c11_stdlib → cpp_core → cpp_stdlib → cpp20_language → cpp20
 ```
 
 Each extraction can use `depends_on` to link to any previously ingested layer.
+
+## 4. Function Pairings (Graph Relationships)
+
+**Script**: `scripts/load_pairings.py`
+
+Pairings connect axioms that represent functions that must be used together (e.g., malloc/free, lock/unlock). These are loaded AFTER axioms are ingested.
+
+### Loading C11 Pairings (from K semantics)
+
+```bash
+# Dry run - see what pairings would be created
+python scripts/load_pairings.py --dry-run
+
+# Load pairings into Neo4j
+python scripts/load_pairings.py
+```
+
+This extracts pairings from K semantics cell access patterns (functions that share a configuration cell like `<malloced>`).
+
+### Loading C++20 Pairings (from TOML manifest)
+
+```bash
+# Dry run
+python scripts/load_pairings.py --toml knowledge/pairings/cpp20_stdlib.toml --dry-run
+
+# Load pairings
+python scripts/load_pairings.py --toml knowledge/pairings/cpp20_stdlib.toml
+```
+
+### TOML Manifest Format
+
+```toml
+# knowledge/pairings/my-library.toml
+
+[metadata]
+layer = "my_library"
+version = "1.0.0"
+
+[[pairing]]
+opener = "std::make_shared"
+closer = "std::shared_ptr::~shared_ptr"
+required = true
+evidence = "Memory: allocation/deallocation"
+
+[[idiom]]
+name = "shared_ptr_scope"
+participants = ["std::make_shared", "std::shared_ptr::~shared_ptr"]
+template = '''
+auto ptr = std::make_shared<T>(args...);
+// use ptr
+// destructor called automatically
+'''
+```
+
+### Pairing Sources
+
+| Source | Script/Flag | Confidence |
+|--------|-------------|------------|
+| K semantics | `--semantics-root` (default) | 1.0 |
+| TOML manifest | `--toml <file>` | 1.0 |
+
+### Full Rebuild with Pairings
+
+Add these steps to the full rebuild example:
+
+```bash
+# ... after all axioms are ingested ...
+
+# 6. Load function pairings
+python scripts/load_pairings.py  # C11 from K semantics
+python scripts/load_pairings.py --toml knowledge/pairings/cpp20_stdlib.toml  # C++20
+```
+
+### Layer Dependency Chain (Updated)
+
+```
+c11_core → c11_stdlib → cpp_core → cpp_stdlib → cpp20_language → cpp20_stdlib → user_library
+    ↓           ↓           ↓           ↓              ↓               ↓              ↓
+ [ingest]   [ingest]    [ingest]    [ingest]       [ingest]        [ingest]       [ingest]
+                                                                                      ↓
+                                                                            [load_pairings]
+```
+
+Pairings are loaded last since they create PAIRS_WITH relationships between existing axiom nodes.

@@ -84,6 +84,12 @@ class Axiom(BaseModel):
     # Review status (affects confidence calculation for library axioms)
     reviewed: bool = False  # True if human-approved during review process
 
+    # Pairing metadata (for functions that must be used together)
+    pairs_with: list[str] = Field(default_factory=list)  # IDs of axioms this pairs with
+    pairing_role: str = "none"  # "opener", "closer", "both", or "none"
+    pairing_required: bool = False  # True if pairing is mandatory
+    pairing_source: str = ""  # "k_semantics", "spec", "comment_annotation", etc.
+
     @property
     def effective_confidence(self) -> float:
         """Calculate effective confidence based on review status.
@@ -191,6 +197,15 @@ class AxiomCollection(BaseModel):
                 lines.append(f"depends_on = {axiom.depends_on!r}")
             if axiom.reviewed:
                 lines.append("reviewed = true")
+            # Pairing fields
+            if axiom.pairs_with:
+                lines.append(f"pairs_with = {axiom.pairs_with!r}")
+            if axiom.pairing_role != "none":
+                lines.append(f'pairing_role = "{axiom.pairing_role}"')
+            if axiom.pairing_required:
+                lines.append("pairing_required = true")
+            if axiom.pairing_source:
+                lines.append(f'pairing_source = "{axiom.pairing_source}"')
             lines.append("")
 
         for error in self.error_codes:
@@ -251,6 +266,11 @@ class AxiomCollection(BaseModel):
                     on_violation=a.get("on_violation"),
                     depends_on=a.get("depends_on", []),
                     reviewed=a.get("reviewed", False),
+                    # Pairing fields
+                    pairs_with=a.get("pairs_with", []),
+                    pairing_role=a.get("pairing_role", "none"),
+                    pairing_required=a.get("pairing_required", False),
+                    pairing_source=a.get("pairing_source", ""),
                 )
             )
 

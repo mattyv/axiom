@@ -37,7 +37,8 @@ def _get_lance() -> LanceDBLoader | None:
     global _lance
     if _lance is None:
         try:
-            _lance = LanceDBLoader()
+            neo4j = _get_neo4j()
+            _lance = LanceDBLoader(neo4j=neo4j)
         except Exception:
             pass
     return _lance
@@ -250,20 +251,39 @@ async def _handle_search(arguments: dict[str, Any]) -> list[TextContent]:
     if not lance:
         return [TextContent(type="text", text="Error: LanceDB not available")]
 
-    results = lance.search(query, limit=limit)
+    # Use search_with_pairings to include paired axioms and idioms
+    results = lance.search_with_pairings(query, limit=limit)
 
     if not results:
         return [TextContent(type="text", text=f"No axioms found for: {query}")]
 
     lines = [f"## Axioms matching: {query}", ""]
+
     for r in results:
+        # Handle idiom results
+        if "_idiom" in r:
+            idiom = r["_idiom"]
+            lines.append(f"### Idiom: {idiom.get('name', 'unnamed')}")
+            lines.append(f"**Usage pattern**:")
+            lines.append("```")
+            lines.append(idiom.get("template", ""))
+            lines.append("```")
+            lines.append("")
+            continue
+
+        # Handle axiom results
         lines.append(f"### {r['id']}")
-        lines.append(f"**Module**: {r['module']} | **Layer**: {r['layer']}")
+
+        # Mark if this is a paired expansion
+        if r.get("_paired_with"):
+            lines.append(f"**(paired with `{r['_paired_with']}`)**")
+
+        lines.append(f"**Module**: {r.get('module', 'N/A')} | **Layer**: {r.get('layer', 'N/A')}")
         if r.get("function"):
             lines.append(f"**Function**: `{r['function']}` | **Header**: `{r.get('header', 'N/A')}`")
         if r.get("signature"):
             lines.append(f"**Signature**: `{r['signature']}`")
-        lines.append(f"**Content**: {r['content']}")
+        lines.append(f"**Content**: {r.get('content', 'N/A')}")
         if r.get("formal_spec"):
             lines.append(f"**Formal**: `{r['formal_spec']}`")
         if r.get("depends_on"):
@@ -343,6 +363,29 @@ async def _handle_get_axiom(arguments: dict[str, Any]) -> list[TextContent]:
             lines.append(f"- `{dep['id']}`{func_str}")
         if len(dependents) > 5:
             lines.append(f"- ... and {len(dependents) - 5} more")
+        lines.append("")
+
+    # Show paired axioms (functions that pair with this one)
+    paired = neo4j.get_paired_axioms(axiom_id)
+    if paired:
+        lines.append("### Paired With")
+        lines.append("This axiom pairs with the following (must be used together):")
+        for p in paired:
+            func = p.get("function", "")
+            func_str = f" (`{func}`)" if func else ""
+            lines.append(f"- `{p['id']}`{func_str}")
+        lines.append("")
+
+    # Show idioms this axiom participates in
+    idioms = neo4j.get_idioms_for_axiom(axiom_id)
+    if idioms:
+        lines.append("### Usage Idioms")
+        for idiom in idioms:
+            lines.append(f"**{idiom.get('name', 'unnamed')}**:")
+            lines.append("```")
+            lines.append(idiom.get("template", ""))
+            lines.append("```")
+        lines.append("")
 
     return [TextContent(type="text", text="\n".join(lines))]
 
