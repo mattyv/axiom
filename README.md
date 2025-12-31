@@ -21,22 +21,31 @@ When an LLM makes a claim about your library, Axiom validates it against the ext
 ## How It Works
 
 ```mermaid
-flowchart TD
-    A[Your Library Code] --> B[Axiom Extraction]
-    B --> C[Knowledge Graph]
-    C --> D[MCP Server for Claude Code]
+flowchart TB
+    A[Your Library Code]
+    A --> B
 
-    B -.- B1[Parse headers, analyze signatures]
-    B -.- B2[Extract constraints from comments/docs]
-    B -.- B3[LLM-assisted semantic extraction]
+    subgraph B[Axiom Extraction]
+        B1[Parse headers, analyze signatures]
+        B2[Extract constraints from comments/docs]
+        B3[LLM-assisted semantic extraction]
+    end
 
-    C -.- C1[Library axioms linked to C++20 foundations]
-    C -.- C2[Function pairings - acquire/release patterns]
-    C -.- C3[Type constraints and preconditions]
+    B --> C
 
-    D -.- D1["validate_claim: Can I use X with Y?"]
-    D -.- D2[search_axioms: Find relevant constraints]
-    D -.- D3[Proof chains back to formal semantics]
+    subgraph C[Knowledge Graph]
+        C1[Library axioms linked to C++20 foundations]
+        C2[Function pairings - acquire/release patterns]
+        C3[Type constraints and preconditions]
+    end
+
+    C --> D
+
+    subgraph D[MCP Server for Claude Code]
+        D1["validate_claim: Can I use X with Y?"]
+        D2[search_axioms: Find relevant constraints]
+        D3[Proof chains back to formal semantics]
+    end
 ```
 
 ## Quick Start
