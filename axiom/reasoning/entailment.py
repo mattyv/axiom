@@ -112,6 +112,19 @@ class EntailmentClassifier:
             r"\bunsigned\b",
             r"\bint\b",
         ],
+        "std_move": [
+            r"\bstd::move\b",
+            r"\bmove\b",
+        ],
+        "std_forward": [
+            r"\bstd::forward\b",
+            r"\bforward\b",
+        ],
+        "delete": [
+            r"\bdelete\b",
+            r"\bfree\b",
+            r"\bdeallocate\b",
+        ],
     }
 
     # Word form normalization for lemmatization
@@ -122,6 +135,34 @@ class EntailmentClassifier:
         "dividing": "division",
         "allocating": "allocation",
         "allocates": "allocation",
+    }
+
+    # Action categories for semantic understanding
+    # Distinguishes between different types of operations that may superficially seem similar
+    ACTION_CATEGORIES = {
+        # Syntactic transformations (no runtime effect on object state)
+        "syntactic": [
+            r"\bcast\b",
+            r"\bstatic_cast\b",
+            r"\breinterpret_cast\b",
+            r"\bconst_cast\b",
+            r"\bdynamic_cast\b",
+        ],
+        # Semantic transfers (changes object state/ownership)
+        # Note: Exclude "std::move" from patterns - it's a function name, not an action
+        "transfer": [
+            r"(?<!std::)(?<!::)\bmoves\b",  # "moves" but not part of "std::move"
+            r"(?<!std::)(?<!::)\btransfer\b",
+            r"\btransfers ownership\b",
+            r"\btransfer ownership\b",
+        ],
+        # Duplication (creates new object)
+        "duplication": [
+            r"\bcopy\b",
+            r"\bcopies\b",
+            r"\bduplicate\b",
+            r"\bclone\b",
+        ],
     }
 
     # Terse axiom patterns that imply negative polarity (error condition)
@@ -135,8 +176,12 @@ class EntailmentClassifier:
         r"out of bounds",
         r"dangling pointer",
         r"use after free",
-        r"double free",
-        r"integer division",  # Often describes error condition
+        r"double.?free",          # Matches "double free" or "double-free"
+        r"already freed",         # State descriptor for double-free scenarios
+        r"freed memory",          # State descriptor
+        r"deallocated memory",    # State descriptor
+        r"invalid pointer",       # Generic invalid pointer state
+        r"integer division",      # Often describes error condition
     ]
 
     def classify(self, claim: str, axiom: dict) -> EntailmentResult:
@@ -175,6 +220,21 @@ class EntailmentClassifier:
                 relationship="RELATED_TO",
                 confidence=0.3,
                 explanation="No topic overlap between claim and axiom",
+            )
+
+        # Check for semantic action contradictions (e.g., "cast" vs "move")
+        # This catches cases where both appear positive but describe incompatible actions
+        claim_action = self._extract_action_category(claim)
+        axiom_action = self._extract_action_category(axiom_content)
+
+        if claim_action and axiom_action and claim_action != axiom_action:
+            return EntailmentResult(
+                relationship="CONTRADICTS",
+                confidence=0.85,
+                explanation=(
+                    f"Claim describes {claim_action} action but axiom describes "
+                    f"{axiom_action} action - these are semantically incompatible"
+                ),
             )
 
         # Positive claim vs Negative axiom = CONTRADICTION
@@ -279,6 +339,28 @@ class EntailmentClassifier:
         for word, lemma in self.LEMMA_MAP.items():
             result = re.sub(rf"\b{word}\b", lemma, result, flags=re.IGNORECASE)
         return result
+
+    def _extract_action_category(self, text: str) -> str | None:
+        """Extract action category from text to detect semantic contradictions.
+
+        Args:
+            text: The text to analyze.
+
+        Returns:
+            Action category ("syntactic", "transfer", "duplication") or None.
+        """
+        text_lower = text.lower()
+
+        # Check categories in priority order: duplication > transfer > syntactic
+        # This ensures "copies" is detected before "moves" in ambiguous text
+        priority_order = ["duplication", "transfer", "syntactic"]
+
+        for category in priority_order:
+            if category in self.ACTION_CATEGORIES:
+                for pattern in self.ACTION_CATEGORIES[category]:
+                    if re.search(pattern, text_lower):
+                        return category
+        return None
 
     def _is_error_axiom(self, axiom: dict) -> bool:
         """Check if axiom is from an error context.

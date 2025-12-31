@@ -258,3 +258,105 @@ class TestLemmatization:
         classifier = EntailmentClassifier()
         topics = classifier._extract_topics("when the integer overflows")
         assert "overflow" in topics
+
+
+class TestActionCategories:
+    """Tests for action category extraction and semantic contradiction detection."""
+
+    def test_extracts_syntactic_action_cast(self):
+        """Test: 'cast' is detected as syntactic action."""
+        classifier = EntailmentClassifier()
+        action = classifier._extract_action_category("std::move is a cast")
+        assert action == "syntactic"
+
+    def test_extracts_transfer_action_move(self):
+        """Test: 'move' is detected as transfer action."""
+        classifier = EntailmentClassifier()
+        action = classifier._extract_action_category("std::move moves the object")
+        assert action == "transfer"
+
+    def test_extracts_duplication_action_copy(self):
+        """Test: 'copy' is detected as duplication action."""
+        classifier = EntailmentClassifier()
+        action = classifier._extract_action_category("std::move copies the object")
+        assert action == "duplication"
+
+    def test_contradicts_cast_vs_move(self):
+        """Test: Claim about 'move' contradicts axiom about 'cast'."""
+        classifier = EntailmentClassifier()
+        result = classifier.classify(
+            claim="std::move moves object to new location",
+            axiom={
+                "content": "std::move is a cast (static_cast<remove_reference_t<T>&&>(t))",
+                "formal_spec": "",
+            },
+        )
+        assert result.relationship == "CONTRADICTS"
+        assert result.confidence >= 0.8
+        assert "syntactic" in result.explanation or "transfer" in result.explanation
+
+    def test_contradicts_cast_vs_copy(self):
+        """Test: Claim about 'copy' contradicts axiom about 'cast'."""
+        classifier = EntailmentClassifier()
+        result = classifier.classify(
+            claim="std::move performs a deep copy of the object",
+            axiom={
+                "content": "std::move is a cast to rvalue reference",
+                "formal_spec": "",
+            },
+        )
+        assert result.relationship == "CONTRADICTS"
+        assert result.confidence >= 0.8
+
+    def test_no_contradiction_when_same_action_category(self):
+        """Test: Same action category doesn't trigger contradiction."""
+        classifier = EntailmentClassifier()
+        result = classifier.classify(
+            claim="std::forward is a cast operation",
+            axiom={
+                "content": "std::forward is static_cast<T&&>(arg)",
+                "formal_spec": "",
+            },
+        )
+        # Should not contradict due to action categories (both are syntactic)
+        # Might be SUPPORTS or RELATED_TO depending on polarity
+        assert result.relationship != "CONTRADICTS" or result.confidence < 0.8
+
+
+class TestImplicitErrorPatterns:
+    """Tests for expanded IMPLICIT_ERROR_PATTERNS including state descriptors."""
+
+    def test_already_freed_detected_as_error(self):
+        """Test: 'already freed' is detected as negative/error condition."""
+        classifier = EntailmentClassifier()
+        polarity = classifier._extract_polarity(
+            "Called free on memory that was already freed"
+        )
+        # Should be detected via _matches_error_pattern since "already freed" is now in IMPLICIT_ERROR_PATTERNS
+        assert polarity == "negative" or classifier._matches_error_pattern(
+            "Called free on memory that was already freed"
+        )
+
+    def test_freed_memory_detected_as_error(self):
+        """Test: 'freed memory' is detected as error condition."""
+        classifier = EntailmentClassifier()
+        assert classifier._matches_error_pattern("Accessing freed memory")
+
+    def test_deallocated_memory_detected_as_error(self):
+        """Test: 'deallocated memory' is detected as error condition."""
+        classifier = EntailmentClassifier()
+        assert classifier._matches_error_pattern("Using deallocated memory")
+
+    def test_double_delete_contradiction(self):
+        """Test: 'Double delete is safe' contradicts axiom about freed memory."""
+        classifier = EntailmentClassifier()
+        result = classifier.classify(
+            claim="Double delete is safe",
+            axiom={
+                "content": "Called free on memory that was already freed",
+                "formal_spec": "",
+            },
+        )
+        # With "already freed" in IMPLICIT_ERROR_PATTERNS, this should contradict
+        assert result.relationship == "CONTRADICTS"
+        assert result.confidence >= 0.8
