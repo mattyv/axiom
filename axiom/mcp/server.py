@@ -272,7 +272,7 @@ async def _handle_search(arguments: dict[str, Any]) -> list[TextContent]:
             continue
 
         # Handle axiom results
-        lines.append(f"### {r['id']}")
+        lines.append(f"### {r.get('id', 'unknown')}")
 
         # Mark if this is a paired expansion
         if r.get("_paired_with"):
@@ -349,7 +349,7 @@ async def _handle_get_axiom(arguments: dict[str, Any]) -> list[TextContent]:
         for dep in deps:
             func = dep.get("function", "")
             func_str = f" (`{func}`)" if func else ""
-            lines.append(f"- `{dep['id']}`{func_str}")
+            lines.append(f"- `{dep.get('id', 'unknown')}`{func_str}")
         lines.append("")
 
     # Show dependents (what depends on this)
@@ -360,7 +360,7 @@ async def _handle_get_axiom(arguments: dict[str, Any]) -> list[TextContent]:
         for dep in dependents[:5]:  # Limit to 5
             func = dep.get("function", "")
             func_str = f" (`{func}`)" if func else ""
-            lines.append(f"- `{dep['id']}`{func_str}")
+            lines.append(f"- `{dep.get('id', 'unknown')}`{func_str}")
         if len(dependents) > 5:
             lines.append(f"- ... and {len(dependents) - 5} more")
         lines.append("")
@@ -373,7 +373,7 @@ async def _handle_get_axiom(arguments: dict[str, Any]) -> list[TextContent]:
         for p in paired:
             func = p.get("function", "")
             func_str = f" (`{func}`)" if func else ""
-            lines.append(f"- `{p['id']}`{func_str}")
+            lines.append(f"- `{p.get('id', 'unknown')}`{func_str}")
         lines.append("")
 
     # Show idioms this axiom participates in

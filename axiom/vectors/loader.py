@@ -13,6 +13,18 @@ from sentence_transformers import SentenceTransformer
 from axiom.models import Axiom, AxiomCollection
 
 
+def _escape_sql_string(value: str) -> str:
+    """Escape single quotes in SQL string values to prevent injection.
+
+    Args:
+        value: String value to escape.
+
+    Returns:
+        Escaped string safe for SQL queries.
+    """
+    return value.replace("'", "''")
+
+
 class LanceDBLoader:
     """Load axiom embeddings into LanceDB."""
 
@@ -205,8 +217,9 @@ class LanceDBLoader:
 
         table = self.db.open_table(table_name)
 
-        # Use SQL filter
-        results = table.search().where(f"array_contains(tags, '{tag}')").to_list()
+        # Use SQL filter with escaped input
+        safe_tag = _escape_sql_string(tag)
+        results = table.search().where(f"array_contains(tags, '{safe_tag}')").to_list()
         return results
 
     def count(self, table_name: str = "axioms") -> int:
@@ -242,7 +255,8 @@ class LanceDBLoader:
             return []
 
         table = self.db.open_table(table_name)
-        results = table.search().where(f"function = '{function_name}'").to_list()
+        safe_name = _escape_sql_string(function_name)
+        results = table.search().where(f"function = '{safe_name}'").to_list()
         return results
 
     def search_by_header(
@@ -263,7 +277,8 @@ class LanceDBLoader:
             return []
 
         table = self.db.open_table(table_name)
-        results = table.search().where(f"header = '{header}'").to_list()
+        safe_header = _escape_sql_string(header)
+        results = table.search().where(f"header = '{safe_header}'").to_list()
         return results
 
     def search_by_axiom_type(
@@ -284,7 +299,8 @@ class LanceDBLoader:
             return []
 
         table = self.db.open_table(table_name)
-        results = table.search().where(f"axiom_type = '{axiom_type}'").to_list()
+        safe_type = _escape_sql_string(axiom_type)
+        results = table.search().where(f"axiom_type = '{safe_type}'").to_list()
         return results
 
     def update_depends_on(
