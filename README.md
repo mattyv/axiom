@@ -1,353 +1,255 @@
 # Axiom: Grounded Truth Validation for LLMs
 
-## The Vision
+[![CI](https://github.com/mattyv/axiom/actions/workflows/ci.yml/badge.svg)](https://github.com/mattyv/axiom/actions/workflows/ci.yml)
 
 A **grounded knowledge system** that validates LLM outputs against formal axioms, providing proof chains and catching hallucinations.
 
-### The Core Problem
-LLMs hallucinate because they lack grounding in formal axioms. When an LLM says "you can use std::string with ILP_FOR_T", there's no mechanism to validate this against foundational C++ type system rules.
+## The Core Problem
 
-### The Solution
+LLMs hallucinate because they lack grounding in formal axioms. When an LLM says "signed integer overflow wraps around in C", there's no mechanism to validate this against the C11 standard which defines it as undefined behavior.
+
+## The Solution
+
 A layered knowledge graph that:
-1. **Grounds knowledge in formal semantics** (C11, C++17, etc.)
-2. **Validates LLM outputs** via proof chain traversal
+1. **Grounds knowledge in formal semantics** (C11/C++20 from K-Framework and ISO standards)
+2. **Validates LLM outputs** via semantic search + proof chain traversal
 3. **Provides explainable confidence scores** based on axiom depth
 4. **Detects contradictions** between LLM claims and foundational truths
 
-### The Key Insight
-**Semantic Search + Graph Traversal = Truth Validation**
+## Current Status
 
+**Knowledge Base**: 3,541 axioms across 6 foundation layers:
+
+| Layer | Axioms | Source |
+|-------|--------|--------|
+| `c11_core` | ~700 | K-Framework C semantics |
+| `c11_stdlib` | ~500 | K-Framework stdlib |
+| `cpp_core` | ~650 | K-Framework C++ semantics |
+| `cpp_stdlib` | ~100 | K-Framework C++ stdlib |
+| `cpp20_language` | ~450 | C++ draft spec (eel.is) |
+| `cpp20_stdlib` | ~250 | C++ draft spec (eel.is) |
+
+**Features**:
+- MCP server for Claude Code integration
+- Semantic search via LanceDB embeddings
+- Graph traversal via Neo4j
+- Function pairing detection (malloc/free, new/delete, etc.)
+- Proof chain generation
+- Contradiction detection
+
+## Quick Start
+
+### Prerequisites
+
+- Python 3.11+
+- Neo4j 5.x (via Docker or native)
+- K-Framework C semantics (optional, for extraction)
+
+### Installation
+
+```bash
+# Clone and setup
+git clone https://github.com/mattyv/axiom.git
+cd axiom
+python -m venv .venv
+source .venv/bin/activate
+pip install -e ".[dev]"
+
+# Start Neo4j
+docker-compose up -d
+
+# Ingest pre-extracted axioms into Neo4j + LanceDB
+python scripts/ingest.py knowledge/foundations/c11_core.toml
+python scripts/ingest.py knowledge/foundations/cpp20_language.toml
+# ... repeat for other layers
+
+# Load function pairings
+python scripts/load_pairings.py --toml knowledge/pairings/cpp20_stdlib.toml
 ```
-User Question/LLM Claim
-    ↓
-[Semantic Search in LanceDB]
-    → Find relevant knowledge entries
-    ↓
-[Graph Traversal in Neo4j]
-    → Trace dependencies to foundational axioms
-    → Build proof chain
-    ↓
-[Validation]
-    → Check for contradictions
-    → Calculate confidence from foundation depth
-    ↓
-Grounded Answer + Proof Chain
+
+### MCP Server (Claude Code Integration)
+
+```bash
+# Install MCP server for Claude Code
+./scripts/install-mcp.sh
+
+# Or manually add to Claude Code settings
 ```
+
+The MCP server provides these tools to Claude:
+- `validate_claim` - Validate a claim against formal axioms
+- `search_axioms` - Search for relevant axioms
+- `get_axiom` - Get a specific axiom by ID
+- `get_stats` - Get knowledge base statistics
 
 ## Architecture
 
 ### Hybrid Database Approach
 
-**Neo4j (Graph Database)**
-- Store axiom relationships (DEPENDS_ON, CONTRADICTS, DERIVES_FROM)
-- Enable graph traversal (find proof chains)
-- Support complex queries (transitive dependencies, shortest path to axiom)
+```
+User Question/LLM Claim
+    |
+    v
+[Semantic Search - LanceDB]
+    -> Find relevant axioms by embedding similarity
+    |
+    v
+[Graph Traversal - Neo4j]
+    -> Trace DEPENDS_ON relationships
+    -> Build proof chain to foundations
+    |
+    v
+[Validation]
+    -> Check for contradictions
+    -> Calculate confidence from foundation depth
+    |
+    v
+Grounded Answer + Proof Chain
+```
 
-**LanceDB (Vector Database)**
-- Store embeddings for semantic search
+**Neo4j** stores:
+- Axiom nodes with metadata
+- DEPENDS_ON relationships (type dependencies)
+- PAIRS_WITH relationships (function pairings like malloc/free)
+- Idiom nodes (usage patterns)
+
+**LanceDB** stores:
+- Vector embeddings for semantic search
 - Fast similarity queries
-- Initial retrieval layer
-
-**Why Both?**
-- LanceDB: "Find similar knowledge" (fast semantic search)
-- Neo4j: "Trace to foundational truth" (relationship traversal)
-- Together: "Find relevant knowledge AND prove it's grounded"
 
 ### Layered Knowledge Graph
 
 ```
-Layer 0: Core Axioms (C11/C++17 formal semantics)
-  ↓ DEPENDS_ON
-Layer 1: STL Semantics (standard library guarantees)
-  ↓ DEPENDS_ON
-Layer 2: Library Knowledge (user library specifics)
-  ↓ DERIVES_FROM
-Layer 3: Usage Examples
+Layer 0: K-Framework Semantics (c11_core, cpp_core)
+    |
+    | DEPENDS_ON
+    v
+Layer 1: Standard Library (c11_stdlib, cpp_stdlib)
+    |
+    | DEPENDS_ON
+    v
+Layer 2: C++20 Language/Library (cpp20_language, cpp20_stdlib)
+    |
+    | DEPENDS_ON
+    v
+Layer 3: User Libraries (custom axioms)
 ```
 
-Each layer inherits confidence from layers below. Knowledge with longer proof chains to Layer 0 has higher confidence.
+## Usage Examples
 
-## Knowledge Sources
+### Validate a Claim
 
-### 1. K Framework C Semantics
-- **Source**: [kframework/c-semantics](https://github.com/kframework/c-semantics)
-- **What**: Formal executable semantics for C11/C17
-- **Coverage**: ~150 undefined behavior axioms
-- **Extraction**: Parse `.k` files and `Error_Codes.csv`
-- **Confidence**: 1.0 (formally verified)
+```python
+from axiom.reasoning import AxiomValidator
 
-### 2. C++ Standard (Manual Curation)
-- **Source**: ISO C++17/20 standard
-- **What**: Core language features, type system rules
-- **Coverage**: ~50-100 core axioms (move semantics, type traits, etc.)
-- **Extraction**: Manual curation initially
-- **Confidence**: 0.95 (language standard)
+validator = AxiomValidator()
+result = validator.validate("Signed integer overflow wraps around in C")
 
-### 3. cppreference.com
-- **Source**: Web scraping
-- **What**: STL semantics, complexity guarantees, exception safety
-- **Coverage**: ~100-200 STL entries
-- **Extraction**: Automated scraping
-- **Confidence**: 0.85 (community-curated documentation)
-
-### 4. Library Knowledge
-- **Source**: Lucidity questionnaire system
-- **What**: Library-specific gotchas, antipatterns, constraints
-- **Coverage**: Per-library basis
-- **Extraction**: Interactive questionnaire with maintainers
-- **Confidence**: 0.7-0.9 (maintainer expertise)
-
-## Use Cases
-
-### Use Case 1: LLM Hallucination Detection
-
-**Input**: LLM claims "std::string can be used with ILP_FOR_T"
-
-**Process**:
-1. Semantic search finds "ILP_FOR_T constraints"
-2. Graph traversal: ILP_FOR_T → SmallStorage → requires trivially_destructible → C++17 type trait
-3. Validation: std::string has non-trivial destructor (violates requirement)
-
-**Output**:
-```json
-{
-  "valid": false,
-  "violation": {
-    "claim": "std::string works with ILP_FOR_T",
-    "contradicts": "SmallStorage requires trivially destructible types",
-    "proof_chain": [
-      "ILP_FOR_T usage constraint (library, conf: 0.85)",
-      "SmallStorage requirements (library, conf: 0.9)",
-      "trivially_destructible concept (cpp17_core, conf: 1.0)",
-      "std::string destructor (stl, conf: 0.95)"
-    ],
-    "foundational_axiom": "C++17 [class.dtor]"
-  }
-}
+print(result.valid)  # False
+print(result.contradiction)  # "Signed integer overflow is undefined behavior"
+print(result.proof_chain)  # [axiom1, axiom2, ...]
 ```
 
-### Use Case 2: Explainable Knowledge
+### Search for Axioms
 
-**Input**: "Why can't I use std::vector with ILP_FOR?"
+```python
+from axiom.vectors import LanceDBLoader
 
-**Output**: Interactive proof chain visualization showing:
-- Your question
-- → ILP_FOR_T constraints (semantic similarity: 0.92)
-- → SmallStorage requirements (DEPENDS_ON)
-- → Trivially destructible (DEPENDS_ON)
-- → C++17 Type Traits (DEFINED_IN)
-- ❌ std::vector has non-trivial destructor
-- ✅ Suggested alternatives: std::array, std::span
+loader = LanceDBLoader()
+results = loader.search("null pointer dereference", limit=5)
 
-### Use Case 3: Knowledge Gap Detection
-
-**Query**:
-```cypher
-// Find library knowledge with no axiom foundation
-MATCH (k:Knowledge {layer: 'library'})
-WHERE NOT (k)-[:DEPENDS_ON*]->(:Axiom)
-RETURN k.id, k.content
+for axiom in results:
+    print(f"{axiom['id']}: {axiom['content']}")
 ```
 
-**Output**: List of "floating claims" that need grounding or validation
+### MCP Tool Usage (in Claude Code)
 
-## Tech Stack
+When integrated with Claude Code, you can ask:
+- "Is signed integer overflow defined behavior in C?"
+- "What happens when I dereference a null pointer?"
+- "Search for axioms about memory allocation"
 
-### Core
-- **Python 3.11+**
-- **Neo4j 5.x**: Graph database
-- **LanceDB**: Vector database
-- **sentence-transformers**: Embeddings (all-MiniLM-L6-v2)
+## Extraction
 
-### Extractors
-- **tree-sitter** (already in lucidity): AST parsing
-- **beautifulsoup4**: Web scraping
-- **pandas**: CSV/data processing
+### From K-Framework Semantics
 
-### API
-- **FastAPI**: REST API
-- **pydantic**: Data validation
-- **neo4j-python-driver**: Graph queries
+```bash
+# Clone K-Framework C semantics
+git clone https://github.com/kframework/c-semantics external/c-semantics
 
-### Dev Tools
-- **pytest**: Testing
-- **docker-compose**: Local dev environment
-- **ruff**: Linting
+# Extract axioms
+python scripts/bootstrap.py --layer c11_core --output knowledge/foundations/c11_core.toml
+```
+
+### From C++ Draft Spec
+
+```bash
+# Extract from a specific section
+python scripts/extract_cpp20.py --section basic.life
+
+# Extract all high-signal sections
+python scripts/extract_cpp20.py --batch-language
+python scripts/extract_cpp20.py --batch-library
+```
+
+### Function Pairings
+
+Pairings are loaded from TOML manifests or extracted from K semantics:
+
+```bash
+# From K semantics (malloc/free, etc.)
+python scripts/load_pairings.py
+
+# From TOML manifest (new/delete, shared_ptr, etc.)
+python scripts/load_pairings.py --toml knowledge/pairings/cpp20_stdlib.toml
+```
 
 ## Project Structure
 
 ```
 axiom/
-├── README.md                    # This file
-├── ARCHITECTURE.md              # Detailed architecture
-├── MVP_PLAN.md                  # Phase-by-phase implementation plan
-├── docker-compose.yml           # Neo4j + dev services
-├── pyproject.toml              # Python dependencies
-│
 ├── axiom/
-│   ├── __init__.py
-│   │
-│   ├── extractors/             # Extract axioms from sources
-│   │   ├── k_semantics.py      # Parse K Framework .k files
-│   │   ├── cpp_standard.py     # Manual C++ axiom curation
-│   │   └── cppreference.py     # Scrape cppreference.com
-│   │
-│   ├── graph/                  # Neo4j graph operations
-│   │   ├── client.py           # Neo4j connection
-│   │   ├── schema.py           # Graph schema & constraints
-│   │   ├── queries.py          # Cypher queries
-│   │   └── relationships.py    # Relationship types
-│   │
-│   ├── vectors/                # LanceDB vector operations
-│   │   ├── client.py           # LanceDB connection
-│   │   ├── embeddings.py       # Generate embeddings
-│   │   └── search.py           # Semantic search
-│   │
-│   ├── reasoning/              # Core validation logic
-│   │   ├── proof_chain.py      # Generate proof chains
-│   │   ├── validator.py        # Contradiction detection
-│   │   ├── confidence.py       # Calculate confidence scores
-│   │   └── explainer.py        # Generate explanations
-│   │
-│   ├── api/                    # FastAPI service
-│   │   ├── main.py            # API entry point
-│   │   ├── models.py          # Pydantic models
-│   │   ├── validate.py        # /validate endpoint
-│   │   ├── query.py           # /query endpoint
-│   │   └── explain.py         # /explain endpoint
-│   │
-│   └── models/                # Data models
-│       ├── axiom.py           # Axiom model
-│       ├── knowledge.py       # Knowledge entry model
-│       └── proof.py           # Proof chain model
-│
-├── knowledge/                  # Extracted knowledge (JSON)
-│   ├── foundations/
-│   │   ├── c11_axioms.json    # From K semantics
-│   │   └── cpp17_axioms.json  # Manual curation
-│   ├── stl/
-│   │   └── stl_semantics.json # From cppreference
-│   └── libraries/
-│       └── (imported from Lucidity questionnaire)
-│
-├── scripts/                    # Utility scripts
-│   ├── bootstrap.py           # Initial DB setup
-│   ├── extract_all.py         # Run all extractors
-│   ├── sync_to_graph.py       # Sync JSON → Neo4j
-│   └── sync_to_vectors.py     # Sync JSON → LanceDB
-│
-└── tests/                     # Tests
-    ├── test_extractors/
-    ├── test_reasoning/
-    └── test_api/
+│   ├── extractors/          # Extract axioms from sources
+│   │   ├── k_semantics.py   # K-Framework .k files
+│   │   ├── k_pairings.py    # Function pairings from K
+│   │   └── prompts.py       # LLM prompts for extraction
+│   ├── graph/               # Neo4j operations
+│   │   └── loader.py        # Load axioms + pairings
+│   ├── vectors/             # LanceDB operations
+│   │   └── loader.py        # Embeddings + search
+│   ├── reasoning/           # Validation logic
+│   │   ├── validator.py     # Main validator
+│   │   ├── proof_chain.py   # Proof chain generation
+│   │   └── entailment.py    # Claim vs axiom classification
+│   ├── mcp/                 # MCP server
+│   │   └── server.py        # Claude Code integration
+│   └── models/              # Data models
+│       ├── axiom.py         # Axiom dataclass
+│       └── pairing.py       # Pairing/Idiom dataclasses
+├── knowledge/
+│   ├── foundations/         # Extracted axioms (TOML)
+│   └── pairings/            # Function pairings (TOML)
+├── scripts/                 # Extraction & ingestion scripts
+└── tests/                   # Test suite
 ```
 
-## Relationship to Lucidity
+## Documentation
 
-**Lucidity** (existing project):
-- Interactive questionnaire system
-- Extracts knowledge from library maintainers
-- Outputs structured knowledge JSON
-
-**Axiom** (this project):
-- Consumes knowledge from multiple sources (including Lucidity)
-- Builds axiom graph with formal foundations
-- Provides validation API
-
-**Integration**:
-```
-Lucidity Questionnaire
-    ↓ (exports JSON)
-Axiom Knowledge Importer
-    ↓
-Neo4j Graph + LanceDB Vectors
-    ↓
-Validation API
-    ↓
-Claude Code / Other LLM Tools
-```
-
-Lucidity becomes a **knowledge source** for Axiom, specifically for Layer 2 (library-specific knowledge).
-
-## Getting Started
-
-See [MVP_PLAN.md](MVP_PLAN.md) for detailed implementation phases.
-
-### Quick Start (Local Development)
-
-```bash
-# 1. Clone and setup
-git clone https://github.com/mattyv/axiom.git
-cd axiom
-python -m venv .venv
-source .venv/bin/activate  # or `.venv\Scripts\activate` on Windows
-pip install -e ".[dev]"
-
-# 2. Start Neo4j
-docker-compose up -d
-
-# 3. Extract C11 axioms from K semantics
-git clone https://github.com/kframework/c-semantics.git /tmp/c-semantics
-python scripts/extract_k_axioms.py
-
-# 4. Bootstrap knowledge graph
-python scripts/bootstrap.py
-
-# 5. View graph in Neo4j browser
-open http://localhost:7474
-# Login: neo4j / axiompass
-
-# 6. Run API server
-python -m axiom.api.main
-
-# 7. Test validation
-curl -X POST http://localhost:8000/validate \
-  -H "Content-Type: application/json" \
-  -d '{
-    "llm_output": "std::string works with ILP_FOR_T",
-    "context": "ilp_for"
-  }'
-```
-
-## Roadmap
-
-### Phase 1: Proof of Concept (2-3 weeks)
-- Extract C11 axioms from K semantics
-- Set up Neo4j + LanceDB
-- Implement basic validation (1 category of hallucinations)
-- **Goal**: Prove the core idea works
-
-### Phase 2: Knowledge Base Expansion (1-2 months)
-- Extract all ~150 C11 axioms
-- Add C++17 core features (~50 axioms)
-- Scrape basic STL knowledge (~100 entries)
-- Import one library from Lucidity
-- **Goal**: Comprehensive knowledge graph
-
-### Phase 3: API Development (1 month)
-- Build FastAPI service
-- Implement validation endpoint
-- Add proof chain generation
-- Create explanation endpoint
-- **Goal**: Usable API
-
-### Phase 4: LLM Integration (1-2 months)
-- Claude Code hook integration
-- MCP server implementation
-- API client libraries
-- **Goal**: Production integration
+- [Extraction Order](docs/extraction-order.md) - How to extract and ingest axioms
+- [Architecture](ARCHITECTURE.md) - Detailed system design
 
 ## Contributing
 
-This is an early-stage research project. We're exploring:
-- How to extract formal axioms from various sources
-- How to represent knowledge relationships in graphs
-- How to validate LLM outputs against axiom chains
+Contributions welcome! Areas of interest:
+- Additional axiom extraction sources
+- Improved contradiction detection
+- Better proof chain visualization
+- IDE integrations beyond Claude Code
 
 ## License
 
-MIT
+BSL-1.0
 
-## Contact
+## Author
 
-mattyv - https://github.com/mattyv
+Matt Varendorff - https://github.com/mattyv

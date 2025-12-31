@@ -3,13 +3,28 @@
 These tests verify that the validator correctly identifies contradictions
 between claims and axioms, preventing false positives for claims like
 "signed integer overflow wraps around".
+
+These tests require neo4j to be installed.
 """
 
 from unittest.mock import MagicMock
 
+import pytest
+
 from axiom.reasoning.entailment import EntailmentClassifier
-from axiom.reasoning.proof_chain import ProofChainGenerator
-from axiom.reasoning.validator import AxiomValidator
+
+# These imports require neo4j which may not be installed in CI
+try:
+    from axiom.reasoning.proof_chain import ProofChainGenerator
+    from axiom.reasoning.validator import AxiomValidator
+
+    HAS_NEO4J = True
+except ImportError:
+    HAS_NEO4J = False
+    ProofChainGenerator = None  # type: ignore[misc, assignment]
+    AxiomValidator = None  # type: ignore[misc, assignment]
+
+pytestmark = pytest.mark.skipif(not HAS_NEO4J, reason="neo4j not installed")
 
 
 class TestValidatorFalsePositives:
