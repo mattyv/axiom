@@ -284,6 +284,10 @@ HIGH_SIGNAL_LIBRARY_SECTIONS = [
     "allocator.requirements",
 
     # Utilities
+    "forward",
+    "utility.swap",
+    "utility.exchange",
+    "declval",
     "optional",
     "variant",
     "any",

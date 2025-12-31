@@ -258,3 +258,441 @@
 
 3. **Vocabulary gap**: Error-condition axioms from K semantics don't use
    "undefined behavior" language, so some contradictions slip through
+
+---
+
+## Future C++20 Extraction Work
+
+### std::move False Positive (needs investigation)
+The claim "std::move moves object" validates as True (0.50). The axiom correctly
+states std::move is a cast (`static_cast<remove_reference_t<T>&&>(t)`), but the
+entailment classifier can't infer that "cast" contradicts "moves".
+
+Options to explore:
+1. Add clarifying axiom explicitly stating "std::move does not transfer/move anything"
+2. Improve entailment logic to understand cast ≠ action
+3. Accept current 0.50 confidence as "uncertain" (not high confidence)
+
+### Priority 4: Containers & Iterators
+- `associative.reqmts`, `unord.req`
+- `iterator.requirements`, `iterator.operations`
+
+### Priority 5: Algorithms & Ranges
+- `algorithms.requirements`, `alg.sorting`
+- `range.access`, `range.req`, `range.range`, `range.iota`
+
+### Priority 6: Strings
+- `basic.string`, `string.view`
+
+### Priority 7: Concurrency
+- `thread.mutex`, `thread.condition`, `futures`, `format`
+
+### Retry (timed out during extraction)
+- `optional`, `any`, `unique.ptr`, `util.smartptr.shared`
+
+---
+
+## Roadmap: Getting to 8-9/10 for Library Maintainers
+
+### Current State: 5-6/10
+The system works but requires manual effort. Library maintainers can extract axioms
+but the process isn't streamlined.
+
+### Target: 8-9/10 - Usable by Library Maintainers
+
+#### 1. Streamlined Extraction CLI
+**Goal**: `axiom extract ./my-library --output axioms.toml`
+
+**Current state**:
+- Extraction exists in `axiom/extractors/` but requires Python knowledge
+- Multiple steps: extract → link → load to Neo4j → embed to LanceDB
+
+**Implementation hints**:
+- Create `axiom/cli/extract.py` with Click/Typer CLI
+- Combine steps into single pipeline
+- Auto-detect library type (header-only, CMake, etc.)
+- Parse Doxygen/Javadoc comments for preconditions
+- Use LLM to generate axioms from function signatures + comments
+
+**Key files**:
+- `axiom/extractors/library_extractor.py` - main extraction logic
+- `axiom/extractors/prompts.py` - LLM prompts for axiom generation
+- `axiom/ingestion/kb_integrator.py` - loads axioms to Neo4j + LanceDB
+
+#### 2. Auto-Link to C++ Foundations
+**Goal**: Automatically link library axioms to cpp20_language/cpp20_stdlib
+
+**Current state**:
+- Manual LLM-based linking via `axiom/extractors/semantic_linker.py`
+- ~50% coverage on ILP_FOR library
+
+**Implementation hints**:
+- Batch process: for each library axiom, ask LLM "which C++20 concepts does this depend on?"
+- Match LLM response to existing foundation axiom IDs via semantic search
+- Add `depends_on` edges in Neo4j
+- Validate: no cycles (use topological sort check before committing)
+
+**Key files**:
+- `axiom/extractors/semantic_linker.py` - LLM-based linking
+- `axiom/extractors/library_depends_on.py` - dependency resolution
+- `axiom/graph/loader.py` - Neo4j operations, `add_dependency()` method
+
+#### 3. Validation Report for Maintainers
+**Goal**: "90% of your library axioms are grounded to C++ foundations"
+
+**Current state**:
+- Can query ungrounded axioms via Neo4j
+- No user-friendly report
+
+**Implementation hints**:
+- Add `axiom report ./my-library-axioms.toml` command
+- Output: coverage %, ungrounded axioms list, suggested foundation links
+- Use `get_ungrounded_axioms()` in `axiom/graph/loader.py`
+- Generate markdown or HTML report
+- Show dependency graph visualization
+
+#### 4. Easy Integration with LLM Tools
+**Goal**: Library maintainers publish axioms, LLM tools consume them
+
+**Current state**:
+- MCP server works (`axiom/mcp/server.py`)
+- Requires local Neo4j + LanceDB setup
+
+**Implementation hints**:
+- Support standalone TOML/JSON axiom files (no database required for small libs)
+- Publish axiom packages to registry (like npm for axioms)
+- Claude/Cursor plugins that auto-fetch axioms for imported libraries
+- WASM build of LanceDB for browser-based validation
+
+---
+
+## Roadmap: Getting to 9-10/10 for Safety-Critical Use
+
+### Target: 9-10/10 - Production Safety Validation
+
+#### 1. NLI/Entailment Model for Contradiction Detection
+**Goal**: Semantically detect SUPPORTS vs CONTRADICTS vs NEUTRAL
+
+**Current state**:
+- Keyword matching in `axiom/reasoning/contradiction.py`
+- Vocabulary mismatch causes false positives (std::move, double delete)
+
+**Why it matters**:
+- "std::move moves object" vs "std::move is a cast" - need to understand cast ≠ move
+- "double delete is safe" vs "already freed" - need to understand freed = error
+
+**Implementation hints**:
+- Option A: Fine-tune sentence-transformers on (claim, axiom, label) triples
+  - Labels: ENTAILS, CONTRADICTS, NEUTRAL
+  - Training data: generate from axioms + known UB patterns
+- Option B: LLM with structured output
+  ```python
+  prompt = f"Does axiom '{axiom}' support or contradict claim '{claim}'?"
+  response = llm.generate(prompt, schema={"relationship": "enum", "reason": "str"})
+  ```
+- Option C: Hybrid - use embedding similarity to shortlist, LLM to classify
+
+**Key files**:
+- `axiom/reasoning/contradiction.py` - add entailment check after similarity
+- `axiom/reasoning/entailment.py` - new file for NLI/LLM entailment logic
+
+#### 2. Formal Verification Integration
+**Goal**: Connect axioms to actual C/C++ verification tools
+
+**Implementation hints**:
+- Export axioms to ACSL format (Frama-C annotations)
+- Generate CBMC assertions from preconditions
+- Parse RV-Match/KCC output back into axiom violations
+- CI integration: `axiom verify ./src --report violations.json`
+
+**Example flow**:
+```
+axiom: "must not be a null pointer"
+  → generates: /*@ requires ptr != NULL; */
+  → Frama-C proves or finds counterexample
+  → violation reported back to user
+```
+
+#### 3. Complete C++20 Standard Coverage
+**Goal**: Every standard library function has axioms with signatures + preconditions
+
+**Current state**:
+- cpp20_language: partial coverage from standard quotes
+- cpp20_stdlib: ~18 functions with signatures
+
+**Implementation hints**:
+- Systematic cppreference.com scraping (already have some)
+- Focus areas by priority:
+  1. Memory: `new`, `delete`, `malloc`, `free` (UB-heavy)
+  2. Containers: `vector`, `map`, `unordered_map` (common)
+  3. Algorithms: `sort`, `find`, `transform` (widely used)
+  4. Concurrency: `mutex`, `thread`, `atomic` (subtle bugs)
+
+#### 4. Real-Time Code Analysis
+**Goal**: Validate code as it's written, not just natural language claims
+
+**Key insight**: Code IS claims. When you write:
+```cpp
+ptr->foo;           // Implicit claim: "ptr is not null"
+delete p; delete p; // Implicit claim: "double delete is valid"
+vec[i];             // Implicit claim: "i is within bounds"
+```
+
+**Implementation hints**:
+- Parse C++ AST (tree-sitter-cpp or libclang)
+- Extract implicit claims from code patterns
+- Match extracted claims against axioms
+- LSP integration for real-time IDE warnings
+
+**Key files to create**:
+- `axiom/analysis/code_parser.py` - AST → implicit claims
+- `axiom/analysis/claim_extractor.py` - pattern matching for common UB
+- `axiom/lsp/server.py` - Language Server Protocol for IDE integration
+
+---
+
+## Compositional Semantics: Pairing & Idiom Detection
+
+### The Problem
+Libraries aren't just collections of functions with contracts. They're **vocabularies with grammar**.
+Current axioms capture vocabulary (individual functions). Missing: grammar (how functions compose).
+
+Example failure: Claude generated ILP_FOR examples without ILP_END because axioms describe
+individual macros but not their required pairing.
+
+### Universal Pairing Detection (Multi-Source)
+
+| Source | Detection Method | Confidence | Example |
+|--------|------------------|------------|---------|
+| K semantics | Shared cell access | 1.0 | malloc/free share `<malloced>` cell |
+| C++ draft spec | Language patterns | 1.0 | "matching deallocation function" |
+| Library tests | Co-occurrence | 0.9 | ILP_FOR + ILP_END in all tests |
+| Naming heuristics | Pattern matching | 0.7 | `X_begin`/`X_end`, `X_open`/`X_close` |
+| Annotations | Author manifest | 1.0 | Explicit declaration |
+
+### 1. K Semantics Pairing Extraction
+
+K tracks pairing through configuration cells. Example from `stdlib.k`:
+
+```k
+# malloc - WRITES to cell
+<malloced>... .Map => obj(!I, Align, alloc) |-> Sz ...</malloced>
+
+# free - REMOVES from cell, checks membership
+<malloced>... Base |-> _ => .Map ...</malloced>
+requires notBool Base in_keys(Malloced)
+  => UNDEF("STDLIB2", "Called free on memory not allocated by malloc")
+```
+
+**Extraction algorithm:**
+```python
+def extract_pairings_from_k(k_rules):
+    cell_writers = {}  # cell -> [functions that add]
+    cell_readers = {}  # cell -> [functions that remove/check]
+
+    for rule in k_rules:
+        for cell in rule.cells:
+            if is_add_pattern(cell):      # .Map => X
+                cell_writers[cell.name].append(rule.function)
+            if is_remove_pattern(cell):   # X => .Map, in_keys check
+                cell_readers[cell.name].append(rule.function)
+
+    # Functions sharing same cell are paired
+    for cell, writers in cell_writers.items():
+        for w in writers:
+            for r in cell_readers.get(cell, []):
+                yield Pairing(opener=w, closer=r, cell=cell)
+```
+
+**Key files:**
+- `axiom/extractors/k_semantics.py` - parse K rule cells
+- `axiom/extractors/k_pairings.py` - new file for pairing extraction
+
+### 2. Draft Spec Pairing Extraction
+
+The C++ standard uses specific language patterns for pairing:
+
+```python
+PAIRING_PHRASES = [
+    r"matching (deallocation|allocation) function",
+    r"shall deallocate.*allocated by",
+    r"corresponding (constructor|destructor)",
+    r"shall be released by",
+    r"must be paired with",
+]
+
+def extract_pairings_from_spec(section_text, section_ref):
+    for pattern in PAIRING_PHRASES:
+        if match := re.search(pattern, section_text):
+            # Extract function names from surrounding context
+            yield Pairing(
+                opener=extract_opener(match),
+                closer=extract_closer(match),
+                source=f"spec:{section_ref}",
+                evidence=match.group(0)
+            )
+```
+
+**Key sections to parse:**
+- `[basic.stc.dynamic]` - new/delete pairing
+- `[class.ctor]` + `[class.dtor]` - constructor/destructor
+- `[thread.mutex]` - lock/unlock
+- `[utilities]` - RAII patterns
+
+### 3. Library Test Mining
+
+For libraries without K semantics or spec text:
+
+```python
+def extract_pairings_from_tests(test_files):
+    co_occurrence = defaultdict(Counter)
+
+    for file in test_files:
+        functions_used = extract_function_calls(file)
+        for f1, f2 in combinations(functions_used, 2):
+            co_occurrence[f1][f2] += 1
+            co_occurrence[f2][f1] += 1
+
+    # High co-occurrence suggests pairing
+    for func, partners in co_occurrence.items():
+        for partner, count in partners.most_common(3):
+            if count / total_uses[func] > 0.8:  # 80%+ co-occurrence
+                yield Pairing(
+                    opener=func,
+                    closer=partner,
+                    source="test_mining",
+                    confidence=count / total_uses[func]
+                )
+```
+
+### 4. Naming Heuristics
+
+Detect standard naming patterns:
+
+```python
+PAIRING_PATTERNS = [
+    (r"(.+)_begin$", r"\1_end"),
+    (r"(.+)_start$", r"\1_stop"),
+    (r"(.+)_open$", r"\1_close"),
+    (r"(.+)_lock$", r"\1_unlock"),
+    (r"(.+)_init$", r"\1_(cleanup|destroy|free|finish)"),
+    (r"(.+)_acquire$", r"\1_release"),
+    (r"create_(.+)$", r"destroy_\1"),
+    (r"^(.+)$", r"end_\1"),  # X / end_X pattern
+]
+```
+
+### 5. Library Author Annotations
+
+Minimal manifest format (separate file, no code changes):
+
+```toml
+# my-library.axiom.toml
+
+[library]
+name = "ilp_for"
+version = "1.0.0"
+
+[[pairing]]
+opener = "ILP_FOR"
+closer = "ILP_END"
+required = true
+role_opener = "loop_start"
+role_closer = "loop_end"
+
+[[pairing]]
+opener = "ILP_FOR_T"
+closer = "ILP_END"
+required = true
+
+[[idiom]]
+name = "ilp_for_loop"
+participants = ["ILP_FOR", "ILP_END"]
+template = '''
+ILP_FOR(${type} ${var}, ${start}, ${end}, ${N}) {
+    ${body}
+} ILP_END
+'''
+```
+
+### Auto-Generation + Review Workflow
+
+```bash
+# 1. Auto-detect pairings from all sources
+axiom extract-pairings ./my-library \
+    --tests ./tests \
+    --headers ./include \
+    --output pairings.toml
+
+# 2. Author reviews, fixes false positives/negatives
+
+# 3. Integrate into axiom extraction
+axiom extract ./my-library \
+    --pairings pairings.toml \
+    --output axioms.toml
+```
+
+### Graph Schema for Pairings
+
+New relationship types in Neo4j:
+
+```cypher
+// Pairing relationship
+(opener:Axiom)-[:PAIRS_WITH {
+    required: true,
+    role: "opener",
+    source: "k_semantics",
+    cell: "malloced"
+}]->(closer:Axiom)
+
+// Idiom participation
+(func:Axiom)-[:PARTICIPATES_IN {
+    role: "opener"
+}]->(idiom:Idiom)
+
+// Idiom node with template
+CREATE (i:Idiom {
+    id: "ilp_for_loop",
+    name: "ILP FOR Loop",
+    template: "ILP_FOR(...) { ... } ILP_END"
+})
+```
+
+### Modified Search Behavior
+
+When searching for a function, auto-expand to include paired functions:
+
+```python
+def search_with_pairings(query):
+    results = semantic_search(query)
+
+    expanded = []
+    for axiom in results:
+        expanded.append(axiom)
+
+        # Get paired functions
+        paired = neo4j.query("""
+            MATCH (a:Axiom {id: $id})-[:PAIRS_WITH]-(paired:Axiom)
+            RETURN paired
+        """, id=axiom.id)
+
+        for p in paired:
+            expanded.append(p)
+
+        # Get idiom templates
+        idioms = neo4j.query("""
+            MATCH (a:Axiom {id: $id})-[:PARTICIPATES_IN]->(i:Idiom)
+            RETURN i
+        """, id=axiom.id)
+
+        for idiom in idioms:
+            expanded.append(idiom)  # Include template!
+
+    return dedupe(expanded)
+```
+
+### Key Insight
+
+> Libraries are languages. Functions are words. Pairings are grammar. Templates are valid sentences.
+
+The axiom system needs all three layers to prevent errors like missing ILP_END.
