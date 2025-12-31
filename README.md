@@ -4,11 +4,11 @@
 
 <img src="docs/axiom.png" alt="Axiom Knowledge Graph" width="180">
 
-**Automatically build knowledge about your C++20 libraries so LLMs stop hallucinating about them.**
+**Automatically build knowledge about your C++20 libraries so LLMs stop hallucinating about them so much.**
 
 ## The Problem
 
-LLMs hallucinate about library code because they have no grounding in your library's actual constraints. When an LLM says "you can use `std::string` with `void foo()`", there's no mechanism to validate this against the library's real requirements (which might require trivially destructible types).
+LLMs hallucinate about library code because they have no grounding in your library's actual constraints. When an LLM says "you can use `std::string` with `void foo()`", there's no mechanism to validate this against the library's real requirements (which might require trivially destructible types for foo() args).
 
 ## The Solution
 
