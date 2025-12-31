@@ -339,6 +339,7 @@ HIGH_SIGNAL_LIBRARY_SECTIONS = [
     "variant",
     "any",
     "expected",
+    "views.span",  # C++20 span
 
     # Ranges (C++20)
     "range.access",
@@ -347,10 +348,50 @@ HIGH_SIGNAL_LIBRARY_SECTIONS = [
     # Concurrency
     "thread.mutex",
     "thread.condition",
+    "thread.thread.class",  # std::thread
+    "thread.jthread.class",  # C++20 jthread
+    "thread.stoptoken",  # C++20 stop tokens
     "futures",
+    "atomics.types.generic",
+    "atomics.ref.generic",  # C++20 atomic_ref
 
     # Format (C++20)
     "format",
+
+    # Type traits (CRITICAL for depends_on linking!)
+    "meta.unary.prop",  # is_trivial, is_standard_layout, etc.
+    "meta.unary.cat",  # is_integral, is_class, is_enum, etc.
+    "meta.trans.cv",  # remove_cv, add_const, etc.
+    "meta.trans.ref",  # remove_reference, add_lvalue_reference, etc.
+    "meta.trans.ptr",  # remove_pointer, add_pointer
+    "meta.trans.other",  # decay, enable_if, conditional, etc.
+
+    # Standard library concepts (C++20)
+    "concepts.syn",  # same_as, derived_from, convertible_to, etc.
+
+    # Comparisons (C++20 three-way comparison)
+    "cmp.concept",  # three_way_comparable
+    "cmp.alg",  # strong_order, weak_order, etc.
+
+    # Functional
+    "func.invoke",  # std::invoke
+    "function.objects",  # std::function
+
+    # Bit manipulation (C++20)
+    "bit.cast",  # std::bit_cast
+    "bit.pow.two",  # bit_ceil, bit_floor, etc.
+
+    # Time/Chrono
+    "time.duration",
+    "time.point",
+    "time.cal",  # C++20 calendars
+
+    # Coroutines (C++20 library support)
+    "coroutine.handle",
+    "coroutine.traits",
+
+    # Numeric algorithms
+    "numeric.ops",  # accumulate, reduce, transform_reduce, etc.
 ]
 
 
