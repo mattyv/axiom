@@ -165,6 +165,12 @@ class EntailmentClassifier:
         ],
     }
 
+    # Pattern to extract numeric assertions like "size() == 0" or "count() != 1"
+    NUMERIC_ASSERTION_PATTERN = re.compile(
+        r"\b(\w+\(\))\s*(==|!=|<=|>=|<|>)\s*(\d+)",
+        re.IGNORECASE,
+    )
+
     # Terse axiom patterns that imply negative polarity (error condition)
     # These are K-semantics axioms that describe UB without saying "undefined"
     IMPLICIT_ERROR_PATTERNS = [
@@ -208,6 +214,25 @@ class EntailmentClassifier:
         # e.g., "Signed integer overflow" without explicit "undefined" keyword
         if axiom_polarity == "neutral" and self._matches_error_pattern(axiom_content):
             axiom_polarity = "negative"
+
+        # Check for numeric value contradictions FIRST (e.g., size()==1 vs size()==0)
+        # These are strong signals that don't require topic overlap
+        claim_numerics = self._extract_numeric_assertions(claim)
+        # Parse both content and formal_spec for axiom numerics
+        axiom_numerics = self._extract_numeric_assertions(axiom_content)
+        formal_numerics = self._extract_numeric_assertions(axiom.get("formal_spec", ""))
+        axiom_numerics.update(formal_numerics)
+
+        if claim_numerics and axiom_numerics:
+            contradicts, explanation = self._numeric_values_contradict(
+                claim_numerics, axiom_numerics
+            )
+            if contradicts:
+                return EntailmentResult(
+                    relationship="CONTRADICTS",
+                    confidence=0.90,
+                    explanation=f"Numeric contradiction: {explanation}",
+                )
 
         # Check topic overlap
         claim_topics = self._extract_topics(claim)
@@ -400,3 +425,64 @@ class EntailmentClassifier:
             if re.search(pattern, text_lower, re.IGNORECASE):
                 return True
         return False
+
+    def _extract_numeric_assertions(self, text: str) -> dict[str, tuple[str, int]]:
+        """Extract numeric assertions like 'size() == 0' from text.
+
+        Args:
+            text: The text to analyze.
+
+        Returns:
+            Dict mapping function name to (operator, value).
+            Example: {"size()": ("==", 0)}
+        """
+        assertions = {}
+        for match in self.NUMERIC_ASSERTION_PATTERN.finditer(text):
+            func_name = match.group(1).lower()
+            operator = match.group(2)
+            value = int(match.group(3))
+            assertions[func_name] = (operator, value)
+        return assertions
+
+    def _numeric_values_contradict(
+        self,
+        claim_nums: dict[str, tuple[str, int]],
+        axiom_nums: dict[str, tuple[str, int]],
+    ) -> tuple[bool, str]:
+        """Check if numeric assertions contradict.
+
+        Args:
+            claim_nums: Numeric assertions from claim.
+            axiom_nums: Numeric assertions from axiom.
+
+        Returns:
+            Tuple of (contradicts, explanation).
+        """
+        for func_name, (claim_op, claim_val) in claim_nums.items():
+            if func_name not in axiom_nums:
+                continue
+
+            axiom_op, axiom_val = axiom_nums[func_name]
+
+            # Both assert equality to different values
+            if claim_op == "==" and axiom_op == "==" and claim_val != axiom_val:
+                return (
+                    True,
+                    f"{func_name} == {claim_val} contradicts {func_name} == {axiom_val}",
+                )
+
+            # Claim asserts equality, axiom asserts inequality to same value
+            if claim_op == "==" and axiom_op == "!=" and claim_val == axiom_val:
+                return (
+                    True,
+                    f"{func_name} == {claim_val} contradicts {func_name} != {axiom_val}",
+                )
+
+            # Claim asserts inequality, axiom asserts equality to same value
+            if claim_op == "!=" and axiom_op == "==" and claim_val == axiom_val:
+                return (
+                    True,
+                    f"{func_name} != {claim_val} contradicts {func_name} == {axiom_val}",
+                )
+
+        return False, ""

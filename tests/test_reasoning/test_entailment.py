@@ -360,3 +360,100 @@ class TestImplicitErrorPatterns:
         # With "already freed" in IMPLICIT_ERROR_PATTERNS, this should contradict
         assert result.relationship == "CONTRADICTS"
         assert result.confidence >= 0.8
+
+
+class TestNumericContradiction:
+    """Tests for numeric value contradiction detection."""
+
+    def test_extracts_numeric_assertion(self):
+        """Test: Extracts size() == 0 from text."""
+        classifier = EntailmentClassifier()
+        nums = classifier._extract_numeric_assertions("size() == 0 && data() == nullptr")
+        assert "size()" in nums
+        assert nums["size()"] == ("==", 0)
+
+    def test_extracts_from_formal_spec(self):
+        """Test: Extracts numeric assertions from formal_spec format."""
+        classifier = EntailmentClassifier()
+        nums = classifier._extract_numeric_assertions(
+            "postcond(span()): size() == 0 && data() == nullptr"
+        )
+        assert "size()" in nums
+        assert nums["size()"] == ("==", 0)
+
+    def test_extracts_multiple_assertions(self):
+        """Test: Extracts multiple numeric assertions."""
+        classifier = EntailmentClassifier()
+        nums = classifier._extract_numeric_assertions(
+            "size() == 0 && use_count() == 1"
+        )
+        assert "size()" in nums
+        assert "use_count()" in nums
+        assert nums["size()"] == ("==", 0)
+        assert nums["use_count()"] == ("==", 1)
+
+    def test_size_equals_different_values_contradicts(self):
+        """Test: size() == 1 contradicts size() == 0."""
+        classifier = EntailmentClassifier()
+        result = classifier.classify(
+            claim="std::span default constructed has size() == 1",
+            axiom={
+                "content": "Default constructor postcondition: size() == 0 && data() == nullptr.",
+                "formal_spec": "postcond(span()): size() == 0 && data() == nullptr",
+            },
+        )
+        assert result.relationship == "CONTRADICTS"
+        assert result.confidence >= 0.85
+        assert "size()" in result.explanation
+
+    def test_use_count_different_values_contradicts(self):
+        """Test: use_count() == 2 contradicts use_count() == 1."""
+        classifier = EntailmentClassifier()
+        result = classifier.classify(
+            claim="shared_ptr has use_count() == 2 after copy",
+            axiom={
+                "content": "After copy, use_count() == 1",
+                "formal_spec": "postcond(copy): use_count() == 1",
+            },
+        )
+        assert result.relationship == "CONTRADICTS"
+        assert result.confidence >= 0.85
+
+    def test_same_values_no_contradiction(self):
+        """Test: size() == 0 does not contradict size() == 0."""
+        classifier = EntailmentClassifier()
+        result = classifier.classify(
+            claim="empty span has size() == 0",
+            axiom={
+                "content": "Default constructor postcondition: size() == 0",
+                "formal_spec": "postcond(span()): size() == 0",
+            },
+        )
+        assert result.relationship != "CONTRADICTS"
+
+    def test_equality_vs_inequality_contradicts(self):
+        """Test: count() == 0 contradicts count() != 0."""
+        classifier = EntailmentClassifier()
+        result = classifier.classify(
+            claim="container has count() == 0",
+            axiom={
+                "content": "Container is non-empty",
+                "formal_spec": "invariant: count() != 0",
+            },
+        )
+        assert result.relationship == "CONTRADICTS"
+
+    def test_no_numeric_in_claim_no_contradiction(self):
+        """Test: If claim has no numerics, no numeric contradiction."""
+        classifier = EntailmentClassifier()
+        result = classifier.classify(
+            claim="span is empty",
+            axiom={
+                "content": "size() == 0",
+                "formal_spec": "",
+            },
+        )
+        # No numeric in claim, so numeric check shouldn't trigger contradiction
+        # Result depends on polarity/topic analysis
+        # Just verify it doesn't crash and returns a result
+        assert result.relationship in ("SUPPORTS", "CONTRADICTS", "RELATED_TO")
