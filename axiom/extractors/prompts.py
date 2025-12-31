@@ -107,6 +107,40 @@ source_module = "[basic.life]/7"
 tags = ['lifetime', 'destructor', 'delete']
 ```
 
+## Type-Specific Extraction Guidelines
+
+For TYPE SYSTEM sections, pay special attention to:
+
+### Enums (dcl.enum)
+- Value range constraints relative to underlying type
+- Scoped vs unscoped enum semantics (enum class)
+- Implicit conversion rules (unscoped can convert to int, scoped cannot)
+- Underlying type rules (explicit vs default)
+- Initialization and narrowing constraints
+
+### Concepts (temp.concept)
+- Requirement satisfaction conditions
+- Subsumption rules (which concepts imply others)
+- Constraint normalization
+- Atomic constraints vs compound constraints
+
+### Type Aliases (temp.alias, dcl.typedef)
+- Template alias substitution rules
+- cv-qualification preservation
+- Typedef equivalence semantics
+- Alias template deduction
+
+### Classes/Structs (class.mem)
+- Aggregate initialization rules (C++20 designated initializers)
+- Member access constraints
+- Trivial/standard-layout/POD semantics
+- constexpr construction rules
+
+### Namespaces (namespace.def, namespace.alias)
+- Anonymous namespace linkage (internal linkage)
+- Namespace alias semantics (must refer to same namespace)
+- ADL (argument-dependent lookup) implications
+
 ## What NOT to Extract
 
 - Implementation-defined behavior (unless it affects portability)
@@ -258,6 +292,16 @@ HIGH_SIGNAL_SECTIONS = [
     "dcl.fct.def.coroutine",  # Coroutines
     "temp.constr",    # Constraints
     "cmp",            # Three-way comparison
+
+    # Type system sections (enums, aliases, concepts, namespaces)
+    "dcl.enum",       # Enum declarations (including enum class)
+    "temp.concept",   # Concepts and constraints
+    "temp.alias",     # Alias templates
+    "dcl.typedef",    # Typedef names
+    "class.mem",      # Class members
+    "namespace.def",  # Namespace definitions
+    "namespace.alias",# Namespace aliases
+    "dcl.type",       # Type specifiers
 ]
 
 # High-signal library sections
