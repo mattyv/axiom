@@ -2,53 +2,49 @@
 
 [![CI](https://github.com/mattyv/axiom/actions/workflows/ci.yml/badge.svg)](https://github.com/mattyv/axiom/actions/workflows/ci.yml)
 
-A **grounded knowledge system** that validates LLM outputs against formal axioms, providing proof chains and catching hallucinations.
+**Automatically build knowledge about your C++20 libraries so LLMs stop hallucinating about them.**
 
-## The Core Problem
+## The Problem
 
-LLMs hallucinate because they lack grounding in formal axioms. When an LLM says "signed integer overflow wraps around in C", there's no mechanism to validate this against the C11 standard which defines it as undefined behavior.
+LLMs hallucinate about library code because they have no grounding in your library's actual constraints. When an LLM says "you can use `std::string` with `ILP_FOR_T`", there's no mechanism to validate this against the library's real requirements (which might require trivially destructible types).
 
 ## The Solution
 
-A layered knowledge graph that:
-1. **Grounds knowledge in formal semantics** (C11/C++20 from K-Framework and ISO standards)
-2. **Validates LLM outputs** via semantic search + proof chain traversal
-3. **Provides explainable confidence scores** based on axiom depth
-4. **Detects contradictions** between LLM claims and foundational truths
+Axiom automatically extracts axioms (constraints, preconditions, undefined behavior) from:
+1. **Your library code** - via header analysis, comment annotations, and LLM-assisted extraction
+2. **C++20 foundations** - grounding library axioms in formal language semantics
 
-## Current Status
+When an LLM makes a claim about your library, Axiom validates it against the extracted knowledge and returns a proof chain showing why it's valid or invalid.
 
-**Knowledge Base**: 3,541 axioms across 6 foundation layers:
+## How It Works
 
-| Layer | Axioms | Source |
-|-------|--------|--------|
-| `c11_core` | ~700 | K-Framework C semantics |
-| `c11_stdlib` | ~500 | K-Framework stdlib |
-| `cpp_core` | ~650 | K-Framework C++ semantics |
-| `cpp_stdlib` | ~100 | K-Framework C++ stdlib |
-| `cpp20_language` | ~450 | C++ draft spec (eel.is) |
-| `cpp20_stdlib` | ~250 | C++ draft spec (eel.is) |
-
-**Features**:
-- MCP server for Claude Code integration
-- Semantic search via LanceDB embeddings
-- Graph traversal via Neo4j
-- Function pairing detection (malloc/free, new/delete, etc.)
-- Proof chain generation
-- Contradiction detection
+```
+Your Library Code
+    |
+    v
+[Axiom Extraction]
+    -> Parse headers, analyze signatures
+    -> Extract constraints from comments/docs
+    -> LLM-assisted semantic extraction
+    |
+    v
+[Knowledge Graph]
+    -> Library axioms linked to C++20 foundations
+    -> Function pairings (acquire/release patterns)
+    -> Type constraints and preconditions
+    |
+    v
+[MCP Server for Claude Code]
+    -> validate_claim: "Can I use X with Y?"
+    -> search_axioms: Find relevant constraints
+    -> Proof chains back to formal semantics
+```
 
 ## Quick Start
 
-### Prerequisites
-
-- Python 3.11+
-- Neo4j 5.x (via Docker or native)
-- K-Framework C semantics (optional, for extraction)
-
-### Installation
+### 1. Install
 
 ```bash
-# Clone and setup
 git clone https://github.com/mattyv/axiom.git
 cd axiom
 python -m venv .venv
@@ -57,194 +53,147 @@ pip install -e ".[dev]"
 
 # Start Neo4j
 docker-compose up -d
-
-# Ingest pre-extracted axioms into Neo4j + LanceDB
-python scripts/ingest.py knowledge/foundations/c11_core.toml
-python scripts/ingest.py knowledge/foundations/cpp20_language.toml
-# ... repeat for other layers
-
-# Load function pairings
-python scripts/load_pairings.py --toml knowledge/pairings/cpp20_stdlib.toml
 ```
 
-### MCP Server (Claude Code Integration)
+### 2. Ingest Your Library
 
 ```bash
-# Install MCP server for Claude Code
+# Interactive extraction from your library
+python scripts/ingest_library.py /path/to/your/library
+
+# Or add annotations to your headers:
+# // @axiom:pairs_with resource_release
+# // @axiom:required true
+# void resource_acquire(Resource* r);
+```
+
+### 3. Connect to Claude Code
+
+```bash
 ./scripts/install-mcp.sh
-
-# Or manually add to Claude Code settings
 ```
 
-The MCP server provides these tools to Claude:
-- `validate_claim` - Validate a claim against formal axioms
-- `search_axioms` - Search for relevant axioms
-- `get_axiom` - Get a specific axiom by ID
-- `get_stats` - Get knowledge base statistics
+Now Claude Code can validate claims against your library's actual constraints.
 
-## Architecture
+## For Library Maintainers: Ship Knowledge With Your Library
 
-### Hybrid Database Approach
+Library maintainers can ship axiom knowledge alongside their code. Users who have Axiom installed will automatically get accurate LLM assistance for your library.
 
-```
-User Question/LLM Claim
-    |
-    v
-[Semantic Search - LanceDB]
-    -> Find relevant axioms by embedding similarity
-    |
-    v
-[Graph Traversal - Neo4j]
-    -> Trace DEPENDS_ON relationships
-    -> Build proof chain to foundations
-    |
-    v
-[Validation]
-    -> Check for contradictions
-    -> Calculate confidence from foundation depth
-    |
-    v
-Grounded Answer + Proof Chain
+### Option 1: `.axiom.toml` Manifest
+
+Add a `.axiom.toml` file to your library root:
+
+```toml
+# mylib/.axiom.toml
+[metadata]
+name = "mylib"
+version = "1.0.0"
+
+[[pairing]]
+opener = "ILP_FOR"
+closer = "ILP_END"
+required = true
+evidence = "Loop macro must be closed with ILP_END"
+
+[[axiom]]
+function = "ILP_FOR_T"
+constraint = "trivially_destructible<T>"
+evidence = "SmallStorage optimization requires trivial types"
 ```
 
-**Neo4j** stores:
-- Axiom nodes with metadata
-- DEPENDS_ON relationships (type dependencies)
-- PAIRS_WITH relationships (function pairings like malloc/free)
-- Idiom nodes (usage patterns)
+### Option 2: Header Annotations
 
-**LanceDB** stores:
-- Vector embeddings for semantic search
-- Fast similarity queries
+Add structured comments directly in your headers:
 
-### Layered Knowledge Graph
+```cpp
+// @axiom:pairs_with ILP_END
+// @axiom:required true
+#define ILP_FOR(type, var, start, end, N) ...
 
-```
-Layer 0: K-Framework Semantics (c11_core, cpp_core)
-    |
-    | DEPENDS_ON
-    v
-Layer 1: Standard Library (c11_stdlib, cpp_stdlib)
-    |
-    | DEPENDS_ON
-    v
-Layer 2: C++20 Language/Library (cpp20_language, cpp20_stdlib)
-    |
-    | DEPENDS_ON
-    v
-Layer 3: User Libraries (custom axioms)
+// @axiom:constraint trivially_destructible
+// @axiom:evidence "SmallStorage requires trivial types"
+template<typename T>
+class ILP_FOR_T { ... };
 ```
 
-## Usage Examples
+### What Users Get
 
-### Validate a Claim
+When a user runs `python scripts/ingest_library.py /path/to/mylib`, Axiom automatically:
+1. Discovers your `.axiom.toml` or header annotations
+2. Links your constraints to C++20 foundations
+3. Loads into the knowledge graph (Neo4j + LanceDB)
 
-```python
-from axiom.reasoning import AxiomValidator
+The MCP server then provides RAG (Retrieval-Augmented Generation) for Claude Code:
+- Semantic search finds relevant axioms for any query about your library
+- Validation catches LLM hallucinations before they become bugs
+- Proof chains explain *why* something is valid or invalid
 
-validator = AxiomValidator()
-result = validator.validate("Signed integer overflow wraps around in C")
+## Foundation Knowledge
 
-print(result.valid)  # False
-print(result.contradiction)  # "Signed integer overflow is undefined behavior"
-print(result.proof_chain)  # [axiom1, axiom2, ...]
+Axiom includes pre-extracted C++20 foundations (3,500+ axioms) that your library axioms link to:
+
+| Layer | Description |
+|-------|-------------|
+| `c11_core` | C11 language semantics from K-Framework |
+| `cpp_core` | C++ core language from K-Framework |
+| `cpp20_language` | C++20 language features from ISO draft |
+| `cpp20_stdlib` | Standard library from ISO draft |
+
+This grounding means when Axiom says "your library function requires a non-null pointer", it can trace that requirement back to formal C++ semantics.
+
+## MCP Tools
+
+When connected to Claude Code:
+
+- **`validate_claim`** - "Can I use std::string with ILP_FOR_T?" → Returns validity + proof chain
+- **`search_axioms`** - Find constraints relevant to a query
+- **`get_axiom`** - Get details of a specific axiom
+- **`get_stats`** - Knowledge base statistics
+
+## Example Validation
+
+**Claim**: "std::string works with ILP_FOR_T"
+
+**Result**:
+```
+INVALID
+
+Contradiction found:
+- ILP_FOR_T requires trivially_destructible types (library axiom)
+- std::string has non-trivial destructor (cpp20_stdlib)
+- trivially_destructible requires trivial destructor (cpp20_language)
+
+Proof chain:
+1. ILP_FOR_T<T> constraint (your_library, conf: 0.9)
+2. trivially_destructible concept (cpp20_language, conf: 1.0)
+3. std::string destructor (cpp20_stdlib, conf: 0.95)
 ```
 
-### Search for Axioms
+## Current Status
 
-```python
-from axiom.vectors import LanceDBLoader
-
-loader = LanceDBLoader()
-results = loader.search("null pointer dereference", limit=5)
-
-for axiom in results:
-    print(f"{axiom['id']}: {axiom['content']}")
-```
-
-### MCP Tool Usage (in Claude Code)
-
-When integrated with Claude Code, you can ask:
-- "Is signed integer overflow defined behavior in C?"
-- "What happens when I dereference a null pointer?"
-- "Search for axioms about memory allocation"
-
-## Extraction
-
-### From K-Framework Semantics
-
-```bash
-# Clone K-Framework C semantics
-git clone https://github.com/kframework/c-semantics external/c-semantics
-
-# Extract axioms
-python scripts/bootstrap.py --layer c11_core --output knowledge/foundations/c11_core.toml
-```
-
-### From C++ Draft Spec
-
-```bash
-# Extract from a specific section
-python scripts/extract_cpp20.py --section basic.life
-
-# Extract all high-signal sections
-python scripts/extract_cpp20.py --batch-language
-python scripts/extract_cpp20.py --batch-library
-```
-
-### Function Pairings
-
-Pairings are loaded from TOML manifests or extracted from K semantics:
-
-```bash
-# From K semantics (malloc/free, etc.)
-python scripts/load_pairings.py
-
-# From TOML manifest (new/delete, shared_ptr, etc.)
-python scripts/load_pairings.py --toml knowledge/pairings/cpp20_stdlib.toml
-```
+- **Target**: C++20 libraries
+- **Foundations**: 3,541 axioms across 6 layers
+- **Extraction**: Header parsing, comment annotations, LLM-assisted
+- **Integration**: MCP server for Claude Code
 
 ## Project Structure
 
 ```
 axiom/
 ├── axiom/
-│   ├── extractors/          # Extract axioms from sources
-│   │   ├── k_semantics.py   # K-Framework .k files
-│   │   ├── k_pairings.py    # Function pairings from K
-│   │   └── prompts.py       # LLM prompts for extraction
-│   ├── graph/               # Neo4j operations
-│   │   └── loader.py        # Load axioms + pairings
-│   ├── vectors/             # LanceDB operations
-│   │   └── loader.py        # Embeddings + search
-│   ├── reasoning/           # Validation logic
-│   │   ├── validator.py     # Main validator
-│   │   ├── proof_chain.py   # Proof chain generation
-│   │   └── entailment.py    # Claim vs axiom classification
-│   ├── mcp/                 # MCP server
-│   │   └── server.py        # Claude Code integration
-│   └── models/              # Data models
-│       ├── axiom.py         # Axiom dataclass
-│       └── pairing.py       # Pairing/Idiom dataclasses
+│   ├── extractors/      # Extract axioms from sources
+│   ├── graph/           # Neo4j graph operations
+│   ├── vectors/         # LanceDB semantic search
+│   ├── reasoning/       # Validation and proof chains
+│   └── mcp/             # Claude Code integration
 ├── knowledge/
-│   ├── foundations/         # Extracted axioms (TOML)
-│   └── pairings/            # Function pairings (TOML)
-├── scripts/                 # Extraction & ingestion scripts
-└── tests/                   # Test suite
+│   ├── foundations/     # C++20 foundation axioms
+│   └── pairings/        # Function pairing definitions
+└── scripts/
+    ├── ingest_library.py    # Extract from your library
+    ├── ingest.py            # Load axioms to graph
+    └── load_pairings.py     # Load function pairings
 ```
-
-## Documentation
-
-- [Extraction Order](docs/extraction-order.md) - How to extract and ingest axioms
-- [Architecture](ARCHITECTURE.md) - Detailed system design
-
-## Contributing
-
-Contributions welcome! Areas of interest:
-- Additional axiom extraction sources
-- Improved contradiction detection
-- Better proof chain visualization
-- IDE integrations beyond Claude Code
 
 ## License
 
