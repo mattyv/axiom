@@ -63,4 +63,12 @@ knowledge/temp/
 external/c-semantics/.build/
 *.kore
 *.kompiled
+
+# Review sessions and exports
+data/reviews/
 *_approved.toml
+extracted_axioms.toml
+
+# Temporary extraction files
+*.toml.backup
+*.toml.tmp

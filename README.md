@@ -8,11 +8,11 @@
 
 ## The Problem
 
-LLMs hallucinate about library code because they have no grounding in your library's actual constraints. When an LLM says "you can use `std::string` with `void foo()`", there's no mechanism to validate this against the library's real requirements (which might require trivially destructible types for foo() args).
+LLMs hallucinate about library code because they have no grounding in your library's actual constraints. When an LLM says "you can use `std::string` with `void foo()`", there's no mechanism to validate this against the library's real requirements (which might require trivially destructible types for foo() args). An LLM may read the defintion but miss hidden details about what lies behind the function.
 
 ## The Solution
 
-Axiom automatically extracts axioms (constraints, preconditions, undefined behavior) from:
+Axiom (the Tool) automatically extracts axioms (constraints, preconditions, undefined behavior) from:
 1. **Your library code** - via header analysis, comment annotations, and LLM-assisted extraction
 2. **C++20 foundations** - grounding library axioms in formal language semantics. Available as toml files in this repo
 
@@ -22,7 +22,7 @@ When an LLM makes a claim about your library, Axiom validates it against the ext
 
 ```mermaid
 flowchart TB
-    A[Your Library Code]
+    A[Library Maintainers]
     A --> B
 
     subgraph B[Axiom Extraction]
@@ -31,26 +31,31 @@ flowchart TB
         B3[LLM-assisted semantic extraction]
     end
 
-    B --> C
+    B --> C[Ship lib_axioms.toml with library]
 
-    subgraph C[Knowledge Graph]
-        C1[Library axioms linked to C++20 foundations]
-        C2[Function pairings - acquire/release patterns]
-        C3[Type constraints and preconditions]
+    C --> D[Users with Axiom]
+    E[Axiom Foundation Layers from this repo] --> D
+
+    D --> F
+
+    subgraph F[Combined Knowledge Graph]
+        F1[Library axioms + C++20 foundations]
+        F2[Function pairings - acquire/release patterns]
+        F3[Type constraints and preconditions]
     end
 
-    C --> D
+    F --> G
 
-    subgraph D[MCP Server for Claude Code]
-        D1["validate_claim: Can I use X with Y?"]
-        D2[search_axioms: Find relevant constraints]
-        D3[Proof chains back to formal semantics]
+    subgraph G[MCP Server for Claude Code]
+        G1["validate_claim: Can I use X with Y?"]
+        G2[search_axioms: Find relevant constraints]
+        G3[Proof chains back to formal semantics]
     end
 ```
 
-## Quick Start
+## Quick Start (For Users)
 
-### 1. Install
+### 1. Install Axiom
 
 ```bash
 git clone https://github.com/mattyv/axiom.git
@@ -63,17 +68,17 @@ pip install -e ".[dev]"
 docker-compose up -d
 ```
 
-### 2. Ingest Your Library
+### 2. Load Foundation Layers and Library Axioms
 
 ```bash
-# Interactive extraction from your library
-python scripts/ingest_library.py /path/to/your/library
+# Load C++20 foundation layers (do this once)
+python scripts/ingest.py
 
-# Or add annotations to your headers:
-# // @axiom:pairs_with resource_release
-# // @axiom:required true
-# void resource_acquire(Resource* r);
+# Load a library's axiom TOML file
+python scripts/ingest.py /path/to/library/knowledge/mylib_axioms.toml
 ```
+
+Axiom automatically combines the library axioms with C++20 foundation layers.
 
 ### 3. Connect to Claude Code
 
@@ -81,38 +86,60 @@ python scripts/ingest_library.py /path/to/your/library
 ./scripts/install-mcp.sh
 ```
 
-Now Claude Code can validate claims against your library's actual constraints.
+Now Claude Code can validate claims against the library's actual constraints.
 
-## For Library Maintainers: Ship Knowledge With Your Library
+## For Library Maintainers: Extract and Ship Knowledge
 
-Library maintainers can ship axiom knowledge alongside their code. Users who have Axiom installed will automatically get accurate LLM assistance for your library.
+As a library maintainer, you extract your library's constraints once and ship the extracted TOML file with your library. Users who have Axiom installed can then load your axioms to get accurate LLM assistance.
 
-### Option 1: `.axiom.toml` Manifest
+### 1. Extract Axioms from Your Library
 
-Add a `.axiom.toml` file to your library root:
+Use Axiom's extraction tools to analyze your library and create an axiom TOML file:
 
-```toml
-# mylib/.axiom.toml
-[metadata]
-name = "mylib"
-version = "1.0.0"
+```bash
+# Clone Axiom and set up
+git clone https://github.com/mattyv/axiom.git
+cd axiom
+python -m venv .venv
+source .venv/bin/activate
+pip install -e ".[dev]"
 
-[[pairing]]
-opener = "foo_begin"
-closer = "foo_end"
-required = true
-evidence = "Streaming operation must be closed with foo_end"
+# Start Neo4j (needed for extraction)
+docker-compose up -d
 
-[[axiom]]
-function = "foo"
-constraint = "trivially_destructible<T>"
-evidence = "Internal buffer requires trivial types"
+# Load foundation layers first (needed for RAG during extraction)
+python scripts/ingest.py
+
+# Extract axioms from your library (interactive)
+python scripts/ingest_library.py -r /path/to/your/library
+
+# After reviewing and approving axioms, export to TOML
+python scripts/ingest_library.py --export <session_id> -o /path/to/your/library/knowledge/mylib_axioms.toml
 ```
 
-### Option 2: Header Annotations
+This creates an axiom TOML file like `knowledge/mylib_axioms.toml`:
 
-Add structured comments directly in your headers:
+```toml
+version = "1.0"
+source = "mylib"
 
+[[axioms]]
+id = "mylib_foo_precondition_trivial_type"
+content = "foo() requires trivially destructible types for internal buffer"
+formal_spec = "trivially_destructible<T>"
+layer = "library"
+function = "foo"
+signature = "template<typename T> void foo(T value)"
+header = "mylib/foo.h"
+axiom_type = "precondition"
+depends_on = ["cpp20_type_traits_trivially_destructible_..."]
+```
+
+### 2. Improve Extraction Quality (Optional)
+
+You can guide extraction using header annotations and ignore patterns:
+
+**Header annotations:**
 ```cpp
 // @axiom:pairs_with foo_end
 // @axiom:required true
@@ -124,35 +151,35 @@ template<typename T>
 void foo(T value);
 ```
 
-### Option 3: `.axignore` File
-
-Control which files are analyzed during ingestion (gitignore-style syntax):
-
+**`.axignore` file:**
 ```gitignore
-# .axignore
+# Exclude from extraction
 build/
 tests/
 third_party/
 *.generated.cpp
 ```
 
-### What Users Get
+### 3. Ship the Axiom TOML with Your Library
 
-When a user clones a library that ships with `.axiom.toml` or axiom annotations, they can ingest it:
+Add the extracted TOML file (e.g., `knowledge/mylib_axioms.toml`) to your library repository and commit it.
+
+When users who have Axiom installed clone your library, they can load your axioms:
 
 ```bash
-python scripts/ingest_library.py /path/to/mylib
+# User loads your library's axioms
+python scripts/ingest.py /path/to/mylib/knowledge/mylib_axioms.toml
 ```
 
-Axiom automatically:
-1. Discovers your `.axiom.toml`, header annotations, or pre-extracted axiom files
-2. Links your constraints to C++20 foundations
-3. Loads into the knowledge graph (Neo4j + LanceDB)
+Axiom will:
+1. Load your axiom TOML file
+2. Combine it with C++20 foundation layers (3,500+ axioms from the Axiom repo)
+3. Build a unified knowledge graph linking your constraints to formal C++ semantics
 
-The MCP server then provides RAG (Retrieval-Augmented Generation) for Claude Code:
-- Semantic search finds relevant axioms for any query about your library
+Their MCP server will then provide RAG for Claude Code:
+- Semantic search finds relevant axioms for queries about your library
 - Validation catches LLM hallucinations before they become bugs
-- Proof chains explain *why* something is valid or invalid
+- Proof chains trace back to C++ formal semantics
 
 ## Foundation Knowledge
 
@@ -204,8 +231,9 @@ Proof chain:
 
 ## Documentation
 
-- [Extraction Order](docs/extraction-order.md) - How to rebuild the knowledge base
-- [MCP Test Report](docs/mcp-test-report.md) - Little taster / sample demonstrating MCP tool functionality
+- [Foundation Layers](docs/foundation-layers.md) - How foundation axioms were generated and how to rebuild them
+- [Extraction Order](docs/extraction-order.md) - Step-by-step guide to rebuilding the complete knowledge base
+- [MCP Test Report](docs/mcp-test-report.md) - Sample demonstrating MCP tool functionality
 
 ## License
 
