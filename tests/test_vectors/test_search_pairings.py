@@ -3,9 +3,17 @@
 # https://github.com/mattyv/axiom
 # SPDX-License-Identifier: BSL-1.0
 
-"""Tests for search_with_pairings functionality."""
+"""Tests for search_with_pairings functionality.
+
+These tests require lancedb to be installed.
+"""
 
 from unittest.mock import MagicMock, patch
+
+import pytest
+
+# Skip all tests in this module if lancedb is not installed
+lancedb = pytest.importorskip("lancedb")
 
 
 class TestSearchWithPairings:

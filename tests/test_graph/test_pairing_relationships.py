@@ -3,11 +3,19 @@
 # https://github.com/mattyv/axiom
 # SPDX-License-Identifier: BSL-1.0
 
-"""Tests for PAIRS_WITH relationships and Idiom nodes in Neo4j."""
+"""Tests for PAIRS_WITH relationships and Idiom nodes in Neo4j.
+
+These tests require neo4j to be installed.
+"""
 
 from unittest.mock import MagicMock
 
+import pytest
+
 from axiom.models.pairing import Idiom, Pairing
+
+# Skip all tests in this module if neo4j is not installed
+neo4j = pytest.importorskip("neo4j")
 
 
 class TestCreatePairingRelationship:
