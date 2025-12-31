@@ -4278,3 +4278,857 @@ function = "std::make_shared_for_overwrite"
 header = "<memory>"
 signature = '''template<class T> constexpr shared_ptr<T> make_shared_for_overwrite(size_t N)'''
 depends_on = ['for_loop_range_untyped_impl_constraint_array_bounds_remainder_b8c9d0e1', 'for_loop_range_typed_impl_constraint_array_access_remainder_r1s2t3u4', 'for_loop_range_impl_constraint_array_access_bounds_inner_loop_e9f0a1b2']
+
+[[axioms]]
+id = "cpp20_expr_new_complete_object_type_3a7c8e12"
+content = '''The allocated type in a new-expression shall be a complete object type, but not an abstract class type or array thereof.'''
+formal_spec = '''new_expression(T) => complete_object_type(T) && !abstract_class_type(T) && !array_of(T, abstract_class_type)'''
+layer = "cpp20_language"
+confidence = 0.95
+source_file = "expr.new"
+source_module = "[expr.new]/1"
+tags = ['new', 'type-constraint', 'complete-type', 'abstract-class']
+
+[[axioms]]
+id = "cpp20_expr_new_no_references_f8b2d4a1"
+content = '''References cannot be created by new-expressions because references are not objects.'''
+formal_spec = '''new_expression(T) && reference_type(T) => ill_formed'''
+layer = "cpp20_language"
+confidence = 0.95
+source_file = "expr.new"
+source_module = "[expr.new]/1"
+tags = ['new', 'reference', 'type-constraint']
+
+[[axioms]]
+id = "cpp20_expr_new_invalid_size_constexpr_illformed_9c3e5f7a"
+content = '''If the array size expression in a new-expression is a potentially-evaluated core constant expression and its value is invalid, the program is ill-formed.'''
+formal_spec = '''new_expression_array(expr) && core_constant_expression(expr) && potentially_evaluated(expr) && invalid_size_value(expr) => ill_formed'''
+layer = "cpp20_language"
+confidence = 0.95
+source_file = "expr.new"
+source_module = "[expr.new]/8.5"
+tags = ['new', 'array', 'constant-expression', 'ill-formed']
+
+[[axioms]]
+id = "cpp20_expr_new_invalid_size_nonthrowing_null_7d4a2b8e"
+content = '''If the array size value is invalid at runtime and the allocation function has a non-throwing exception specification, the new-expression returns the null pointer value.'''
+formal_spec = '''new_expression_array(expr) && !core_constant_expression(expr) && invalid_size_value(expr) && nothrow_allocation_function(alloc_fn) => result == nullptr'''
+layer = "cpp20_language"
+confidence = 0.95
+source_file = "expr.new"
+source_module = "[expr.new]/8.6.1"
+tags = ['new', 'array', 'nothrow', 'null-pointer']
+
+[[axioms]]
+id = "cpp20_expr_new_negative_size_nonclass_invalid_c5f9a3d2"
+content = '''The array size expression value is invalid if the expression is of non-class type and its value before converting to std::size_t is less than zero.'''
+formal_spec = '''new_expression_array(expr) && !class_type(type_of(expr)) && value_before_conversion(expr) < 0 => invalid_size_value(expr)'''
+layer = "cpp20_language"
+confidence = 0.95
+source_file = "expr.new"
+source_module = "[expr.new]/8.1"
+tags = ['new', 'array', 'negative-size', 'invalid']
+
+[[axioms]]
+id = "cpp20_expr_new_negative_size_class_invalid_a2e7b6c4"
+content = '''The array size expression value is invalid if the expression is of class type and its value before application of the second standard conversion is less than zero.'''
+formal_spec = '''new_expression_array(expr) && class_type(type_of(expr)) && value_before_second_conversion(expr) < 0 => invalid_size_value(expr)'''
+layer = "cpp20_language"
+confidence = 0.95
+source_file = "expr.new"
+source_module = "[expr.new]/8.2"
+tags = ['new', 'array', 'negative-size', 'class-type', 'invalid']
+
+[[axioms]]
+id = "cpp20_expr_new_exceeds_impl_limit_invalid_8f1c4d5e"
+content = '''The array size expression value is invalid if it would cause the size of the allocated object to exceed the implementation-defined limit.'''
+formal_spec = '''new_expression_array(expr) && size_of_allocation(expr) > implementation_limit => invalid_size_value(expr)'''
+layer = "cpp20_language"
+confidence = 0.95
+source_file = "expr.new"
+source_module = "[expr.new]/8.3"
+tags = ['new', 'array', 'size-limit', 'implementation-defined', 'invalid']
+
+[[axioms]]
+id = "cpp20_expr_new_initializer_exceeds_size_invalid_6b3e9a7f"
+content = '''The array size expression value is invalid if the new-initializer provides more initializers than the number of array elements to initialize.'''
+formal_spec = '''new_expression_array(size_expr, init) && (braced_init_list(init) || parenthesized_expr_list(init)) && num_initializers(init) > value_of(size_expr) => invalid_size_value(size_expr)'''
+layer = "cpp20_language"
+confidence = 0.95
+source_file = "expr.new"
+source_module = "[expr.new]/8.4"
+tags = ['new', 'array', 'initializer', 'invalid']
+
+[[axioms]]
+id = "cpp20_expr_new_nonallocating_null_ub_d4a8c2f1"
+content = '''If a non-allocating form of allocation function returns null, the behavior is undefined.'''
+formal_spec = '''new_expression(e) && non_allocating_form(allocation_function(e)) && returns_null(allocation_function(e)) => undefined_behavior'''
+layer = "cpp20_language"
+confidence = 0.95
+source_file = "expr.new"
+source_module = "[expr.new]/22"
+tags = ['new', 'placement-new', 'null', 'undefined-behavior']
+
+[[axioms]]
+id = "cpp20_expr_new_usual_dealloc_matches_placement_illformed_e7f3b9a6"
+content = '''If lookup finds a usual deallocation function that would have been selected as a match for a placement allocation function, the program is ill-formed.'''
+formal_spec = '''new_expression(e) && placement_allocation(e) && lookup_finds(usual_dealloc_fn) && would_match_as_placement(usual_dealloc_fn, allocation_function(e)) => ill_formed'''
+layer = "cpp20_language"
+confidence = 0.95
+source_file = "expr.new"
+source_module = "[expr.new]/29"
+tags = ['new', 'placement-new', 'deallocation', 'ill-formed']
+
+[[axioms]]
+id = "cpp20_expr_new_alloc_sequenced_before_init_2c5d8a4b"
+content = '''The invocation of the allocation function is sequenced before the evaluations of expressions in the new-initializer.'''
+formal_spec = '''new_expression(e) && has_new_initializer(e) => sequenced_before(allocation_call(e), eval(new_initializer(e)))'''
+layer = "cpp20_language"
+confidence = 0.95
+source_file = "expr.new"
+source_module = "[expr.new]/25"
+tags = ['new', 'sequencing', 'initialization', 'allocation']
+
+[[axioms]]
+id = "cpp20_expr_new_init_sequenced_before_value_computation_9e2a7c3f"
+content = '''Initialization of the allocated object is sequenced before the value computation of the new-expression.'''
+formal_spec = '''new_expression(e) => sequenced_before(initialization(allocated_object(e)), value_computation(e))'''
+layer = "cpp20_language"
+confidence = 0.95
+source_file = "expr.new"
+source_module = "[expr.new]/25"
+tags = ['new', 'sequencing', 'initialization', 'value-computation']
+
+[[axioms]]
+id = "cpp20_expr_new_size_arg_minimum_b8d4e1a7"
+content = '''The size argument passed to the allocation function shall be no less than the size of the object being created.'''
+formal_spec = '''new_expression(e) && !allocation_extended(e) && calls_allocation_function(e, alloc_fn) => size_arg(alloc_fn) >= sizeof(allocated_type(e))'''
+layer = "cpp20_language"
+confidence = 0.95
+source_file = "expr.new"
+source_module = "[expr.new]/17"
+tags = ['new', 'allocation', 'size', 'constraint']
+
+[[axioms]]
+id = "cpp20_expr_new_size_arg_greater_only_for_array_c3f7a9e2"
+content = '''The size argument to allocation function may only be greater than the object size if the object is an array and the allocation function is not a non-allocating form.'''
+formal_spec = '''new_expression(e) && !allocation_extended(e) && size_arg(alloc_fn) > sizeof(allocated_type(e)) => array_type(allocated_type(e)) && !non_allocating_form(alloc_fn)'''
+layer = "cpp20_language"
+confidence = 0.95
+source_file = "expr.new"
+source_module = "[expr.new]/17"
+tags = ['new', 'allocation', 'size', 'array', 'overhead']
+
+[[axioms]]
+id = "cpp20_expr_new_char_array_alignment_overhead_f2a6b8d4"
+content = '''For arrays of char, unsigned char, and std::byte, the difference between the new-expression result and the allocation function return value shall be an integral multiple of the strictest fundamental alignment requirement of any object type whose size is no greater than the array size.'''
+formal_spec = '''new_expression(e) && array_type(allocated_type(e)) && element_type_is_char_or_byte(allocated_type(e)) => (result(e) - alloc_return(e)) % strictest_alignment(sizeof(allocated_type(e))) == 0'''
+layer = "cpp20_language"
+confidence = 0.95
+source_file = "expr.new"
+source_module = "[expr.new]/17"
+tags = ['new', 'array', 'alignment', 'char', 'byte']
+
+[[axioms]]
+id = "cpp20_expr_new_null_return_no_init_no_dealloc_4d8c2e5a"
+content = '''If the allocation function returns null (and is not a non-allocating form), initialization shall not be done, the deallocation function shall not be called, and the new-expression value shall be null.'''
+formal_spec = '''new_expression(e) && !non_allocating_form(alloc_fn) && returns_null(alloc_fn) => !initialization_performed(e) && !deallocation_called(e) && result(e) == nullptr'''
+layer = "cpp20_language"
+confidence = 0.95
+source_file = "expr.new"
+source_module = "[expr.new]/22"
+tags = ['new', 'allocation', 'null', 'initialization']
+
+[[axioms]]
+id = "cpp20_expr_new_omitted_init_default_init_7a3f9c1e"
+content = '''If the new-initializer is omitted, the object is default-initialized.'''
+formal_spec = '''new_expression(e) && !has_new_initializer(e) => default_initialized(allocated_object(e))'''
+layer = "cpp20_language"
+confidence = 0.85
+source_file = "expr.new"
+source_module = "[expr.new]/24.1"
+tags = ['new', 'initialization', 'default-initialization']
+
+[[axioms]]
+id = "cpp20_expr_new_with_init_direct_init_5c9d4b2a"
+content = '''If a new-initializer is present, it is interpreted according to the initialization rules for direct-initialization.'''
+formal_spec = '''new_expression(e) && has_new_initializer(e) => direct_initialized(allocated_object(e), new_initializer(e))'''
+layer = "cpp20_language"
+confidence = 0.85
+source_file = "expr.new"
+source_module = "[expr.new]/24.2"
+tags = ['new', 'initialization', 'direct-initialization']
+
+[[axioms]]
+id = "cpp20_expr_new_dynamic_storage_duration_8e2a7f4c"
+content = '''Objects created by a new-expression have dynamic storage duration.'''
+formal_spec = '''new_expression(e) && creates_object(e, obj) => dynamic_storage_duration(obj)'''
+layer = "cpp20_language"
+confidence = 0.95
+source_file = "expr.new"
+source_module = "[expr.new]/10"
+tags = ['new', 'storage-duration', 'dynamic']
+
+[[axioms]]
+id = "cpp20_expr_new_extended_allocation_size_limit_3b8f1d6e"
+content = '''When allocation is extended, the size argument shall be no greater than the sum of the sizes for the omitted calls plus the extended call size plus any necessary alignment padding.'''
+formal_spec = '''new_expression(e) && allocation_extended(e) => size_arg(alloc_fn) <= sum_omitted_sizes(e) + non_extended_size(e) + alignment_padding(e)'''
+layer = "cpp20_language"
+confidence = 0.95
+source_file = "expr.new"
+source_module = "[expr.new]/18"
+tags = ['new', 'allocation', 'extended', 'size']
+
+[[axioms]]
+id = "cpp20_expr_new_exception_cleanup_dealloc_a7c3e9f2"
+content = '''If object initialization terminates by throwing an exception and a suitable deallocation function can be found, the deallocation function is called to free the memory before the exception propagates.'''
+formal_spec = '''new_expression(e) && initialization_throws(e) && exists_suitable_dealloc(e) => calls_dealloc_before_propagate(e)'''
+layer = "cpp20_language"
+confidence = 0.95
+source_file = "expr.new"
+source_module = "[expr.new]/27"
+tags = ['new', 'exception', 'deallocation', 'cleanup']
+
+[[axioms]]
+id = "cpp20_expr_new_no_dealloc_match_no_free_6d4b8a2e"
+content = '''If no unambiguous matching deallocation function can be found when initialization throws, propagating the exception does not cause the object memory to be freed.'''
+formal_spec = '''new_expression(e) && initialization_throws(e) && !exists_unambiguous_dealloc(e) => memory_not_freed(e)'''
+layer = "cpp20_language"
+confidence = 0.95
+source_file = "expr.new"
+source_module = "[expr.new]/27"
+tags = ['new', 'exception', 'memory-leak', 'deallocation']
+
+[[axioms]]
+id = "cpp20_expr_new_array_result_type_pointer_to_element_c8f2a5d9"
+content = '''When the allocated type is array of N T, the new-expression yields a prvalue of type pointer to T pointing to the initial element.'''
+formal_spec = '''new_expression(e) && allocated_type(e) == array_of(N, T) => type_of(result(e)) == pointer_to(T) && points_to_initial_element(result(e))'''
+layer = "cpp20_language"
+confidence = 0.95
+source_file = "expr.new"
+source_module = "[expr.new]/11"
+tags = ['new', 'array', 'result-type', 'pointer']
+
+[[axioms]]
+id = "cpp20_expr_new_nonarray_result_type_pointer_to_object_2e9a7b4f"
+content = '''For non-array allocated types, the new-expression is a prvalue of type pointer to T that points to the created object.'''
+formal_spec = '''new_expression(e) && !array_type(allocated_type(e)) && allocated_type(e) == T => type_of(result(e)) == pointer_to(T) && points_to(result(e), created_object(e))'''
+layer = "cpp20_language"
+confidence = 0.95
+source_file = "expr.new"
+source_module = "[expr.new]/11"
+tags = ['new', 'result-type', 'pointer', 'object']
+
+[[axioms]]
+id = "cpp20_expr_new_array_class_destructor_potentially_invoked_5f3c8a1d"
+content = '''If the new-expression creates an array of objects of class type, the destructor is potentially invoked.'''
+formal_spec = '''new_expression(e) && array_type(allocated_type(e)) && class_type(element_type(allocated_type(e))) => destructor_potentially_invoked(element_type(allocated_type(e)))'''
+layer = "cpp20_language"
+confidence = 0.85
+source_file = "expr.new"
+source_module = "[expr.new]/26"
+tags = ['new', 'array', 'destructor', 'class-type']
+
+[[axioms]]
+id = "cpp20_expr_new_dealloc_receives_alloc_return_7a2d4e9c"
+content = '''If a new-expression calls a deallocation function, it passes the value returned from the allocation function call as the first argument.'''
+formal_spec = '''new_expression(e) && calls_dealloc(e, dealloc_fn) => first_arg(dealloc_fn) == return_value(allocation_function(e))'''
+layer = "cpp20_language"
+confidence = 0.95
+source_file = "expr.new"
+source_module = "[expr.new]/30"
+tags = ['new', 'deallocation', 'argument-passing']
+
+[[axioms]]
+id = "cpp20_expr_new_placement_dealloc_same_args_8b5c2f3a"
+content = '''If a placement deallocation function is called, it is passed the same additional arguments as were passed to the placement allocation function.'''
+formal_spec = '''new_expression(e) && placement_new(e) && calls_placement_dealloc(e, dealloc_fn) => additional_args(dealloc_fn) == placement_args(e)'''
+layer = "cpp20_language"
+confidence = 0.95
+source_file = "expr.new"
+source_module = "[expr.new]/30"
+tags = ['new', 'placement-new', 'deallocation', 'argument-passing']
+
+[[axioms]]
+id = "cpp20_expr_delete_array_dynamic_type_mismatch_7c8f2a1b"
+content = '''In an array delete expression, if the dynamic type of the object to be deleted is not similar to its static type, the behavior is undefined.'''
+formal_spec = '''array_delete_expr(ptr) && !similar(dynamic_type(pointee(ptr)), static_type(pointee(ptr))) => undefined_behavior'''
+layer = "cpp20_language"
+confidence = 0.95
+source_file = "expr.delete"
+source_module = "[expr.delete]/3"
+tags = ['delete', 'array', 'type-mismatch', 'undefined-behavior']
+
+[[axioms]]
+id = "cpp20_expr_delete_incomplete_type_illformed_3d4e5f6a"
+content = '''If the object being deleted has incomplete class type at the point of deletion, the program is ill-formed.'''
+formal_spec = '''delete_expr(ptr) && incomplete_class_type(pointee_type(ptr)) => ill_formed'''
+layer = "cpp20_language"
+confidence = 0.95
+source_file = "expr.delete"
+source_module = "[expr.delete]/4"
+tags = ['delete', 'incomplete-type', 'ill-formed']
+
+[[axioms]]
+id = "cpp20_expr_delete_operand_class_conversion_8a9b0c1d"
+content = '''If the operand of a delete-expression is of class type, it is contextually implicitly converted to a pointer to object type.'''
+formal_spec = '''delete_expr(operand) && class_type(operand) => contextual_implicit_conversion(operand, pointer_to_object_type)'''
+layer = "cpp20_language"
+confidence = 0.9
+source_file = "expr.delete"
+source_module = "[expr.delete]/1"
+tags = ['delete', 'conversion', 'class-type']
+
+[[axioms]]
+id = "cpp20_expr_delete_operand_prvalue_pointer_2e3f4a5b"
+content = '''If the operand of a delete-expression is not of class type, it shall be a prvalue of pointer to object type.'''
+formal_spec = '''delete_expr(operand) && !class_type(operand) => prvalue(operand) && pointer_to_object_type(operand)'''
+layer = "cpp20_language"
+confidence = 0.9
+source_file = "expr.delete"
+source_module = "[expr.delete]/1"
+tags = ['delete', 'prvalue', 'pointer']
+
+[[axioms]]
+id = "cpp20_expr_delete_dealloc_accessible_6b7c8d9e"
+content = '''Unless the deallocation function is selected at the point of definition of the dynamic type's virtual destructor, the selected deallocation function shall be accessible from the point where the delete-expression appears.'''
+formal_spec = '''delete_expr(ptr) && selected_dealloc(f) && !selected_at_virtual_dtor_definition(f) && !accessible(f, delete_expr_point) => ill_formed'''
+layer = "cpp20_language"
+confidence = 0.9
+source_file = "expr.delete"
+source_module = "[expr.delete]/9"
+tags = ['delete', 'deallocation', 'accessibility']
+
+[[axioms]]
+id = "cpp20_expr_delete_replaceable_dealloc_mismatch_4f5a6b7c"
+content = '''If a delete-expression results in a call to a replaceable deallocation function, and either the first argument was not the result of a prior call to a replaceable allocation function or the second or third argument was not the corresponding argument in said call, the behavior is undefined.'''
+formal_spec = '''delete_expr(ptr) && calls_replaceable_dealloc(ptr, f) && (!from_replaceable_alloc(ptr) || !matching_args(ptr, f)) => undefined_behavior'''
+layer = "cpp20_language"
+confidence = 0.95
+source_file = "expr.delete"
+source_module = "[expr.delete]/10"
+tags = ['delete', 'deallocation', 'replaceable', 'undefined-behavior']
+
+[[axioms]]
+id = "cpp20_expr_delete_array_nonallocating_placement_1a2b3c4d"
+content = '''In an array delete expression, the pointer value must not have resulted from a previous array new-expression whose allocation function was a non-allocating form, otherwise the behavior is undefined.'''
+formal_spec = '''array_delete_expr(ptr) && from_array_new(ptr) && non_allocating_form(allocation_function(ptr)) => undefined_behavior'''
+layer = "cpp20_language"
+confidence = 0.95
+source_file = "expr.delete"
+source_module = "[expr.delete]/2"
+tags = ['delete', 'array', 'placement-new', 'undefined-behavior']
+
+[[axioms]]
+id = "cpp20_expr_delete_syntax_match_type_5c6d7e8f"
+content = '''The syntax of the delete-expression must match the type of the object allocated by new, not the syntax of the new-expression. Using single-object delete on array or array delete on single object is undefined behavior.'''
+formal_spec = '''(single_delete_expr(ptr) && from_array_new(ptr)) || (array_delete_expr(ptr) && from_single_new(ptr)) => undefined_behavior'''
+layer = "cpp20_language"
+confidence = 0.95
+source_file = "expr.delete"
+source_module = "[expr.delete]/2"
+tags = ['delete', 'array', 'single-object', 'syntax-mismatch', 'undefined-behavior']
+
+[[axioms]]
+id = "cpp20_expr_delete_array_elements_reverse_order_9a0b1c2d"
+content = '''When deleting an array, the elements are destroyed in order of decreasing address, which is reverse order of the completion of their constructor.'''
+formal_spec = '''array_delete_expr(ptr) && !null_pointer(ptr) => destroy_order(elements(ptr)) == reverse(construction_completion_order(elements(ptr)))'''
+layer = "cpp20_language"
+confidence = 0.9
+source_file = "expr.delete"
+source_module = "[expr.delete]/5"
+tags = ['delete', 'array', 'destructor', 'order']
+
+[[axioms]]
+id = "cpp20_expr_delete_null_dealloc_unspecified_3e4f5a6b"
+content = '''If the value of the operand of the delete-expression is a null pointer value, it is unspecified whether a deallocation function will be called.'''
+formal_spec = '''delete_expr(ptr) && null_pointer(ptr) => unspecified(calls_dealloc(ptr))'''
+layer = "cpp20_language"
+confidence = 0.9
+source_file = "expr.delete"
+source_module = "[expr.delete]/6"
+tags = ['delete', 'null-pointer', 'deallocation', 'unspecified']
+
+[[axioms]]
+id = "cpp20_expr_delete_dealloc_called_despite_exception_7f8a9b0c"
+content = '''The deallocation function is called regardless of whether the destructor for the object or some element of the array throws an exception.'''
+formal_spec = '''delete_expr(ptr) && !null_pointer(ptr) && throws_exception(destructor(ptr)) => calls_dealloc(ptr)'''
+layer = "cpp20_language"
+confidence = 0.9
+source_file = "expr.delete"
+source_module = "[expr.delete]/6"
+tags = ['delete', 'deallocation', 'exception', 'destructor']
+
+[[axioms]]
+id = "cpp20_expr_delete_size_dealloc_unspecified_1d2e3f4a"
+content = '''When selecting a deallocation function and the type is incomplete or does not meet the criteria for requiring a sized deallocation, it is unspecified whether a deallocation function with a parameter of type std::size_t is selected.'''
+formal_spec = '''delete_expr(ptr) && !complete_type_requires_sized(ptr) => unspecified(sized_dealloc_selected(ptr))'''
+layer = "cpp20_language"
+confidence = 0.85
+source_file = "expr.delete"
+source_module = "[expr.delete]/9.6"
+tags = ['delete', 'deallocation', 'size', 'unspecified']
+
+[[axioms]]
+id = "cpp20_expr_delete_destroying_delete_priority_5b6c7d8e"
+content = '''When selecting a deallocation function, if any of the deallocation functions is a destroying operator delete, all deallocation functions that are not destroying operator deletes are eliminated from further consideration.'''
+formal_spec = '''delete_expr(ptr) && exists(destroying_delete, dealloc_candidates(ptr)) => selected_dealloc(ptr) in destroying_deletes(dealloc_candidates(ptr))'''
+layer = "cpp20_language"
+confidence = 0.9
+source_file = "expr.delete"
+source_module = "[expr.delete]/9.1"
+tags = ['delete', 'deallocation', 'destroying-delete', 'selection']
+
+[[axioms]]
+id = "cpp20_expr_delete_align_val_t_preference_9e0f1a2b"
+content = '''When selecting a deallocation function for a type with new-extended alignment, a function with a parameter of type std::align_val_t is preferred; otherwise a function without such a parameter is preferred.'''
+formal_spec = '''delete_expr(ptr) && new_extended_alignment(pointee_type(ptr)) => prefers_align_val_t_param(dealloc_selection(ptr))'''
+layer = "cpp20_language"
+confidence = 0.9
+source_file = "expr.delete"
+source_module = "[expr.delete]/9.2"
+tags = ['delete', 'deallocation', 'alignment', 'selection']
+
+[[axioms]]
+id = "cpp20_expr_delete_class_scope_no_size_param_3c4d5e6f"
+content = '''When selecting a deallocation function and the deallocation functions belong to a class scope, the one without a parameter of type std::size_t is selected.'''
+formal_spec = '''delete_expr(ptr) && class_scope_deallocs(dealloc_candidates(ptr)) => !has_size_param(selected_dealloc(ptr))'''
+layer = "cpp20_language"
+confidence = 0.9
+source_file = "expr.delete"
+source_module = "[expr.delete]/9.4"
+tags = ['delete', 'deallocation', 'class-scope', 'selection']
+
+[[axioms]]
+id = "cpp20_expr_delete_array_nontrivial_dtor_sized_7a8b9c0d"
+content = '''For an array delete expression on a complete type, if the operand is a pointer to a class type with a non-trivial destructor or array thereof, the deallocation function with a parameter of type std::size_t is selected.'''
+formal_spec = '''array_delete_expr(ptr) && complete_type(pointee_type(ptr)) && (non_trivial_destructor(element_type(ptr)) || array_of_non_trivial_dtor(ptr)) => has_size_param(selected_dealloc(ptr))'''
+layer = "cpp20_language"
+confidence = 0.9
+source_file = "expr.delete"
+source_module = "[expr.delete]/9.5"
+tags = ['delete', 'array', 'deallocation', 'non-trivial-destructor', 'sized']
+
+[[axioms]]
+id = "cpp20_expr_delete_result_type_void_1e2f3a4b"
+content = '''The delete-expression has type void.'''
+formal_spec = '''type(delete_expr(ptr)) == void'''
+layer = "cpp20_language"
+confidence = 0.95
+source_file = "expr.delete"
+source_module = "[expr.delete]/1"
+tags = ['delete', 'type', 'void']
+
+[[axioms]]
+id = "cpp20_expr_delete_virtual_dtor_dealloc_selection_5f6a7b8c"
+content = '''For a single-object delete expression, if the operand is a pointer to cv T and T has a virtual destructor, the deallocation function is the one selected at the point of definition of the dynamic type's virtual destructor.'''
+formal_spec = '''single_delete_expr(ptr) && virtual_destructor(pointee_type(ptr)) => selected_dealloc(ptr) == dealloc_at_virtual_dtor_definition(dynamic_type(pointee(ptr)))'''
+layer = "cpp20_language"
+confidence = 0.9
+source_file = "expr.delete"
+source_module = "[expr.delete]/8.1"
+tags = ['delete', 'virtual-destructor', 'deallocation', 'selection']
+
+[[axioms]]
+id = "cpp20_new_delete_general_invalid_alignment_ub_a1b2c3d4"
+content = '''Passing an invalid alignment value to any operator new or operator delete function is undefined behavior.'''
+formal_spec = '''call(operator_new, alignment) && !valid_alignment(alignment) => undefined_behavior'''
+layer = "cpp20_stdlib"
+confidence = 0.95
+source_file = "new.delete.general"
+source_module = "[new.delete.general]/1"
+tags = ['memory', 'allocation', 'alignment', 'undefined_behavior']
+
+[[axioms]]
+id = "cpp20_new_delete_single_new_required_behavior_e5f6a7b8"
+content = '''operator new(size_t) and operator new(size_t, align_val_t) are required to return a non-null pointer to suitably aligned storage or throw bad_alloc. This requirement binds replacement versions.'''
+formal_spec = '''call(operator_new, size) => (returns(non_null_aligned_ptr) || throws(bad_alloc))'''
+layer = "cpp20_stdlib"
+confidence = 0.95
+source_file = "new.delete.single"
+source_module = "[new.delete.single]/2"
+tags = ['memory', 'allocation', 'required_behavior']
+function = "operator new"
+header = "<new>"
+signature = '''void* operator new(std::size_t size)'''
+
+[[axioms]]
+id = "cpp20_new_delete_single_new_aligned_required_c9d0e1f2"
+content = '''operator new(size_t, align_val_t) is required to return a non-null pointer to suitably aligned storage or throw bad_alloc. This requirement binds replacement versions.'''
+formal_spec = '''call(operator_new, size, alignment) => (returns(non_null_aligned_ptr) || throws(bad_alloc))'''
+layer = "cpp20_stdlib"
+confidence = 0.95
+source_file = "new.delete.single"
+source_module = "[new.delete.single]/2"
+tags = ['memory', 'allocation', 'alignment', 'required_behavior']
+function = "operator new"
+header = "<new>"
+signature = '''void* operator new(std::size_t size, std::align_val_t alignment)'''
+
+[[axioms]]
+id = "cpp20_new_delete_single_nothrow_required_3a4b5c6d"
+content = '''Nothrow versions of operator new are required to return a non-null pointer to suitably aligned storage or return null pointer. This requirement binds replacement versions.'''
+formal_spec = '''call(operator_new_nothrow, size) => (returns(non_null_aligned_ptr) || returns(nullptr))'''
+layer = "cpp20_stdlib"
+confidence = 0.95
+source_file = "new.delete.single"
+source_module = "[new.delete.single]/6"
+tags = ['memory', 'allocation', 'nothrow', 'required_behavior']
+function = "operator new"
+header = "<new>"
+signature = '''void* operator new(std::size_t size, const std::nothrow_t&) noexcept'''
+
+[[axioms]]
+id = "cpp20_new_delete_single_delete_precondition_7e8f9a0b"
+content = '''operator delete(void*) precondition: ptr is null or represents address of memory allocated by operator new(size_t) or operator new(size_t, align_val_t) not invalidated by intervening delete.'''
+formal_spec = '''call(operator_delete, ptr) => (ptr == nullptr || (allocated_by(ptr, operator_new) && !invalidated(ptr)))'''
+layer = "cpp20_stdlib"
+confidence = 0.95
+source_file = "new.delete.single"
+source_module = "[new.delete.single]/10"
+tags = ['memory', 'deallocation', 'precondition', 'lifetime']
+function = "operator delete"
+header = "<new>"
+signature = '''void operator delete(void* ptr) noexcept'''
+
+[[axioms]]
+id = "cpp20_new_delete_single_delete_sized_precondition_1c2d3e4f"
+content = '''operator delete(void*, size_t) precondition: ptr is null or represents address of memory allocated by operator new(size_t) or operator new(size_t, align_val_t) not invalidated by intervening delete.'''
+formal_spec = '''call(operator_delete, ptr, size) => (ptr == nullptr || (allocated_by(ptr, operator_new) && !invalidated(ptr)))'''
+layer = "cpp20_stdlib"
+confidence = 0.95
+source_file = "new.delete.single"
+source_module = "[new.delete.single]/10"
+tags = ['memory', 'deallocation', 'precondition', 'lifetime']
+function = "operator delete"
+header = "<new>"
+signature = '''void operator delete(void* ptr, std::size_t size) noexcept'''
+
+[[axioms]]
+id = "cpp20_new_delete_single_delete_aligned_precondition_5g6h7i8j"
+content = '''operator delete(void*, align_val_t) precondition: ptr is null or represents address of memory allocated by operator new(size_t) or operator new(size_t, align_val_t) not invalidated by intervening delete.'''
+formal_spec = '''call(operator_delete, ptr, alignment) => (ptr == nullptr || (allocated_by(ptr, operator_new) && !invalidated(ptr)))'''
+layer = "cpp20_stdlib"
+confidence = 0.95
+source_file = "new.delete.single"
+source_module = "[new.delete.single]/10"
+tags = ['memory', 'deallocation', 'alignment', 'precondition', 'lifetime']
+function = "operator delete"
+header = "<new>"
+signature = '''void operator delete(void* ptr, std::align_val_t alignment) noexcept'''
+
+[[axioms]]
+id = "cpp20_new_delete_single_delete_sized_aligned_precondition_9k0l1m2n"
+content = '''operator delete(void*, size_t, align_val_t) precondition: ptr is null or represents address of memory allocated by operator new(size_t) or operator new(size_t, align_val_t) not invalidated by intervening delete.'''
+formal_spec = '''call(operator_delete, ptr, size, alignment) => (ptr == nullptr || (allocated_by(ptr, operator_new) && !invalidated(ptr)))'''
+layer = "cpp20_stdlib"
+confidence = 0.95
+source_file = "new.delete.single"
+source_module = "[new.delete.single]/10"
+tags = ['memory', 'deallocation', 'alignment', 'precondition', 'lifetime']
+function = "operator delete"
+header = "<new>"
+signature = '''void operator delete(void* ptr, std::size_t size, std::align_val_t alignment) noexcept'''
+
+[[axioms]]
+id = "cpp20_new_delete_single_delete_alignment_match_3o4p5q6r"
+content = '''If alignment parameter is present in operator delete, ptr must have been returned by allocation function with matching alignment. If absent, ptr was returned by allocation function without alignment parameter.'''
+formal_spec = '''call(operator_delete, ptr, alignment) => alignment_arg(allocation_of(ptr)) == alignment'''
+layer = "cpp20_stdlib"
+confidence = 0.95
+source_file = "new.delete.single"
+source_module = "[new.delete.single]/11"
+tags = ['memory', 'deallocation', 'alignment', 'precondition']
+function = "operator delete"
+header = "<new>"
+signature = '''void operator delete(void* ptr, std::align_val_t alignment) noexcept'''
+
+[[axioms]]
+id = "cpp20_new_delete_single_delete_size_match_7s8t9u0v"
+content = '''If size parameter is present in operator delete, size argument must equal the size argument passed to the allocation function that returned ptr.'''
+formal_spec = '''call(operator_delete, ptr, size) => size_arg(allocation_of(ptr)) == size'''
+layer = "cpp20_stdlib"
+confidence = 0.95
+source_file = "new.delete.single"
+source_module = "[new.delete.single]/11"
+tags = ['memory', 'deallocation', 'precondition']
+function = "operator delete"
+header = "<new>"
+signature = '''void operator delete(void* ptr, std::size_t size) noexcept'''
+
+[[axioms]]
+id = "cpp20_new_delete_single_delete_nothrow_precondition_1w2x3y4z"
+content = '''operator delete(void*, nothrow_t) precondition: ptr is null or represents address of memory allocated by operator new(size_t) or operator new(size_t, align_val_t) not invalidated by intervening delete.'''
+formal_spec = '''call(operator_delete_nothrow, ptr) => (ptr == nullptr || (allocated_by(ptr, operator_new) && !invalidated(ptr)))'''
+layer = "cpp20_stdlib"
+confidence = 0.95
+source_file = "new.delete.single"
+source_module = "[new.delete.single]/17"
+tags = ['memory', 'deallocation', 'nothrow', 'precondition', 'lifetime']
+function = "operator delete"
+header = "<new>"
+signature = '''void operator delete(void* ptr, const std::nothrow_t&) noexcept'''
+
+[[axioms]]
+id = "cpp20_new_delete_single_delete_nothrow_aligned_precondition_5a6b7c8d"
+content = '''operator delete(void*, align_val_t, nothrow_t) precondition: ptr is null or represents address of memory allocated by operator new(size_t) or operator new(size_t, align_val_t) not invalidated by intervening delete.'''
+formal_spec = '''call(operator_delete_nothrow_aligned, ptr, alignment) => (ptr == nullptr || (allocated_by(ptr, operator_new) && !invalidated(ptr)))'''
+layer = "cpp20_stdlib"
+confidence = 0.95
+source_file = "new.delete.single"
+source_module = "[new.delete.single]/17"
+tags = ['memory', 'deallocation', 'alignment', 'nothrow', 'precondition', 'lifetime']
+function = "operator delete"
+header = "<new>"
+signature = '''void operator delete(void* ptr, std::align_val_t alignment, const std::nothrow_t&) noexcept'''
+
+[[axioms]]
+id = "cpp20_new_delete_single_delete_nothrow_alignment_match_9e0f1g2h"
+content = '''If alignment parameter is present in nothrow operator delete, ptr must have been returned by allocation function with matching alignment. If absent, ptr was returned by allocation function without alignment parameter.'''
+formal_spec = '''call(operator_delete_nothrow, ptr, alignment) => alignment_arg(allocation_of(ptr)) == alignment'''
+layer = "cpp20_stdlib"
+confidence = 0.95
+source_file = "new.delete.single"
+source_module = "[new.delete.single]/18"
+tags = ['memory', 'deallocation', 'alignment', 'nothrow', 'precondition']
+function = "operator delete"
+header = "<new>"
+signature = '''void operator delete(void* ptr, std::align_val_t alignment, const std::nothrow_t&) noexcept'''
+
+[[axioms]]
+id = "cpp20_new_delete_array_new_required_behavior_3i4j5k6l"
+content = '''operator new[](size_t) and operator new[](size_t, align_val_t) have same required behavior as single-object forms: return non-null aligned pointer or throw bad_alloc. This binds replacement versions.'''
+formal_spec = '''call(operator_new_array, size) => (returns(non_null_aligned_ptr) || throws(bad_alloc))'''
+layer = "cpp20_stdlib"
+confidence = 0.95
+source_file = "new.delete.array"
+source_module = "[new.delete.array]/2"
+tags = ['memory', 'allocation', 'array', 'required_behavior']
+function = "operator new[]"
+header = "<new>"
+signature = '''void* operator new[](std::size_t size)'''
+
+[[axioms]]
+id = "cpp20_new_delete_array_new_aligned_required_7m8n9o0p"
+content = '''operator new[](size_t, align_val_t) has same required behavior as single-object form: return non-null aligned pointer or throw bad_alloc. This binds replacement versions.'''
+formal_spec = '''call(operator_new_array, size, alignment) => (returns(non_null_aligned_ptr) || throws(bad_alloc))'''
+layer = "cpp20_stdlib"
+confidence = 0.95
+source_file = "new.delete.array"
+source_module = "[new.delete.array]/2"
+tags = ['memory', 'allocation', 'array', 'alignment', 'required_behavior']
+function = "operator new[]"
+header = "<new>"
+signature = '''void* operator new[](std::size_t size, std::align_val_t alignment)'''
+
+[[axioms]]
+id = "cpp20_new_delete_array_nothrow_required_1q2r3s4t"
+content = '''Nothrow versions of operator new[] are required to return non-null aligned pointer or return null pointer. This binds replacement versions.'''
+formal_spec = '''call(operator_new_array_nothrow, size) => (returns(non_null_aligned_ptr) || returns(nullptr))'''
+layer = "cpp20_stdlib"
+confidence = 0.95
+source_file = "new.delete.array"
+source_module = "[new.delete.array]/6"
+tags = ['memory', 'allocation', 'array', 'nothrow', 'required_behavior']
+function = "operator new[]"
+header = "<new>"
+signature = '''void* operator new[](std::size_t size, const std::nothrow_t&) noexcept'''
+
+[[axioms]]
+id = "cpp20_new_delete_array_delete_precondition_5u6v7w8x"
+content = '''operator delete[](void*) precondition: ptr is null or represents address of memory allocated by operator new[](size_t) or operator new[](size_t, align_val_t) not invalidated by intervening delete[].'''
+formal_spec = '''call(operator_delete_array, ptr) => (ptr == nullptr || (allocated_by(ptr, operator_new_array) && !invalidated(ptr)))'''
+layer = "cpp20_stdlib"
+confidence = 0.95
+source_file = "new.delete.array"
+source_module = "[new.delete.array]/9"
+tags = ['memory', 'deallocation', 'array', 'precondition', 'lifetime']
+function = "operator delete[]"
+header = "<new>"
+signature = '''void operator delete[](void* ptr) noexcept'''
+
+[[axioms]]
+id = "cpp20_new_delete_array_delete_sized_precondition_9y0z1a2b"
+content = '''operator delete[](void*, size_t) precondition: ptr is null or represents address of memory allocated by operator new[](size_t) or operator new[](size_t, align_val_t) not invalidated by intervening delete[].'''
+formal_spec = '''call(operator_delete_array, ptr, size) => (ptr == nullptr || (allocated_by(ptr, operator_new_array) && !invalidated(ptr)))'''
+layer = "cpp20_stdlib"
+confidence = 0.95
+source_file = "new.delete.array"
+source_module = "[new.delete.array]/9"
+tags = ['memory', 'deallocation', 'array', 'precondition', 'lifetime']
+function = "operator delete[]"
+header = "<new>"
+signature = '''void operator delete[](void* ptr, std::size_t size) noexcept'''
+
+[[axioms]]
+id = "cpp20_new_delete_array_delete_aligned_precondition_3c4d5e6f"
+content = '''operator delete[](void*, align_val_t) precondition: ptr is null or represents address of memory allocated by operator new[](size_t) or operator new[](size_t, align_val_t) not invalidated by intervening delete[].'''
+formal_spec = '''call(operator_delete_array, ptr, alignment) => (ptr == nullptr || (allocated_by(ptr, operator_new_array) && !invalidated(ptr)))'''
+layer = "cpp20_stdlib"
+confidence = 0.95
+source_file = "new.delete.array"
+source_module = "[new.delete.array]/9"
+tags = ['memory', 'deallocation', 'array', 'alignment', 'precondition', 'lifetime']
+function = "operator delete[]"
+header = "<new>"
+signature = '''void operator delete[](void* ptr, std::align_val_t alignment) noexcept'''
+
+[[axioms]]
+id = "cpp20_new_delete_array_delete_sized_aligned_precondition_7g8h9i0j"
+content = '''operator delete[](void*, size_t, align_val_t) precondition: ptr is null or represents address of memory allocated by operator new[](size_t) or operator new[](size_t, align_val_t) not invalidated by intervening delete[].'''
+formal_spec = '''call(operator_delete_array, ptr, size, alignment) => (ptr == nullptr || (allocated_by(ptr, operator_new_array) && !invalidated(ptr)))'''
+layer = "cpp20_stdlib"
+confidence = 0.95
+source_file = "new.delete.array"
+source_module = "[new.delete.array]/9"
+tags = ['memory', 'deallocation', 'array', 'alignment', 'precondition', 'lifetime']
+function = "operator delete[]"
+header = "<new>"
+signature = '''void operator delete[](void* ptr, std::size_t size, std::align_val_t alignment) noexcept'''
+
+[[axioms]]
+id = "cpp20_new_delete_array_delete_alignment_match_1k2l3m4n"
+content = '''If alignment parameter is present in operator delete[], ptr must have been returned by allocation function with matching alignment. If absent, ptr was returned by allocation function without alignment parameter.'''
+formal_spec = '''call(operator_delete_array, ptr, alignment) => alignment_arg(allocation_of(ptr)) == alignment'''
+layer = "cpp20_stdlib"
+confidence = 0.95
+source_file = "new.delete.array"
+source_module = "[new.delete.array]/10"
+tags = ['memory', 'deallocation', 'array', 'alignment', 'precondition']
+function = "operator delete[]"
+header = "<new>"
+signature = '''void operator delete[](void* ptr, std::align_val_t alignment) noexcept'''
+
+[[axioms]]
+id = "cpp20_new_delete_array_delete_size_match_5o6p7q8r"
+content = '''If size parameter is present in operator delete[], size argument must equal the size argument passed to the allocation function that returned ptr.'''
+formal_spec = '''call(operator_delete_array, ptr, size) => size_arg(allocation_of(ptr)) == size'''
+layer = "cpp20_stdlib"
+confidence = 0.95
+source_file = "new.delete.array"
+source_module = "[new.delete.array]/10"
+tags = ['memory', 'deallocation', 'array', 'precondition']
+function = "operator delete[]"
+header = "<new>"
+signature = '''void operator delete[](void* ptr, std::size_t size) noexcept'''
+
+[[axioms]]
+id = "cpp20_new_delete_array_delete_nothrow_precondition_9s0t1u2v"
+content = '''operator delete[](void*, nothrow_t) precondition: ptr is null or represents address of memory allocated by operator new[](size_t) or operator new[](size_t, align_val_t) not invalidated by intervening delete[].'''
+formal_spec = '''call(operator_delete_array_nothrow, ptr) => (ptr == nullptr || (allocated_by(ptr, operator_new_array) && !invalidated(ptr)))'''
+layer = "cpp20_stdlib"
+confidence = 0.95
+source_file = "new.delete.array"
+source_module = "[new.delete.array]/15"
+tags = ['memory', 'deallocation', 'array', 'nothrow', 'precondition', 'lifetime']
+function = "operator delete[]"
+header = "<new>"
+signature = '''void operator delete[](void* ptr, const std::nothrow_t&) noexcept'''
+
+[[axioms]]
+id = "cpp20_new_delete_array_delete_nothrow_aligned_precondition_3w4x5y6z"
+content = '''operator delete[](void*, align_val_t, nothrow_t) precondition: ptr is null or represents address of memory allocated by operator new[](size_t) or operator new[](size_t, align_val_t) not invalidated by intervening delete[].'''
+formal_spec = '''call(operator_delete_array_nothrow_aligned, ptr, alignment) => (ptr == nullptr || (allocated_by(ptr, operator_new_array) && !invalidated(ptr)))'''
+layer = "cpp20_stdlib"
+confidence = 0.95
+source_file = "new.delete.array"
+source_module = "[new.delete.array]/15"
+tags = ['memory', 'deallocation', 'array', 'alignment', 'nothrow', 'precondition', 'lifetime']
+function = "operator delete[]"
+header = "<new>"
+signature = '''void operator delete[](void* ptr, std::align_val_t alignment, const std::nothrow_t&) noexcept'''
+
+[[axioms]]
+id = "cpp20_new_delete_array_delete_nothrow_alignment_match_7a8b9c0d"
+content = '''If alignment parameter is present in nothrow operator delete[], ptr must have been returned by allocation function with matching alignment. If absent, ptr was returned by allocation function without alignment parameter.'''
+formal_spec = '''call(operator_delete_array_nothrow, ptr, alignment) => alignment_arg(allocation_of(ptr)) == alignment'''
+layer = "cpp20_stdlib"
+confidence = 0.95
+source_file = "new.delete.array"
+source_module = "[new.delete.array]/16"
+tags = ['memory', 'deallocation', 'array', 'alignment', 'nothrow', 'precondition']
+function = "operator delete[]"
+header = "<new>"
+signature = '''void operator delete[](void* ptr, std::align_val_t alignment, const std::nothrow_t&) noexcept'''
+
+[[axioms]]
+id = "cpp20_new_delete_placement_reserved_1e2f3g4h"
+content = '''Placement forms of operator new and operator delete are reserved; a C++ program may not define functions that displace these library versions.'''
+formal_spec = '''user_defined(placement_operator_new) || user_defined(placement_operator_delete) => ill_formed'''
+layer = "cpp20_stdlib"
+confidence = 0.95
+source_file = "new.delete.placement"
+source_module = "[new.delete.placement]/1"
+tags = ['memory', 'placement', 'reserved', 'constraint']
+function = "operator new"
+header = "<new>"
+signature = '''constexpr void* operator new(std::size_t size, void* ptr) noexcept'''
+
+[[axioms]]
+id = "cpp20_new_delete_placement_array_reserved_5i6j7k8l"
+content = '''Placement array form of operator new[] is reserved; a C++ program may not define functions that displace this library version.'''
+formal_spec = '''user_defined(placement_operator_new_array) => ill_formed'''
+layer = "cpp20_stdlib"
+confidence = 0.95
+source_file = "new.delete.placement"
+source_module = "[new.delete.placement]/1"
+tags = ['memory', 'placement', 'array', 'reserved', 'constraint']
+function = "operator new[]"
+header = "<new>"
+signature = '''constexpr void* operator new[](std::size_t size, void* ptr) noexcept'''
+
+[[axioms]]
+id = "cpp20_new_delete_dataraces_no_race_9m0n1o2p"
+content = '''Library versions of operator new/delete, replacement versions, and C stdlib allocation functions (aligned_alloc, calloc, malloc, free, realloc) shall not introduce data races.'''
+formal_spec = '''call(allocation_function) => !introduces_data_race'''
+layer = "cpp20_stdlib"
+confidence = 0.95
+source_file = "new.delete.dataraces"
+source_module = "[new.delete.dataraces]/1"
+tags = ['memory', 'concurrency', 'data_race', 'thread_safety']
+
+[[axioms]]
+id = "cpp20_new_delete_dataraces_total_order_3q4r5s6t"
+content = '''Calls to allocation/deallocation functions that allocate or deallocate a particular unit of storage shall occur in a single total order, and each deallocation call shall happen-before the next allocation in this order.'''
+formal_spec = '''deallocate(ptr) && next_allocate(ptr) => happens_before(deallocate, allocate)'''
+layer = "cpp20_stdlib"
+confidence = 0.95
+source_file = "new.delete.dataraces"
+source_module = "[new.delete.dataraces]/1"
+tags = ['memory', 'concurrency', 'ordering', 'happens_before']
+
+[[axioms]]
+id = "cpp20_new_delete_single_delete_sized_shall_define_7u8v9w0x"
+content = '''If a replacement operator delete with size parameter is defined, the program shall also define the corresponding version without the size parameter.'''
+formal_spec = '''user_defined(operator_delete_sized) && !user_defined(operator_delete_unsized) => ill_formed'''
+layer = "cpp20_stdlib"
+confidence = 0.95
+source_file = "new.delete.single"
+source_module = "[new.delete.single]/16"
+tags = ['memory', 'deallocation', 'replacement', 'constraint']
+function = "operator delete"
+header = "<new>"
+signature = '''void operator delete(void* ptr, std::size_t size) noexcept'''
+
+[[axioms]]
+id = "cpp20_new_delete_array_delete_sized_shall_define_1y2z3a4b"
+content = '''If a replacement operator delete[] with size parameter is defined, the program shall also define the corresponding version without the size parameter.'''
+formal_spec = '''user_defined(operator_delete_array_sized) && !user_defined(operator_delete_array_unsized) => ill_formed'''
+layer = "cpp20_stdlib"
+confidence = 0.95
+source_file = "new.delete.array"
+source_module = "[new.delete.array]/14"
+tags = ['memory', 'deallocation', 'array', 'replacement', 'constraint']
+function = "operator delete[]"
+header = "<new>"
+signature = '''void operator delete[](void* ptr, std::size_t size) noexcept'''
+
+[[axioms]]
+id = "cpp20_new_delete_single_array_mismatch_ub_5c6d7e8f"
+content = '''Using operator delete (single-object form) on a pointer allocated by operator new[] (array form) is undefined behavior, and vice versa.'''
+formal_spec = '''(allocated_by(ptr, operator_new_array) && call(operator_delete, ptr)) || (allocated_by(ptr, operator_new) && call(operator_delete_array, ptr)) => undefined_behavior'''
+layer = "cpp20_stdlib"
+confidence = 0.95
+source_file = "new.delete.single"
+source_module = "[new.delete.single]/10"
+tags = ['memory', 'deallocation', 'mismatch', 'undefined_behavior', 'lifetime']

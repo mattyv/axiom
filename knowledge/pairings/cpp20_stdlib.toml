@@ -13,6 +13,22 @@ layer = "cpp20_stdlib"
 version = "1.0.0"
 
 # =============================================================================
+# Memory Allocation/Deallocation (new/delete)
+# =============================================================================
+
+[[pairing]]
+opener = "operator new"
+closer = "operator delete"
+required = true
+evidence = "Memory: single-object allocation must be matched with single-object deallocation"
+
+[[pairing]]
+opener = "operator new[]"
+closer = "operator delete[]"
+required = true
+evidence = "Memory: array allocation must be matched with array deallocation"
+
+# =============================================================================
 # RAII: Constructor/Destructor Pairs
 # =============================================================================
 
@@ -195,6 +211,24 @@ evidence = "Monadic: transform maps value, transform_error maps error"
 # =============================================================================
 # Idiom Templates
 # =============================================================================
+
+[[idiom]]
+name = "new_delete_pair"
+participants = ["operator new", "operator delete"]
+template = """
+T* ptr = new T(args...);
+// use ptr
+delete ptr;  // MUST call delete on every non-null pointer from new
+"""
+
+[[idiom]]
+name = "new_delete_array_pair"
+participants = ["operator new[]", "operator delete[]"]
+template = """
+T* arr = new T[n];
+// use arr
+delete[] arr;  // MUST use delete[] for arrays, not delete
+"""
 
 [[idiom]]
 name = "shared_ptr_scope"

@@ -209,6 +209,8 @@ HIGH_SIGNAL_SECTIONS = [
     "expr.shift",
     "expr.rel",
     "expr.eq",
+    "expr.new",     # new expressions
+    "expr.delete",  # delete expressions
 
     # Declarations
     "dcl.init",
@@ -279,6 +281,7 @@ HIGH_SIGNAL_LIBRARY_SECTIONS = [
     "basic.string",
 
     # Memory
+    "new.delete",  # operator new/delete allocation functions
     "unique.ptr",
     "util.sharedptr",
     "allocator.requirements",
