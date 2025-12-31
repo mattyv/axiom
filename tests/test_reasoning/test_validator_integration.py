@@ -5,12 +5,11 @@ between claims and axioms, preventing false positives for claims like
 "signed integer overflow wraps around".
 """
 
-import pytest
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock
 
-from axiom.reasoning.validator import AxiomValidator, ValidationResult
-from axiom.reasoning.proof_chain import ProofChainGenerator, ProofChain, ProofStep
 from axiom.reasoning.entailment import EntailmentClassifier
+from axiom.reasoning.proof_chain import ProofChainGenerator
+from axiom.reasoning.validator import AxiomValidator
 
 
 class TestValidatorFalsePositives:
@@ -271,7 +270,7 @@ class TestKSemanticsPatterns:
     def test_operation_requires_pattern_detected_as_negative(self):
         """Test 'Operation requires:' K-semantics pattern is detected as negative."""
         classifier = EntailmentClassifier()
-        result = classifier.classify(
+        classifier.classify(
             claim="Array access is always safe",
             axiom={"content": "Operation requires: index < size", "formal_spec": ""},
         )

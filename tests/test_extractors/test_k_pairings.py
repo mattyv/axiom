@@ -5,7 +5,6 @@
 
 """Tests for K semantics pairing extraction."""
 
-import pytest
 from pathlib import Path
 
 from axiom.extractors.k_semantics import ParsedRule
@@ -344,8 +343,8 @@ class TestIntegration:
 
     def test_extract_from_stdlib_k(self, stdlib_k: Path) -> None:
         """Extract pairings from real stdlib.k file."""
-        from axiom.extractors.k_semantics import KSemanticsExtractor
         from axiom.extractors.k_pairings import extract_pairings_from_rules
+        from axiom.extractors.k_semantics import KSemanticsExtractor
 
         extractor = KSemanticsExtractor(stdlib_k.parent)
         rules = extractor.parse_file(stdlib_k)

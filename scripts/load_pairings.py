@@ -22,9 +22,8 @@ The pairings connect existing axiom nodes - no re-extraction of axioms needed.
 """
 
 import argparse
-from pathlib import Path
-
 import tomllib
+from pathlib import Path
 
 from axiom.models.pairing import Idiom, Pairing
 
@@ -147,7 +146,7 @@ def main() -> None:
         return
 
     # Map internal K function names to C function names
-    K_TO_C_FUNCTION = {
+    k_to_c_function = {
         "alignedAlloc": "malloc",
     }
 
@@ -160,15 +159,15 @@ def main() -> None:
         opener_func = p.opener_id.replace("axiom_for_", "")
         closer_func = p.closer_id.replace("axiom_for_", "")
         # Map K names to C names
-        opener_func = K_TO_C_FUNCTION.get(opener_func, opener_func)
-        closer_func = K_TO_C_FUNCTION.get(closer_func, closer_func)
+        opener_func = k_to_c_function.get(opener_func, opener_func)
+        closer_func = k_to_c_function.get(closer_func, closer_func)
         functions_needed.add(opener_func)
         functions_needed.add(closer_func)
 
     for idiom in all_idioms:
         for participant in idiom.participants:
             func = participant.replace("axiom_for_", "")
-            func = K_TO_C_FUNCTION.get(func, func)
+            func = k_to_c_function.get(func, func)
             functions_needed.add(func)
 
     for func in sorted(functions_needed):
@@ -187,8 +186,8 @@ def main() -> None:
     for p in all_pairings:
         opener_func = p.opener_id.replace("axiom_for_", "")
         closer_func = p.closer_id.replace("axiom_for_", "")
-        opener_func = K_TO_C_FUNCTION.get(opener_func, opener_func)
-        closer_func = K_TO_C_FUNCTION.get(closer_func, closer_func)
+        opener_func = k_to_c_function.get(opener_func, opener_func)
+        closer_func = k_to_c_function.get(closer_func, closer_func)
 
         opener_id = func_to_axiom.get(opener_func)
         closer_id = func_to_axiom.get(closer_func)
@@ -216,7 +215,7 @@ def main() -> None:
         resolved_participants = []
         for participant in idiom.participants:
             func = participant.replace("axiom_for_", "")
-            func = K_TO_C_FUNCTION.get(func, func)
+            func = k_to_c_function.get(func, func)
             axiom_id = func_to_axiom.get(func)
             if axiom_id:
                 resolved_participants.append(axiom_id)

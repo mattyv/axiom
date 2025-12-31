@@ -8,8 +8,6 @@
 import tempfile
 from pathlib import Path
 
-import pytest
-
 
 class TestPairsWithAnnotation:
     """Tests for @axiom:pairs_with comment extraction."""

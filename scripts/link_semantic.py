@@ -31,7 +31,6 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from axiom.extractors.semantic_linker import (
-    FOUNDATION_LAYERS,
     LINKING_SYSTEM_PROMPT,
     build_linking_prompt,
     group_by_function,

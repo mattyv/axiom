@@ -54,7 +54,7 @@ def extract_pairings_from_comments(source_path: Path) -> tuple[list[Pairing], li
     # Match both // and /* */ style comments
     comment_blocks = _find_annotated_comment_blocks(content)
 
-    for block_start, block_end, annotations in comment_blocks:
+    for _block_start, block_end, annotations in comment_blocks:
         # Look for function declaration after this comment block
         func_match = FUNCTION_DECL_PATTERN.search(content, block_end)
         if not func_match:

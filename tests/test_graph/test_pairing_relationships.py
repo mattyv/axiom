@@ -5,10 +5,9 @@
 
 """Tests for PAIRS_WITH relationships and Idiom nodes in Neo4j."""
 
-import pytest
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock
 
-from axiom.models.pairing import Pairing, Idiom
+from axiom.models.pairing import Idiom, Pairing
 
 
 class TestCreatePairingRelationship:

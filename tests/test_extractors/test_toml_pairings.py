@@ -5,13 +5,11 @@
 
 """Tests for TOML pairing manifest loading."""
 
-import tempfile
+# Import from script (add scripts to path for testing)
+import sys
 from pathlib import Path
 
 import pytest
-
-# Import from script (add scripts to path for testing)
-import sys
 
 sys.path.insert(0, str(Path(__file__).parent.parent.parent / "scripts"))
 

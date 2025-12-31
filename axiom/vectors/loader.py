@@ -20,7 +20,7 @@ class LanceDBLoader:
         self,
         db_path: str = "./data/lancedb",
         model_name: str = "all-MiniLM-L6-v2",
-        neo4j: "Neo4jLoader | None" = None,
+        neo4j: "object | None" = None,
     ) -> None:
         """Initialize LanceDB connection and embedding model.
 

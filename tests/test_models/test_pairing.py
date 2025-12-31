@@ -5,7 +5,6 @@
 
 """Tests for Pairing and Idiom dataclasses."""
 
-import pytest
 
 
 class TestPairing:

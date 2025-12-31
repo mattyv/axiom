@@ -20,7 +20,6 @@ import re
 
 from axiom.models import Axiom
 
-
 # C++ type patterns to extract from signatures
 CPP_TYPE_PATTERNS = {
     # Reference types

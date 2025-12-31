@@ -9,7 +9,7 @@ from dataclasses import dataclass
 from pathlib import Path
 
 import tree_sitter_c as tsc
-from tree_sitter import Language, Parser, Node
+from tree_sitter import Language, Node, Parser
 
 
 @dataclass

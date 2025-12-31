@@ -1,8 +1,7 @@
 """Tests for EntailmentClassifier - claim vs axiom relationship detection."""
 
-import pytest
 
-from axiom.reasoning.entailment import EntailmentClassifier, EntailmentResult
+from axiom.reasoning.entailment import EntailmentClassifier
 
 
 class TestPolarityExtraction:

@@ -167,7 +167,6 @@ def main() -> int:
     if args.with_deps:
         # Build combined function index from INDEX directories (includes cross-layer)
         print("  - Building combined function index...")
-        from axiom.extractors.k_dependencies import build_function_index
 
         combined_index: dict[str, list[str]] = {}
         for idx_dir in index_dirs:

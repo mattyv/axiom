@@ -264,7 +264,7 @@ async def _handle_search(arguments: dict[str, Any]) -> list[TextContent]:
         if "_idiom" in r:
             idiom = r["_idiom"]
             lines.append(f"### Idiom: {idiom.get('name', 'unnamed')}")
-            lines.append(f"**Usage pattern**:")
+            lines.append("**Usage pattern**:")
             lines.append("```")
             lines.append(idiom.get("template", ""))
             lines.append("```")

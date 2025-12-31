@@ -9,7 +9,6 @@ This module tests the LLM-assisted semantic linking of library axioms
 to foundation axioms based on semantic concepts rather than just type signatures.
 """
 
-import pytest
 
 from axiom.models import Axiom, SourceLocation
 
