@@ -12,7 +12,7 @@ This module converts that JSON to AxiomCollection format.
 from __future__ import annotations
 
 import json
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import TYPE_CHECKING
 
@@ -76,10 +76,25 @@ def parse_json(data: dict[str, Any], source: str = "axiom-extract") -> AxiomColl
         AxiomCollection with extracted axioms
     """
     axioms = []
+    seen_ids: set[str] = set()
 
-    for axiom_data in data.get("axioms", []):
-        axiom = _parse_axiom(axiom_data)
-        axioms.append(axiom)
+    # Handle both flat "axioms" array and nested "files[].axioms[]" format
+    if "axioms" in data:
+        # Flat format
+        for axiom_data in data.get("axioms", []):
+            axiom = _parse_axiom(axiom_data)
+            if axiom.id not in seen_ids:
+                axioms.append(axiom)
+                seen_ids.add(axiom.id)
+    elif "files" in data:
+        # Nested format from axiom-extract recursive mode
+        for file_data in data.get("files", []):
+            for axiom_data in file_data.get("axioms", []):
+                axiom = _parse_axiom(axiom_data)
+                # Deduplicate: same header may be processed from multiple TUs
+                if axiom.id not in seen_ids:
+                    axioms.append(axiom)
+                    seen_ids.add(axiom.id)
 
     # Extract metadata
     extracted_at = data.get("extracted_at")
@@ -88,10 +103,13 @@ def parse_json(data: dict[str, Any], source: str = "axiom-extract") -> AxiomColl
         try:
             created = datetime.fromisoformat(extracted_at.replace("Z", "+00:00"))
         except ValueError:
-            created = datetime.now(timezone.utc)
+            created = datetime.now(UTC)
 
     # Build source files list
     source_files = data.get("source_files", [])
+    # Handle nested format: extract source files from "files" array
+    if not source_files and "files" in data:
+        source_files = [f.get("source_file", "") for f in data.get("files", []) if f.get("source_file")]
     source_str = ", ".join(source_files[:3])
     if len(source_files) > 3:
         source_str += f" (+{len(source_files) - 3} more)"
@@ -99,7 +117,7 @@ def parse_json(data: dict[str, Any], source: str = "axiom-extract") -> AxiomColl
     return AxiomCollection(
         version=data.get("version", "1.0"),
         source=source_str or source,
-        extracted_at=created or datetime.now(timezone.utc),
+        extracted_at=created or datetime.now(UTC),
         axioms=axioms,
     )
 
@@ -116,9 +134,8 @@ def _parse_axiom(data: dict[str, Any]) -> Axiom:
     axiom_type_str = data.get("axiom_type", "CONSTRAINT")
     axiom_type = AXIOM_TYPE_MAP.get(axiom_type_str, AxiomType.CONSTRAINT)
 
-    # Map source_type to layer
-    source_type = data.get("source_type", "explicit")
-    layer = "user_library"  # All clang-extracted axioms are user library level
+    # All clang-extracted axioms are user library level
+    layer = "user_library"
 
     # Build SourceLocation from header and line
     header = data.get("header", "")

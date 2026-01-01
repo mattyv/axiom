@@ -5,16 +5,14 @@
 
 """Tests for clang_loader module."""
 
-from datetime import datetime, timezone
 
-import pytest
 
-from axiom.models import AxiomType
 from axiom.extractors.clang_loader import (
+    _parse_axiom,
     load_from_string,
     parse_json,
-    _parse_axiom,
 )
+from axiom.models import AxiomType
 
 
 class TestParseAxiom:
@@ -176,6 +174,70 @@ class TestParseJson:
         assert "(+2 more)" in collection.source
 
 
+class TestNestedFileFormat:
+    """Tests for nested files[].axioms[] format from recursive mode."""
+
+    def test_parse_nested_format(self):
+        """Test parsing axioms from nested files[] format."""
+        data = {
+            "version": "1.0",
+            "extracted_at": "2026-01-01T12:00:00Z",
+            "files": [
+                {
+                    "source_file": "/path/to/foo.hpp",
+                    "axioms": [
+                        {"id": "foo.bar", "content": "Foo bar", "axiom_type": "CONSTRAINT"},
+                    ],
+                    "errors": [],
+                },
+                {
+                    "source_file": "/path/to/baz.hpp",
+                    "axioms": [
+                        {"id": "baz.qux", "content": "Baz qux", "axiom_type": "EFFECT"},
+                    ],
+                    "errors": [],
+                },
+            ],
+        }
+
+        collection = parse_json(data, source="test")
+
+        assert len(collection.axioms) == 2
+        assert collection.axioms[0].id == "foo.bar"
+        assert collection.axioms[1].id == "baz.qux"
+        # Source files should be extracted from files array
+        assert "/path/to/foo.hpp" in collection.source
+
+    def test_deduplicate_nested_axioms(self):
+        """Test that duplicate axiom IDs are deduplicated."""
+        data = {
+            "version": "1.0",
+            "files": [
+                {
+                    "source_file": "/path/to/foo.cpp",
+                    "axioms": [
+                        {"id": "shared.header.axiom", "content": "Content 1"},
+                    ],
+                },
+                {
+                    "source_file": "/path/to/bar.cpp",
+                    "axioms": [
+                        {"id": "shared.header.axiom", "content": "Content 2"},
+                        {"id": "bar.unique", "content": "Unique"},
+                    ],
+                },
+            ],
+        }
+
+        collection = parse_json(data)
+
+        # Should have only 2 axioms (one duplicate removed)
+        assert len(collection.axioms) == 2
+        ids = [a.id for a in collection.axioms]
+        assert "shared.header.axiom" in ids
+        assert "bar.unique" in ids
+
+
 class TestLoadFromString:
     """Tests for load_from_string function."""
 
@@ -205,3 +267,17 @@ class TestLoadFromString:
 
         # Source is derived from source_files or source parameter
         assert collection.source == "my-library"
+
+    def test_load_nested_format_from_string(self):
+        """Test loading nested file format from JSON string."""
+        json_str = """{
+            "version": "1.0",
+            "files": [
+                {"source_file": "test.cpp", "axioms": [{"id": "a", "content": "A"}]},
+                {"source_file": "test.cpp", "axioms": [{"id": "b", "content": "B"}]}
+            ]
+        }"""
+
+        collection = load_from_string(json_str)
+
+        assert len(collection.axioms) == 2

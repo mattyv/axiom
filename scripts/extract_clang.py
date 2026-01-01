@@ -43,7 +43,7 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from axiom.extractors.clang_loader import load_from_string
 from axiom.models import Axiom
-from axiom.vectors.loader import VectorLoader
+from axiom.vectors.loader import LanceDBLoader
 
 logger = logging.getLogger(__name__)
 
@@ -73,6 +73,7 @@ def run_axiom_extract(
     compile_commands: Path | None = None,
     source_file: Path | None = None,
     extra_args: str | None = None,
+    recursive: bool = False,
 ) -> dict:
     """Run the axiom-extract C++ tool and return JSON output."""
     binary = find_axiom_extract()
@@ -83,6 +84,9 @@ def run_axiom_extract(
         )
 
     cmd = [str(binary)]
+
+    if recursive:
+        cmd.append("-r")
 
     if compile_commands:
         cmd.extend(["-p", str(compile_commands.parent)])
@@ -117,9 +121,9 @@ def link_depends_on(
         return axioms
 
     try:
-        loader = VectorLoader(str(vector_db_path))
+        loader = LanceDBLoader(str(vector_db_path))
     except Exception as e:
-        logger.warning(f"Could not initialize VectorLoader: {e}")
+        logger.warning(f"Could not initialize LanceDBLoader: {e}")
         return axioms
 
     linked_axioms = []
@@ -161,6 +165,11 @@ def main() -> int:
         "--file",
         type=Path,
         help="Single source file to analyze",
+    )
+    parser.add_argument(
+        "-r", "--recursive",
+        action="store_true",
+        help="Recursively scan directory for C++ source files",
     )
     parser.add_argument(
         "--args",
@@ -225,6 +234,7 @@ def main() -> int:
             compile_commands=args.compile_commands,
             source_file=args.file,
             extra_args=args.args,
+            recursive=args.recursive,
         )
 
         # Parse JSON output to AxiomCollection
