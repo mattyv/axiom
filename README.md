@@ -242,7 +242,7 @@ Proof chain:
 ## Beta nature of this tool
 
 A lot of this was vibe coded over christmas 2025 with screaming kids running around. So :) :) :) sue me.
-It also uses cpp 20 draft spec. If this turns out to beneficial I may try to get the official spec which I think i need to pay $$ for. 
+It also uses the [C++ draft spec](https://eel.is/c++draft/). If this turns out to be beneficial I may try to get the official spec which I think I need to pay $$ for. 
 
 ## License
 
