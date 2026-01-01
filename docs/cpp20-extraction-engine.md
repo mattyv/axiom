@@ -2,6 +2,45 @@
 
 A comprehensive design for extracting axioms from any C++20 codebase with high quality and minimal LLM usage.
 
+## Implementation Status
+
+| Component | Status | Notes |
+|-----------|--------|-------|
+| **Phase 1: Clang Analysis** | ✅ Complete | Native C++ tool using LibTooling |
+| **Phase 2: Explicit Constraints** | ✅ Complete | noexcept, nodiscard, const, constexpr, delete, requires, static_assert, concepts, enums, type aliases |
+| **Phase 3: Hazard Detection** | ✅ Complete | Division, pointer deref, array access with guard analysis |
+| **Phase 4: Call Graph** | ❌ Not Started | Precondition propagation (future) |
+| **Phase 5: Foundation Linking** | ✅ Complete | LanceDB semantic search integration |
+| **Phase 6: LLM Assist** | ⚠️ Placeholder | TODO in extract_clang.py |
+
+### Quick Start
+
+```bash
+# Build the C++ tool
+cd tools/axiom-extract && mkdir build && cd build
+cmake .. && make
+
+# Extract from a library (recursive)
+python scripts/extract_clang.py \
+    -r --file /path/to/library \
+    --output axioms.toml
+
+# With compile_commands.json
+python scripts/extract_clang.py \
+    --compile-commands /path/to/build/compile_commands.json \
+    --output axioms.toml
+```
+
+### Key Files
+
+| File | Purpose |
+|------|---------|
+| `tools/axiom-extract/` | Native C++ extraction tool |
+| `scripts/extract_clang.py` | Python wrapper with LanceDB linking |
+| `axiom/extractors/clang_loader.py` | JSON → AxiomCollection conversion |
+
+---
+
 ## Design Philosophy
 
 1. **Exploit what C++20 gives us** - Modern C++ is increasingly explicit about constraints
@@ -190,6 +229,7 @@ Source code
 │  - Outputs JSON                         │
 ├─────────────────────────────────────────┤
 │  Input: compile_commands.json           │
+│         or directory with -r flag       │
 │  Output: extracted_axioms.json          │
 └─────────────────────────────────────────┘
                     │
@@ -203,76 +243,46 @@ Source code
 └─────────────────────────────────────────┘
 ```
 
-**Minimal C++ Tool:**
+**Implemented Tool Structure:**
 
-```cpp
-// axiom-extract.cpp
-#include "clang/Tooling/CommonOptionsParser.h"
-#include "clang/Tooling/Tooling.h"
-#include "clang/ASTMatchers/ASTMatchers.h"
-#include "clang/ASTMatchers/ASTMatchFinder.h"
-#include "clang/Analysis/CFG.h"
-#include <nlohmann/json.hpp>
+```
+tools/axiom-extract/
+├── CMakeLists.txt           # Build configuration
+├── include/
+│   ├── Axiom.h              # Axiom data structures
+│   ├── Extractors.h         # Extractor interfaces
+│   └── IgnoreFilter.h       # .axignore pattern matching
+└── src/
+    ├── main.cpp             # Entry point, AST matchers, JSON output
+    ├── ConstraintExtractor.cpp  # noexcept, nodiscard, const, etc.
+    ├── HazardDetector.cpp   # CFG-based hazard detection
+    ├── GuardAnalyzer.cpp    # Dominator-based guard detection
+    └── MacroExtractor.cpp   # Preprocessor macro extraction
+```
 
-using namespace clang;
-using namespace clang::ast_matchers;
-using json = nlohmann::json;
+**Command Line Options:**
 
-class FunctionExtractor : public MatchFinder::MatchCallback {
-    json& output;
-public:
-    FunctionExtractor(json& out) : output(out) {}
+```bash
+axiom-extract [options] <source files or directories>
 
-    void run(const MatchFinder::MatchResult& Result) override {
-        if (const auto* FD = Result.Nodes.getNodeAs<FunctionDecl>("func")) {
-            json func;
-            func["name"] = FD->getNameAsString();
-            func["is_noexcept"] = FD->getType()->getAs<FunctionProtoType>()->isNothrow();
-            func["is_const"] = FD->isConst();
-
-            // Build CFG for hazard detection
-            if (FD->hasBody()) {
-                auto cfg = CFG::buildCFG(FD, FD->getBody(),
-                    &Result.Context->getSourceManager(),
-                    CFG::BuildOptions());
-                func["hazards"] = extractHazards(cfg.get(), FD);
-            }
-
-            output["functions"].push_back(func);
-        }
-    }
-
-    json extractHazards(CFG* cfg, const FunctionDecl* FD) {
-        json hazards = json::array();
-        // Walk CFG blocks, find pointer derefs, divisions, etc.
-        // Check for dominating guards
-        return hazards;
-    }
-};
-
-int main(int argc, const char** argv) {
-    auto Parser = CommonOptionsParser::create(argc, argv, MyCategory);
-    ClangTool Tool(Parser->getCompilations(), Parser->getSourcePathList());
-
-    json output;
-    FunctionExtractor Extractor(output);
-    MatchFinder Finder;
-    Finder.addMatcher(functionDecl(isDefinition()).bind("func"), &Extractor);
-
-    Tool.run(newFrontendActionFactory(&Finder).get());
-
-    std::cout << output.dump(2) << std::endl;
-    return 0;
-}
+Options:
+  -r, --recursive      Recursively scan directories for C++ files
+  -o, --output FILE    Write JSON to file instead of stdout
+  -v, --verbose        Enable verbose output
+  --hazards           Enable hazard detection (division, deref, array)
+  --ignore FILE       Path to .axignore file
+  --no-ignore         Disable .axignore filtering
+  -p PATH             Path to compile_commands.json directory
+  -- <clang args>     Extra arguments passed to Clang
 ```
 
 **Build with CMake:**
 
-```cmake
-find_package(Clang REQUIRED)
-add_executable(axiom-extract axiom-extract.cpp)
-target_link_libraries(axiom-extract
-    clangTooling clangASTMatchers clangAnalysis)
+```bash
+cd tools/axiom-extract
+mkdir build && cd build
+cmake .. -DCMAKE_BUILD_TYPE=Release
+make -j$(nproc)
 ```
 
 **Essential: compile_commands.json**
@@ -919,46 +929,54 @@ CONFIDENCE_THRESHOLDS = {
 
 ## Implementation Roadmap
 
-### Phase 1: Clang Integration (3-5 days)
+### Phase 1: Clang Integration ✅ COMPLETE
 
-1. Set up libclang Python bindings
-2. Parse C++ files into AST database
-3. Extract function metadata (noexcept, nodiscard, const, etc.)
-4. Extract template constraints and requires clauses
+- [x] Native C++ tool using LibTooling (not Python bindings)
+- [x] Parse C++ files with full AST access
+- [x] Extract function metadata (noexcept, nodiscard, const, etc.)
+- [x] Extract template constraints and requires clauses
+- [x] Recursive directory scanning with .axignore support
 
-### Phase 2: Hazard Detection (2-3 days)
+### Phase 2: Hazard Detection ✅ COMPLETE
 
-1. Implement hazard detection (division, deref, array access)
-2. Build control flow graphs
-3. Implement guard detection algorithm
-4. Link hazards to guards
+- [x] Implement hazard detection (division, deref, array access)
+- [x] Build control flow graphs via Clang CFG
+- [x] Implement guard detection algorithm (dominator analysis)
+- [x] Link hazards to guards
+- [x] Macro hazard detection
 
-### Phase 3: Rule Engine (2-3 days)
+### Phase 3: Explicit Constraint Extraction ✅ COMPLETE
 
-1. Implement explicit constraint rules
-2. Implement hazard pattern rules
-3. Generate candidate axioms
-4. Confidence scoring
+- [x] noexcept specifications
+- [x] [[nodiscard]], [[deprecated]] attributes
+- [x] const/constexpr/consteval methods
+- [x] = delete specifications
+- [x] static_assert declarations
+- [x] C++20 concepts and requires clauses
+- [x] Scoped enums (enum class)
+- [x] Trivially copyable structs/classes
+- [x] Type aliases
 
-### Phase 4: Call Graph & Propagation (2-3 days)
+### Phase 4: Call Graph & Propagation ❌ NOT STARTED
 
-1. Build call graph from AST database
-2. Implement precondition propagation
-3. Detect satisfied preconditions at call sites
-4. Handle virtual dispatch
+- [ ] Build call graph from AST database
+- [ ] Implement precondition propagation
+- [ ] Detect satisfied preconditions at call sites
+- [ ] Handle virtual dispatch
 
-### Phase 5: Foundation Linking (1-2 days)
+### Phase 5: Foundation Linking ✅ COMPLETE
 
-1. Keyword-based linking
-2. Embedding similarity (optional)
-3. Populate depends_on fields
+- [x] LanceDB semantic search integration
+- [x] Embedding similarity matching
+- [x] Populate depends_on fields via extract_clang.py --link
 
-### Phase 6: LLM Integration (1-2 days)
+### Phase 6: LLM Integration ⚠️ PLACEHOLDER
 
-1. Identify functions needing LLM assist
-2. Implement batched queries
-3. Validate LLM output
-4. Merge with rule-generated axioms
+- [x] Placeholder in extract_clang.py (--llm-fallback flag)
+- [ ] Identify functions needing LLM assist
+- [ ] Implement batched queries
+- [ ] Validate LLM output
+- [ ] Merge with rule-generated axioms
 
 ---
 
