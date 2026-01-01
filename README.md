@@ -1,4 +1,4 @@
-# Axiom: Grounded Truth Validation for LLMs
+# Axiom: Grounded Truth Validation for LLMs (Extremely Beta)
 
 [![CI](https://github.com/mattyv/axiom/actions/workflows/ci.yml/badge.svg)](https://github.com/mattyv/axiom/actions/workflows/ci.yml)
 
@@ -16,9 +16,13 @@ Axiom (the Tool) automatically extracts axioms (constraints, preconditions, unde
 1. **Your library code** - via header analysis, comment annotations, and LLM-assisted extraction
 2. **C++20 foundations** - grounding library axioms in formal language semantics. Available as toml files in this repo
 
+The idea here is to allow library creators to ship a set of information for users armed with LLM agentic coders to do a better job with you library then they could do otherwise with just a readme.md and code access.
 When an LLM makes a claim about your library, Axiom validates it against the extracted knowledge and returns a proof chain (potentially all the way to cpp standard) showing why it's valid or invalid.
 
 ## How It Works
+
+Currently tuned for claude code cli. Because this is what i use at home. 
+But has some untested abilityt to use LLM API keys.
 
 ```mermaid
 flowchart TB

@@ -11,6 +11,7 @@ by combining tree-sitter parsing with LLM analysis and RAG-based foundation axio
 
 import hashlib
 import re
+import sys
 from dataclasses import dataclass, field
 from pathlib import Path
 
@@ -385,7 +386,9 @@ class AxiomExtractor:
                 system=MACRO_SYSTEM_PROMPT,
                 messages=[{"role": "user", "content": prompt}],
             )
-            return response.content[0].text
+            if response.content:
+                return response.content[0].text
+            return ""
 
         elif hasattr(self.llm_client, "chat"):
             # OpenAI-style client
@@ -396,7 +399,9 @@ class AxiomExtractor:
                     {"role": "user", "content": prompt},
                 ],
             )
-            return response.choices[0].message.content
+            if response.choices and response.choices[0].message:
+                return response.choices[0].message.content or ""
+            return ""
 
         return ""
 
@@ -475,7 +480,9 @@ class AxiomExtractor:
                 system=SYSTEM_PROMPT,
                 messages=[{"role": "user", "content": prompt}],
             )
-            return response.content[0].text
+            if response.content:
+                return response.content[0].text
+            return ""
 
         elif hasattr(self.llm_client, "chat"):
             # OpenAI-style client
@@ -486,7 +493,9 @@ class AxiomExtractor:
                     {"role": "user", "content": prompt},
                 ],
             )
-            return response.choices[0].message.content
+            if response.choices and response.choices[0].message:
+                return response.choices[0].message.content or ""
+            return ""
 
         return ""
 
@@ -523,22 +532,18 @@ class AxiomExtractor:
 
             if result.returncode != 0:
                 # Log error to stderr but return what we got
-                import sys
                 if result.stderr:
                     print(f"Claude CLI warning: {result.stderr}", file=sys.stderr)
 
             return result.stdout
 
         except subprocess.TimeoutExpired:
-            import sys
             print("Claude CLI timeout after 5 minutes", file=sys.stderr)
             return ""
         except FileNotFoundError:
-            import sys
             print("Claude CLI not found. Install with: npm install -g @anthropic-ai/claude-code", file=sys.stderr)
             return ""
-        except Exception as e:
-            import sys
+        except subprocess.SubprocessError as e:
             print(f"Claude CLI error: {e}", file=sys.stderr)
             return ""
 
@@ -590,8 +595,9 @@ class AxiomExtractor:
                 )
                 if axiom:
                     axioms.append(axiom)
-            except Exception:
-                # Skip malformed axioms
+            except (KeyError, TypeError, ValueError, AttributeError) as e:
+                # Skip malformed axioms but log for debugging
+                print(f"Warning: skipping malformed axiom in {function_name} ({header}): {e}", file=sys.stderr)
                 continue
 
         return axioms

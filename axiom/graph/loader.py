@@ -176,7 +176,7 @@ class Neo4jLoader:
         MATCH (a:Axiom)
         WHERE a.violated_by_codes IS NOT NULL
         UNWIND a.violated_by_codes AS code
-        MATCH (e:ErrorCode {internal_code: code})
+        MATCH (e:ErrorCode {code: code})
         MERGE (a)-[:VIOLATED_BY]->(e)
         """
         tx.run(query)
@@ -245,14 +245,14 @@ class Neo4jLoader:
             Dict with node counts.
         """
         with self.driver.session() as session:
-            axioms = session.run("MATCH (a:Axiom) RETURN count(a) as count").single()["count"]
-            errors = session.run("MATCH (e:ErrorCode) RETURN count(e) as count").single()["count"]
-            modules = session.run("MATCH (m:KModule) RETURN count(m) as count").single()["count"]
+            axiom_result = session.run("MATCH (a:Axiom) RETURN count(a) as count").single()
+            error_result = session.run("MATCH (e:ErrorCode) RETURN count(e) as count").single()
+            module_result = session.run("MATCH (m:KModule) RETURN count(m) as count").single()
 
             return {
-                "axioms": axioms,
-                "error_codes": errors,
-                "modules": modules,
+                "axioms": axiom_result["count"] if axiom_result else 0,
+                "error_codes": error_result["count"] if error_result else 0,
+                "modules": module_result["count"] if module_result else 0,
             }
 
     def get_proof_chain(self, axiom_id: str) -> list:

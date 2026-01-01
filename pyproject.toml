@@ -58,6 +58,10 @@ full = [
     "uvicorn[standard]>=0.25.0",
     # MCP (Model Context Protocol)
     "mcp>=1.0.0",
+    # Tree-sitter for ingestion parsing
+    "tree-sitter>=0.21.0",
+    "tree-sitter-c>=0.21.0",
+    "tree-sitter-cpp>=0.21.0",
 ]
 
 dev = [
