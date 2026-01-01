@@ -57,6 +57,124 @@ Integrate axiom validation directly into clangd as a custom check/plugin. This g
 | **info** | Information | Semantic context | "Atomic ops have defined overflow per C11 §7.17" |
 | **context** | Hint | Exploration prompt | "Related axioms exist - query via MCP if relevant" |
 
+### Examples: All Four Levels
+
+#### Level: ERROR - Definite Violation
+
+```
+memory.c:87:5: error: [axiom:heap-use-after-free] use after free
+    buffer->data[0] = 'x';
+    ^~~~~~~~~~~~~~~~~~~
+
+  Violation: Pointer 'buffer' was freed at line 82
+  Formal: C11 §7.22.3.3 - accessing freed memory is undefined behavior
+
+  Proof chain:
+    1. free(buffer) called at memory.c:82
+    2. No reassignment of 'buffer' between free and use
+    3. This access is undefined behavior
+
+  Fix: Set pointer to NULL after free, or restructure to avoid reuse
+```
+
+The LLM **must** fix this - it's a definite bug.
+
+---
+
+#### Level: WARNING - Likely Issue
+
+```
+parser.c:142:15: warning: [axiom:c11-overflow] potential signed overflow
+    int size = base + user_offset;
+               ^~~~~~~~~~~~~~~~~~
+
+  Claim: "signed arithmetic will not overflow"
+  Risk: 'user_offset' comes from external input (line 138)
+  Formal: C11 §6.5¶5 - signed overflow is undefined behavior
+
+  Fixes:
+    - Use __builtin_add_overflow()
+    - Validate user_offset bounds before arithmetic
+    - Use size_t for sizes
+
+  Explore: mcp:axiom.search_axioms("overflow input validation")
+```
+
+The LLM **should** fix this - user input without bounds checking is risky.
+
+---
+
+#### Level: INFO - Semantic Context
+
+```
+crypto.c:56:5: info: [axiom:openssl-ctx-init] SSL_CTX initialization context
+    SSL_CTX* ctx = SSL_CTX_new(TLS_method());
+    ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+  Context: SSL_CTX_new returns NULL on failure. The OpenSSL API requires:
+    1. Check return value for NULL
+    2. Call SSL_CTX_free() when done (paired operation)
+    3. Set minimum protocol version for security
+
+  Formal: OpenSSL man page SSL_CTX_new(3)
+  Related axioms: ssl-ctx-free (pairing), ssl-ctx-set-options
+
+  Explore: mcp:axiom.search_axioms("SSL_CTX initialization best practices")
+           mcp:axiom.get_axiom("openssl-ctx-free")
+```
+
+The LLM sees this and thinks: "Right, I should check for NULL and remember to free later." Not an error, but useful context about API contracts.
+
+---
+
+#### Level: CONTEXT - Exploration Prompt
+
+```
+counter.c:23:5: hint: [axiom:c11-atomics] atomic operation semantics
+    atomic_fetch_add(&counter, delta);
+    ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+  Context: Atomic operations have well-defined semantics that differ from
+  regular operations:
+    - Overflow wraps (defined, not UB)
+    - Memory ordering applies (default: seq_cst)
+    - Lock-free on most platforms for this type
+
+  Formal: C11 §7.17.7.5
+
+  This is informational - no action required. Explore if relevant:
+    mcp:axiom.search_axioms("atomic memory ordering")
+    mcp:axiom.search_axioms("atomic vs mutex performance")
+```
+
+The LLM sees this and thinks: "Good to know, atomics are fine here. I might look up memory ordering if I need weaker semantics for performance."
+
+---
+
+#### Level: CONTEXT - Library Pattern Recognition
+
+```
+network.c:201:5: hint: [axiom:posix-socket-lifecycle] socket API context
+    int fd = socket(AF_INET, SOCK_STREAM, 0);
+    ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+  Context: POSIX socket lifecycle pattern detected. Related axioms:
+    - socket() returns -1 on error (check errno)
+    - Must call close(fd) when done
+    - Common pattern: socket → bind → listen → accept (server)
+    - Common pattern: socket → connect (client)
+
+  You're at step 1 of the lifecycle. Related operations will be flagged
+  if axioms exist for them.
+
+  Explore: mcp:axiom.search_axioms("socket error handling")
+           mcp:axiom.search_axioms("socket resource leak")
+```
+
+The LLM sees the pattern and now has awareness of the full lifecycle, even if it's just writing one part.
+
+---
+
 ### What Makes This Different From Clang
 
 ```
