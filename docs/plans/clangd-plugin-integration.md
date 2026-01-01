@@ -35,6 +35,115 @@ Integrate axiom validation directly into clangd as a custom check/plugin. This g
 └─────────────────────────────────────────────────────────────────┘
 ```
 
+## Axiom's Value: Semantic Context, Not Just Linting
+
+**The problem with just errors/warnings:** Clang already does that. Axiom's unique value is:
+
+1. **Formal grounding** - traces to C11/C++20 spec sections, K Framework semantics
+2. **Library contracts** - knows API requirements clang doesn't
+3. **Proof chains** - shows *why* something matters
+4. **Nuanced context** - not binary "error/ok" but "here's what you should know"
+
+**The key insight:** The LLM might know more context than the static analyzer. Axiom should inform, not just flag. The LLM can then dig deeper via MCP if the context seems relevant.
+
+---
+
+## Tiered Diagnostic Model
+
+| Level | LSP Severity | Purpose | Example |
+|-------|--------------|---------|---------|
+| **error** | Error | Definite violation | Use-after-free, proven null deref |
+| **warning** | Warning | Likely issue | Unguarded overflow on user input |
+| **info** | Information | Semantic context | "Atomic ops have defined overflow per C11 §7.17" |
+| **context** | Hint | Exploration prompt | "Related axioms exist - query via MCP if relevant" |
+
+### What Makes This Different From Clang
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│  Clang says:                                                     │
+│    warning: integer overflow in expression [-Woverflow]          │
+│                                                                  │
+│  Axiom says:                                                     │
+│    info: [axiom:c11-overflow] signed arithmetic context          │
+│      Formal: C11 §6.5¶5 - overflow is undefined behavior         │
+│      Note: Common pattern. Inputs bounded? Using -fwrapv?        │
+│      Explore: mcp:axiom.search_axioms("overflow bounds check")   │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+The LLM sees this and can:
+1. **Ignore** - it knows the inputs are small constants
+2. **Fix** - it realizes this is user input, adds bounds check
+3. **Explore** - calls MCP to get full proof chain and related axioms
+
+### Diagnostic Flow
+
+```
+LSP (passive, always-on)              MCP (active, on-demand)
+        │                                      │
+        ▼                                      │
+   Axiom emits:                                │
+   - errors (must fix)                         │
+   - warnings (should fix)                     │
+   - info (semantic context)    ──► LLM ──►   "Tell me more about X"
+   - context (explore prompts)     decides          │
+        │                         if relevant       ▼
+        │                                    Full proof chains
+        │                                    Related axioms
+        │                                    Library contracts
+        ▼                                    Formal spec text
+   Claude sees all,
+   acts on what's relevant
+```
+
+### Configurable Visibility
+
+Users and LLMs may want different verbosity levels:
+
+```toml
+# .axiom/config.toml
+[diagnostics]
+# Minimum level to show (error > warning > info > context)
+min_level = "info"          # Show info and above, hide context hints
+
+# Or be specific
+show_levels = ["error", "warning", "info"]
+
+# LLM-specific: always include MCP exploration hints
+include_mcp_hints = true
+
+# Human-specific: maybe less noise in editor
+editor_min_level = "warning"
+```
+
+### MCP Exploration Hooks in Diagnostics
+
+Every diagnostic above "error" includes an exploration path:
+
+```toml
+[diagnostic]
+severity = "info"
+message = "atomic operations context"
+mcp_explore = [
+    { tool = "search_axioms", query = "atomic {function} overflow" },
+    { tool = "get_axiom", id = "{axiom_id}" },
+]
+```
+
+This renders as:
+```
+buffer.c:42:5: info: [axiom:c11-atomics] atomic increment context
+    atomic_fetch_add(&counter, 1);
+    ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  Context: Atomic operations have well-defined overflow (wrap) behavior
+  Formal: C11 §7.17.7.5
+  Explore: mcp:axiom.search_axioms("atomic_fetch_add overflow")
+           mcp:axiom.get_axiom("c11-atomics-overflow")
+```
+
+---
+
 ## Design Principle: Config-Driven Patterns
 
 Instead of hardcoding AST patterns in C++, patterns are defined **alongside their axioms** in TOML config files. The C++ plugin becomes a **pattern interpreter** that:
@@ -87,7 +196,55 @@ fixes = [
     "Use unsigned types",
     "Add bounds checking before operation"
 ]
+mcp_explore = [
+    { tool = "search_axioms", query = "signed overflow bounds checking" },
+]
 ```
+
+### Example: Informational Context (not an error)
+
+```toml
+# axioms/triggers/c11-atomics.toml
+[axiom]
+id = "c11-atomics-overflow"
+content = "Atomic integer operations have well-defined wrap-around behavior"
+formal_spec = "C11 §7.17.7.5"
+layer = "c11"
+
+[trigger]
+pattern = "function_call"
+functions = ["atomic_fetch_add", "atomic_fetch_sub", "atomic_fetch_*"]
+operand_types = ["_Atomic"]
+
+implicit_claim = "atomic overflow behavior is understood"
+
+# This is context, not a warning - atomic overflow is DEFINED
+safe_when = []  # Always emit - it's informational
+
+[diagnostic]
+severity = "context"  # Not error/warning - just helpful info
+message = "atomic operation has defined overflow semantics"
+context = """
+Unlike regular signed integers, atomic operations wrap on overflow.
+This is well-defined per C11 §7.17.7.5. No undefined behavior here.
+"""
+mcp_explore = [
+    { tool = "get_axiom", id = "c11-atomics-overflow" },
+    { tool = "search_axioms", query = "atomic operations memory ordering" },
+]
+```
+
+This emits:
+```
+counter.c:15:5: hint: [axiom:c11-atomics-overflow] atomic overflow context
+    atomic_fetch_add(&counter, 1);
+    ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  Context: Atomic operations wrap on overflow (well-defined, not UB)
+  Formal: C11 §7.17.7.5
+  Explore: mcp:axiom.get_axiom("c11-atomics-overflow")
+```
+
+The LLM sees this and knows: "This is fine, but I now know where to look if I need more detail about atomics."
 
 ### Example: Library Function Contract
 
