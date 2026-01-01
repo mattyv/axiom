@@ -21,7 +21,11 @@ from .k_pairings import (
     extract_pairings_from_rules,
 )
 from .k_semantics import KSemanticsExtractor, ParsedRule
-from .linker import AxiomLinker
+from .error_linker import ErrorCodeLinker
+from .clang_loader import load_from_json, load_from_string, parse_json
+
+# Backwards compatibility alias (deprecated)
+AxiomLinker = ErrorCodeLinker
 from .prompts import (
     EXTRACTION_PROMPT,
     HIGH_SIGNAL_LIBRARY_SECTIONS,
@@ -32,8 +36,12 @@ from .prompts import (
 )
 
 __all__ = [
-    "AxiomLinker",
+    "AxiomLinker",  # Deprecated alias
+    "ErrorCodeLinker",
     "build_function_index",
+    "load_from_json",
+    "load_from_string",
+    "parse_json",
     "ContentGenerator",
     "CSignatureExtractor",
     "detect_cpp_stdlib_pairings",

@@ -9,8 +9,8 @@ When rebuilding the knowledge base from scratch, axioms must be extracted and lo
 | `scripts/bootstrap.py` | Extract axioms from K-Framework semantics (*.k files) |
 | `scripts/extract_cpp20.py` | Extract axioms from C++ draft spec (eel.is/c++draft) |
 | `scripts/ingest.py` | Load TOML axioms into Neo4j and LanceDB |
-| `scripts/ingest_library.py` | Interactive extraction from user C/C++ libraries |
-| `scripts/ingest_stdlib.py` | Extract axioms from C++ stdlib headers |
+| `scripts/extract_library.py` | Interactive extraction from user C/C++ libraries |
+| `scripts/extract_stdlib.py` | Extract axioms from C++ stdlib headers |
 | `scripts/link_depends_on.py` | Regex-based linking (types from signatures) |
 | `scripts/link_semantic.py` | LLM-based linking (semantic grounding to foundations) |
 | `scripts/load_pairings.py` | Load function pairings into Neo4j (K semantics or TOML) |
@@ -118,7 +118,7 @@ The linker parses C++ signatures to extract type references (references, pointer
 
 ## 3. Library Axioms (LLM-extracted from source code)
 
-**Script**: `scripts/ingest_library.py`
+**Script**: `scripts/extract_library.py`
 
 These are extracted from actual C/C++ source files using tree-sitter parsing + LLM analysis.
 
@@ -129,13 +129,13 @@ These are extracted from actual C/C++ source files using tree-sitter parsing + L
 
 ```bash
 # Extract axioms from a library directory
-python scripts/ingest_library.py -r /path/to/library/
+python scripts/extract_library.py -r /path/to/library/
 
 # Interactive review process follows
 # Accept/reject each axiom, then export
 
 # Export approved axioms to TOML
-python scripts/ingest_library.py --export <session_id> -o mylib_axioms.toml
+python scripts/extract_library.py --export <session_id> -o mylib_axioms.toml
 
 # Link depends_on for functions with typed signatures (regex-based)
 python scripts/link_depends_on.py mylib_axioms.toml
@@ -228,8 +228,8 @@ python scripts/extract_cpp20.py --batch-library
 python scripts/ingest.py knowledge/foundations/cpp20_stdlib.toml
 
 # 5. Extract and load a library (can now depend on all foundation axioms)
-python scripts/ingest_library.py -r /path/to/mylib/
-python scripts/ingest_library.py --export <session_id> -o mylib_axioms.toml
+python scripts/extract_library.py -r /path/to/mylib/
+python scripts/extract_library.py --export <session_id> -o mylib_axioms.toml
 python scripts/link_depends_on.py mylib_axioms.toml
 python scripts/link_semantic.py mylib_axioms.toml  # LLM-based grounding (optional)
 python scripts/ingest.py mylib_axioms.toml

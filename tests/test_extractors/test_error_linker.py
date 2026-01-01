@@ -1,7 +1,7 @@
-"""Tests for the axiom linker module."""
+"""Tests for the error code linker module."""
 
 
-from axiom.extractors.linker import AxiomLinker
+from axiom.extractors.error_linker import ErrorCodeLinker
 from axiom.models import Axiom, ErrorCode, ErrorType, SourceLocation, ViolationRef
 
 
@@ -37,12 +37,12 @@ def create_test_error_code(
     )
 
 
-class TestAxiomLinker:
-    """Tests for AxiomLinker class."""
+class TestErrorCodeLinker:
+    """Tests for ErrorCodeLinker class."""
 
     def test_link_returns_collection(self):
         """Test that link returns an AxiomCollection."""
-        linker = AxiomLinker()
+        linker = ErrorCodeLinker()
         axioms = [create_test_axiom()]
         error_codes = [create_test_error_code()]
 
@@ -54,7 +54,7 @@ class TestAxiomLinker:
 
     def test_link_empty_lists(self):
         """Test linking with empty lists."""
-        linker = AxiomLinker()
+        linker = ErrorCodeLinker()
 
         result = linker.link([], [])
 
@@ -63,7 +63,7 @@ class TestAxiomLinker:
 
     def test_link_via_patterns_matches_zero(self):
         """Test pattern matching for zero-related axioms and errors."""
-        linker = AxiomLinker()
+        linker = ErrorCodeLinker()
 
         axiom = create_test_axiom(
             id="div_by_zero",
@@ -84,7 +84,7 @@ class TestAxiomLinker:
 
     def test_link_via_patterns_matches_pointer(self):
         """Test pattern matching for pointer-related axioms and errors."""
-        linker = AxiomLinker()
+        linker = ErrorCodeLinker()
 
         axiom = create_test_axiom(
             id="null_ptr",
@@ -103,7 +103,7 @@ class TestAxiomLinker:
 
     def test_link_updates_error_code_validates_axioms(self):
         """Test that linked error codes track which axioms they validate."""
-        linker = AxiomLinker()
+        linker = ErrorCodeLinker()
 
         axiom = create_test_axiom(
             id="test_axiom_1",
@@ -124,7 +124,7 @@ class TestAxiomLinker:
 
     def test_no_duplicate_violations(self):
         """Test that the same violation is not added twice."""
-        linker = AxiomLinker()
+        linker = ErrorCodeLinker()
 
         axiom = create_test_axiom(
             id="dup_test",
@@ -146,7 +146,7 @@ class TestAxiomLinker:
 
     def test_weak_match_not_linked(self):
         """Test that axioms with only one matching term are not linked."""
-        linker = AxiomLinker()
+        linker = ErrorCodeLinker()
 
         axiom = create_test_axiom(
             id="weak_match",
@@ -169,7 +169,7 @@ class TestExtractPredicates:
 
     def test_extracts_common_predicates(self):
         """Test extracting common K predicates."""
-        linker = AxiomLinker()
+        linker = ErrorCodeLinker()
 
         spec = "isPromoted(T) andBool isZero(V) andBool hasIntegerType(T)"
         predicates = linker._extract_predicates(spec)
@@ -180,7 +180,7 @@ class TestExtractPredicates:
 
     def test_extracts_type_comparison(self):
         """Test extracting type comparison predicates."""
-        linker = AxiomLinker()
+        linker = ErrorCodeLinker()
 
         spec = "T1 ==Type T2 orBool T1 =/=Type T3"
         predicates = linker._extract_predicates(spec)
@@ -190,7 +190,7 @@ class TestExtractPredicates:
 
     def test_extracts_pointer_predicates(self):
         """Test extracting pointer-related predicates."""
-        linker = AxiomLinker()
+        linker = ErrorCodeLinker()
 
         spec = "isPointer(P) andBool isComplete(type(P))"
         predicates = linker._extract_predicates(spec)
@@ -200,7 +200,7 @@ class TestExtractPredicates:
 
     def test_empty_spec_returns_empty_set(self):
         """Test that empty spec returns empty set."""
-        linker = AxiomLinker()
+        linker = ErrorCodeLinker()
 
         predicates = linker._extract_predicates("")
         assert predicates == set()
@@ -214,7 +214,7 @@ class TestExtractErrorTerms:
 
     def test_extracts_division_terms(self):
         """Test extracting division-related terms."""
-        linker = AxiomLinker()
+        linker = ErrorCodeLinker()
 
         terms = linker._extract_error_terms("Division by zero is undefined")
         assert "division" in terms
@@ -222,7 +222,7 @@ class TestExtractErrorTerms:
 
     def test_extracts_pointer_terms(self):
         """Test extracting pointer-related terms."""
-        linker = AxiomLinker()
+        linker = ErrorCodeLinker()
 
         terms = linker._extract_error_terms("Invalid pointer to integer conversion")
         assert "pointer" in terms
@@ -231,14 +231,14 @@ class TestExtractErrorTerms:
 
     def test_extracts_shift_terms(self):
         """Test extracting shift-related terms."""
-        linker = AxiomLinker()
+        linker = ErrorCodeLinker()
 
         terms = linker._extract_error_terms("Shift by negative amount")
         assert "shift" in terms
 
     def test_extracts_overflow_terms(self):
         """Test extracting overflow-related terms."""
-        linker = AxiomLinker()
+        linker = ErrorCodeLinker()
 
         terms = linker._extract_error_terms("Integer overflow in arithmetic")
         assert "overflow" in terms
@@ -250,7 +250,7 @@ class TestExtractAxiomTerms:
 
     def test_extracts_from_tags(self):
         """Test extracting terms from axiom tags."""
-        linker = AxiomLinker()
+        linker = ErrorCodeLinker()
 
         axiom = create_test_axiom(tags=["division", "integer", "zero"])
         terms = linker._extract_axiom_terms(axiom)
@@ -261,7 +261,7 @@ class TestExtractAxiomTerms:
 
     def test_extracts_from_formal_spec(self):
         """Test extracting terms from formal spec."""
-        linker = AxiomLinker()
+        linker = ErrorCodeLinker()
 
         axiom = create_test_axiom(formal_spec="isPointer(p) andBool hasIntegerType(t)")
         terms = linker._extract_axiom_terms(axiom)
@@ -271,7 +271,7 @@ class TestExtractAxiomTerms:
 
     def test_extracts_zero_from_iszero(self):
         """Test that isZero in spec adds zero term."""
-        linker = AxiomLinker()
+        linker = ErrorCodeLinker()
 
         axiom = create_test_axiom(formal_spec="notBool isZero(divisor)")
         terms = linker._extract_axiom_terms(axiom)
@@ -284,7 +284,7 @@ class TestIsStrongMatch:
 
     def test_strong_match_with_multiple_terms(self):
         """Test strong match when multiple terms overlap."""
-        linker = AxiomLinker()
+        linker = ErrorCodeLinker()
 
         axiom = create_test_axiom(
             formal_spec="isZero(x)",
@@ -298,7 +298,7 @@ class TestIsStrongMatch:
 
     def test_weak_match_with_single_term(self):
         """Test weak match when only one term overlaps."""
-        linker = AxiomLinker()
+        linker = ErrorCodeLinker()
 
         axiom = create_test_axiom(
             formal_spec="someCheck(x)",
@@ -316,7 +316,7 @@ class TestRulesAreRelated:
 
     def test_related_via_common_predicates(self):
         """Test that rules with common predicates are related."""
-        linker = AxiomLinker()
+        linker = ErrorCodeLinker()
 
         axiom = create_test_axiom(
             formal_spec="isPromoted(T) andBool isZero(V) andBool hasIntegerType(T)"
@@ -332,7 +332,7 @@ class TestRulesAreRelated:
 
     def test_related_via_negation(self):
         """Test that rules are related when one negates the other."""
-        linker = AxiomLinker()
+        linker = ErrorCodeLinker()
 
         axiom = create_test_axiom(formal_spec="notBool isZero(V)")
 
@@ -345,7 +345,7 @@ class TestRulesAreRelated:
 
     def test_not_related_without_requires(self):
         """Test that rules without requires are not related."""
-        linker = AxiomLinker()
+        linker = ErrorCodeLinker()
 
         axiom = create_test_axiom()
 
@@ -358,7 +358,7 @@ class TestRulesAreRelated:
 
     def test_not_related_with_empty_requires(self):
         """Test that rules with empty requires are not related."""
-        linker = AxiomLinker()
+        linker = ErrorCodeLinker()
 
         axiom = create_test_axiom()
 
@@ -375,7 +375,7 @@ class TestLinkViaErrorRules:
 
     def test_links_axiom_to_error_via_rules(self):
         """Test linking axioms to errors using error rules."""
-        linker = AxiomLinker()
+        linker = ErrorCodeLinker()
 
         axiom = create_test_axiom(
             id="div_axiom",
@@ -402,7 +402,7 @@ class TestLinkViaErrorRules:
 
     def test_skips_rules_without_error_marker(self):
         """Test that rules without error markers are skipped."""
-        linker = AxiomLinker()
+        linker = ErrorCodeLinker()
 
         axiom = create_test_axiom(module="expr-div")
 
@@ -418,7 +418,7 @@ class TestLinkViaErrorRules:
 
     def test_skips_rules_from_different_module(self):
         """Test that rules from different modules are not linked."""
-        linker = AxiomLinker()
+        linker = ErrorCodeLinker()
 
         axiom = create_test_axiom(
             formal_spec="isPromoted(T) andBool isZero(V) andBool hasIntegerType(T)",
@@ -443,7 +443,7 @@ class TestLinkViaErrorRules:
 
     def test_no_duplicate_violations_from_rules(self):
         """Test that the same violation is not added twice from rules."""
-        linker = AxiomLinker()
+        linker = ErrorCodeLinker()
 
         axiom = create_test_axiom(
             formal_spec="isPromoted(T) andBool isZero(V) andBool hasIntegerType(T)",

@@ -4,26 +4,26 @@
 # https://github.com/mattyv/axiom
 # SPDX-License-Identifier: BSL-1.0
 
-"""Ingest axioms from C++ draft standard (eel.is/c++draft).
+"""Extract axioms from C++ draft standard (eel.is/c++draft).
 
 This script fetches sections from the C++ draft standard and uses
 Claude to extract axioms (preconditions, effects, complexity, etc.).
 
 Usage:
     # Extract axioms from a single section
-    python scripts/ingest_stdlib.py util.smartptr.shared
+    python scripts/extract_stdlib.py util.smartptr.shared
 
     # Extract from multiple sections
-    python scripts/ingest_stdlib.py optional variant any expected
+    python scripts/extract_stdlib.py optional variant any expected
 
     # Extract with custom output
-    python scripts/ingest_stdlib.py memory -o memory_axioms.toml
+    python scripts/extract_stdlib.py memory -o memory_axioms.toml
 
     # List available top-level sections
-    python scripts/ingest_stdlib.py --list
+    python scripts/extract_stdlib.py --list
 
     # Resume a review session
-    python scripts/ingest_stdlib.py --review <session_id>
+    python scripts/extract_stdlib.py --review <session_id>
 """
 
 import argparse

@@ -10,6 +10,87 @@ A comprehensive design for extracting axioms from any C++20 codebase with high q
 4. **Propagation for completeness** - Call graph analysis propagates preconditions
 5. **LLM only for gaps** - ~5% of cases, batched and targeted
 
+## Two Complementary Axiom Sources
+
+This engine extracts axioms from **code** (what the implementation does). It complements the existing spec-based extraction (what the standard says):
+
+```
+┌─────────────────────────────────────┐
+│   C++ Standard Spec (eel.is)        │  ← Existing approach (LLM extraction)
+│   "What the standard guarantees"    │
+│   - Formal semantics                │
+│   - UB definitions                  │
+│   - Algorithm complexity            │
+│   - Confidence: 0.85                │
+└─────────────────────────────────────┘
+                    +
+┌─────────────────────────────────────┐
+│   Actual C++ Code (Clang analysis)  │  ← This engine
+│   "What the code actually does"     │
+│   - Compiler-enforced constraints   │
+│   - Hazardous operations            │
+│   - Call graph preconditions        │
+│   - Confidence: 0.95-1.0            │
+└─────────────────────────────────────┘
+                    =
+┌─────────────────────────────────────┐
+│   Combined Knowledge Base           │
+│   - Spec axioms validate code       │
+│   - Code axioms ground spec claims  │
+│   - Cross-validation possible       │
+└─────────────────────────────────────┘
+```
+
+## Confidence-Based Extraction Hierarchy
+
+Extraction sources are tried in order of confidence, falling back to LLM only when needed:
+
+```
+┌────────┬──────────────────────────────────────────────────────────┐
+│  1.0   │ Clang: Compiler-enforced (noexcept, [[nodiscard]], etc) │
+├────────┼──────────────────────────────────────────────────────────┤
+│  0.95  │ Clang: Pattern + CFG (hazard with guard analysis)       │
+├────────┼──────────────────────────────────────────────────────────┤
+│  0.90  │ Clang: Propagated (inherited from callee preconditions) │
+├────────┼──────────────────────────────────────────────────────────┤
+│  0.85  │ Spec KB: Matched to foundation axiom (eel.is extract)   │
+├────────┼──────────────────────────────────────────────────────────┤
+│  0.70  │ LLM Fallback: Batched, targeted questions (~5% of code) │
+└────────┴──────────────────────────────────────────────────────────┘
+```
+
+**The flow:**
+
+```
+Source code
+    │
+    ▼
+┌─────────────────────────────┐
+│  Clang extraction           │  ← Try first (fast, accurate)
+│  - Explicit constraints     │
+│  - Hazard detection + CFG   │
+└─────────────────────────────┘
+    │
+    │ confidence >= 0.95? ──────────────────► Done ✓
+    │
+    ▼
+┌─────────────────────────────┐
+│  Match to spec axioms       │  ← Link to foundation KB
+│  (existing extracted KB)    │
+└─────────────────────────────┘
+    │
+    │ confidence >= 0.85? ──────────────────► Done ✓
+    │
+    ▼
+┌─────────────────────────────┐
+│  LLM assist (batched)       │  ← Last resort
+│  "Given this pattern,       │
+│   what's the precondition?" │
+└─────────────────────────────┘
+    │
+    ▼
+   Done (confidence 0.70)
+
 ## Architecture Overview
 
 ```
@@ -91,9 +172,129 @@ A comprehensive design for extracting axioms from any C++20 codebase with high q
 | Cross-file analysis | Limited | Full |
 | Overload resolution | No | Yes |
 
-### Implementation
+### Implementation: Native C++ Tool (Recommended)
 
-Use `libclang` Python bindings or Clang's JSON compilation database:
+**Why C++ instead of Python libclang:**
+- libclang Python bindings are incomplete (many AST nodes not exposed)
+- C++20 features (concepts, requires) have limited Python support
+- CFG/dataflow analysis requires direct Clang C++ API access
+- Better performance for large codebases
+
+**Architecture:**
+
+```
+┌─────────────────────────────────────────┐
+│         axiom-extract (C++)             │
+│  - Uses Clang's LibTooling              │
+│  - Full AST/CFG/dataflow access         │
+│  - Outputs JSON                         │
+├─────────────────────────────────────────┤
+│  Input: compile_commands.json           │
+│  Output: extracted_axioms.json          │
+└─────────────────────────────────────────┘
+                    │
+                    ▼
+┌─────────────────────────────────────────┐
+│         Python (existing axiom/)        │
+│  - Loads JSON output                    │
+│  - Foundation linking (embeddings)      │
+│  - LLM assist (batched)                 │
+│  - TOML export                          │
+└─────────────────────────────────────────┘
+```
+
+**Minimal C++ Tool:**
+
+```cpp
+// axiom-extract.cpp
+#include "clang/Tooling/CommonOptionsParser.h"
+#include "clang/Tooling/Tooling.h"
+#include "clang/ASTMatchers/ASTMatchers.h"
+#include "clang/ASTMatchers/ASTMatchFinder.h"
+#include "clang/Analysis/CFG.h"
+#include <nlohmann/json.hpp>
+
+using namespace clang;
+using namespace clang::ast_matchers;
+using json = nlohmann::json;
+
+class FunctionExtractor : public MatchFinder::MatchCallback {
+    json& output;
+public:
+    FunctionExtractor(json& out) : output(out) {}
+
+    void run(const MatchFinder::MatchResult& Result) override {
+        if (const auto* FD = Result.Nodes.getNodeAs<FunctionDecl>("func")) {
+            json func;
+            func["name"] = FD->getNameAsString();
+            func["is_noexcept"] = FD->getType()->getAs<FunctionProtoType>()->isNothrow();
+            func["is_const"] = FD->isConst();
+
+            // Build CFG for hazard detection
+            if (FD->hasBody()) {
+                auto cfg = CFG::buildCFG(FD, FD->getBody(),
+                    &Result.Context->getSourceManager(),
+                    CFG::BuildOptions());
+                func["hazards"] = extractHazards(cfg.get(), FD);
+            }
+
+            output["functions"].push_back(func);
+        }
+    }
+
+    json extractHazards(CFG* cfg, const FunctionDecl* FD) {
+        json hazards = json::array();
+        // Walk CFG blocks, find pointer derefs, divisions, etc.
+        // Check for dominating guards
+        return hazards;
+    }
+};
+
+int main(int argc, const char** argv) {
+    auto Parser = CommonOptionsParser::create(argc, argv, MyCategory);
+    ClangTool Tool(Parser->getCompilations(), Parser->getSourcePathList());
+
+    json output;
+    FunctionExtractor Extractor(output);
+    MatchFinder Finder;
+    Finder.addMatcher(functionDecl(isDefinition()).bind("func"), &Extractor);
+
+    Tool.run(newFrontendActionFactory(&Finder).get());
+
+    std::cout << output.dump(2) << std::endl;
+    return 0;
+}
+```
+
+**Build with CMake:**
+
+```cmake
+find_package(Clang REQUIRED)
+add_executable(axiom-extract axiom-extract.cpp)
+target_link_libraries(axiom-extract
+    clangTooling clangASTMatchers clangAnalysis)
+```
+
+**Essential: compile_commands.json**
+
+Real C++ projects require a compilation database:
+
+```bash
+# CMake projects
+cmake -DCMAKE_EXPORT_COMPILE_COMMANDS=ON ..
+
+# Meson projects
+meson setup build
+
+# Any build system (via Bear)
+bear -- make
+```
+
+Without this, Clang can't resolve includes, macros, or flags.
+
+### Alternative: Python libclang (Limited)
+
+For simple extraction (explicit constraints only), Python bindings work:
 
 ```python
 import clang.cindex
@@ -125,6 +326,8 @@ def extract_function_info(cursor) -> dict:
         'body': extract_body(cursor),
     }
 ```
+
+**Limitation:** CFG/dataflow analysis not available in Python bindings.
 
 ### AST Database Schema
 
