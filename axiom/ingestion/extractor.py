@@ -597,7 +597,7 @@ class AxiomExtractor:
                     axioms.append(axiom)
             except (KeyError, TypeError, ValueError, AttributeError) as e:
                 # Skip malformed axioms but log for debugging
-                print(f"Warning: skipping malformed axiom: {e}", file=sys.stderr)
+                print(f"Warning: skipping malformed axiom in {function_name} ({header}): {e}", file=sys.stderr)
                 continue
 
         return axioms

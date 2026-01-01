@@ -118,8 +118,10 @@ axioms = ["not a dict", "also not a dict"]
 
         # Should return empty list (malformed axioms skipped)
         assert result == []
-        # Should have logged warnings
+        # Should have logged warnings with function context
         assert "warning" in stderr_output.lower() or "skipping" in stderr_output.lower()
+        assert "test_func" in stderr_output  # Should include function name
+        assert "test.h" in stderr_output  # Should include header
 
     def test_valid_axiom_parsed(self):
         """Test that valid axioms are parsed correctly."""
