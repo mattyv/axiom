@@ -8,6 +8,7 @@
 #include <fstream>
 #include <regex>
 #include <string>
+#include <sys/stat.h>
 #include <vector>
 
 namespace axiom {
@@ -137,14 +138,31 @@ private:
     std::vector<std::regex> regexes_;
 };
 
-/// Find .axignore file by walking up from a source file
+/// Find .axignore file by walking up from a source file or directory
 inline std::string findAxignoreFile(const std::string& sourcePath) {
     std::string dir = sourcePath;
 
-    // Get directory part
-    size_t lastSlash = dir.rfind('/');
-    if (lastSlash != std::string::npos) {
-        dir = dir.substr(0, lastSlash);
+    // Remove trailing slash if present
+    while (!dir.empty() && dir.back() == '/') {
+        dir.pop_back();
+    }
+
+    // Check if path is a directory first - if so, start looking from there
+    // Otherwise get the parent directory
+    struct stat pathStat;
+    if (stat(dir.c_str(), &pathStat) == 0 && S_ISDIR(pathStat.st_mode)) {
+        // It's a directory - check for .axignore here first
+        std::string axignorePath = dir + "/.axignore";
+        std::ifstream test(axignorePath);
+        if (test.good()) {
+            return axignorePath;
+        }
+    } else {
+        // It's a file - get parent directory
+        size_t lastSlash = dir.rfind('/');
+        if (lastSlash != std::string::npos) {
+            dir = dir.substr(0, lastSlash);
+        }
     }
 
     // Walk up looking for .axignore
@@ -156,7 +174,7 @@ inline std::string findAxignoreFile(const std::string& sourcePath) {
         }
 
         // Move up one directory
-        lastSlash = dir.rfind('/');
+        size_t lastSlash = dir.rfind('/');
         if (lastSlash == std::string::npos) {
             break;
         }

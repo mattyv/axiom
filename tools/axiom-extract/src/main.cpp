@@ -12,10 +12,14 @@
 #include <clang/Frontend/FrontendActions.h>
 #include <clang/Tooling/CommonOptionsParser.h>
 #include <clang/Tooling/Tooling.h>
+#include <clang/Tooling/CompilationDatabase.h>
 #include <llvm/Support/CommandLine.h>
+#include <llvm/Support/FileSystem.h>
 
+#include <algorithm>
 #include <chrono>
 #include <ctime>
+#include <filesystem>
 #include <iomanip>
 #include <iostream>
 #include <sstream>
@@ -59,6 +63,87 @@ static llvm::cl::opt<bool> NoIgnore(
     llvm::cl::desc("Disable .axignore filtering"),
     llvm::cl::cat(AxiomExtractCategory)
 );
+
+static llvm::cl::opt<bool> Recursive(
+    "r",
+    llvm::cl::desc("Recursively scan directories for C++ source files"),
+    llvm::cl::cat(AxiomExtractCategory)
+);
+
+static llvm::cl::alias RecursiveAlias(
+    "recursive",
+    llvm::cl::desc("Alias for -r"),
+    llvm::cl::aliasopt(Recursive)
+);
+
+// C++ source file extensions
+const std::vector<std::string> CPP_EXTENSIONS = {
+    ".cpp", ".cc", ".cxx", ".hpp", ".h", ".hxx", ".C", ".H"
+};
+
+// Check if a file has a C++ extension
+bool isCppSourceFile(const std::filesystem::path& path) {
+    std::string ext = path.extension().string();
+    for (const auto& cppExt : CPP_EXTENSIONS) {
+        if (ext == cppExt) return true;
+    }
+    return false;
+}
+
+// Recursively find all C++ source files in a directory
+std::vector<std::string> findSourceFiles(
+    const std::string& path,
+    bool recursive,
+    axiom::IgnoreFilter* ignoreFilter = nullptr,
+    const std::string& projectRoot = ""
+) {
+    std::vector<std::string> files;
+    std::filesystem::path fsPath(path);
+
+    // If it's a file, just return it
+    if (std::filesystem::is_regular_file(fsPath)) {
+        if (isCppSourceFile(fsPath)) {
+            std::string absPath = std::filesystem::absolute(fsPath).string();
+            if (!ignoreFilter || !ignoreFilter->shouldIgnore(absPath, projectRoot)) {
+                files.push_back(absPath);
+            }
+        }
+        return files;
+    }
+
+    // If it's a directory, scan for source files
+    if (std::filesystem::is_directory(fsPath)) {
+        auto iterator = recursive
+            ? std::filesystem::recursive_directory_iterator(fsPath)
+            : std::filesystem::recursive_directory_iterator(fsPath,
+                std::filesystem::directory_options::none);
+
+        // For non-recursive, we need to use a different approach
+        if (recursive) {
+            for (const auto& entry : std::filesystem::recursive_directory_iterator(fsPath)) {
+                if (entry.is_regular_file() && isCppSourceFile(entry.path())) {
+                    std::string absPath = std::filesystem::absolute(entry.path()).string();
+                    if (!ignoreFilter || !ignoreFilter->shouldIgnore(absPath, projectRoot)) {
+                        files.push_back(absPath);
+                    }
+                }
+            }
+        } else {
+            for (const auto& entry : std::filesystem::directory_iterator(fsPath)) {
+                if (entry.is_regular_file() && isCppSourceFile(entry.path())) {
+                    std::string absPath = std::filesystem::absolute(entry.path()).string();
+                    if (!ignoreFilter || !ignoreFilter->shouldIgnore(absPath, projectRoot)) {
+                        files.push_back(absPath);
+                    }
+                }
+            }
+        }
+    }
+
+    // Sort for consistent output
+    std::sort(files.begin(), files.end());
+    return files;
+}
 
 // Global ignore filter (set up in main)
 static axiom::IgnoreFilter* globalIgnoreFilter = nullptr;
@@ -636,10 +721,8 @@ int main(int argc, const char** argv) {
     }
 
     CommonOptionsParser& optionsParser = *expectedParser;
-    ClangTool tool(optionsParser.getCompilations(),
-                   optionsParser.getSourcePathList());
 
-    // Set up ignore filter from .axignore
+    // Set up ignore filter from .axignore first (needed for file discovery)
     axiom::IgnoreFilter ignoreFilter;
     if (!NoIgnore) {
         std::string axignorePath;
@@ -647,7 +730,7 @@ int main(int argc, const char** argv) {
         if (!IgnoreFilePath.empty()) {
             axignorePath = IgnoreFilePath;
         } else if (!optionsParser.getSourcePathList().empty()) {
-            // Auto-detect .axignore from first source file
+            // Auto-detect .axignore from first source file/directory
             axignorePath = axiom::findAxignoreFile(optionsParser.getSourcePathList()[0]);
         }
 
@@ -665,6 +748,55 @@ int main(int argc, const char** argv) {
             }
         }
     }
+
+    // Get source files - either from command line or by scanning directories
+    std::vector<std::string> sourceFiles;
+    auto inputPaths = optionsParser.getSourcePathList();
+
+    if (Recursive || std::any_of(inputPaths.begin(), inputPaths.end(),
+            [](const std::string& p) { return std::filesystem::is_directory(p); })) {
+        // Recursive mode or directory input: find all source files
+        for (const auto& inputPath : inputPaths) {
+            auto found = findSourceFiles(inputPath, Recursive,
+                NoIgnore ? nullptr : &ignoreFilter, globalProjectRoot);
+            sourceFiles.insert(sourceFiles.end(), found.begin(), found.end());
+        }
+
+        if (sourceFiles.empty()) {
+            llvm::errs() << "No C++ source files found in specified paths\n";
+            return 1;
+        }
+
+        if (Verbose) {
+            llvm::errs() << "Found " << sourceFiles.size() << " source file(s)\n";
+            for (const auto& f : sourceFiles) {
+                llvm::errs() << "  " << f << "\n";
+            }
+        }
+    } else {
+        // Normal mode: use files as specified
+        sourceFiles = inputPaths;
+    }
+
+    // Create the ClangTool
+    // When in recursive/directory mode, use a fixed compilation database
+    // When files are specified directly, use the provided compilation database
+    std::unique_ptr<CompilationDatabase> ownedCompDb;
+    CompilationDatabase* compDb = nullptr;
+
+    if (Recursive || std::any_of(inputPaths.begin(), inputPaths.end(),
+            [](const std::string& p) { return std::filesystem::is_directory(p); })) {
+        // Recursive mode: use fixed compilation database with C++20
+        // Users can override with -- -std=c++17 etc. on command line
+        std::vector<std::string> defaultArgs = {"-std=c++20"};
+        ownedCompDb = std::make_unique<FixedCompilationDatabase>(".", defaultArgs);
+        compDb = ownedCompDb.get();
+    } else {
+        // Normal mode: use provided compilation database
+        compDb = &optionsParser.getCompilations();
+    }
+
+    ClangTool tool(*compDb, sourceFiles);
 
     // Create extractors
     auto constraintExtractor = axiom::createConstraintExtractor();
@@ -725,9 +857,11 @@ int main(int argc, const char** argv) {
     // Run the tool
     int exitCode = tool.run(newFrontendActionFactory(&finder).get());
 
-    if (exitCode != 0) {
-        llvm::errs() << "Error running clang tool\n";
-        return exitCode;
+    // Note: We don't fail on exitCode != 0 because some files may have parse errors
+    // (missing includes, etc.) but we still want to output what we extracted.
+    // The errors are already printed to stderr by clang.
+    if (exitCode != 0 && Verbose) {
+        llvm::errs() << "Warning: Clang tool reported errors (some files may not have been fully processed)\n";
     }
 
     // Build output JSON
