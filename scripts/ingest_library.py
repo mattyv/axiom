@@ -394,9 +394,9 @@ def show_subgraph(source_path: Path, builder: SubgraphBuilder, function_name: st
 
     print(f"\n  Function: {function_name}")
     print(f"  Lines: {subgraph.line_start}-{subgraph.line_end}")
-    print(f"  Parameters: {', '.join(subgraph.parameters)}")
+    print(f"  Parameters: {', '.join(f'{t}: {n}' for n, t in subgraph.parameters) if subgraph.parameters else 'none'}")
     print(f"  Return type: {subgraph.return_type}")
-    print(f"  Operations: {len(subgraph.operations)}")
+    print(f"  Operations: {len(subgraph.nodes)}")
 
     divisions = subgraph.get_divisions()
     pointers = subgraph.get_pointer_operations()
@@ -404,13 +404,13 @@ def show_subgraph(source_path: Path, builder: SubgraphBuilder, function_name: st
     calls = subgraph.get_function_calls()
 
     if divisions:
-        print(f"    Divisions: {[d.source_text for d in divisions]}")
+        print(f"    Divisions: {[d.code_snippet for d in divisions]}")
     if pointers:
-        print(f"    Pointer ops: {[p.source_text for p in pointers]}")
+        print(f"    Pointer ops: {[p.code_snippet for p in pointers]}")
     if memory:
-        print(f"    Memory ops: {[m.source_text for m in memory]}")
+        print(f"    Memory ops: {[m.code_snippet for m in memory]}")
     if calls:
-        print(f"    Function calls: {[c.source_text for c in calls]}")
+        print(f"    Function calls: {[c.code_snippet for c in calls]}")
 
     if not (divisions or pointers or memory or calls):
         print("    No hazardous operations detected")
