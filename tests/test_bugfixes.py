@@ -8,11 +8,10 @@
 These tests ensure that previously fixed bugs don't reappear.
 """
 
+import subprocess
 import sys
 from io import StringIO
-from unittest.mock import MagicMock, patch
-
-import pytest
+from unittest.mock import patch
 
 
 class TestSQLInjectionEscape:
@@ -202,7 +201,6 @@ class TestClaudeCLIErrorHandling:
     def test_cli_timeout_returns_empty(self):
         """Test that CLI timeout returns empty string."""
         from axiom.ingestion import AxiomExtractor
-        import subprocess
 
         extractor = AxiomExtractor(llm_client="claude-cli")
 
@@ -246,7 +244,6 @@ class TestClaudeCLIErrorHandling:
     def test_cli_subprocess_error_returns_empty(self):
         """Test that subprocess errors return empty string."""
         from axiom.ingestion import AxiomExtractor
-        import subprocess
 
         extractor = AxiomExtractor(llm_client="claude-cli")
 
