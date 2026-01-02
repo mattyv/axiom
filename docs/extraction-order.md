@@ -319,16 +319,29 @@ python scripts/ingest.py mylib_axioms.toml
 Most of the time you just need to re-ingest the existing TOML files into cleared databases.
 Only re-extract if there's a significant change in the extraction system or schema.
 
+**Prerequisites:**
+- Neo4j must be running: `podman-compose up -d` (or `docker-compose up -d`)
+- Wait ~15 seconds for Neo4j to fully start
+
 ```bash
-# Clear and re-ingest all foundation axioms (fast - no LLM calls)
+# Start Neo4j if not running
+podman-compose up -d
+
+# Clear both Neo4j and LanceDB, then re-ingest all foundation axioms (fast - no LLM calls)
 python scripts/ingest.py --clear
-python scripts/ingest.py knowledge/foundations/c11_core.toml
-python scripts/ingest.py knowledge/foundations/c11_stdlib.toml
-python scripts/ingest.py knowledge/foundations/cpp_core.toml
-python scripts/ingest.py knowledge/foundations/cpp_stdlib.toml
-python scripts/ingest.py knowledge/foundations/cpp20_language.toml
-python scripts/ingest.py knowledge/foundations/cpp20_stdlib.toml
+python scripts/ingest.py
+
+# Alternative: Load specific files only
+# python scripts/ingest.py knowledge/foundations/c11_core.toml
+# python scripts/ingest.py knowledge/foundations/c11_stdlib.toml
+# python scripts/ingest.py knowledge/foundations/cpp_core.toml
+# python scripts/ingest.py knowledge/foundations/cpp_stdlib.toml
+# python scripts/ingest.py knowledge/foundations/cpp20_language.toml
+# python scripts/ingest.py knowledge/foundations/cpp20_stdlib.toml
 ```
+
+**IMPORTANT**: Do NOT use `--skip-graph` or `--skip-vectors` during ingestion unless you have a specific reason.
+These are needed for the vector search linking used during library extraction.
 
 ## Full Rebuild Example (Rare)
 

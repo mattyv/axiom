@@ -44,6 +44,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from axiom.extractors.clang_loader import parse_json_with_call_graph
+from axiom.extractors.enricher import enrich_axioms
 from axiom.extractors.propagation import propagate_preconditions
 from axiom.models import Axiom
 from axiom.vectors.loader import LanceDBLoader
@@ -149,7 +150,9 @@ def link_depends_on(
         return axioms
 
     # Check if table exists
-    if "axioms" not in loader.db.list_tables():
+    tables = loader.db.list_tables()
+    table_names = tables.tables if hasattr(tables, 'tables') else tables
+    if "axioms" not in table_names:
         logger.warning("No axioms table in vector DB, skipping linking")
         return axioms
 
@@ -362,6 +365,17 @@ def main() -> int:
         help="Use LLM for low-confidence axioms",
     )
     parser.add_argument(
+        "--enrich",
+        action="store_true",
+        help="Enrich axioms with on_violation descriptions and infer new axioms",
+    )
+    parser.add_argument(
+        "--enrich-model",
+        type=str,
+        default="sonnet",
+        help="Model for enrichment (default: sonnet)",
+    )
+    parser.add_argument(
         "--link",
         action="store_true",
         default=True,
@@ -437,6 +451,20 @@ def main() -> int:
                 list(collection.axioms), use_llm=True
             )
             logger.info(f"LLM refinement complete ({len(collection.axioms)} axioms)")
+
+        # Enrich axioms with on_violation and inferred axioms
+        if args.enrich:
+            original_count = len(collection.axioms)
+            logger.info(f"Enriching {original_count} axioms...")
+            collection.axioms = enrich_axioms(
+                list(collection.axioms),
+                use_llm=True,
+                model=args.enrich_model,
+            )
+            new_count = len(collection.axioms) - original_count
+            if new_count > 0:
+                logger.info(f"Enrichment added {new_count} inferred axioms")
+            logger.info(f"Enrichment complete ({len(collection.axioms)} axioms)")
 
         # Save to TOML using the built-in method
         collection.save_toml(args.output)

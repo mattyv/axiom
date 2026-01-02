@@ -37,6 +37,7 @@ endif()
 set(SOURCES
     src/main.cpp
     src/FunctionExtractor.cpp
+    src/SignatureBuilder.cpp
     src/ConstraintExtractor.cpp
     src/HazardDetector.cpp
     src/GuardAnalyzer.cpp
@@ -82,8 +83,5 @@ install(TARGETS axiom-extract
 option(BUILD_TESTING "Build tests" OFF)
 if(BUILD_TESTING)
     enable_testing()
-    find_package(GTest QUIET)
-    if(GTest_FOUND)
-        add_subdirectory(tests)
-    endif()
+    add_subdirectory(tests)
 endif()

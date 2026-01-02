@@ -634,11 +634,58 @@ public:
         info.line_end = sm.getSpellingLineNumber(func->getEndLoc());
         info.decl = func;
 
-        // Build signature
-        std::string sig;
-        llvm::raw_string_ostream sigStream(sig);
-        func->print(sigStream);
-        info.signature = sig;
+        // Build signature by extracting source text up to the body
+        std::string signature;
+
+        // Get the body (compound statement)
+        if (const auto* body = func->getBody()) {
+            // Extract source text from function start to just before the opening brace
+            auto funcStart = func->getBeginLoc();
+            auto bodyStart = body->getBeginLoc();
+
+            if (funcStart.isValid() && bodyStart.isValid()) {
+                // Get the character data
+                auto startOffset = sm.getFileOffset(funcStart);
+                auto endOffset = sm.getFileOffset(bodyStart);
+
+                if (endOffset > startOffset) {
+                    const char* startPtr = sm.getCharacterData(funcStart);
+                    signature = std::string(startPtr, endOffset - startOffset);
+
+                    // Trim trailing whitespace and newlines
+                    size_t end = signature.find_last_not_of(" \t\n\r");
+                    if (end != std::string::npos) {
+                        signature = signature.substr(0, end + 1);
+                    }
+                }
+            }
+        }
+
+        // Fallback: if no body or extraction failed, build signature manually
+        if (signature.empty()) {
+            std::ostringstream ss;
+            ss << func->getReturnType().getAsString() << " "
+               << func->getQualifiedNameAsString() << "(";
+
+            bool first = true;
+            for (const auto* param : func->parameters()) {
+                if (!first) ss << ", ";
+                first = false;
+                ss << param->getType().getAsString();
+                if (!param->getName().empty()) {
+                    ss << " " << param->getNameAsString();
+                }
+            }
+            ss << ")";
+
+            if (const auto* method = llvm::dyn_cast<CXXMethodDecl>(func)) {
+                if (method->isConst()) ss << " const";
+            }
+
+            signature = ss.str();
+        }
+
+        info.signature = signature;
 
         // Extract header from filename
         size_t lastSlash = filename.rfind('/');
