@@ -41,6 +41,7 @@ set(SOURCES
     src/HazardDetector.cpp
     src/GuardAnalyzer.cpp
     src/CallGraphExtractor.cpp
+    src/EffectDetector.cpp
     src/JsonEmitter.cpp
     src/MacroExtractor.cpp
     src/TestAssertExtractor.cpp

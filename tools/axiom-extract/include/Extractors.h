@@ -22,6 +22,7 @@ class ConstraintExtractor;
 class HazardDetector;
 class GuardAnalyzer;
 class CallGraphExtractor;
+class EffectDetector;
 class JsonEmitter;
 
 // Function information extracted from AST
@@ -202,6 +203,18 @@ public:
     ) = 0;
 };
 
+// Interface for detecting effects (dataflow analysis)
+class EffectDetector {
+public:
+    virtual ~EffectDetector() = default;
+
+    // Detect effects in a function body
+    virtual std::vector<Effect> detectEffects(
+        const clang::FunctionDecl* func,
+        clang::ASTContext& ctx
+    ) = 0;
+};
+
 // Interface for JSON output
 class JsonEmitter {
 public:
@@ -250,6 +263,7 @@ std::unique_ptr<ConstraintExtractor> createConstraintExtractor();
 std::unique_ptr<HazardDetector> createHazardDetector();
 std::unique_ptr<GuardAnalyzer> createGuardAnalyzer();
 std::unique_ptr<CallGraphExtractor> createCallGraphExtractor();
+std::unique_ptr<EffectDetector> createEffectDetector();
 std::unique_ptr<JsonEmitter> createJsonEmitter();
 std::unique_ptr<TestAssertExtractor> createTestAssertExtractor(TestFramework framework = TestFramework::AUTO);
 

@@ -584,11 +584,13 @@ public:
     FunctionCallback(std::vector<axiom::ExtractionResult>& results,
                      axiom::ConstraintExtractor& constraintExtractor,
                      axiom::HazardDetector* hazardDetector,
-                     axiom::CallGraphExtractor* callGraphExtractor)
+                     axiom::CallGraphExtractor* callGraphExtractor,
+                     axiom::EffectDetector* effectDetector)
         : results_(results)
         , constraintExtractor_(constraintExtractor)
         , hazardDetector_(hazardDetector)
-        , callGraphExtractor_(callGraphExtractor) {}
+        , callGraphExtractor_(callGraphExtractor)
+        , effectDetector_(effectDetector) {}
 
     void run(const MatchFinder::MatchResult& result) override {
         const auto* func = result.Nodes.getNodeAs<FunctionDecl>("func");
@@ -771,6 +773,51 @@ public:
             }
         }
 
+        // Extract effects (dataflow analysis)
+        if (effectDetector_ && func->hasBody()) {
+            auto effects = effectDetector_->detectEffects(func, *result.Context);
+            for (const auto& effect : effects) {
+                axiom::Axiom axiom;
+                axiom.function = info.qualified_name;
+                axiom.signature = info.signature;
+                axiom.header = info.header;
+                axiom.axiom_type = axiom::AxiomType::EFFECT;
+                axiom.confidence = effect.confidence;
+                axiom.source_type = axiom::SourceType::PATTERN;
+                axiom.line = effect.line;
+
+                switch (effect.kind) {
+                    case axiom::EffectKind::PARAM_MODIFY:
+                        axiom.id = info.qualified_name + ".effect.modifies_" + effect.target;
+                        axiom.content = "Modifies parameter " + effect.target;
+                        axiom.formal_spec = "modifies(" + effect.target + ")";
+                        break;
+                    case axiom::EffectKind::MEMBER_WRITE:
+                        axiom.id = info.qualified_name + ".effect.writes_" + effect.target;
+                        axiom.content = "Writes to member " + effect.target;
+                        axiom.formal_spec = "modifies(this." + effect.target + ")";
+                        break;
+                    case axiom::EffectKind::MEMORY_ALLOC:
+                        axiom.id = info.qualified_name + ".effect.allocates";
+                        axiom.content = "Allocates memory for " + effect.target;
+                        axiom.formal_spec = "allocates(" + effect.target + ")";
+                        break;
+                    case axiom::EffectKind::MEMORY_FREE:
+                        axiom.id = info.qualified_name + ".effect.deallocates";
+                        axiom.content = "Deallocates memory for " + effect.target;
+                        axiom.formal_spec = "deallocates(" + effect.target + ")";
+                        break;
+                    case axiom::EffectKind::CONTAINER_MODIFY:
+                        axiom.id = info.qualified_name + ".effect.modifies_container";
+                        axiom.content = "Modifies container " + effect.target;
+                        axiom.formal_spec = "modifies(" + effect.target + ")";
+                        break;
+                }
+
+                it->axioms.push_back(std::move(axiom));
+            }
+        }
+
         if (Verbose) {
             llvm::errs() << "Extracted " << it->axioms.size()
                         << " axioms from " << info.qualified_name << "\n";
@@ -782,6 +829,7 @@ private:
     axiom::ConstraintExtractor& constraintExtractor_;
     axiom::HazardDetector* hazardDetector_;
     axiom::CallGraphExtractor* callGraphExtractor_;
+    axiom::EffectDetector* effectDetector_;
 };
 
 // Callback for matching class/struct declarations
@@ -1292,6 +1340,7 @@ BatchResult processBatch(
     if (extractCallGraph) {
         callGraphExtractor = axiom::createCallGraphExtractor();
     }
+    std::unique_ptr<axiom::EffectDetector> effectDetector = axiom::createEffectDetector();
     std::unique_ptr<axiom::TestAssertExtractor> testExtractor;
     if (testMode) {
         testExtractor = axiom::createTestAssertExtractor(testFramework);
@@ -1299,7 +1348,8 @@ BatchResult processBatch(
 
     // Set up matchers with per-thread results
     FunctionCallback funcCallback(batch.results, *constraintExtractor,
-                                   hazardDetector.get(), callGraphExtractor.get());
+                                   hazardDetector.get(), callGraphExtractor.get(),
+                                   effectDetector.get());
     ClassCallback classCallback(batch.results);
     EnumCallback enumCallback(batch.results);
     StaticAssertCallback staticAssertCallback(batch.results);

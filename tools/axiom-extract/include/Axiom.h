@@ -39,6 +39,24 @@ enum class HazardType {
     CAST
 };
 
+// Effect types for dataflow detection
+enum class EffectKind {
+    PARAM_MODIFY,      // Parameter modification (x = ...)
+    MEMBER_WRITE,      // Member variable write (this->x = ...)
+    MEMORY_ALLOC,      // Memory allocation (new, malloc)
+    MEMORY_FREE,       // Memory deallocation (delete, free)
+    CONTAINER_MODIFY   // Container modification (push_back, insert, etc.)
+};
+
+// Detected effect in a function
+struct Effect {
+    EffectKind kind;
+    std::string target;       // Variable/member being modified
+    std::string expression;   // Full expression text
+    int line = 0;
+    double confidence = 0.90;
+};
+
 // Macro definition structure
 struct MacroDefinition {
     std::string name;
@@ -153,6 +171,24 @@ NLOHMANN_JSON_SERIALIZE_ENUM(HazardType, {
     {HazardType::ARRAY_ACCESS, "array_access"},
     {HazardType::CAST, "cast"}
 })
+
+NLOHMANN_JSON_SERIALIZE_ENUM(EffectKind, {
+    {EffectKind::PARAM_MODIFY, "param_modify"},
+    {EffectKind::MEMBER_WRITE, "member_write"},
+    {EffectKind::MEMORY_ALLOC, "memory_alloc"},
+    {EffectKind::MEMORY_FREE, "memory_free"},
+    {EffectKind::CONTAINER_MODIFY, "container_modify"}
+})
+
+inline void to_json(nlohmann::json& j, const Effect& e) {
+    j = nlohmann::json{
+        {"kind", e.kind},
+        {"target", e.target},
+        {"expression", e.expression},
+        {"line", e.line},
+        {"confidence", e.confidence}
+    };
+}
 
 inline void to_json(nlohmann::json& j, const Axiom& a) {
     j = nlohmann::json{

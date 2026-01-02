@@ -1,0 +1,3243 @@
+version = "1.0"
+source = "/home/mvarendorff/Documents/Code/cpp/ilp_for/ilp_for.hpp, /home/mvarendorff/Documents/Code/cpp/ilp_for/ilp_for/cpu_profiles/ilp_cpu_profiles.hpp, /home/mvarendorff/Documents/Code/cpp/ilp_for/ilp_for/cpu_profiles/ilp_optimal_n.hpp (+5 more)"
+extracted_at = "2026-01-02T03:55:14+00:00"
+
+[[axioms]]
+id = "ilp::detail::For_Context_USE_ILP_END.trivially_copyable"
+content = '''For_Context_USE_ILP_END is trivially copyable (safe for memcpy/memmove)'''
+formal_spec = '''is_trivially_copyable(For_Context_USE_ILP_END)'''
+layer = "user_library"
+confidence = 1.0
+source_file = "ilp_for.hpp"
+source_module = "ilp_forpp"
+source_line_start = 18
+source_line_end = 18
+function = "ilp::detail::For_Context_USE_ILP_END"
+header = "ilp_for.hpp"
+axiom_type = "constraint"
+
+[[axioms]]
+id = "ilp::detail::check_for_end.constexpr"
+content = '''check_for_end can be evaluated at compile time'''
+formal_spec = '''constexpr == true'''
+layer = "user_library"
+confidence = 1.0
+source_file = "ilp_for.hpp"
+source_module = "ilp_forpp"
+source_line_start = 19
+source_line_end = 19
+function = "ilp::detail::check_for_end"
+header = "ilp_for.hpp"
+signature = '''constexpr void check_for_end([[maybe_unused]] For_Context_USE_ILP_END) {
+}
+'''
+axiom_type = "constraint"
+
+[[axioms]]
+id = "ILP_FOR.constraint.reference_capture"
+content = '''Variables used in ILP_FOR are captured by reference ([&]), allowing modifications to affect the outer scope'''
+formal_spec = '''capture_mode == by_reference'''
+layer = "user_library"
+confidence = 1.0
+source_file = "/home/mvarendorff/Documents/Code/cpp/ilp_for/ilp_for.hpp"
+source_module = "ome.mvarendorff.Documents.Code.cpp.ilp_for.ilp_forpp"
+source_line_start = 49
+source_line_end = 49
+function = "ILP_FOR"
+header = "/home/mvarendorff/Documents/Code/cpp/ilp_for/ilp_for.hpp"
+signature = '''#define ILP_FOR(loop_var_decl, start, end, N)'''
+axiom_type = "constraint"
+
+[[axioms]]
+id = "ILP_FOR.anti_pattern.dangling_reference"
+content = '''Passing temporary objects to ILP_FOR may cause dangling references due to [&] capture'''
+formal_spec = '''isTemporary(arg) -> undefined_behavior'''
+layer = "user_library"
+confidence = 0.9
+source_file = "/home/mvarendorff/Documents/Code/cpp/ilp_for/ilp_for.hpp"
+source_module = "ome.mvarendorff.Documents.Code.cpp.ilp_for.ilp_forpp"
+source_line_start = 49
+source_line_end = 49
+function = "ILP_FOR"
+header = "/home/mvarendorff/Documents/Code/cpp/ilp_for/ilp_for.hpp"
+signature = '''#define ILP_FOR(loop_var_decl, start, end, N)'''
+axiom_type = "anti_pattern"
+
+[[axioms]]
+id = "ILP_FOR.complexity.template_instantiation"
+content = '''Each unique value of N causes a separate template instantiation, increasing compile time and code size'''
+formal_spec = '''compile_time_cost proportional_to distinct_N_values'''
+layer = "user_library"
+confidence = 0.95
+source_file = "/home/mvarendorff/Documents/Code/cpp/ilp_for/ilp_for.hpp"
+source_module = "ome.mvarendorff.Documents.Code.cpp.ilp_for.ilp_forpp"
+source_line_start = 49
+source_line_end = 49
+function = "ILP_FOR"
+header = "/home/mvarendorff/Documents/Code/cpp/ilp_for/ilp_for.hpp"
+signature = '''#define ILP_FOR(loop_var_decl, start, end, N)'''
+axiom_type = "complexity"
+
+[[axioms]]
+id = "ILP_FOR.constraint.requires_completion"
+content = '''Macro ILP_FOR is syntactically incomplete and requires a companion macro or closing syntax'''
+formal_spec = '''requires_companion_macro(ILP_FOR)'''
+layer = "user_library"
+confidence = 1.0
+source_file = "/home/mvarendorff/Documents/Code/cpp/ilp_for/ilp_for.hpp"
+source_module = "ome.mvarendorff.Documents.Code.cpp.ilp_for.ilp_forpp"
+source_line_start = 49
+source_line_end = 49
+function = "ILP_FOR"
+header = "/home/mvarendorff/Documents/Code/cpp/ilp_for/ilp_for.hpp"
+signature = '''#define ILP_FOR(loop_var_decl, start, end, N)'''
+axiom_type = "constraint"
+
+[[axioms]]
+id = "ILP_FOR.postcondition.local_vars_available"
+content = '''After ILP_FOR expansion, the following identifiers are available in scope: __ilp_ctrl, __ilp_ctx, __ilp_ret'''
+formal_spec = '''in_scope({__ilp_ctrl, __ilp_ctx, __ilp_ret})'''
+layer = "user_library"
+confidence = 0.95
+source_file = "/home/mvarendorff/Documents/Code/cpp/ilp_for/ilp_for.hpp"
+source_module = "ome.mvarendorff.Documents.Code.cpp.ilp_for.ilp_forpp"
+source_line_start = 49
+source_line_end = 49
+function = "ILP_FOR"
+header = "/home/mvarendorff/Documents/Code/cpp/ilp_for/ilp_for.hpp"
+signature = '''#define ILP_FOR(loop_var_decl, start, end, N)'''
+axiom_type = "postcondition"
+
+[[axioms]]
+id = "ILP_FOR_RANGE.constraint.reference_capture"
+content = '''Variables used in ILP_FOR_RANGE are captured by reference ([&]), allowing modifications to affect the outer scope'''
+formal_spec = '''capture_mode == by_reference'''
+layer = "user_library"
+confidence = 1.0
+source_file = "/home/mvarendorff/Documents/Code/cpp/ilp_for/ilp_for.hpp"
+source_module = "ome.mvarendorff.Documents.Code.cpp.ilp_for.ilp_forpp"
+source_line_start = 55
+source_line_end = 55
+function = "ILP_FOR_RANGE"
+header = "/home/mvarendorff/Documents/Code/cpp/ilp_for/ilp_for.hpp"
+signature = '''#define ILP_FOR_RANGE(loop_var_decl, range, N)'''
+axiom_type = "constraint"
+
+[[axioms]]
+id = "ILP_FOR_RANGE.anti_pattern.dangling_reference"
+content = '''Passing temporary objects to ILP_FOR_RANGE may cause dangling references due to [&] capture'''
+formal_spec = '''isTemporary(arg) -> undefined_behavior'''
+layer = "user_library"
+confidence = 0.9
+source_file = "/home/mvarendorff/Documents/Code/cpp/ilp_for/ilp_for.hpp"
+source_module = "ome.mvarendorff.Documents.Code.cpp.ilp_for.ilp_forpp"
+source_line_start = 55
+source_line_end = 55
+function = "ILP_FOR_RANGE"
+header = "/home/mvarendorff/Documents/Code/cpp/ilp_for/ilp_for.hpp"
+signature = '''#define ILP_FOR_RANGE(loop_var_decl, range, N)'''
+axiom_type = "anti_pattern"
+
+[[axioms]]
+id = "ILP_FOR_RANGE.complexity.template_instantiation"
+content = '''Each unique value of N causes a separate template instantiation, increasing compile time and code size'''
+formal_spec = '''compile_time_cost proportional_to distinct_N_values'''
+layer = "user_library"
+confidence = 0.95
+source_file = "/home/mvarendorff/Documents/Code/cpp/ilp_for/ilp_for.hpp"
+source_module = "ome.mvarendorff.Documents.Code.cpp.ilp_for.ilp_forpp"
+source_line_start = 55
+source_line_end = 55
+function = "ILP_FOR_RANGE"
+header = "/home/mvarendorff/Documents/Code/cpp/ilp_for/ilp_for.hpp"
+signature = '''#define ILP_FOR_RANGE(loop_var_decl, range, N)'''
+axiom_type = "complexity"
+
+[[axioms]]
+id = "ILP_FOR_RANGE.constraint.requires_completion"
+content = '''Macro ILP_FOR_RANGE is syntactically incomplete and requires a companion macro or closing syntax'''
+formal_spec = '''requires_companion_macro(ILP_FOR_RANGE)'''
+layer = "user_library"
+confidence = 1.0
+source_file = "/home/mvarendorff/Documents/Code/cpp/ilp_for/ilp_for.hpp"
+source_module = "ome.mvarendorff.Documents.Code.cpp.ilp_for.ilp_forpp"
+source_line_start = 55
+source_line_end = 55
+function = "ILP_FOR_RANGE"
+header = "/home/mvarendorff/Documents/Code/cpp/ilp_for/ilp_for.hpp"
+signature = '''#define ILP_FOR_RANGE(loop_var_decl, range, N)'''
+axiom_type = "constraint"
+
+[[axioms]]
+id = "ILP_FOR_RANGE.postcondition.local_vars_available"
+content = '''After ILP_FOR_RANGE expansion, the following identifiers are available in scope: __ilp_ctrl, __ilp_ctx, __ilp_ret'''
+formal_spec = '''in_scope({__ilp_ctrl, __ilp_ctx, __ilp_ret})'''
+layer = "user_library"
+confidence = 0.95
+source_file = "/home/mvarendorff/Documents/Code/cpp/ilp_for/ilp_for.hpp"
+source_module = "ome.mvarendorff.Documents.Code.cpp.ilp_for.ilp_forpp"
+source_line_start = 55
+source_line_end = 55
+function = "ILP_FOR_RANGE"
+header = "/home/mvarendorff/Documents/Code/cpp/ilp_for/ilp_for.hpp"
+signature = '''#define ILP_FOR_RANGE(loop_var_decl, range, N)'''
+axiom_type = "postcondition"
+
+[[axioms]]
+id = "ILP_FOR_AUTO.constraint.reference_capture"
+content = '''Variables used in ILP_FOR_AUTO are captured by reference ([&]), allowing modifications to affect the outer scope'''
+formal_spec = '''capture_mode == by_reference'''
+layer = "user_library"
+confidence = 1.0
+source_file = "/home/mvarendorff/Documents/Code/cpp/ilp_for/ilp_for.hpp"
+source_module = "ome.mvarendorff.Documents.Code.cpp.ilp_for.ilp_forpp"
+source_line_start = 61
+source_line_end = 61
+function = "ILP_FOR_AUTO"
+header = "/home/mvarendorff/Documents/Code/cpp/ilp_for/ilp_for.hpp"
+signature = '''#define ILP_FOR_AUTO(loop_var_decl, start, end, loop_type, element_type)'''
+axiom_type = "constraint"
+
+[[axioms]]
+id = "ILP_FOR_AUTO.anti_pattern.dangling_reference"
+content = '''Passing temporary objects to ILP_FOR_AUTO may cause dangling references due to [&] capture'''
+formal_spec = '''isTemporary(arg) -> undefined_behavior'''
+layer = "user_library"
+confidence = 0.9
+source_file = "/home/mvarendorff/Documents/Code/cpp/ilp_for/ilp_for.hpp"
+source_module = "ome.mvarendorff.Documents.Code.cpp.ilp_for.ilp_forpp"
+source_line_start = 61
+source_line_end = 61
+function = "ILP_FOR_AUTO"
+header = "/home/mvarendorff/Documents/Code/cpp/ilp_for/ilp_for.hpp"
+signature = '''#define ILP_FOR_AUTO(loop_var_decl, start, end, loop_type, element_type)'''
+axiom_type = "anti_pattern"
+
+[[axioms]]
+id = "ILP_FOR_AUTO.constraint.requires_completion"
+content = '''Macro ILP_FOR_AUTO is syntactically incomplete and requires a companion macro or closing syntax'''
+formal_spec = '''requires_companion_macro(ILP_FOR_AUTO)'''
+layer = "user_library"
+confidence = 1.0
+source_file = "/home/mvarendorff/Documents/Code/cpp/ilp_for/ilp_for.hpp"
+source_module = "ome.mvarendorff.Documents.Code.cpp.ilp_for.ilp_forpp"
+source_line_start = 61
+source_line_end = 61
+function = "ILP_FOR_AUTO"
+header = "/home/mvarendorff/Documents/Code/cpp/ilp_for/ilp_for.hpp"
+signature = '''#define ILP_FOR_AUTO(loop_var_decl, start, end, loop_type, element_type)'''
+axiom_type = "constraint"
+
+[[axioms]]
+id = "ILP_FOR_AUTO.postcondition.local_vars_available"
+content = '''After ILP_FOR_AUTO expansion, the following identifiers are available in scope: __ilp_ctrl, __ilp_ctx, __ilp_ret'''
+formal_spec = '''in_scope({__ilp_ctrl, __ilp_ctx, __ilp_ret})'''
+layer = "user_library"
+confidence = 0.95
+source_file = "/home/mvarendorff/Documents/Code/cpp/ilp_for/ilp_for.hpp"
+source_module = "ome.mvarendorff.Documents.Code.cpp.ilp_for.ilp_forpp"
+source_line_start = 61
+source_line_end = 61
+function = "ILP_FOR_AUTO"
+header = "/home/mvarendorff/Documents/Code/cpp/ilp_for/ilp_for.hpp"
+signature = '''#define ILP_FOR_AUTO(loop_var_decl, start, end, loop_type, element_type)'''
+axiom_type = "postcondition"
+
+[[axioms]]
+id = "ILP_FOR_RANGE_AUTO.constraint.reference_capture"
+content = '''Variables used in ILP_FOR_RANGE_AUTO are captured by reference ([&]), allowing modifications to affect the outer scope'''
+formal_spec = '''capture_mode == by_reference'''
+layer = "user_library"
+confidence = 1.0
+source_file = "/home/mvarendorff/Documents/Code/cpp/ilp_for/ilp_for.hpp"
+source_module = "ome.mvarendorff.Documents.Code.cpp.ilp_for.ilp_forpp"
+source_line_start = 67
+source_line_end = 67
+function = "ILP_FOR_RANGE_AUTO"
+header = "/home/mvarendorff/Documents/Code/cpp/ilp_for/ilp_for.hpp"
+signature = '''#define ILP_FOR_RANGE_AUTO(loop_var_decl, range, loop_type, element_type)'''
+axiom_type = "constraint"
+
+[[axioms]]
+id = "ILP_FOR_RANGE_AUTO.anti_pattern.dangling_reference"
+content = '''Passing temporary objects to ILP_FOR_RANGE_AUTO may cause dangling references due to [&] capture'''
+formal_spec = '''isTemporary(arg) -> undefined_behavior'''
+layer = "user_library"
+confidence = 0.9
+source_file = "/home/mvarendorff/Documents/Code/cpp/ilp_for/ilp_for.hpp"
+source_module = "ome.mvarendorff.Documents.Code.cpp.ilp_for.ilp_forpp"
+source_line_start = 67
+source_line_end = 67
+function = "ILP_FOR_RANGE_AUTO"
+header = "/home/mvarendorff/Documents/Code/cpp/ilp_for/ilp_for.hpp"
+signature = '''#define ILP_FOR_RANGE_AUTO(loop_var_decl, range, loop_type, element_type)'''
+axiom_type = "anti_pattern"
+
+[[axioms]]
+id = "ILP_FOR_RANGE_AUTO.constraint.requires_completion"
+content = '''Macro ILP_FOR_RANGE_AUTO is syntactically incomplete and requires a companion macro or closing syntax'''
+formal_spec = '''requires_companion_macro(ILP_FOR_RANGE_AUTO)'''
+layer = "user_library"
+confidence = 1.0
+source_file = "/home/mvarendorff/Documents/Code/cpp/ilp_for/ilp_for.hpp"
+source_module = "ome.mvarendorff.Documents.Code.cpp.ilp_for.ilp_forpp"
+source_line_start = 67
+source_line_end = 67
+function = "ILP_FOR_RANGE_AUTO"
+header = "/home/mvarendorff/Documents/Code/cpp/ilp_for/ilp_for.hpp"
+signature = '''#define ILP_FOR_RANGE_AUTO(loop_var_decl, range, loop_type, element_type)'''
+axiom_type = "constraint"
+
+[[axioms]]
+id = "ILP_FOR_RANGE_AUTO.postcondition.local_vars_available"
+content = '''After ILP_FOR_RANGE_AUTO expansion, the following identifiers are available in scope: __ilp_ctrl, __ilp_ctx, __ilp_ret'''
+formal_spec = '''in_scope({__ilp_ctrl, __ilp_ctx, __ilp_ret})'''
+layer = "user_library"
+confidence = 0.95
+source_file = "/home/mvarendorff/Documents/Code/cpp/ilp_for/ilp_for.hpp"
+source_module = "ome.mvarendorff.Documents.Code.cpp.ilp_for.ilp_forpp"
+source_line_start = 67
+source_line_end = 67
+function = "ILP_FOR_RANGE_AUTO"
+header = "/home/mvarendorff/Documents/Code/cpp/ilp_for/ilp_for.hpp"
+signature = '''#define ILP_FOR_RANGE_AUTO(loop_var_decl, range, loop_type, element_type)'''
+axiom_type = "postcondition"
+
+[[axioms]]
+id = "ILP_FOR_T.constraint.reference_capture"
+content = '''Variables used in ILP_FOR_T are captured by reference ([&]), allowing modifications to affect the outer scope'''
+formal_spec = '''capture_mode == by_reference'''
+layer = "user_library"
+confidence = 1.0
+source_file = "/home/mvarendorff/Documents/Code/cpp/ilp_for/ilp_for.hpp"
+source_module = "ome.mvarendorff.Documents.Code.cpp.ilp_for.ilp_forpp"
+source_line_start = 73
+source_line_end = 73
+function = "ILP_FOR_T"
+header = "/home/mvarendorff/Documents/Code/cpp/ilp_for/ilp_for.hpp"
+signature = '''#define ILP_FOR_T(type, loop_var_decl, start, end, N)'''
+axiom_type = "constraint"
+
+[[axioms]]
+id = "ILP_FOR_T.anti_pattern.dangling_reference"
+content = '''Passing temporary objects to ILP_FOR_T may cause dangling references due to [&] capture'''
+formal_spec = '''isTemporary(arg) -> undefined_behavior'''
+layer = "user_library"
+confidence = 0.9
+source_file = "/home/mvarendorff/Documents/Code/cpp/ilp_for/ilp_for.hpp"
+source_module = "ome.mvarendorff.Documents.Code.cpp.ilp_for.ilp_forpp"
+source_line_start = 73
+source_line_end = 73
+function = "ILP_FOR_T"
+header = "/home/mvarendorff/Documents/Code/cpp/ilp_for/ilp_for.hpp"
+signature = '''#define ILP_FOR_T(type, loop_var_decl, start, end, N)'''
+axiom_type = "anti_pattern"
+
+[[axioms]]
+id = "ILP_FOR_T.complexity.template_instantiation"
+content = '''Each unique value of type causes a separate template instantiation, increasing compile time and code size'''
+formal_spec = '''compile_time_cost proportional_to distinct_type_values'''
+layer = "user_library"
+confidence = 0.95
+source_file = "/home/mvarendorff/Documents/Code/cpp/ilp_for/ilp_for.hpp"
+source_module = "ome.mvarendorff.Documents.Code.cpp.ilp_for.ilp_forpp"
+source_line_start = 73
+source_line_end = 73
+function = "ILP_FOR_T"
+header = "/home/mvarendorff/Documents/Code/cpp/ilp_for/ilp_for.hpp"
+signature = '''#define ILP_FOR_T(type, loop_var_decl, start, end, N)'''
+axiom_type = "complexity"
+
+[[axioms]]
+id = "ILP_FOR_T.constraint.requires_completion"
+content = '''Macro ILP_FOR_T is syntactically incomplete and requires a companion macro or closing syntax'''
+formal_spec = '''requires_companion_macro(ILP_FOR_T)'''
+layer = "user_library"
+confidence = 1.0
+source_file = "/home/mvarendorff/Documents/Code/cpp/ilp_for/ilp_for.hpp"
+source_module = "ome.mvarendorff.Documents.Code.cpp.ilp_for.ilp_forpp"
+source_line_start = 73
+source_line_end = 73
+function = "ILP_FOR_T"
+header = "/home/mvarendorff/Documents/Code/cpp/ilp_for/ilp_for.hpp"
+signature = '''#define ILP_FOR_T(type, loop_var_decl, start, end, N)'''
+axiom_type = "constraint"
+
+[[axioms]]
+id = "ILP_FOR_T.postcondition.local_vars_available"
+content = '''After ILP_FOR_T expansion, the following identifiers are available in scope: __ilp_ctrl, __ilp_ctx, __ilp_ret'''
+formal_spec = '''in_scope({__ilp_ctrl, __ilp_ctx, __ilp_ret})'''
+layer = "user_library"
+confidence = 0.95
+source_file = "/home/mvarendorff/Documents/Code/cpp/ilp_for/ilp_for.hpp"
+source_module = "ome.mvarendorff.Documents.Code.cpp.ilp_for.ilp_forpp"
+source_line_start = 73
+source_line_end = 73
+function = "ILP_FOR_T"
+header = "/home/mvarendorff/Documents/Code/cpp/ilp_for/ilp_for.hpp"
+signature = '''#define ILP_FOR_T(type, loop_var_decl, start, end, N)'''
+axiom_type = "postcondition"
+
+[[axioms]]
+id = "ILP_FOR_RANGE_T.constraint.reference_capture"
+content = '''Variables used in ILP_FOR_RANGE_T are captured by reference ([&]), allowing modifications to affect the outer scope'''
+formal_spec = '''capture_mode == by_reference'''
+layer = "user_library"
+confidence = 1.0
+source_file = "/home/mvarendorff/Documents/Code/cpp/ilp_for/ilp_for.hpp"
+source_module = "ome.mvarendorff.Documents.Code.cpp.ilp_for.ilp_forpp"
+source_line_start = 79
+source_line_end = 79
+function = "ILP_FOR_RANGE_T"
+header = "/home/mvarendorff/Documents/Code/cpp/ilp_for/ilp_for.hpp"
+signature = '''#define ILP_FOR_RANGE_T(type, loop_var_decl, range, N)'''
+axiom_type = "constraint"
+
+[[axioms]]
+id = "ILP_FOR_RANGE_T.anti_pattern.dangling_reference"
+content = '''Passing temporary objects to ILP_FOR_RANGE_T may cause dangling references due to [&] capture'''
+formal_spec = '''isTemporary(arg) -> undefined_behavior'''
+layer = "user_library"
+confidence = 0.9
+source_file = "/home/mvarendorff/Documents/Code/cpp/ilp_for/ilp_for.hpp"
+source_module = "ome.mvarendorff.Documents.Code.cpp.ilp_for.ilp_forpp"
+source_line_start = 79
+source_line_end = 79
+function = "ILP_FOR_RANGE_T"
+header = "/home/mvarendorff/Documents/Code/cpp/ilp_for/ilp_for.hpp"
+signature = '''#define ILP_FOR_RANGE_T(type, loop_var_decl, range, N)'''
+axiom_type = "anti_pattern"
+
+[[axioms]]
+id = "ILP_FOR_RANGE_T.complexity.template_instantiation"
+content = '''Each unique value of type causes a separate template instantiation, increasing compile time and code size'''
+formal_spec = '''compile_time_cost proportional_to distinct_type_values'''
+layer = "user_library"
+confidence = 0.95
+source_file = "/home/mvarendorff/Documents/Code/cpp/ilp_for/ilp_for.hpp"
+source_module = "ome.mvarendorff.Documents.Code.cpp.ilp_for.ilp_forpp"
+source_line_start = 79
+source_line_end = 79
+function = "ILP_FOR_RANGE_T"
+header = "/home/mvarendorff/Documents/Code/cpp/ilp_for/ilp_for.hpp"
+signature = '''#define ILP_FOR_RANGE_T(type, loop_var_decl, range, N)'''
+axiom_type = "complexity"
+
+[[axioms]]
+id = "ILP_FOR_RANGE_T.constraint.requires_completion"
+content = '''Macro ILP_FOR_RANGE_T is syntactically incomplete and requires a companion macro or closing syntax'''
+formal_spec = '''requires_companion_macro(ILP_FOR_RANGE_T)'''
+layer = "user_library"
+confidence = 1.0
+source_file = "/home/mvarendorff/Documents/Code/cpp/ilp_for/ilp_for.hpp"
+source_module = "ome.mvarendorff.Documents.Code.cpp.ilp_for.ilp_forpp"
+source_line_start = 79
+source_line_end = 79
+function = "ILP_FOR_RANGE_T"
+header = "/home/mvarendorff/Documents/Code/cpp/ilp_for/ilp_for.hpp"
+signature = '''#define ILP_FOR_RANGE_T(type, loop_var_decl, range, N)'''
+axiom_type = "constraint"
+
+[[axioms]]
+id = "ILP_FOR_RANGE_T.postcondition.local_vars_available"
+content = '''After ILP_FOR_RANGE_T expansion, the following identifiers are available in scope: __ilp_ctrl, __ilp_ctx, __ilp_ret'''
+formal_spec = '''in_scope({__ilp_ctrl, __ilp_ctx, __ilp_ret})'''
+layer = "user_library"
+confidence = 0.95
+source_file = "/home/mvarendorff/Documents/Code/cpp/ilp_for/ilp_for.hpp"
+source_module = "ome.mvarendorff.Documents.Code.cpp.ilp_for.ilp_forpp"
+source_line_start = 79
+source_line_end = 79
+function = "ILP_FOR_RANGE_T"
+header = "/home/mvarendorff/Documents/Code/cpp/ilp_for/ilp_for.hpp"
+signature = '''#define ILP_FOR_RANGE_T(type, loop_var_decl, range, N)'''
+axiom_type = "postcondition"
+
+[[axioms]]
+id = "ILP_FOR_T_AUTO.constraint.reference_capture"
+content = '''Variables used in ILP_FOR_T_AUTO are captured by reference ([&]), allowing modifications to affect the outer scope'''
+formal_spec = '''capture_mode == by_reference'''
+layer = "user_library"
+confidence = 1.0
+source_file = "/home/mvarendorff/Documents/Code/cpp/ilp_for/ilp_for.hpp"
+source_module = "ome.mvarendorff.Documents.Code.cpp.ilp_for.ilp_forpp"
+source_line_start = 85
+source_line_end = 85
+function = "ILP_FOR_T_AUTO"
+header = "/home/mvarendorff/Documents/Code/cpp/ilp_for/ilp_for.hpp"
+signature = '''#define ILP_FOR_T_AUTO(ret_type, loop_var_decl, start, end, loop_type, element_type)'''
+axiom_type = "constraint"
+
+[[axioms]]
+id = "ILP_FOR_T_AUTO.anti_pattern.dangling_reference"
+content = '''Passing temporary objects to ILP_FOR_T_AUTO may cause dangling references due to [&] capture'''
+formal_spec = '''isTemporary(arg) -> undefined_behavior'''
+layer = "user_library"
+confidence = 0.9
+source_file = "/home/mvarendorff/Documents/Code/cpp/ilp_for/ilp_for.hpp"
+source_module = "ome.mvarendorff.Documents.Code.cpp.ilp_for.ilp_forpp"
+source_line_start = 85
+source_line_end = 85
+function = "ILP_FOR_T_AUTO"
+header = "/home/mvarendorff/Documents/Code/cpp/ilp_for/ilp_for.hpp"
+signature = '''#define ILP_FOR_T_AUTO(ret_type, loop_var_decl, start, end, loop_type, element_type)'''
+axiom_type = "anti_pattern"
+
+[[axioms]]
+id = "ILP_FOR_T_AUTO.complexity.template_instantiation"
+content = '''Each unique value of ret_type causes a separate template instantiation, increasing compile time and code size'''
+formal_spec = '''compile_time_cost proportional_to distinct_ret_type_values'''
+layer = "user_library"
+confidence = 0.95
+source_file = "/home/mvarendorff/Documents/Code/cpp/ilp_for/ilp_for.hpp"
+source_module = "ome.mvarendorff.Documents.Code.cpp.ilp_for.ilp_forpp"
+source_line_start = 85
+source_line_end = 85
+function = "ILP_FOR_T_AUTO"
+header = "/home/mvarendorff/Documents/Code/cpp/ilp_for/ilp_for.hpp"
+signature = '''#define ILP_FOR_T_AUTO(ret_type, loop_var_decl, start, end, loop_type, element_type)'''
+axiom_type = "complexity"
+
+[[axioms]]
+id = "ILP_FOR_T_AUTO.constraint.requires_completion"
+content = '''Macro ILP_FOR_T_AUTO is syntactically incomplete and requires a companion macro or closing syntax'''
+formal_spec = '''requires_companion_macro(ILP_FOR_T_AUTO)'''
+layer = "user_library"
+confidence = 1.0
+source_file = "/home/mvarendorff/Documents/Code/cpp/ilp_for/ilp_for.hpp"
+source_module = "ome.mvarendorff.Documents.Code.cpp.ilp_for.ilp_forpp"
+source_line_start = 85
+source_line_end = 85
+function = "ILP_FOR_T_AUTO"
+header = "/home/mvarendorff/Documents/Code/cpp/ilp_for/ilp_for.hpp"
+signature = '''#define ILP_FOR_T_AUTO(ret_type, loop_var_decl, start, end, loop_type, element_type)'''
+axiom_type = "constraint"
+
+[[axioms]]
+id = "ILP_FOR_T_AUTO.postcondition.local_vars_available"
+content = '''After ILP_FOR_T_AUTO expansion, the following identifiers are available in scope: __ilp_ctrl, __ilp_ctx, __ilp_ret'''
+formal_spec = '''in_scope({__ilp_ctrl, __ilp_ctx, __ilp_ret})'''
+layer = "user_library"
+confidence = 0.95
+source_file = "/home/mvarendorff/Documents/Code/cpp/ilp_for/ilp_for.hpp"
+source_module = "ome.mvarendorff.Documents.Code.cpp.ilp_for.ilp_forpp"
+source_line_start = 85
+source_line_end = 85
+function = "ILP_FOR_T_AUTO"
+header = "/home/mvarendorff/Documents/Code/cpp/ilp_for/ilp_for.hpp"
+signature = '''#define ILP_FOR_T_AUTO(ret_type, loop_var_decl, start, end, loop_type, element_type)'''
+axiom_type = "postcondition"
+
+[[axioms]]
+id = "ILP_FOR_RANGE_T_AUTO.constraint.reference_capture"
+content = '''Variables used in ILP_FOR_RANGE_T_AUTO are captured by reference ([&]), allowing modifications to affect the outer scope'''
+formal_spec = '''capture_mode == by_reference'''
+layer = "user_library"
+confidence = 1.0
+source_file = "/home/mvarendorff/Documents/Code/cpp/ilp_for/ilp_for.hpp"
+source_module = "ome.mvarendorff.Documents.Code.cpp.ilp_for.ilp_forpp"
+source_line_start = 91
+source_line_end = 91
+function = "ILP_FOR_RANGE_T_AUTO"
+header = "/home/mvarendorff/Documents/Code/cpp/ilp_for/ilp_for.hpp"
+signature = '''#define ILP_FOR_RANGE_T_AUTO(ret_type, loop_var_decl, range, loop_type, element_type)'''
+axiom_type = "constraint"
+
+[[axioms]]
+id = "ILP_FOR_RANGE_T_AUTO.anti_pattern.dangling_reference"
+content = '''Passing temporary objects to ILP_FOR_RANGE_T_AUTO may cause dangling references due to [&] capture'''
+formal_spec = '''isTemporary(arg) -> undefined_behavior'''
+layer = "user_library"
+confidence = 0.9
+source_file = "/home/mvarendorff/Documents/Code/cpp/ilp_for/ilp_for.hpp"
+source_module = "ome.mvarendorff.Documents.Code.cpp.ilp_for.ilp_forpp"
+source_line_start = 91
+source_line_end = 91
+function = "ILP_FOR_RANGE_T_AUTO"
+header = "/home/mvarendorff/Documents/Code/cpp/ilp_for/ilp_for.hpp"
+signature = '''#define ILP_FOR_RANGE_T_AUTO(ret_type, loop_var_decl, range, loop_type, element_type)'''
+axiom_type = "anti_pattern"
+
+[[axioms]]
+id = "ILP_FOR_RANGE_T_AUTO.complexity.template_instantiation"
+content = '''Each unique value of ret_type causes a separate template instantiation, increasing compile time and code size'''
+formal_spec = '''compile_time_cost proportional_to distinct_ret_type_values'''
+layer = "user_library"
+confidence = 0.95
+source_file = "/home/mvarendorff/Documents/Code/cpp/ilp_for/ilp_for.hpp"
+source_module = "ome.mvarendorff.Documents.Code.cpp.ilp_for.ilp_forpp"
+source_line_start = 91
+source_line_end = 91
+function = "ILP_FOR_RANGE_T_AUTO"
+header = "/home/mvarendorff/Documents/Code/cpp/ilp_for/ilp_for.hpp"
+signature = '''#define ILP_FOR_RANGE_T_AUTO(ret_type, loop_var_decl, range, loop_type, element_type)'''
+axiom_type = "complexity"
+
+[[axioms]]
+id = "ILP_FOR_RANGE_T_AUTO.constraint.requires_completion"
+content = '''Macro ILP_FOR_RANGE_T_AUTO is syntactically incomplete and requires a companion macro or closing syntax'''
+formal_spec = '''requires_companion_macro(ILP_FOR_RANGE_T_AUTO)'''
+layer = "user_library"
+confidence = 1.0
+source_file = "/home/mvarendorff/Documents/Code/cpp/ilp_for/ilp_for.hpp"
+source_module = "ome.mvarendorff.Documents.Code.cpp.ilp_for.ilp_forpp"
+source_line_start = 91
+source_line_end = 91
+function = "ILP_FOR_RANGE_T_AUTO"
+header = "/home/mvarendorff/Documents/Code/cpp/ilp_for/ilp_for.hpp"
+signature = '''#define ILP_FOR_RANGE_T_AUTO(ret_type, loop_var_decl, range, loop_type, element_type)'''
+axiom_type = "constraint"
+
+[[axioms]]
+id = "ILP_FOR_RANGE_T_AUTO.postcondition.local_vars_available"
+content = '''After ILP_FOR_RANGE_T_AUTO expansion, the following identifiers are available in scope: __ilp_ctrl, __ilp_ctx, __ilp_ret'''
+formal_spec = '''in_scope({__ilp_ctrl, __ilp_ctx, __ilp_ret})'''
+layer = "user_library"
+confidence = 0.95
+source_file = "/home/mvarendorff/Documents/Code/cpp/ilp_for/ilp_for.hpp"
+source_module = "ome.mvarendorff.Documents.Code.cpp.ilp_for.ilp_forpp"
+source_line_start = 91
+source_line_end = 91
+function = "ILP_FOR_RANGE_T_AUTO"
+header = "/home/mvarendorff/Documents/Code/cpp/ilp_for/ilp_for.hpp"
+signature = '''#define ILP_FOR_RANGE_T_AUTO(ret_type, loop_var_decl, range, loop_type, element_type)'''
+axiom_type = "postcondition"
+
+[[axioms]]
+id = "ILP_END.postcondition.local_vars_available"
+content = '''After ILP_END expansion, the following identifiers are available in scope: __ilp_ret'''
+formal_spec = '''in_scope({__ilp_ret})'''
+layer = "user_library"
+confidence = 0.95
+source_file = "/home/mvarendorff/Documents/Code/cpp/ilp_for/ilp_for.hpp"
+source_module = "ome.mvarendorff.Documents.Code.cpp.ilp_for.ilp_forpp"
+source_line_start = 98
+source_line_end = 98
+function = "ILP_END"
+header = "/home/mvarendorff/Documents/Code/cpp/ilp_for/ilp_for.hpp"
+signature = '''#define ILP_END'''
+axiom_type = "postcondition"
+
+[[axioms]]
+id = "ILP_END_RETURN.postcondition.local_vars_available"
+content = '''After ILP_END_RETURN expansion, the following identifiers are available in scope: __ilp_ret'''
+formal_spec = '''in_scope({__ilp_ret})'''
+layer = "user_library"
+confidence = 0.95
+source_file = "/home/mvarendorff/Documents/Code/cpp/ilp_for/ilp_for.hpp"
+source_module = "ome.mvarendorff.Documents.Code.cpp.ilp_for.ilp_forpp"
+source_line_start = 104
+source_line_end = 104
+function = "ILP_END_RETURN"
+header = "/home/mvarendorff/Documents/Code/cpp/ilp_for/ilp_for.hpp"
+signature = '''#define ILP_END_RETURN'''
+axiom_type = "postcondition"
+
+[[axioms]]
+id = "ILP_CONTINUE.effect.iteration"
+content = '''Macro ILP_CONTINUE performs iteration over a range or condition'''
+formal_spec = '''has_iteration_semantics'''
+layer = "user_library"
+confidence = 0.9
+source_file = "/home/mvarendorff/Documents/Code/cpp/ilp_for/ilp_for.hpp"
+source_module = "ome.mvarendorff.Documents.Code.cpp.ilp_for.ilp_forpp"
+source_line_start = 113
+source_line_end = 113
+function = "ILP_CONTINUE"
+header = "/home/mvarendorff/Documents/Code/cpp/ilp_for/ilp_for.hpp"
+signature = '''#define ILP_CONTINUE'''
+axiom_type = "effect"
+
+[[axioms]]
+id = "ILP_BREAK.postcondition.local_vars_available"
+content = '''After ILP_BREAK expansion, the following identifiers are available in scope: __ilp_ctrl'''
+formal_spec = '''in_scope({__ilp_ctrl})'''
+layer = "user_library"
+confidence = 0.95
+source_file = "/home/mvarendorff/Documents/Code/cpp/ilp_for/ilp_for.hpp"
+source_module = "ome.mvarendorff.Documents.Code.cpp.ilp_for.ilp_forpp"
+source_line_start = 118
+source_line_end = 118
+function = "ILP_BREAK"
+header = "/home/mvarendorff/Documents/Code/cpp/ilp_for/ilp_for.hpp"
+signature = '''#define ILP_BREAK'''
+axiom_type = "postcondition"
+
+[[axioms]]
+id = "ILP_BREAK.effect.iteration"
+content = '''Macro ILP_BREAK performs iteration over a range or condition'''
+formal_spec = '''has_iteration_semantics'''
+layer = "user_library"
+confidence = 0.9
+source_file = "/home/mvarendorff/Documents/Code/cpp/ilp_for/ilp_for.hpp"
+source_module = "ome.mvarendorff.Documents.Code.cpp.ilp_for.ilp_forpp"
+source_line_start = 118
+source_line_end = 118
+function = "ILP_BREAK"
+header = "/home/mvarendorff/Documents/Code/cpp/ilp_for/ilp_for.hpp"
+signature = '''#define ILP_BREAK'''
+axiom_type = "effect"
+
+[[axioms]]
+id = "ILP_RETURN.postcondition.local_vars_available"
+content = '''After ILP_RETURN expansion, the following identifiers are available in scope: __ilp_ctrl'''
+formal_spec = '''in_scope({__ilp_ctrl})'''
+layer = "user_library"
+confidence = 0.95
+source_file = "/home/mvarendorff/Documents/Code/cpp/ilp_for/ilp_for.hpp"
+source_module = "ome.mvarendorff.Documents.Code.cpp.ilp_for.ilp_forpp"
+source_line_start = 124
+source_line_end = 124
+function = "ILP_RETURN"
+header = "/home/mvarendorff/Documents/Code/cpp/ilp_for/ilp_for.hpp"
+signature = '''#define ILP_RETURN(x)'''
+axiom_type = "postcondition"
+
+[[axioms]]
+id = "ILP_RETURN.effect.iteration"
+content = '''Macro ILP_RETURN performs iteration over a range or condition'''
+formal_spec = '''has_iteration_semantics'''
+layer = "user_library"
+confidence = 0.9
+source_file = "/home/mvarendorff/Documents/Code/cpp/ilp_for/ilp_for.hpp"
+source_module = "ome.mvarendorff.Documents.Code.cpp.ilp_for.ilp_forpp"
+source_line_start = 124
+source_line_end = 124
+function = "ILP_RETURN"
+header = "/home/mvarendorff/Documents/Code/cpp/ilp_for/ilp_for.hpp"
+signature = '''#define ILP_RETURN(x)'''
+axiom_type = "effect"
+
+[[axioms]]
+id = "ilp::cpu::Profile.trivially_copyable"
+content = '''Profile is trivially copyable (safe for memcpy/memmove)'''
+formal_spec = '''is_trivially_copyable(Profile)'''
+layer = "user_library"
+confidence = 1.0
+source_file = "ilp_cpu_profiles.hpp"
+source_module = "ilp_cpu_profilespp"
+source_line_start = 15
+source_line_end = 15
+function = "ilp::cpu::Profile"
+header = "ilp_cpu_profiles.hpp"
+axiom_type = "constraint"
+
+[[axioms]]
+id = "ilp::LoopType.scoped"
+content = '''LoopType is a scoped enum (enum class) - values require qualification'''
+formal_spec = '''is_scoped_enum(LoopType)'''
+layer = "user_library"
+confidence = 1.0
+source_file = "ilp_optimal_n.hpp"
+source_module = "ilp_optimal_npp"
+source_line_start = 22
+source_line_end = 22
+function = "ilp::LoopType"
+header = "ilp_optimal_n.hpp"
+axiom_type = "constraint"
+
+[[axioms]]
+id = "ilp::detail::compute_optimal_N.constexpr"
+content = '''compute_optimal_N can be evaluated at compile time'''
+formal_spec = '''constexpr == true'''
+layer = "user_library"
+confidence = 1.0
+source_file = "ilp_optimal_n.hpp"
+source_module = "ilp_optimal_npp"
+source_line_start = 39
+source_line_end = 39
+function = "ilp::detail::compute_optimal_N"
+header = "ilp_optimal_n.hpp"
+signature = '''constexpr std::size_t compute_optimal_N() {
+    constexpr std::size_t size = sizeof(T);
+    constexpr bool is_fp = std::is_floating_point_v<T>;
+    if (L == LoopType::Sum) {
+        if (size == 1)
+            return ilp::cpu::default_profile.sum_1;
+        else if (size == 2)
+            return ilp::cpu::default_profile.sum_2;
+        else if (size == 4 && is_fp)
+            return ilp::cpu::default_profile.sum_4f;
+        else if (size == 4)
+            return ilp::cpu::default_profile.sum_4i;
+        else if (size == 8 && is_fp)
+            return ilp::cpu::default_profile.sum_8f;
+        else if (size == 8)
+            return ilp::cpu::default_profile.sum_8i;
+        else
+            return 4;
+    } else if (L == LoopType::DotProduct) {
+        if (size == 4)
+            return ilp::cpu::default_profile.dotproduct_4;
+        else if (size == 8)
+            return ilp::cpu::default_profile.dotproduct_8;
+        else
+            return 4;
+    } else if (L == LoopType::Search) {
+        if (size == 1)
+            return ilp::cpu::default_profile.search_1;
+        else if (size == 2)
+            return ilp::cpu::default_profile.search_2;
+        else if (size == 4)
+            return ilp::cpu::default_profile.search_4;
+        else if (size == 8)
+            return ilp::cpu::default_profile.search_8;
+        else
+            return 4;
+    } else if (L == LoopType::Copy) {
+        if (size == 1)
+            return ilp::cpu::default_profile.copy_1;
+        else if (size == 2)
+            return ilp::cpu::default_profile.copy_2;
+        else if (size == 4)
+            return ilp::cpu::default_profile.copy_4;
+        else if (size == 8)
+            return ilp::cpu::default_profile.copy_8;
+        else
+            return 4;
+    } else if (L == LoopType::Transform) {
+        if (size == 1)
+            return ilp::cpu::default_profile.transform_1;
+        else if (size == 2)
+            return ilp::cpu::default_profile.transform_2;
+        else if (size == 4)
+            return ilp::cpu::default_profile.transform_4;
+        else if (size == 8)
+            return ilp::cpu::default_profile.transform_8;
+        else
+            return 4;
+    } else if (L == LoopType::Multiply) {
+        if (size == 4 && is_fp)
+            return ilp::cpu::default_profile.multiply_4f;
+        else if (size == 4)
+            return ilp::cpu::default_profile.multiply_4i;
+        else if (size == 8 && is_fp)
+            return ilp::cpu::default_profile.multiply_8f;
+        else if (size == 8)
+            return ilp::cpu::default_profile.multiply_8i;
+        else
+            return 4;
+    } else if (L == LoopType::Divide) {
+        if (size == 4)
+            return ilp::cpu::default_profile.divide_4f;
+        else if (size == 8)
+            return ilp::cpu::default_profile.divide_8f;
+        else
+            return 4;
+    } else if (L == LoopType::Sqrt) {
+        if (size == 4)
+            return ilp::cpu::default_profile.sqrt_4f;
+        else if (size == 8)
+            return ilp::cpu::default_profile.sqrt_8f;
+        else
+            return 4;
+    } else if (L == LoopType::MinMax) {
+        if (size == 1)
+            return ilp::cpu::default_profile.minmax_1;
+        else if (size == 2)
+            return ilp::cpu::default_profile.minmax_2;
+        else if (size == 4 && is_fp)
+            return ilp::cpu::default_profile.minmax_4f;
+        else if (size == 4)
+            return ilp::cpu::default_profile.minmax_4i;
+        else if (size == 8 && is_fp)
+            return ilp::cpu::default_profile.minmax_8f;
+        else if (size == 8)
+            return ilp::cpu::default_profile.minmax_8i;
+        else
+            return 4;
+    } else if (L == LoopType::Bitwise) {
+        if (size == 1)
+            return ilp::cpu::default_profile.bitwise_1;
+        else if (size == 2)
+            return ilp::cpu::default_profile.bitwise_2;
+        else if (size == 4)
+            return ilp::cpu::default_profile.bitwise_4;
+        else if (size == 8)
+            return ilp::cpu::default_profile.bitwise_8;
+        else
+            return 4;
+    } else if (L == LoopType::Shift) {
+        if (size == 1)
+            return ilp::cpu::default_profile.shift_1;
+        else if (size == 2)
+            return ilp::cpu::default_profile.shift_2;
+        else if (size == 4)
+            return ilp::cpu::default_profile.shift_4;
+        else if (size == 8)
+            return ilp::cpu::default_profile.shift_8;
+        else
+            return 4;
+    } else {
+        return 4;
+    }
+}
+'''
+axiom_type = "constraint"
+
+[[axioms]]
+id = "ilp::detail::compute_optimal_N.complexity.template_instantiation"
+content = '''compute_optimal_N is a template function; each unique combination of template arguments causes a separate instantiation'''
+formal_spec = '''instantiation_count = O(unique_template_args^2)'''
+layer = "user_library"
+confidence = 0.95
+source_file = "ilp_optimal_n.hpp"
+source_module = "ilp_optimal_npp"
+source_line_start = 39
+source_line_end = 39
+function = "ilp::detail::compute_optimal_N"
+header = "ilp_optimal_n.hpp"
+signature = '''constexpr std::size_t compute_optimal_N() {
+    constexpr std::size_t size = sizeof(T);
+    constexpr bool is_fp = std::is_floating_point_v<T>;
+    if (L == LoopType::Sum) {
+        if (size == 1)
+            return ilp::cpu::default_profile.sum_1;
+        else if (size == 2)
+            return ilp::cpu::default_profile.sum_2;
+        else if (size == 4 && is_fp)
+            return ilp::cpu::default_profile.sum_4f;
+        else if (size == 4)
+            return ilp::cpu::default_profile.sum_4i;
+        else if (size == 8 && is_fp)
+            return ilp::cpu::default_profile.sum_8f;
+        else if (size == 8)
+            return ilp::cpu::default_profile.sum_8i;
+        else
+            return 4;
+    } else if (L == LoopType::DotProduct) {
+        if (size == 4)
+            return ilp::cpu::default_profile.dotproduct_4;
+        else if (size == 8)
+            return ilp::cpu::default_profile.dotproduct_8;
+        else
+            return 4;
+    } else if (L == LoopType::Search) {
+        if (size == 1)
+            return ilp::cpu::default_profile.search_1;
+        else if (size == 2)
+            return ilp::cpu::default_profile.search_2;
+        else if (size == 4)
+            return ilp::cpu::default_profile.search_4;
+        else if (size == 8)
+            return ilp::cpu::default_profile.search_8;
+        else
+            return 4;
+    } else if (L == LoopType::Copy) {
+        if (size == 1)
+            return ilp::cpu::default_profile.copy_1;
+        else if (size == 2)
+            return ilp::cpu::default_profile.copy_2;
+        else if (size == 4)
+            return ilp::cpu::default_profile.copy_4;
+        else if (size == 8)
+            return ilp::cpu::default_profile.copy_8;
+        else
+            return 4;
+    } else if (L == LoopType::Transform) {
+        if (size == 1)
+            return ilp::cpu::default_profile.transform_1;
+        else if (size == 2)
+            return ilp::cpu::default_profile.transform_2;
+        else if (size == 4)
+            return ilp::cpu::default_profile.transform_4;
+        else if (size == 8)
+            return ilp::cpu::default_profile.transform_8;
+        else
+            return 4;
+    } else if (L == LoopType::Multiply) {
+        if (size == 4 && is_fp)
+            return ilp::cpu::default_profile.multiply_4f;
+        else if (size == 4)
+            return ilp::cpu::default_profile.multiply_4i;
+        else if (size == 8 && is_fp)
+            return ilp::cpu::default_profile.multiply_8f;
+        else if (size == 8)
+            return ilp::cpu::default_profile.multiply_8i;
+        else
+            return 4;
+    } else if (L == LoopType::Divide) {
+        if (size == 4)
+            return ilp::cpu::default_profile.divide_4f;
+        else if (size == 8)
+            return ilp::cpu::default_profile.divide_8f;
+        else
+            return 4;
+    } else if (L == LoopType::Sqrt) {
+        if (size == 4)
+            return ilp::cpu::default_profile.sqrt_4f;
+        else if (size == 8)
+            return ilp::cpu::default_profile.sqrt_8f;
+        else
+            return 4;
+    } else if (L == LoopType::MinMax) {
+        if (size == 1)
+            return ilp::cpu::default_profile.minmax_1;
+        else if (size == 2)
+            return ilp::cpu::default_profile.minmax_2;
+        else if (size == 4 && is_fp)
+            return ilp::cpu::default_profile.minmax_4f;
+        else if (size == 4)
+            return ilp::cpu::default_profile.minmax_4i;
+        else if (size == 8 && is_fp)
+            return ilp::cpu::default_profile.minmax_8f;
+        else if (size == 8)
+            return ilp::cpu::default_profile.minmax_8i;
+        else
+            return 4;
+    } else if (L == LoopType::Bitwise) {
+        if (size == 1)
+            return ilp::cpu::default_profile.bitwise_1;
+        else if (size == 2)
+            return ilp::cpu::default_profile.bitwise_2;
+        else if (size == 4)
+            return ilp::cpu::default_profile.bitwise_4;
+        else if (size == 8)
+            return ilp::cpu::default_profile.bitwise_8;
+        else
+            return 4;
+    } else if (L == LoopType::Shift) {
+        if (size == 1)
+            return ilp::cpu::default_profile.shift_1;
+        else if (size == 2)
+            return ilp::cpu::default_profile.shift_2;
+        else if (size == 4)
+            return ilp::cpu::default_profile.shift_4;
+        else if (size == 8)
+            return ilp::cpu::default_profile.shift_8;
+        else
+            return 4;
+    } else {
+        return 4;
+    }
+}
+'''
+axiom_type = "complexity"
+
+[[axioms]]
+id = "ilp::iota_view.trivially_copyable"
+content = '''iota_view is trivially copyable (safe for memcpy/memmove)'''
+formal_spec = '''is_trivially_copyable(iota_view)'''
+layer = "user_library"
+confidence = 1.0
+source_file = "iota.hpp"
+source_module = "iotapp"
+source_line_start = 13
+source_line_end = 13
+function = "ilp::iota_view"
+header = "iota.hpp"
+axiom_type = "constraint"
+
+[[axioms]]
+id = "ilp::iota_view::iterator.trivially_copyable"
+content = '''iterator is trivially copyable (safe for memcpy/memmove)'''
+formal_spec = '''is_trivially_copyable(iterator)'''
+layer = "user_library"
+confidence = 1.0
+source_file = "iota.hpp"
+source_module = "iotapp"
+source_line_start = 16
+source_line_end = 16
+function = "ilp::iota_view::iterator"
+header = "iota.hpp"
+axiom_type = "constraint"
+
+[[axioms]]
+id = "ilp::iota_view::iterator::operator*.const"
+content = '''operator* does not modify object state'''
+formal_spec = '''this->state == old(this->state)'''
+layer = "user_library"
+confidence = 1.0
+source_file = "iota.hpp"
+source_module = "iotapp"
+source_line_start = 18
+source_line_end = 18
+function = "ilp::iota_view::iterator::operator*"
+header = "iota.hpp"
+signature = '''constexpr T operator*() const {
+    return this->value;
+}
+'''
+axiom_type = "effect"
+
+[[axioms]]
+id = "ilp::iota_view::iterator::operator*.constexpr"
+content = '''operator* can be evaluated at compile time'''
+formal_spec = '''constexpr == true'''
+layer = "user_library"
+confidence = 1.0
+source_file = "iota.hpp"
+source_module = "iotapp"
+source_line_start = 18
+source_line_end = 18
+function = "ilp::iota_view::iterator::operator*"
+header = "iota.hpp"
+signature = '''constexpr T operator*() const {
+    return this->value;
+}
+'''
+axiom_type = "constraint"
+
+[[axioms]]
+id = "ilp::iota_view::iterator::operator++.constexpr"
+content = '''operator++ can be evaluated at compile time'''
+formal_spec = '''constexpr == true'''
+layer = "user_library"
+confidence = 1.0
+source_file = "iota.hpp"
+source_module = "iotapp"
+source_line_start = 19
+source_line_end = 19
+function = "ilp::iota_view::iterator::operator++"
+header = "iota.hpp"
+signature = '''constexpr iterator &operator++() {
+    ++this->value;
+    return *this;
+}
+'''
+axiom_type = "constraint"
+
+[[axioms]]
+id = "ilp::iota_view::iterator::operator!=.const"
+content = '''operator!= does not modify object state'''
+formal_spec = '''this->state == old(this->state)'''
+layer = "user_library"
+confidence = 1.0
+source_file = "iota.hpp"
+source_module = "iotapp"
+source_line_start = 23
+source_line_end = 23
+function = "ilp::iota_view::iterator::operator!="
+header = "iota.hpp"
+signature = '''constexpr bool operator!=(iterator o) const {
+    return this->value != o.value;
+}
+'''
+axiom_type = "effect"
+
+[[axioms]]
+id = "ilp::iota_view::iterator::operator!=.constexpr"
+content = '''operator!= can be evaluated at compile time'''
+formal_spec = '''constexpr == true'''
+layer = "user_library"
+confidence = 1.0
+source_file = "iota.hpp"
+source_module = "iotapp"
+source_line_start = 23
+source_line_end = 23
+function = "ilp::iota_view::iterator::operator!="
+header = "iota.hpp"
+signature = '''constexpr bool operator!=(iterator o) const {
+    return this->value != o.value;
+}
+'''
+axiom_type = "constraint"
+
+[[axioms]]
+id = "ilp::iota_view::iterator::operator!=.postcond.bool_result"
+content = '''operator!= returns a boolean indicating success/validity; true typically indicates success or valid state'''
+formal_spec = '''result in {true, false}'''
+layer = "user_library"
+confidence = 0.85
+source_file = "iota.hpp"
+source_module = "iotapp"
+source_line_start = 23
+source_line_end = 23
+function = "ilp::iota_view::iterator::operator!="
+header = "iota.hpp"
+signature = '''constexpr bool operator!=(iterator o) const {
+    return this->value != o.value;
+}
+'''
+axiom_type = "postcondition"
+
+[[axioms]]
+id = "ilp::iota_view::begin.const"
+content = '''begin does not modify object state'''
+formal_spec = '''this->state == old(this->state)'''
+layer = "user_library"
+confidence = 1.0
+source_file = "iota.hpp"
+source_module = "iotapp"
+source_line_start = 26
+source_line_end = 26
+function = "ilp::iota_view::begin"
+header = "iota.hpp"
+signature = '''constexpr iterator begin() const {
+    return {this->first};
+}
+'''
+axiom_type = "effect"
+
+[[axioms]]
+id = "ilp::iota_view::begin.constexpr"
+content = '''begin can be evaluated at compile time'''
+formal_spec = '''constexpr == true'''
+layer = "user_library"
+confidence = 1.0
+source_file = "iota.hpp"
+source_module = "iotapp"
+source_line_start = 26
+source_line_end = 26
+function = "ilp::iota_view::begin"
+header = "iota.hpp"
+signature = '''constexpr iterator begin() const {
+    return {this->first};
+}
+'''
+axiom_type = "constraint"
+
+[[axioms]]
+id = "ilp::iota_view::begin.complexity.template_instantiation"
+content = '''begin is a template function; each unique combination of template arguments causes a separate instantiation'''
+formal_spec = '''instantiation_count = O(unique_template_args^1)'''
+layer = "user_library"
+confidence = 0.95
+source_file = "iota.hpp"
+source_module = "iotapp"
+source_line_start = 26
+source_line_end = 26
+function = "ilp::iota_view::begin"
+header = "iota.hpp"
+signature = '''constexpr iterator begin() const {
+    return {this->first};
+}
+'''
+axiom_type = "complexity"
+
+[[axioms]]
+id = "ilp::iota_view::end.const"
+content = '''end does not modify object state'''
+formal_spec = '''this->state == old(this->state)'''
+layer = "user_library"
+confidence = 1.0
+source_file = "iota.hpp"
+source_module = "iotapp"
+source_line_start = 27
+source_line_end = 27
+function = "ilp::iota_view::end"
+header = "iota.hpp"
+signature = '''constexpr iterator end() const {
+    return {this->last};
+}
+'''
+axiom_type = "effect"
+
+[[axioms]]
+id = "ilp::iota_view::end.constexpr"
+content = '''end can be evaluated at compile time'''
+formal_spec = '''constexpr == true'''
+layer = "user_library"
+confidence = 1.0
+source_file = "iota.hpp"
+source_module = "iotapp"
+source_line_start = 27
+source_line_end = 27
+function = "ilp::iota_view::end"
+header = "iota.hpp"
+signature = '''constexpr iterator end() const {
+    return {this->last};
+}
+'''
+axiom_type = "constraint"
+
+[[axioms]]
+id = "ilp::iota_view::end.complexity.template_instantiation"
+content = '''end is a template function; each unique combination of template arguments causes a separate instantiation'''
+formal_spec = '''instantiation_count = O(unique_template_args^1)'''
+layer = "user_library"
+confidence = 0.95
+source_file = "iota.hpp"
+source_module = "iotapp"
+source_line_start = 27
+source_line_end = 27
+function = "ilp::iota_view::end"
+header = "iota.hpp"
+signature = '''constexpr iterator end() const {
+    return {this->last};
+}
+'''
+axiom_type = "complexity"
+
+[[axioms]]
+id = "ilp::iota.constexpr"
+content = '''iota can be evaluated at compile time'''
+formal_spec = '''constexpr == true'''
+layer = "user_library"
+confidence = 1.0
+source_file = "iota.hpp"
+source_module = "iotapp"
+source_line_start = 31
+source_line_end = 31
+function = "ilp::iota"
+header = "iota.hpp"
+signature = '''constexpr iota_view<T> iota(T start, T end) {
+    return {start, end};
+}
+'''
+axiom_type = "constraint"
+
+[[axioms]]
+id = "ilp::iota.complexity.template_instantiation"
+content = '''iota is a template function; each unique combination of template arguments causes a separate instantiation'''
+formal_spec = '''instantiation_count = O(unique_template_args^1)'''
+layer = "user_library"
+confidence = 0.95
+source_file = "iota.hpp"
+source_module = "iotapp"
+source_line_start = 31
+source_line_end = 31
+function = "ilp::iota"
+header = "iota.hpp"
+signature = '''constexpr iota_view<T> iota(T start, T end) {
+    return {start, end};
+}
+'''
+axiom_type = "complexity"
+
+[[axioms]]
+id = "ilp::detail::is_optional.trivially_copyable"
+content = '''is_optional is trivially copyable (safe for memcpy/memmove)'''
+formal_spec = '''is_trivially_copyable(is_optional)'''
+layer = "user_library"
+confidence = 1.0
+source_file = "ctrl.hpp"
+source_module = "ctrlpp"
+source_line_start = 31
+source_line_end = 31
+function = "ilp::detail::is_optional"
+header = "ctrl.hpp"
+axiom_type = "constraint"
+
+[[axioms]]
+id = "ilp::LoopCtrl.trivially_copyable"
+content = '''LoopCtrl is trivially copyable (safe for memcpy/memmove)'''
+formal_spec = '''is_trivially_copyable(LoopCtrl)'''
+layer = "user_library"
+confidence = 1.0
+source_file = "ctrl.hpp"
+source_module = "ctrlpp"
+source_line_start = 39
+source_line_end = 39
+function = "ilp::LoopCtrl"
+header = "ctrl.hpp"
+axiom_type = "constraint"
+
+[[axioms]]
+id = "ilp::LoopCtrl::break_loop.complexity.template_instantiation"
+content = '''break_loop is a template function; each unique combination of template arguments causes a separate instantiation'''
+formal_spec = '''instantiation_count = O(unique_template_args^1)'''
+layer = "user_library"
+confidence = 0.95
+source_file = "ctrl.hpp"
+source_module = "ctrlpp"
+source_line_start = 43
+source_line_end = 43
+function = "ilp::LoopCtrl::break_loop"
+header = "ctrl.hpp"
+signature = '''void break_loop() {
+    this->ok = false;
+}
+'''
+axiom_type = "complexity"
+
+[[axioms]]
+id = "ilp::LoopCtrl::return_with.complexity.template_instantiation"
+content = '''return_with is a template function; each unique combination of template arguments causes a separate instantiation'''
+formal_spec = '''instantiation_count = O(unique_template_args^1)'''
+layer = "user_library"
+confidence = 0.95
+source_file = "ctrl.hpp"
+source_module = "ctrlpp"
+source_line_start = 44
+source_line_end = 44
+function = "ilp::LoopCtrl::return_with"
+header = "ctrl.hpp"
+signature = '''void return_with(R val) {
+    this->ok = false;
+    this->return_value = std::move(val);
+}
+'''
+axiom_type = "complexity"
+
+[[axioms]]
+id = "ilp::LoopCtrl<>::LoopCtrl.noexcept"
+content = '''LoopCtrl is guaranteed not to throw exceptions'''
+formal_spec = '''noexcept == true'''
+layer = "user_library"
+confidence = 1.0
+source_file = "ctrl.hpp"
+source_module = "ctrlpp"
+source_line_start = 51
+source_line_end = 51
+function = "ilp::LoopCtrl<>::LoopCtrl"
+header = "ctrl.hpp"
+signature = '''inline constexpr LoopCtrl() noexcept {
+}
+'''
+axiom_type = "exception"
+
+[[axioms]]
+id = "ilp::LoopCtrl<>::LoopCtrl.constexpr"
+content = '''LoopCtrl can be evaluated at compile time'''
+formal_spec = '''constexpr == true'''
+layer = "user_library"
+confidence = 1.0
+source_file = "ctrl.hpp"
+source_module = "ctrlpp"
+source_line_start = 51
+source_line_end = 51
+function = "ilp::LoopCtrl<>::LoopCtrl"
+header = "ctrl.hpp"
+signature = '''inline constexpr LoopCtrl() noexcept {
+}
+'''
+axiom_type = "constraint"
+
+[[axioms]]
+id = "ilp::SmallStorage.trivially_copyable"
+content = '''SmallStorage is trivially copyable (safe for memcpy/memmove)'''
+formal_spec = '''is_trivially_copyable(SmallStorage)'''
+layer = "user_library"
+confidence = 1.0
+source_file = "ctrl.hpp"
+source_module = "ctrlpp"
+source_line_start = 60
+source_line_end = 60
+function = "ilp::SmallStorage"
+header = "ctrl.hpp"
+axiom_type = "constraint"
+
+[[axioms]]
+id = "ilp::SmallStorage::set.complexity.template_instantiation"
+content = '''set is a template function; each unique combination of template arguments causes a separate instantiation'''
+formal_spec = '''instantiation_count = O(unique_template_args^1)'''
+layer = "user_library"
+confidence = 0.95
+source_file = "ctrl.hpp"
+source_module = "ctrlpp"
+source_line_start = 22
+source_line_end = 22
+function = "ilp::SmallStorage::set"
+header = "ctrl.hpp"
+signature = '''inline void set(T &&val) {
+    using U = std::decay_t<T>;
+    static_assert(sizeof(U) <= arch::sbo_size, "Return type exceeds SBO size. Use ILP_FOR_T(type, ...) instead.");
+    static_assert(alignof(U) <= arch::sbo_size, "Return type alignment exceeds SBO size. Use ILP_FOR_T(type, ...) instead.");
+    static_assert(std::is_trivially_destructible_v<U>, "SmallStorage only supports trivially-destructible types. Use ILP_FOR_T(type, ...) for non-trivial return types.");
+    new (this->buffer) U(static_cast<T &&>(val));
+}
+'''
+axiom_type = "complexity"
+
+[[axioms]]
+id = "U.type_alias"
+content = '''U is an alias for std::decay_t<T>'''
+formal_spec = '''type(U) == std::decay_t<T>'''
+layer = "user_library"
+confidence = 1.0
+source_file = "ctrl.hpp"
+source_module = "ctrlpp"
+source_line_start = 65
+source_line_end = 65
+function = "U"
+header = "ctrl.hpp"
+axiom_type = "constraint"
+
+[[axioms]]
+id = "ctrl.hpp.static_assert.66"
+content = '''Return type exceeds SBO size. Use ILP_FOR_T(type, ...) instead.'''
+formal_spec = '''sizeof(U) <= arch::sbo_size'''
+layer = "user_library"
+confidence = 1.0
+source_file = "ctrl.hpp"
+source_module = "ctrlpp"
+source_line_start = 66
+source_line_end = 66
+header = "ctrl.hpp"
+axiom_type = "invariant"
+
+[[axioms]]
+id = "ctrl.hpp.static_assert.68"
+content = '''Return type alignment exceeds SBO size. Use ILP_FOR_T(type, ...) instead.'''
+formal_spec = '''alignof(U) <= arch::sbo_size'''
+layer = "user_library"
+confidence = 1.0
+source_file = "ctrl.hpp"
+source_module = "ctrlpp"
+source_line_start = 68
+source_line_end = 68
+header = "ctrl.hpp"
+axiom_type = "invariant"
+
+[[axioms]]
+id = "ctrl.hpp.static_assert.70"
+content = '''SmallStorage only supports trivially-destructible types. Use ILP_FOR_T(type, ...) for non-trivial return types.'''
+formal_spec = '''std::is_trivially_destructible_v<U>'''
+layer = "user_library"
+confidence = 1.0
+source_file = "ctrl.hpp"
+source_module = "ctrlpp"
+source_line_start = 70
+source_line_end = 70
+header = "ctrl.hpp"
+axiom_type = "invariant"
+
+[[axioms]]
+id = "ilp::SmallStorage::extract.complexity.template_instantiation"
+content = '''extract is a template function; each unique combination of template arguments causes a separate instantiation'''
+formal_spec = '''instantiation_count = O(unique_template_args^1)'''
+layer = "user_library"
+confidence = 0.95
+source_file = "ctrl.hpp"
+source_module = "ctrlpp"
+source_line_start = 22
+source_line_end = 22
+function = "ilp::SmallStorage::extract"
+header = "ctrl.hpp"
+signature = '''inline R extract() {
+    return static_cast<R &&>(*std::launder(reinterpret_cast<R *>(this->buffer)));
+}
+'''
+axiom_type = "complexity"
+
+[[axioms]]
+id = "ilp::SmallStorage::extract.precond.ptr_valid"
+content = '''Pointer std::launder(reinterpret_cast<R*>(buffer)) must not be null'''
+formal_spec = '''std::launder(reinterpret_cast<R*>(buffer)) != nullptr'''
+layer = "user_library"
+confidence = 0.95
+source_file = "ctrl.hpp"
+source_module = "ctrlpp"
+source_line_start = 78
+source_line_end = 78
+function = "ilp::SmallStorage::extract"
+header = "ctrl.hpp"
+signature = '''inline R extract() {
+    return static_cast<R &&>(*std::launder(reinterpret_cast<R *>(this->buffer)));
+}
+'''
+axiom_type = "precondition"
+
+[[axioms]]
+id = "ilp::SmallStorage::extract.precond.bounds_check"
+content = ''''''
+formal_spec = ''''''
+layer = "user_library"
+confidence = 0.95
+source_file = "ctrl.hpp"
+source_module = "ctrlpp"
+source_line_start = 78
+source_line_end = 78
+function = "ilp::SmallStorage::extract"
+header = "ctrl.hpp"
+signature = '''inline R extract() {
+    return static_cast<R &&>(*std::launder(reinterpret_cast<R *>(this->buffer)));
+}
+'''
+axiom_type = "precondition"
+
+[[axioms]]
+id = "ilp::SmallStorage::SmallStorage.noexcept"
+content = '''SmallStorage is guaranteed not to throw exceptions'''
+formal_spec = '''noexcept == true'''
+layer = "user_library"
+confidence = 1.0
+source_file = "ctrl.hpp"
+source_module = "ctrlpp"
+source_line_start = 60
+source_line_end = 60
+function = "ilp::SmallStorage::SmallStorage"
+header = "ctrl.hpp"
+signature = '''inline constexpr SmallStorage() noexcept {
+}
+'''
+axiom_type = "exception"
+
+[[axioms]]
+id = "ilp::SmallStorage::SmallStorage.constexpr"
+content = '''SmallStorage can be evaluated at compile time'''
+formal_spec = '''constexpr == true'''
+layer = "user_library"
+confidence = 1.0
+source_file = "ctrl.hpp"
+source_module = "ctrlpp"
+source_line_start = 60
+source_line_end = 60
+function = "ilp::SmallStorage::SmallStorage"
+header = "ctrl.hpp"
+signature = '''inline constexpr SmallStorage() noexcept {
+}
+'''
+axiom_type = "constraint"
+
+[[axioms]]
+id = "ilp::SmallStorage::~SmallStorage.noexcept"
+content = '''~SmallStorage is guaranteed not to throw exceptions'''
+formal_spec = '''noexcept == true'''
+layer = "user_library"
+confidence = 1.0
+source_file = "ctrl.hpp"
+source_module = "ctrlpp"
+source_line_start = 60
+source_line_end = 60
+function = "ilp::SmallStorage::~SmallStorage"
+header = "ctrl.hpp"
+signature = '''inline constexpr ~SmallStorage() noexcept'''
+axiom_type = "exception"
+
+[[axioms]]
+id = "ilp::SmallStorage::~SmallStorage.constexpr"
+content = '''~SmallStorage can be evaluated at compile time'''
+formal_spec = '''constexpr == true'''
+layer = "user_library"
+confidence = 1.0
+source_file = "ctrl.hpp"
+source_module = "ctrlpp"
+source_line_start = 60
+source_line_end = 60
+function = "ilp::SmallStorage::~SmallStorage"
+header = "ctrl.hpp"
+signature = '''inline constexpr ~SmallStorage() noexcept'''
+axiom_type = "constraint"
+
+[[axioms]]
+id = "ilp::TypedStorage.trivially_copyable"
+content = '''TypedStorage is trivially copyable (safe for memcpy/memmove)'''
+formal_spec = '''is_trivially_copyable(TypedStorage)'''
+layer = "user_library"
+confidence = 1.0
+source_file = "ctrl.hpp"
+source_module = "ctrlpp"
+source_line_start = 85
+source_line_end = 85
+function = "ilp::TypedStorage"
+header = "ctrl.hpp"
+axiom_type = "constraint"
+
+[[axioms]]
+id = "ilp::TypedStorage::set.complexity.template_instantiation"
+content = '''set is a template function; each unique combination of template arguments causes a separate instantiation'''
+formal_spec = '''instantiation_count = O(unique_template_args^1)'''
+layer = "user_library"
+confidence = 0.95
+source_file = "ctrl.hpp"
+source_module = "ctrlpp"
+source_line_start = 22
+source_line_end = 22
+function = "ilp::TypedStorage::set"
+header = "ctrl.hpp"
+signature = '''inline void set(T &&val) {
+    new (this->buffer) R(static_cast<T &&>(val));
+}
+'''
+axiom_type = "complexity"
+
+[[axioms]]
+id = "ilp::TypedStorage::extract.complexity.template_instantiation"
+content = '''extract is a template function; each unique combination of template arguments causes a separate instantiation'''
+formal_spec = '''instantiation_count = O(unique_template_args^1)'''
+layer = "user_library"
+confidence = 0.95
+source_file = "ctrl.hpp"
+source_module = "ctrlpp"
+source_line_start = 22
+source_line_end = 22
+function = "ilp::TypedStorage::extract"
+header = "ctrl.hpp"
+signature = '''[[gnu::always_inline]] inline R extract() {
+    R *ptr = std::launder(reinterpret_cast<R *>(this->buffer));
+    R tmp = static_cast<R &&>(*ptr);
+    ptr->~R();
+    return tmp;
+}
+'''
+axiom_type = "complexity"
+
+[[axioms]]
+id = "ilp::TypedStorage::extract.precond.bounds_check"
+content = ''''''
+formal_spec = ''''''
+layer = "user_library"
+confidence = 0.95
+source_file = "ctrl.hpp"
+source_module = "ctrlpp"
+source_line_start = 94
+source_line_end = 94
+function = "ilp::TypedStorage::extract"
+header = "ctrl.hpp"
+signature = '''[[gnu::always_inline]] inline R extract() {
+    R *ptr = std::launder(reinterpret_cast<R *>(this->buffer));
+    R tmp = static_cast<R &&>(*ptr);
+    ptr->~R();
+    return tmp;
+}
+'''
+axiom_type = "precondition"
+
+[[axioms]]
+id = "ilp::TypedStorage::extract.precond.ptr_valid"
+content = '''Pointer p must not be null'''
+formal_spec = '''p != nullptr'''
+layer = "user_library"
+confidence = 0.95
+source_file = "ctrl.hpp"
+source_module = "ctrlpp"
+source_line_start = 95
+source_line_end = 95
+function = "ilp::TypedStorage::extract"
+header = "ctrl.hpp"
+signature = '''[[gnu::always_inline]] inline R extract() {
+    R *ptr = std::launder(reinterpret_cast<R *>(this->buffer));
+    R tmp = static_cast<R &&>(*ptr);
+    ptr->~R();
+    return tmp;
+}
+'''
+axiom_type = "precondition"
+
+[[axioms]]
+id = "ilp::ForCtrl.trivially_copyable"
+content = '''ForCtrl is trivially copyable (safe for memcpy/memmove)'''
+formal_spec = '''is_trivially_copyable(ForCtrl)'''
+layer = "user_library"
+confidence = 1.0
+source_file = "ctrl.hpp"
+source_module = "ctrlpp"
+source_line_start = 102
+source_line_end = 102
+function = "ilp::ForCtrl"
+header = "ctrl.hpp"
+axiom_type = "constraint"
+
+[[axioms]]
+id = "ilp::ForCtrl::ForCtrl.noexcept"
+content = '''ForCtrl is guaranteed not to throw exceptions'''
+formal_spec = '''noexcept == true'''
+layer = "user_library"
+confidence = 1.0
+source_file = "ctrl.hpp"
+source_module = "ctrlpp"
+source_line_start = 102
+source_line_end = 102
+function = "ilp::ForCtrl::ForCtrl"
+header = "ctrl.hpp"
+signature = '''inline constexpr ForCtrl() noexcept {
+}
+'''
+axiom_type = "exception"
+
+[[axioms]]
+id = "ilp::ForCtrl::ForCtrl.constexpr"
+content = '''ForCtrl can be evaluated at compile time'''
+formal_spec = '''constexpr == true'''
+layer = "user_library"
+confidence = 1.0
+source_file = "ctrl.hpp"
+source_module = "ctrlpp"
+source_line_start = 102
+source_line_end = 102
+function = "ilp::ForCtrl::ForCtrl"
+header = "ctrl.hpp"
+signature = '''inline constexpr ForCtrl() noexcept {
+}
+'''
+axiom_type = "constraint"
+
+[[axioms]]
+id = "ilp::ForCtrlTyped.trivially_copyable"
+content = '''ForCtrlTyped is trivially copyable (safe for memcpy/memmove)'''
+formal_spec = '''is_trivially_copyable(ForCtrlTyped)'''
+layer = "user_library"
+confidence = 1.0
+source_file = "ctrl.hpp"
+source_module = "ctrlpp"
+source_line_start = 110
+source_line_end = 110
+function = "ilp::ForCtrlTyped"
+header = "ctrl.hpp"
+axiom_type = "constraint"
+
+[[axioms]]
+id = "ilp::ForResult.trivially_copyable"
+content = '''ForResult is trivially copyable (safe for memcpy/memmove)'''
+formal_spec = '''is_trivially_copyable(ForResult)'''
+layer = "user_library"
+confidence = 1.0
+source_file = "ctrl.hpp"
+source_module = "ctrlpp"
+source_line_start = 116
+source_line_end = 116
+function = "ilp::ForResult"
+header = "ctrl.hpp"
+axiom_type = "constraint"
+
+[[axioms]]
+id = "ilp::ForResult::operator bool.noexcept"
+content = '''operator bool is guaranteed not to throw exceptions'''
+formal_spec = '''noexcept == true'''
+layer = "user_library"
+confidence = 1.0
+source_file = "ctrl.hpp"
+source_module = "ctrlpp"
+source_line_start = 120
+source_line_end = 120
+function = "ilp::ForResult::operator bool"
+header = "ctrl.hpp"
+signature = '''explicit operator bool() const noexcept {
+    return this->has_return;
+}
+'''
+axiom_type = "exception"
+
+[[axioms]]
+id = "ilp::ForResult::operator bool.const"
+content = '''operator bool does not modify object state'''
+formal_spec = '''this->state == old(this->state)'''
+layer = "user_library"
+confidence = 1.0
+source_file = "ctrl.hpp"
+source_module = "ctrlpp"
+source_line_start = 120
+source_line_end = 120
+function = "ilp::ForResult::operator bool"
+header = "ctrl.hpp"
+signature = '''explicit operator bool() const noexcept {
+    return this->has_return;
+}
+'''
+axiom_type = "effect"
+
+[[axioms]]
+id = "ilp::ForResult::Proxy.trivially_copyable"
+content = '''Proxy is trivially copyable (safe for memcpy/memmove)'''
+formal_spec = '''is_trivially_copyable(Proxy)'''
+layer = "user_library"
+confidence = 1.0
+source_file = "ctrl.hpp"
+source_module = "ctrlpp"
+source_line_start = 123
+source_line_end = 123
+function = "ilp::ForResult::Proxy"
+header = "ctrl.hpp"
+axiom_type = "constraint"
+
+[[axioms]]
+id = "ilp::ForResult::Proxy::operator type-parameter-0-0.complexity.template_instantiation"
+content = '''operator type-parameter-0-0 is a template function; each unique combination of template arguments causes a separate instantiation'''
+formal_spec = '''instantiation_count = O(unique_template_args^1)'''
+layer = "user_library"
+confidence = 0.95
+source_file = "ctrl.hpp"
+source_module = "ctrlpp"
+source_line_start = 22
+source_line_end = 22
+function = "ilp::ForResult::Proxy::operator type-parameter-0-0"
+header = "ctrl.hpp"
+signature = '''inline operator R() && {
+    return this->s.template extract<R>();
+}
+'''
+axiom_type = "complexity"
+
+[[axioms]]
+id = "ilp::ForResult::~ForResult.noexcept"
+content = '''~ForResult is guaranteed not to throw exceptions'''
+formal_spec = '''noexcept == true'''
+layer = "user_library"
+confidence = 1.0
+source_file = "ctrl.hpp"
+source_module = "ctrlpp"
+source_line_start = 116
+source_line_end = 116
+function = "ilp::ForResult::~ForResult"
+header = "ctrl.hpp"
+signature = '''inline constexpr ~ForResult() noexcept'''
+axiom_type = "exception"
+
+[[axioms]]
+id = "ilp::ForResult::~ForResult.constexpr"
+content = '''~ForResult can be evaluated at compile time'''
+formal_spec = '''constexpr == true'''
+layer = "user_library"
+confidence = 1.0
+source_file = "ctrl.hpp"
+source_module = "ctrlpp"
+source_line_start = 116
+source_line_end = 116
+function = "ilp::ForResult::~ForResult"
+header = "ctrl.hpp"
+signature = '''inline constexpr ~ForResult() noexcept'''
+axiom_type = "constraint"
+
+[[axioms]]
+id = "ilp::ForResultTyped.trivially_copyable"
+content = '''ForResultTyped is trivially copyable (safe for memcpy/memmove)'''
+formal_spec = '''is_trivially_copyable(ForResultTyped)'''
+layer = "user_library"
+confidence = 1.0
+source_file = "ctrl.hpp"
+source_module = "ctrlpp"
+source_line_start = 155
+source_line_end = 155
+function = "ilp::ForResultTyped"
+header = "ctrl.hpp"
+axiom_type = "constraint"
+
+[[axioms]]
+id = "ilp::ForResultTyped::operator bool.noexcept"
+content = '''operator bool is guaranteed not to throw exceptions'''
+formal_spec = '''noexcept == true'''
+layer = "user_library"
+confidence = 1.0
+source_file = "ctrl.hpp"
+source_module = "ctrlpp"
+source_line_start = 159
+source_line_end = 159
+function = "ilp::ForResultTyped::operator bool"
+header = "ctrl.hpp"
+signature = '''explicit operator bool() const noexcept {
+    return this->has_return;
+}
+'''
+axiom_type = "exception"
+
+[[axioms]]
+id = "ilp::ForResultTyped::operator bool.const"
+content = '''operator bool does not modify object state'''
+formal_spec = '''this->state == old(this->state)'''
+layer = "user_library"
+confidence = 1.0
+source_file = "ctrl.hpp"
+source_module = "ctrlpp"
+source_line_start = 159
+source_line_end = 159
+function = "ilp::ForResultTyped::operator bool"
+header = "ctrl.hpp"
+signature = '''explicit operator bool() const noexcept {
+    return this->has_return;
+}
+'''
+axiom_type = "effect"
+
+[[axioms]]
+id = "ilp::ForResultTyped::operator bool.complexity.template_instantiation"
+content = '''operator bool is a template function; each unique combination of template arguments causes a separate instantiation'''
+formal_spec = '''instantiation_count = O(unique_template_args^1)'''
+layer = "user_library"
+confidence = 0.95
+source_file = "ctrl.hpp"
+source_module = "ctrlpp"
+source_line_start = 159
+source_line_end = 159
+function = "ilp::ForResultTyped::operator bool"
+header = "ctrl.hpp"
+signature = '''explicit operator bool() const noexcept {
+    return this->has_return;
+}
+'''
+axiom_type = "complexity"
+
+[[axioms]]
+id = "ilp::ForResultTyped::Proxy.trivially_copyable"
+content = '''Proxy is trivially copyable (safe for memcpy/memmove)'''
+formal_spec = '''is_trivially_copyable(Proxy)'''
+layer = "user_library"
+confidence = 1.0
+source_file = "ctrl.hpp"
+source_module = "ctrlpp"
+source_line_start = 162
+source_line_end = 162
+function = "ilp::ForResultTyped::Proxy"
+header = "ctrl.hpp"
+axiom_type = "constraint"
+
+[[axioms]]
+id = "ilp::ForResultTyped::operator*.complexity.template_instantiation"
+content = '''operator* is a template function; each unique combination of template arguments causes a separate instantiation'''
+formal_spec = '''instantiation_count = O(unique_template_args^1)'''
+layer = "user_library"
+confidence = 0.95
+source_file = "ctrl.hpp"
+source_module = "ctrlpp"
+source_line_start = 22
+source_line_end = 22
+function = "ilp::ForResultTyped::operator*"
+header = "ctrl.hpp"
+signature = '''[[gnu::always_inline]] inline Proxy operator*() {
+    return {this->storage};
+}
+'''
+axiom_type = "complexity"
+
+[[axioms]]
+id = "ilp::detail::no_return_t.trivially_copyable"
+content = '''no_return_t is trivially copyable (safe for memcpy/memmove)'''
+formal_spec = '''is_trivially_copyable(no_return_t)'''
+layer = "user_library"
+confidence = 1.0
+source_file = "loops_common.hpp"
+source_module = "loops_commonpp"
+source_line_start = 21
+source_line_end = 21
+function = "ilp::detail::no_return_t"
+header = "loops_common.hpp"
+axiom_type = "constraint"
+
+[[axioms]]
+id = "ilp::detail::no_return_t::operator bool.noexcept"
+content = '''operator bool is guaranteed not to throw exceptions'''
+formal_spec = '''noexcept == true'''
+layer = "user_library"
+confidence = 1.0
+source_file = "loops_common.hpp"
+source_module = "loops_commonpp"
+source_line_start = 22
+source_line_end = 22
+function = "ilp::detail::no_return_t::operator bool"
+header = "loops_common.hpp"
+signature = '''constexpr explicit operator bool() const noexcept {
+    return false;
+}
+'''
+axiom_type = "exception"
+
+[[axioms]]
+id = "ilp::detail::no_return_t::operator bool.const"
+content = '''operator bool does not modify object state'''
+formal_spec = '''this->state == old(this->state)'''
+layer = "user_library"
+confidence = 1.0
+source_file = "loops_common.hpp"
+source_module = "loops_commonpp"
+source_line_start = 22
+source_line_end = 22
+function = "ilp::detail::no_return_t::operator bool"
+header = "loops_common.hpp"
+signature = '''constexpr explicit operator bool() const noexcept {
+    return false;
+}
+'''
+axiom_type = "effect"
+
+[[axioms]]
+id = "ilp::detail::no_return_t::operator bool.constexpr"
+content = '''operator bool can be evaluated at compile time'''
+formal_spec = '''constexpr == true'''
+layer = "user_library"
+confidence = 1.0
+source_file = "loops_common.hpp"
+source_module = "loops_commonpp"
+source_line_start = 22
+source_line_end = 22
+function = "ilp::detail::no_return_t::operator bool"
+header = "loops_common.hpp"
+signature = '''constexpr explicit operator bool() const noexcept {
+    return false;
+}
+'''
+axiom_type = "constraint"
+
+[[axioms]]
+id = "ilp::detail::no_return_t::operator*.noexcept"
+content = '''operator* is guaranteed not to throw exceptions'''
+formal_spec = '''noexcept == true'''
+layer = "user_library"
+confidence = 1.0
+source_file = "loops_common.hpp"
+source_module = "loops_commonpp"
+source_line_start = 23
+source_line_end = 23
+function = "ilp::detail::no_return_t::operator*"
+header = "loops_common.hpp"
+signature = '''[[noreturn]] void operator*() const noexcept {
+    __builtin_unreachable();
+}
+'''
+axiom_type = "exception"
+
+[[axioms]]
+id = "ilp::detail::no_return_t::operator*.const"
+content = '''operator* does not modify object state'''
+formal_spec = '''this->state == old(this->state)'''
+layer = "user_library"
+confidence = 1.0
+source_file = "loops_common.hpp"
+source_module = "loops_commonpp"
+source_line_start = 23
+source_line_end = 23
+function = "ilp::detail::no_return_t::operator*"
+header = "loops_common.hpp"
+signature = '''[[noreturn]] void operator*() const noexcept {
+    __builtin_unreachable();
+}
+'''
+axiom_type = "effect"
+
+[[axioms]]
+id = "ilp::detail::for_result_t.type_alias"
+content = '''for_result_t is an alias for std::conditional_t<std::is_void_v<R>, no_return_t, std::optional<R> >'''
+formal_spec = '''type(for_result_t) == std::conditional_t<std::is_void_v<R>, no_return_t, std::optional<R> >'''
+layer = "user_library"
+confidence = 1.0
+source_file = "loops_common.hpp"
+source_module = "loops_commonpp"
+source_line_start = 35
+source_line_end = 35
+function = "ilp::detail::for_result_t"
+header = "loops_common.hpp"
+axiom_type = "constraint"
+
+[[axioms]]
+id = "ilp::detail::warn_large_unroll_factor.constexpr"
+content = '''warn_large_unroll_factor can be evaluated at compile time'''
+formal_spec = '''constexpr == true'''
+layer = "user_library"
+confidence = 1.0
+source_file = "loops_common.hpp"
+source_module = "loops_commonpp"
+source_line_start = 41
+source_line_end = 41
+function = "ilp::detail::warn_large_unroll_factor"
+header = "loops_common.hpp"
+signature = '''constexpr void warn_large_unroll_factor() {
+}
+'''
+axiom_type = "constraint"
+
+[[axioms]]
+id = "ilp::detail::warn_large_unroll_factor.deprecated"
+content = '''warn_large_unroll_factor is deprecated and should not be used'''
+formal_spec = '''[[deprecated]]'''
+layer = "user_library"
+confidence = 1.0
+source_file = "loops_common.hpp"
+source_module = "loops_commonpp"
+source_line_start = 41
+source_line_end = 41
+function = "ilp::detail::warn_large_unroll_factor"
+header = "loops_common.hpp"
+signature = '''constexpr void warn_large_unroll_factor() {
+}
+'''
+axiom_type = "anti_pattern"
+
+[[axioms]]
+id = "ilp::detail::warn_large_unroll_factor.complexity.template_instantiation"
+content = '''warn_large_unroll_factor is a template function; each unique combination of template arguments causes a separate instantiation'''
+formal_spec = '''instantiation_count = O(unique_template_args^1)'''
+layer = "user_library"
+confidence = 0.95
+source_file = "loops_common.hpp"
+source_module = "loops_commonpp"
+source_line_start = 41
+source_line_end = 41
+function = "ilp::detail::warn_large_unroll_factor"
+header = "loops_common.hpp"
+signature = '''constexpr void warn_large_unroll_factor() {
+}
+'''
+axiom_type = "complexity"
+
+[[axioms]]
+id = "ilp::detail::validate_unroll_factor.constexpr"
+content = '''validate_unroll_factor can be evaluated at compile time'''
+formal_spec = '''constexpr == true'''
+layer = "user_library"
+confidence = 1.0
+source_file = "loops_common.hpp"
+source_module = "loops_commonpp"
+source_line_start = 44
+source_line_end = 44
+function = "ilp::detail::validate_unroll_factor"
+header = "loops_common.hpp"
+signature = '''constexpr void validate_unroll_factor() {
+    static_assert(N >= 1, "Unroll factor N must be at least 1");
+    if (N > 16) {
+        warn_large_unroll_factor<N>();
+    }
+}
+'''
+axiom_type = "constraint"
+
+[[axioms]]
+id = "ilp::detail::validate_unroll_factor.complexity.template_instantiation"
+content = '''validate_unroll_factor is a template function; each unique combination of template arguments causes a separate instantiation'''
+formal_spec = '''instantiation_count = O(unique_template_args^1)'''
+layer = "user_library"
+confidence = 0.95
+source_file = "loops_common.hpp"
+source_module = "loops_commonpp"
+source_line_start = 44
+source_line_end = 44
+function = "ilp::detail::validate_unroll_factor"
+header = "loops_common.hpp"
+signature = '''constexpr void validate_unroll_factor() {
+    static_assert(N >= 1, "Unroll factor N must be at least 1");
+    if (N > 16) {
+        warn_large_unroll_factor<N>();
+    }
+}
+'''
+axiom_type = "complexity"
+
+[[axioms]]
+id = "loops_common.hpp.static_assert.45"
+content = '''Unroll factor N must be at least 1'''
+formal_spec = '''N >= 1'''
+layer = "user_library"
+confidence = 1.0
+source_file = "loops_common.hpp"
+source_module = "loops_commonpp"
+source_line_start = 45
+source_line_end = 45
+header = "loops_common.hpp"
+axiom_type = "invariant"
+
+[[axioms]]
+id = "ilp::detail::signed_integral_type.concept"
+content = '''Concept signed_integral_type requires: std::integral<T> && std::signed_integral<T>'''
+formal_spec = '''std::integral<T> && std::signed_integral<T>'''
+layer = "user_library"
+confidence = 1.0
+source_file = "loops_common.hpp"
+source_module = "loops_commonpp"
+source_line_start = 52
+source_line_end = 52
+function = "ilp::detail::signed_integral_type"
+header = "loops_common.hpp"
+axiom_type = "constraint"
+
+[[axioms]]
+id = "ilp::detail::unsigned_integral_type.concept"
+content = '''Concept unsigned_integral_type requires: std::integral<T> && std::unsigned_integral<T>'''
+formal_spec = '''std::integral<T> && std::unsigned_integral<T>'''
+layer = "user_library"
+confidence = 1.0
+source_file = "loops_common.hpp"
+source_module = "loops_commonpp"
+source_line_start = 55
+source_line_end = 55
+function = "ilp::detail::unsigned_integral_type"
+header = "loops_common.hpp"
+axiom_type = "constraint"
+
+[[axioms]]
+id = "ilp::detail::warn_accumulator_overflow.constexpr"
+content = '''warn_accumulator_overflow can be evaluated at compile time'''
+formal_spec = '''constexpr == true'''
+layer = "user_library"
+confidence = 1.0
+source_file = "loops_common.hpp"
+source_module = "loops_commonpp"
+source_line_start = 62
+source_line_end = 62
+function = "ilp::detail::warn_accumulator_overflow"
+header = "loops_common.hpp"
+signature = '''constexpr void warn_accumulator_overflow() {
+}
+'''
+axiom_type = "constraint"
+
+[[axioms]]
+id = "ilp::detail::warn_accumulator_overflow.deprecated"
+content = '''warn_accumulator_overflow is deprecated and should not be used'''
+formal_spec = '''[[deprecated]]'''
+layer = "user_library"
+confidence = 1.0
+source_file = "loops_common.hpp"
+source_module = "loops_commonpp"
+source_line_start = 62
+source_line_end = 62
+function = "ilp::detail::warn_accumulator_overflow"
+header = "loops_common.hpp"
+signature = '''constexpr void warn_accumulator_overflow() {
+}
+'''
+axiom_type = "anti_pattern"
+
+[[axioms]]
+id = "ilp::detail::warn_accumulator_overflow.complexity.template_instantiation"
+content = '''warn_accumulator_overflow is a template function; each unique combination of template arguments causes a separate instantiation'''
+formal_spec = '''instantiation_count = O(unique_template_args^2)'''
+layer = "user_library"
+confidence = 0.95
+source_file = "loops_common.hpp"
+source_module = "loops_commonpp"
+source_line_start = 62
+source_line_end = 62
+function = "ilp::detail::warn_accumulator_overflow"
+header = "loops_common.hpp"
+signature = '''constexpr void warn_accumulator_overflow() {
+}
+'''
+axiom_type = "complexity"
+
+[[axioms]]
+id = "ilp::detail::check_sum_overflow.constexpr"
+content = '''check_sum_overflow can be evaluated at compile time'''
+formal_spec = '''constexpr == true'''
+layer = "user_library"
+confidence = 1.0
+source_file = "loops_common.hpp"
+source_module = "loops_commonpp"
+source_line_start = 65
+source_line_end = 65
+function = "ilp::detail::check_sum_overflow"
+header = "loops_common.hpp"
+signature = '''constexpr void check_sum_overflow() {
+    if (std::integral<AccumT> && std::integral<ElemT>) {
+        if (sizeof(AccumT) < sizeof(ElemT)) {
+            warn_accumulator_overflow<AccumT, ElemT>();
+        }
+    }
+}
+'''
+axiom_type = "constraint"
+
+[[axioms]]
+id = "ilp::detail::check_sum_overflow.complexity.template_instantiation"
+content = '''check_sum_overflow is a template function; each unique combination of template arguments causes a separate instantiation'''
+formal_spec = '''instantiation_count = O(unique_template_args^2)'''
+layer = "user_library"
+confidence = 0.95
+source_file = "loops_common.hpp"
+source_module = "loops_commonpp"
+source_line_start = 65
+source_line_end = 65
+function = "ilp::detail::check_sum_overflow"
+header = "loops_common.hpp"
+signature = '''constexpr void check_sum_overflow() {
+    if (std::integral<AccumT> && std::integral<ElemT>) {
+        if (sizeof(AccumT) < sizeof(ElemT)) {
+            warn_accumulator_overflow<AccumT, ElemT>();
+        }
+    }
+}
+'''
+axiom_type = "complexity"
+
+[[axioms]]
+id = "ilp::detail::ForBody.concept"
+content = '''Concept ForBody requires: std::invocable<F, T>'''
+formal_spec = '''std::invocable<F, T>'''
+layer = "user_library"
+confidence = 1.0
+source_file = "loops_common.hpp"
+source_module = "loops_commonpp"
+source_line_start = 75
+source_line_end = 75
+function = "ilp::detail::ForBody"
+header = "loops_common.hpp"
+axiom_type = "constraint"
+
+[[axioms]]
+id = "ilp::detail::ForCtrlBody.concept"
+content = '''Concept ForCtrlBody requires: std::invocable<F, T, LoopCtrl<void> &>'''
+formal_spec = '''std::invocable<F, T, LoopCtrl<void> &>'''
+layer = "user_library"
+confidence = 1.0
+source_file = "loops_common.hpp"
+source_module = "loops_commonpp"
+source_line_start = 78
+source_line_end = 78
+function = "ilp::detail::ForCtrlBody"
+header = "loops_common.hpp"
+axiom_type = "constraint"
+
+[[axioms]]
+id = "ilp::detail::ForRetBody.concept"
+content = '''Concept ForRetBody requires: std::invocable<F, T, LoopCtrl<R> &>'''
+formal_spec = '''std::invocable<F, T, LoopCtrl<R> &>'''
+layer = "user_library"
+confidence = 1.0
+source_file = "loops_common.hpp"
+source_module = "loops_commonpp"
+source_line_start = 81
+source_line_end = 81
+function = "ilp::detail::ForRetBody"
+header = "loops_common.hpp"
+axiom_type = "constraint"
+
+[[axioms]]
+id = "ilp::detail::ForUntypedCtrlBody.concept"
+content = '''Concept ForUntypedCtrlBody requires: std::invocable<F, T, ForCtrl &>'''
+formal_spec = '''std::invocable<F, T, ForCtrl &>'''
+layer = "user_library"
+confidence = 1.0
+source_file = "loops_common.hpp"
+source_module = "loops_commonpp"
+source_line_start = 84
+source_line_end = 84
+function = "ilp::detail::ForUntypedCtrlBody"
+header = "loops_common.hpp"
+axiom_type = "constraint"
+
+[[axioms]]
+id = "ilp::detail::ForTypedCtrlBody.concept"
+content = '''Concept ForTypedCtrlBody requires: std::invocable<F, T, ForCtrlTyped<R> &>'''
+formal_spec = '''std::invocable<F, T, ForCtrlTyped<R> &>'''
+layer = "user_library"
+confidence = 1.0
+source_file = "loops_common.hpp"
+source_module = "loops_commonpp"
+source_line_start = 87
+source_line_end = 87
+function = "ilp::detail::ForTypedCtrlBody"
+header = "loops_common.hpp"
+axiom_type = "constraint"
+
+[[axioms]]
+id = "ilp::detail::ForRangeBody.concept"
+content = '''Concept ForRangeBody requires: std::invocable<F, Ref>'''
+formal_spec = '''std::invocable<F, Ref>'''
+layer = "user_library"
+confidence = 1.0
+source_file = "loops_common.hpp"
+source_module = "loops_commonpp"
+source_line_start = 90
+source_line_end = 90
+function = "ilp::detail::ForRangeBody"
+header = "loops_common.hpp"
+axiom_type = "constraint"
+
+[[axioms]]
+id = "ilp::detail::ForRangeCtrlBody.concept"
+content = '''Concept ForRangeCtrlBody requires: std::invocable<F, Ref, LoopCtrl<void> &>'''
+formal_spec = '''std::invocable<F, Ref, LoopCtrl<void> &>'''
+layer = "user_library"
+confidence = 1.0
+source_file = "loops_common.hpp"
+source_module = "loops_commonpp"
+source_line_start = 93
+source_line_end = 93
+function = "ilp::detail::ForRangeCtrlBody"
+header = "loops_common.hpp"
+axiom_type = "constraint"
+
+[[axioms]]
+id = "ilp::detail::ForRangeRetBody.concept"
+content = '''Concept ForRangeRetBody requires: std::invocable<F, Ref, LoopCtrl<R> &>'''
+formal_spec = '''std::invocable<F, Ref, LoopCtrl<R> &>'''
+layer = "user_library"
+confidence = 1.0
+source_file = "loops_common.hpp"
+source_module = "loops_commonpp"
+source_line_start = 96
+source_line_end = 96
+function = "ilp::detail::ForRangeRetBody"
+header = "loops_common.hpp"
+axiom_type = "constraint"
+
+[[axioms]]
+id = "ilp::detail::ForRangeUntypedCtrlBody.concept"
+content = '''Concept ForRangeUntypedCtrlBody requires: std::invocable<F, Ref, ForCtrl &>'''
+formal_spec = '''std::invocable<F, Ref, ForCtrl &>'''
+layer = "user_library"
+confidence = 1.0
+source_file = "loops_common.hpp"
+source_module = "loops_commonpp"
+source_line_start = 99
+source_line_end = 99
+function = "ilp::detail::ForRangeUntypedCtrlBody"
+header = "loops_common.hpp"
+axiom_type = "constraint"
+
+[[axioms]]
+id = "ilp::detail::ForRangeTypedCtrlBody.concept"
+content = '''Concept ForRangeTypedCtrlBody requires: std::invocable<F, Ref, ForCtrlTyped<R> &>'''
+formal_spec = '''std::invocable<F, Ref, ForCtrlTyped<R> &>'''
+layer = "user_library"
+confidence = 1.0
+source_file = "loops_common.hpp"
+source_module = "loops_commonpp"
+source_line_start = 102
+source_line_end = 102
+function = "ilp::detail::ForRangeTypedCtrlBody"
+header = "loops_common.hpp"
+axiom_type = "constraint"
+
+[[axioms]]
+id = "ilp::detail::for_loop_untyped_impl.complexity.template_instantiation"
+content = '''for_loop_untyped_impl is a template function; each unique combination of template arguments causes a separate instantiation'''
+formal_spec = '''instantiation_count = O(unique_template_args^3)'''
+layer = "user_library"
+confidence = 0.95
+source_file = "loops_ilp.hpp"
+source_module = "loops_ilppp"
+source_line_start = 22
+source_line_end = 22
+function = "ilp::detail::for_loop_untyped_impl"
+header = "loops_ilp.hpp"
+signature = '''ForResult for_loop_untyped_impl(T start, T end, F &&body) {
+    validate_unroll_factor<N>();
+    ForCtrl ctrl;
+    T i = start;
+    for (; i + static_cast<T>(N) <= end; i += static_cast<T>(N)) {
+        for (std::size_t j = 0; j < N; ++j) {
+            body(i + static_cast<T>(j), ctrl);
+            if (!ctrl.ok)
+[[unlikely]]                return ForResult{ctrl.return_set, std::move(ctrl.storage)};
+        }
+    }
+    for (; i < end; ++i) {
+        body(i, ctrl);
+        if (!ctrl.ok)
+[[unlikely]]            return ForResult{ctrl.return_set, std::move(ctrl.storage)};
+    }
+    return ForResult{false, {}};
+}
+'''
+axiom_type = "complexity"
+
+[[axioms]]
+id = "ilp::detail::for_loop_typed_impl.complexity.template_instantiation"
+content = '''for_loop_typed_impl is a template function; each unique combination of template arguments causes a separate instantiation'''
+formal_spec = '''instantiation_count = O(unique_template_args^4)'''
+layer = "user_library"
+confidence = 0.95
+source_file = "loops_ilp.hpp"
+source_module = "loops_ilppp"
+source_line_start = 46
+source_line_end = 46
+function = "ilp::detail::for_loop_typed_impl"
+header = "loops_ilp.hpp"
+signature = '''ForResultTyped<R> for_loop_typed_impl(T start, T end, F &&body) {
+    validate_unroll_factor<N>();
+    ForCtrlTyped<R> ctrl;
+    T i = start;
+    for (; i + static_cast<T>(N) <= end; i += static_cast<T>(N)) {
+        for (std::size_t j = 0; j < N; ++j) {
+            body(i + static_cast<T>(j), ctrl);
+            if (!ctrl.ok)
+[[unlikely]]                return ForResultTyped<R>{ctrl.return_set, std::move(ctrl.storage)};
+        }
+    }
+    for (; i < end; ++i) {
+        body(i, ctrl);
+        if (!ctrl.ok)
+[[unlikely]]            return ForResultTyped<R>{ctrl.return_set, std::move(ctrl.storage)};
+    }
+    return ForResultTyped<R>{false, {}};
+}
+'''
+axiom_type = "complexity"
+
+[[axioms]]
+id = "ilp::detail::for_loop_range_impl.complexity.template_instantiation"
+content = '''for_loop_range_impl is a template function; each unique combination of template arguments causes a separate instantiation'''
+formal_spec = '''instantiation_count = O(unique_template_args^3)'''
+layer = "user_library"
+confidence = 0.95
+source_file = "loops_ilp.hpp"
+source_module = "loops_ilppp"
+source_line_start = 69
+source_line_end = 69
+function = "ilp::detail::for_loop_range_impl"
+header = "loops_ilp.hpp"
+signature = '''void for_loop_range_impl(Range &&range, F &&body) {
+    validate_unroll_factor<N>();
+    using Ref = std::ranges::range_reference_t<Range>;
+    constexpr bool has_ctrl = ForRangeCtrlBody<F, Ref>;
+    auto it = std::ranges::begin(range);
+    auto size = std::ranges::size(range);
+    std::size_t i = 0;
+    if (has_ctrl) {
+        LoopCtrl<void> ctrl;
+        for (; i + N <= size && ctrl.ok; i += N) {
+            for (std::size_t j = 0; j < N && ctrl.ok; ++j) {
+                body(it[i + j], ctrl);
+            }
+        }
+        for (; i < size && ctrl.ok; ++i) {
+            body(it[i], ctrl);
+        }
+    } else {
+        static_assert(ForRangeBody<F, Ref>, "Lambda must be invocable with (Ref) or (Ref, LoopCtrl<void>&)");
+        for (; i + N <= size; i += N) {
+            for (std::size_t j = 0; j < N; ++j) {
+                body(it[i + j]);
+            }
+        }
+        for (; i < size; ++i) {
+            body(it[i]);
+        }
+    }
+}
+'''
+axiom_type = "complexity"
+
+[[axioms]]
+id = "ilp::detail::for_loop_range_impl.precond.bounds_check"
+content = '''Index must be within bounds for it[i + j]'''
+formal_spec = '''0 <= index && index < size'''
+layer = "user_library"
+confidence = 0.95
+source_file = "loops_ilp.hpp"
+source_module = "loops_ilppp"
+source_line_start = 83
+source_line_end = 83
+function = "ilp::detail::for_loop_range_impl"
+header = "loops_ilp.hpp"
+signature = '''void for_loop_range_impl(Range &&range, F &&body) {
+    validate_unroll_factor<N>();
+    using Ref = std::ranges::range_reference_t<Range>;
+    constexpr bool has_ctrl = ForRangeCtrlBody<F, Ref>;
+    auto it = std::ranges::begin(range);
+    auto size = std::ranges::size(range);
+    std::size_t i = 0;
+    if (has_ctrl) {
+        LoopCtrl<void> ctrl;
+        for (; i + N <= size && ctrl.ok; i += N) {
+            for (std::size_t j = 0; j < N && ctrl.ok; ++j) {
+                body(it[i + j], ctrl);
+            }
+        }
+        for (; i < size && ctrl.ok; ++i) {
+            body(it[i], ctrl);
+        }
+    } else {
+        static_assert(ForRangeBody<F, Ref>, "Lambda must be invocable with (Ref) or (Ref, LoopCtrl<void>&)");
+        for (; i + N <= size; i += N) {
+            for (std::size_t j = 0; j < N; ++j) {
+                body(it[i + j]);
+            }
+        }
+        for (; i < size; ++i) {
+            body(it[i]);
+        }
+    }
+}
+'''
+axiom_type = "precondition"
+
+[[axioms]]
+id = "Ref.type_alias"
+content = '''Ref is an alias for std::ranges::range_reference_t<Range>'''
+formal_spec = '''type(Ref) == std::ranges::range_reference_t<Range>'''
+layer = "user_library"
+confidence = 1.0
+source_file = "loops_ilp.hpp"
+source_module = "loops_ilppp"
+source_line_start = 71
+source_line_end = 71
+function = "Ref"
+header = "loops_ilp.hpp"
+axiom_type = "constraint"
+
+[[axioms]]
+id = "loops_ilp.hpp.static_assert.91"
+content = '''Lambda must be invocable with (Ref) or (Ref, LoopCtrl<void>&)'''
+formal_spec = '''ForRangeBody<F, Ref>'''
+layer = "user_library"
+confidence = 1.0
+source_file = "loops_ilp.hpp"
+source_module = "loops_ilppp"
+source_line_start = 91
+source_line_end = 91
+header = "loops_ilp.hpp"
+axiom_type = "invariant"
+
+[[axioms]]
+id = "ilp::detail::for_loop_range_untyped_impl.complexity.template_instantiation"
+content = '''for_loop_range_untyped_impl is a template function; each unique combination of template arguments causes a separate instantiation'''
+formal_spec = '''instantiation_count = O(unique_template_args^3)'''
+layer = "user_library"
+confidence = 0.95
+source_file = "loops_ilp.hpp"
+source_module = "loops_ilppp"
+source_line_start = 107
+source_line_end = 107
+function = "ilp::detail::for_loop_range_untyped_impl"
+header = "loops_ilp.hpp"
+signature = '''ForResult for_loop_range_untyped_impl(Range &&range, F &&body) {
+    validate_unroll_factor<N>();
+    ForCtrl ctrl;
+    auto it = std::ranges::begin(range);
+    auto size = std::ranges::size(range);
+    std::size_t i = 0;
+    for (; i + N <= size; i += N) {
+        for (std::size_t j = 0; j < N; ++j) {
+            body(it[i + j], ctrl);
+            if (!ctrl.ok)
+[[unlikely]]                return ForResult{ctrl.return_set, std::move(ctrl.storage)};
+        }
+    }
+    for (; i < size; ++i) {
+        body(it[i], ctrl);
+        if (!ctrl.ok)
+[[unlikely]]            return ForResult{ctrl.return_set, std::move(ctrl.storage)};
+    }
+    return ForResult{false, {}};
+}
+'''
+axiom_type = "complexity"
+
+[[axioms]]
+id = "ilp::detail::for_loop_range_untyped_impl.precond.bounds_check"
+content = '''Index must be within bounds for it[i + j]'''
+formal_spec = '''0 <= index && index < size'''
+layer = "user_library"
+confidence = 0.95
+source_file = "loops_ilp.hpp"
+source_module = "loops_ilppp"
+source_line_start = 116
+source_line_end = 116
+function = "ilp::detail::for_loop_range_untyped_impl"
+header = "loops_ilp.hpp"
+signature = '''ForResult for_loop_range_untyped_impl(Range &&range, F &&body) {
+    validate_unroll_factor<N>();
+    ForCtrl ctrl;
+    auto it = std::ranges::begin(range);
+    auto size = std::ranges::size(range);
+    std::size_t i = 0;
+    for (; i + N <= size; i += N) {
+        for (std::size_t j = 0; j < N; ++j) {
+            body(it[i + j], ctrl);
+            if (!ctrl.ok)
+[[unlikely]]                return ForResult{ctrl.return_set, std::move(ctrl.storage)};
+        }
+    }
+    for (; i < size; ++i) {
+        body(it[i], ctrl);
+        if (!ctrl.ok)
+[[unlikely]]            return ForResult{ctrl.return_set, std::move(ctrl.storage)};
+    }
+    return ForResult{false, {}};
+}
+'''
+axiom_type = "precondition"
+
+[[axioms]]
+id = "ilp::detail::for_loop_range_typed_impl.complexity.template_instantiation"
+content = '''for_loop_range_typed_impl is a template function; each unique combination of template arguments causes a separate instantiation'''
+formal_spec = '''instantiation_count = O(unique_template_args^4)'''
+layer = "user_library"
+confidence = 0.95
+source_file = "loops_ilp.hpp"
+source_module = "loops_ilppp"
+source_line_start = 133
+source_line_end = 133
+function = "ilp::detail::for_loop_range_typed_impl"
+header = "loops_ilp.hpp"
+signature = '''ForResultTyped<R> for_loop_range_typed_impl(Range &&range, F &&body) {
+    validate_unroll_factor<N>();
+    ForCtrlTyped<R> ctrl;
+    auto it = std::ranges::begin(range);
+    auto size = std::ranges::size(range);
+    std::size_t i = 0;
+    for (; i + N <= size; i += N) {
+        for (std::size_t j = 0; j < N; ++j) {
+            body(it[i + j], ctrl);
+            if (!ctrl.ok)
+[[unlikely]]                return ForResultTyped<R>{ctrl.return_set, std::move(ctrl.storage)};
+        }
+    }
+    for (; i < size; ++i) {
+        body(it[i], ctrl);
+        if (!ctrl.ok)
+[[unlikely]]            return ForResultTyped<R>{ctrl.return_set, std::move(ctrl.storage)};
+    }
+    return ForResultTyped<R>{false, {}};
+}
+'''
+axiom_type = "complexity"
+
+[[axioms]]
+id = "ilp::detail::for_loop_range_typed_impl.precond.bounds_check"
+content = '''Index must be within bounds for it[i + j]'''
+formal_spec = '''0 <= index && index < size'''
+layer = "user_library"
+confidence = 0.95
+source_file = "loops_ilp.hpp"
+source_module = "loops_ilppp"
+source_line_start = 142
+source_line_end = 142
+function = "ilp::detail::for_loop_range_typed_impl"
+header = "loops_ilp.hpp"
+signature = '''ForResultTyped<R> for_loop_range_typed_impl(Range &&range, F &&body) {
+    validate_unroll_factor<N>();
+    ForCtrlTyped<R> ctrl;
+    auto it = std::ranges::begin(range);
+    auto size = std::ranges::size(range);
+    std::size_t i = 0;
+    for (; i + N <= size; i += N) {
+        for (std::size_t j = 0; j < N; ++j) {
+            body(it[i + j], ctrl);
+            if (!ctrl.ok)
+[[unlikely]]                return ForResultTyped<R>{ctrl.return_set, std::move(ctrl.storage)};
+        }
+    }
+    for (; i < size; ++i) {
+        body(it[i], ctrl);
+        if (!ctrl.ok)
+[[unlikely]]            return ForResultTyped<R>{ctrl.return_set, std::move(ctrl.storage)};
+    }
+    return ForResultTyped<R>{false, {}};
+}
+'''
+axiom_type = "precondition"
+
+[[axioms]]
+id = "ilp::detail::for_loop_range_ret_simple_impl.complexity.template_instantiation"
+content = '''for_loop_range_ret_simple_impl is a template function; each unique combination of template arguments causes a separate instantiation'''
+formal_spec = '''instantiation_count = O(unique_template_args^3)'''
+layer = "user_library"
+confidence = 0.95
+source_file = "loops_ilp.hpp"
+source_module = "loops_ilppp"
+source_line_start = 158
+source_line_end = 158
+function = "ilp::detail::for_loop_range_ret_simple_impl"
+header = "loops_ilp.hpp"
+signature = '''auto for_loop_range_ret_simple_impl(Range &&range, F &&body) {
+    validate_unroll_factor<N>();
+    auto it = std::ranges::begin(range);
+    auto end_it = std::ranges::end(range);
+    auto size = std::ranges::size(range);
+    using Sentinel = decltype(end_it);
+    using R = std::invoke_result_t<F, std::ranges::range_reference_t<Range>, Sentinel>;
+    if (std::is_same_v<R, bool>) {
+        std::size_t i = 0;
+        for (; i + N <= size; i += N) {
+            std::array<bool, N> matches;
+            for (std::size_t j = 0; j < N; ++j) {
+                matches[j] = body(it[i + j], end_it);
+            }
+            for (std::size_t j = 0; j < N; ++j) {
+                if (matches[j])
+                    return it + (i + j);
+            }
+        }
+        for (; i < size; ++i) {
+            if (body(it[i], end_it))
+                return it + i;
+        }
+        return end_it;
+    } else if (is_optional_v<R>) {
+        std::size_t i = 0;
+        for (; i + N <= size; i += N) {
+            std::array<R, N> results;
+            for (std::size_t j = 0; j < N; ++j) {
+                results[j] = body(it[i + j], end_it);
+            }
+            for (std::size_t j = 0; j < N; ++j) {
+                if (results[j].has_value())
+                    return std::move(results[j]);
+            }
+        }
+        for (; i < size; ++i) {
+            R result = body(it[i], end_it);
+            if (result.has_value())
+                return result;
+        }
+        return R{};
+    } else {
+        std::size_t i = 0;
+        for (; i + N <= size; i += N) {
+            std::array<R, N> results;
+            for (std::size_t j = 0; j < N; ++j) {
+                results[j] = body(it[i + j], end_it);
+            }
+            for (std::size_t j = 0; j < N; ++j) {
+                if (results[j] != end_it)
+                    return std::move(results[j]);
+            }
+        }
+        for (; i < size; ++i) {
+            R result = body(it[i], end_it);
+            if (result != end_it)
+                return result;
+        }
+        return static_cast<R>(end_it);
+    }
+}
+'''
+axiom_type = "complexity"
+
+[[axioms]]
+id = "ilp::detail::for_loop_range_ret_simple_impl.precond.bounds_check"
+content = '''Index must be within bounds for matches[j]'''
+formal_spec = '''0 <= index && index < size'''
+layer = "user_library"
+confidence = 0.95
+source_file = "loops_ilp.hpp"
+source_module = "loops_ilppp"
+source_line_start = 173
+source_line_end = 173
+function = "ilp::detail::for_loop_range_ret_simple_impl"
+header = "loops_ilp.hpp"
+signature = '''auto for_loop_range_ret_simple_impl(Range &&range, F &&body) {
+    validate_unroll_factor<N>();
+    auto it = std::ranges::begin(range);
+    auto end_it = std::ranges::end(range);
+    auto size = std::ranges::size(range);
+    using Sentinel = decltype(end_it);
+    using R = std::invoke_result_t<F, std::ranges::range_reference_t<Range>, Sentinel>;
+    if (std::is_same_v<R, bool>) {
+        std::size_t i = 0;
+        for (; i + N <= size; i += N) {
+            std::array<bool, N> matches;
+            for (std::size_t j = 0; j < N; ++j) {
+                matches[j] = body(it[i + j], end_it);
+            }
+            for (std::size_t j = 0; j < N; ++j) {
+                if (matches[j])
+                    return it + (i + j);
+            }
+        }
+        for (; i < size; ++i) {
+            if (body(it[i], end_it))
+                return it + i;
+        }
+        return end_it;
+    } else if (is_optional_v<R>) {
+        std::size_t i = 0;
+        for (; i + N <= size; i += N) {
+            std::array<R, N> results;
+            for (std::size_t j = 0; j < N; ++j) {
+                results[j] = body(it[i + j], end_it);
+            }
+            for (std::size_t j = 0; j < N; ++j) {
+                if (results[j].has_value())
+                    return std::move(results[j]);
+            }
+        }
+        for (; i < size; ++i) {
+            R result = body(it[i], end_it);
+            if (result.has_value())
+                return result;
+        }
+        return R{};
+    } else {
+        std::size_t i = 0;
+        for (; i + N <= size; i += N) {
+            std::array<R, N> results;
+            for (std::size_t j = 0; j < N; ++j) {
+                results[j] = body(it[i + j], end_it);
+            }
+            for (std::size_t j = 0; j < N; ++j) {
+                if (results[j] != end_it)
+                    return std::move(results[j]);
+            }
+        }
+        for (; i < size; ++i) {
+            R result = body(it[i], end_it);
+            if (result != end_it)
+                return result;
+        }
+        return static_cast<R>(end_it);
+    }
+}
+'''
+axiom_type = "precondition"
+
+[[axioms]]
+id = "Sentinel.type_alias"
+content = '''Sentinel is an alias for decltype(end_it)'''
+formal_spec = '''type(Sentinel) == decltype(end_it)'''
+layer = "user_library"
+confidence = 1.0
+source_file = "loops_ilp.hpp"
+source_module = "loops_ilppp"
+source_line_start = 164
+source_line_end = 164
+function = "Sentinel"
+header = "loops_ilp.hpp"
+axiom_type = "constraint"
+
+[[axioms]]
+id = "R.type_alias"
+content = '''R is an alias for std::invoke_result_t<F, std::ranges::range_reference_t<Range>, Sentinel>'''
+formal_spec = '''type(R) == std::invoke_result_t<F, std::ranges::range_reference_t<Range>, Sentinel>'''
+layer = "user_library"
+confidence = 1.0
+source_file = "loops_ilp.hpp"
+source_module = "loops_ilppp"
+source_line_start = 166
+source_line_end = 166
+function = "R"
+header = "loops_ilp.hpp"
+axiom_type = "constraint"
+
+[[axioms]]
+id = "ilp::for_loop.complexity.template_instantiation"
+content = '''for_loop is a template function; each unique combination of template arguments causes a separate instantiation'''
+formal_spec = '''instantiation_count = O(unique_template_args^3)'''
+layer = "user_library"
+confidence = 0.95
+source_file = "loops_ilp.hpp"
+source_module = "loops_ilppp"
+source_line_start = 231
+source_line_end = 231
+function = "ilp::for_loop"
+header = "loops_ilp.hpp"
+signature = '''ForResult for_loop(T start, T end, F &&body) {
+    return detail::for_loop_untyped_impl<N>(start, end, std::forward<F>(body));
+}
+'''
+axiom_type = "complexity"
+
+[[axioms]]
+id = "ilp::for_loop_typed.complexity.template_instantiation"
+content = '''for_loop_typed is a template function; each unique combination of template arguments causes a separate instantiation'''
+formal_spec = '''instantiation_count = O(unique_template_args^4)'''
+layer = "user_library"
+confidence = 0.95
+source_file = "loops_ilp.hpp"
+source_module = "loops_ilppp"
+source_line_start = 237
+source_line_end = 237
+function = "ilp::for_loop_typed"
+header = "loops_ilp.hpp"
+signature = '''ForResultTyped<R> for_loop_typed(T start, T end, F &&body) {
+    return detail::for_loop_typed_impl<R, N>(start, end, std::forward<F>(body));
+}
+'''
+axiom_type = "complexity"
+
+[[axioms]]
+id = "ilp::for_loop_range.complexity.template_instantiation"
+content = '''for_loop_range is a template function; each unique combination of template arguments causes a separate instantiation'''
+formal_spec = '''instantiation_count = O(unique_template_args^3)'''
+layer = "user_library"
+confidence = 0.95
+source_file = "loops_ilp.hpp"
+source_module = "loops_ilppp"
+source_line_start = 243
+source_line_end = 243
+function = "ilp::for_loop_range"
+header = "loops_ilp.hpp"
+signature = '''ForResult for_loop_range(Range &&range, F &&body) {
+    return detail::for_loop_range_untyped_impl<N>(std::forward<Range>(range), std::forward<F>(body));
+}
+'''
+axiom_type = "complexity"
+
+[[axioms]]
+id = "ilp::for_loop_range_typed.complexity.template_instantiation"
+content = '''for_loop_range_typed is a template function; each unique combination of template arguments causes a separate instantiation'''
+formal_spec = '''instantiation_count = O(unique_template_args^4)'''
+layer = "user_library"
+confidence = 0.95
+source_file = "loops_ilp.hpp"
+source_module = "loops_ilppp"
+source_line_start = 249
+source_line_end = 249
+function = "ilp::for_loop_range_typed"
+header = "loops_ilp.hpp"
+signature = '''ForResultTyped<R> for_loop_range_typed(Range &&range, F &&body) {
+    return detail::for_loop_range_typed_impl<R, N>(std::forward<Range>(range), std::forward<F>(body));
+}
+'''
+axiom_type = "complexity"
+
+[[axioms]]
+id = "ilp::for_loop_range_ret_simple.complexity.template_instantiation"
+content = '''for_loop_range_ret_simple is a template function; each unique combination of template arguments causes a separate instantiation'''
+formal_spec = '''instantiation_count = O(unique_template_args^3)'''
+layer = "user_library"
+confidence = 0.95
+source_file = "loops_ilp.hpp"
+source_module = "loops_ilppp"
+source_line_start = 254
+source_line_end = 254
+function = "ilp::for_loop_range_ret_simple"
+header = "loops_ilp.hpp"
+signature = '''auto for_loop_range_ret_simple(Range &&range, F &&body) {
+    return detail::for_loop_range_ret_simple_impl<N>(std::forward<Range>(range), std::forward<F>(body));
+}
+'''
+axiom_type = "complexity"
+
+[[axioms]]
+id = "ilp::for_loop_auto.complexity.template_instantiation"
+content = '''for_loop_auto is a template function; each unique combination of template arguments causes a separate instantiation'''
+formal_spec = '''instantiation_count = O(unique_template_args^4)'''
+layer = "user_library"
+confidence = 0.95
+source_file = "loops_ilp.hpp"
+source_module = "loops_ilppp"
+source_line_start = 260
+source_line_end = 260
+function = "ilp::for_loop_auto"
+header = "loops_ilp.hpp"
+signature = '''ForResult for_loop_auto(T start, T end, F &&body) {
+    return for_loop<optimal_N<LT, ElementT>>(start, end, std::forward<F>(body));
+}
+'''
+axiom_type = "complexity"
+
+[[axioms]]
+id = "ilp::for_loop_typed_auto.complexity.template_instantiation"
+content = '''for_loop_typed_auto is a template function; each unique combination of template arguments causes a separate instantiation'''
+formal_spec = '''instantiation_count = O(unique_template_args^5)'''
+layer = "user_library"
+confidence = 0.95
+source_file = "loops_ilp.hpp"
+source_module = "loops_ilppp"
+source_line_start = 266
+source_line_end = 266
+function = "ilp::for_loop_typed_auto"
+header = "loops_ilp.hpp"
+signature = '''ForResultTyped<R> for_loop_typed_auto(T start, T end, F &&body) {
+    return for_loop_typed<R, optimal_N<LT, ElementT>>(start, end, std::forward<F>(body));
+}
+'''
+axiom_type = "complexity"
+
+[[axioms]]
+id = "ilp::for_loop_range_auto.complexity.template_instantiation"
+content = '''for_loop_range_auto is a template function; each unique combination of template arguments causes a separate instantiation'''
+formal_spec = '''instantiation_count = O(unique_template_args^4)'''
+layer = "user_library"
+confidence = 0.95
+source_file = "loops_ilp.hpp"
+source_module = "loops_ilppp"
+source_line_start = 272
+source_line_end = 272
+function = "ilp::for_loop_range_auto"
+header = "loops_ilp.hpp"
+signature = '''ForResult for_loop_range_auto(Range &&range, F &&body) {
+    return for_loop_range<optimal_N<LT, ElementT>>(std::forward<Range>(range), std::forward<F>(body));
+}
+'''
+axiom_type = "complexity"
+
+[[axioms]]
+id = "ilp::for_loop_range_typed_auto.complexity.template_instantiation"
+content = '''for_loop_range_typed_auto is a template function; each unique combination of template arguments causes a separate instantiation'''
+formal_spec = '''instantiation_count = O(unique_template_args^5)'''
+layer = "user_library"
+confidence = 0.95
+source_file = "loops_ilp.hpp"
+source_module = "loops_ilppp"
+source_line_start = 278
+source_line_end = 278
+function = "ilp::for_loop_range_typed_auto"
+header = "loops_ilp.hpp"
+signature = '''ForResultTyped<R> for_loop_range_typed_auto(Range &&range, F &&body) {
+    return for_loop_range_typed<R, optimal_N<LT, ElementT>>(std::forward<Range>(range), std::forward<F>(body));
+}
+'''
+axiom_type = "complexity"
+
+[[axioms]]
+id = "ILP_FOR.effect.iteration"
+content = '''Macro ILP_FOR performs iteration over a range or condition'''
+formal_spec = '''has_iteration_semantics'''
+layer = "user_library"
+confidence = 0.9
+source_file = "/home/mvarendorff/Documents/Code/cpp/ilp_for/ilp_for/detail/macros_simple.hpp"
+source_module = "ome.mvarendorff.Documents.Code.cpp.ilp_for.ilp_for.detail.macros_simplepp"
+source_line_start = 10
+source_line_end = 10
+function = "ILP_FOR"
+header = "/home/mvarendorff/Documents/Code/cpp/ilp_for/ilp_for/detail/macros_simple.hpp"
+signature = '''#define ILP_FOR(loop_var_decl, start, end, N)'''
+axiom_type = "effect"
+
+[[axioms]]
+id = "ILP_FOR_RANGE.effect.iteration"
+content = '''Macro ILP_FOR_RANGE performs iteration over a range or condition'''
+formal_spec = '''has_iteration_semantics'''
+layer = "user_library"
+confidence = 0.9
+source_file = "/home/mvarendorff/Documents/Code/cpp/ilp_for/ilp_for/detail/macros_simple.hpp"
+source_module = "ome.mvarendorff.Documents.Code.cpp.ilp_for.ilp_for.detail.macros_simplepp"
+source_line_start = 12
+source_line_end = 12
+function = "ILP_FOR_RANGE"
+header = "/home/mvarendorff/Documents/Code/cpp/ilp_for/ilp_for/detail/macros_simple.hpp"
+signature = '''#define ILP_FOR_RANGE(loop_var_decl, range, N)'''
+axiom_type = "effect"
+
+[[axioms]]
+id = "ILP_FOR_AUTO.effect.iteration"
+content = '''Macro ILP_FOR_AUTO performs iteration over a range or condition'''
+formal_spec = '''has_iteration_semantics'''
+layer = "user_library"
+confidence = 0.9
+source_file = "/home/mvarendorff/Documents/Code/cpp/ilp_for/ilp_for/detail/macros_simple.hpp"
+source_module = "ome.mvarendorff.Documents.Code.cpp.ilp_for.ilp_for.detail.macros_simplepp"
+source_line_start = 14
+source_line_end = 14
+function = "ILP_FOR_AUTO"
+header = "/home/mvarendorff/Documents/Code/cpp/ilp_for/ilp_for/detail/macros_simple.hpp"
+signature = '''#define ILP_FOR_AUTO(loop_var_decl, start, end, loop_type, element_type)'''
+axiom_type = "effect"
+
+[[axioms]]
+id = "ILP_FOR_RANGE_AUTO.effect.iteration"
+content = '''Macro ILP_FOR_RANGE_AUTO performs iteration over a range or condition'''
+formal_spec = '''has_iteration_semantics'''
+layer = "user_library"
+confidence = 0.9
+source_file = "/home/mvarendorff/Documents/Code/cpp/ilp_for/ilp_for/detail/macros_simple.hpp"
+source_module = "ome.mvarendorff.Documents.Code.cpp.ilp_for.ilp_for.detail.macros_simplepp"
+source_line_start = 17
+source_line_end = 17
+function = "ILP_FOR_RANGE_AUTO"
+header = "/home/mvarendorff/Documents/Code/cpp/ilp_for/ilp_for/detail/macros_simple.hpp"
+signature = '''#define ILP_FOR_RANGE_AUTO(loop_var_decl, range, loop_type, element_type)'''
+axiom_type = "effect"
+
+[[axioms]]
+id = "ILP_FOR_T.effect.iteration"
+content = '''Macro ILP_FOR_T performs iteration over a range or condition'''
+formal_spec = '''has_iteration_semantics'''
+layer = "user_library"
+confidence = 0.9
+source_file = "/home/mvarendorff/Documents/Code/cpp/ilp_for/ilp_for/detail/macros_simple.hpp"
+source_module = "ome.mvarendorff.Documents.Code.cpp.ilp_for.ilp_for.detail.macros_simplepp"
+source_line_start = 19
+source_line_end = 19
+function = "ILP_FOR_T"
+header = "/home/mvarendorff/Documents/Code/cpp/ilp_for/ilp_for/detail/macros_simple.hpp"
+signature = '''#define ILP_FOR_T(type, loop_var_decl, start, end, N)'''
+axiom_type = "effect"
+
+[[axioms]]
+id = "ILP_FOR_RANGE_T.effect.iteration"
+content = '''Macro ILP_FOR_RANGE_T performs iteration over a range or condition'''
+formal_spec = '''has_iteration_semantics'''
+layer = "user_library"
+confidence = 0.9
+source_file = "/home/mvarendorff/Documents/Code/cpp/ilp_for/ilp_for/detail/macros_simple.hpp"
+source_module = "ome.mvarendorff.Documents.Code.cpp.ilp_for.ilp_for.detail.macros_simplepp"
+source_line_start = 21
+source_line_end = 21
+function = "ILP_FOR_RANGE_T"
+header = "/home/mvarendorff/Documents/Code/cpp/ilp_for/ilp_for/detail/macros_simple.hpp"
+signature = '''#define ILP_FOR_RANGE_T(type, loop_var_decl, range, N)'''
+axiom_type = "effect"
+
+[[axioms]]
+id = "ILP_FOR_T_AUTO.effect.iteration"
+content = '''Macro ILP_FOR_T_AUTO performs iteration over a range or condition'''
+formal_spec = '''has_iteration_semantics'''
+layer = "user_library"
+confidence = 0.9
+source_file = "/home/mvarendorff/Documents/Code/cpp/ilp_for/ilp_for/detail/macros_simple.hpp"
+source_module = "ome.mvarendorff.Documents.Code.cpp.ilp_for.ilp_for.detail.macros_simplepp"
+source_line_start = 23
+source_line_end = 23
+function = "ILP_FOR_T_AUTO"
+header = "/home/mvarendorff/Documents/Code/cpp/ilp_for/ilp_for/detail/macros_simple.hpp"
+signature = '''#define ILP_FOR_T_AUTO(ret_type, loop_var_decl, start, end, loop_type, element_type)'''
+axiom_type = "effect"
+
+[[axioms]]
+id = "ILP_FOR_RANGE_T_AUTO.effect.iteration"
+content = '''Macro ILP_FOR_RANGE_T_AUTO performs iteration over a range or condition'''
+formal_spec = '''has_iteration_semantics'''
+layer = "user_library"
+confidence = 0.9
+source_file = "/home/mvarendorff/Documents/Code/cpp/ilp_for/ilp_for/detail/macros_simple.hpp"
+source_module = "ome.mvarendorff.Documents.Code.cpp.ilp_for.ilp_for.detail.macros_simplepp"
+source_line_start = 26
+source_line_end = 26
+function = "ILP_FOR_RANGE_T_AUTO"
+header = "/home/mvarendorff/Documents/Code/cpp/ilp_for/ilp_for/detail/macros_simple.hpp"
+signature = '''#define ILP_FOR_RANGE_T_AUTO(ret_type, loop_var_decl, range, loop_type, element_type)'''
+axiom_type = "effect"

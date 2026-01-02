@@ -23,6 +23,7 @@ from .k_pairings import (
 from .k_semantics import KSemanticsExtractor, ParsedRule
 from .error_linker import ErrorCodeLinker
 from .clang_loader import load_from_json, load_from_string, parse_json
+from . import enricher
 
 # Backwards compatibility alias (deprecated)
 AxiomLinker = ErrorCodeLinker
@@ -37,6 +38,7 @@ from .prompts import (
 
 __all__ = [
     "AxiomLinker",  # Deprecated alias
+    "enricher",
     "ErrorCodeLinker",
     "build_function_index",
     "load_from_json",
