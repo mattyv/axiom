@@ -10,7 +10,11 @@
 #include <clang/AST/DeclTemplate.h>
 #include <clang/ASTMatchers/ASTMatchFinder.h>
 #include <clang/ASTMatchers/ASTMatchers.h>
+#include <clang/Frontend/CompilerInstance.h>
 #include <clang/Frontend/FrontendActions.h>
+#include <clang/Lex/MacroInfo.h>
+#include <clang/Lex/PPCallbacks.h>
+#include <clang/Lex/Preprocessor.h>
 #include <clang/Tooling/CommonOptionsParser.h>
 #include <clang/Tooling/Tooling.h>
 #include <clang/Tooling/CompilationDatabase.h>
@@ -27,6 +31,8 @@
 #include <iomanip>
 #include <iostream>
 #include <mutex>
+#include <regex>
+#include <set>
 #include <sstream>
 #include <thread>
 #include <unistd.h>
@@ -203,6 +209,372 @@ static std::string globalProjectRoot;
 
 // Global storage for call graph (collected across all files)
 static std::vector<axiom::FunctionCall> globalCallGraph;
+
+// Global storage for macros (collected across all files)
+static std::vector<axiom::MacroDefinition> globalMacros;
+static std::mutex globalMacrosMutex;
+
+// Forward declarations for macro extraction
+namespace axiom {
+    std::vector<Axiom> extractMacroAxioms(const MacroDefinition& macro);
+}
+
+// Semantic patterns detected in macro bodies
+struct MacroSemantics {
+    bool has_lambda_capture = false;
+    bool has_reference_capture = false;
+    bool has_template_call = false;
+    bool has_return_statement = false;
+    bool is_incomplete = false;
+    bool has_loop_construct = false;
+    bool creates_local_vars = false;
+    std::vector<std::string> local_vars;
+    std::string template_param;
+};
+
+// Analyze macro body for hazardous operations
+void analyzeMacroBody(const std::string& body, axiom::MacroDefinition& macro) {
+    // Division: / not followed by / or * (avoid comments)
+    std::regex divRegex(R"([^/]/[^/*]|%)");
+    macro.has_division = std::regex_search(body, divRegex);
+
+    // Pointer operations: * or & followed by identifier
+    std::regex ptrRegex(R"(\*[a-zA-Z_]|&[a-zA-Z_])");
+    macro.has_pointer_ops = std::regex_search(body, ptrRegex);
+
+    // Cast expressions: (type) or (type*)
+    std::regex castRegex(R"(\([a-zA-Z_][a-zA-Z_0-9]*\s*\*?\s*\))");
+    macro.has_casts = std::regex_search(body, castRegex);
+
+    // Function calls: identifier followed by (
+    std::regex funcRegex(R"(\b([a-z_][a-zA-Z_0-9]*)\s*\()");
+    std::smatch match;
+    std::string::const_iterator searchStart = body.cbegin();
+    std::set<std::string> keywords = {"if", "while", "for", "switch", "sizeof", "typeof", "alignof"};
+
+    while (std::regex_search(searchStart, body.cend(), match, funcRegex)) {
+        std::string funcName = match[1].str();
+        if (keywords.find(funcName) == keywords.end()) {
+            macro.function_calls.push_back(funcName);
+        }
+        searchStart = match.suffix().first;
+    }
+
+    // Macro references: UPPERCASE identifiers (3+ chars)
+    std::regex macroRefRegex(R"(\b([A-Z_][A-Z_0-9]{2,})\b)");
+    searchStart = body.cbegin();
+    while (std::regex_search(searchStart, body.cend(), match, macroRefRegex)) {
+        macro.referenced_macros.push_back(match[1].str());
+        searchStart = match.suffix().first;
+    }
+}
+
+// Analyze macro for semantic patterns
+MacroSemantics analyzeMacroSemantics(const std::string& body) {
+    MacroSemantics sem;
+
+    // Lambda capture patterns
+    std::regex refCaptureRegex(R"(\[&\])");
+    std::regex anyCaptureRegex(R"(\[[&=]\])");
+    sem.has_reference_capture = std::regex_search(body, refCaptureRegex);
+    sem.has_lambda_capture = std::regex_search(body, anyCaptureRegex);
+
+    // Template call pattern: identifier<N> or identifier<param>
+    std::regex templateCallRegex(R"(\b[a-zA-Z_][a-zA-Z_0-9]*\s*<\s*([A-Z_][A-Z_0-9]*|[a-zA-Z_][a-zA-Z_0-9]*)\s*>)");
+    std::smatch match;
+    if (std::regex_search(body, match, templateCallRegex)) {
+        sem.has_template_call = true;
+        sem.template_param = match[1].str();
+    }
+
+    // Return statement
+    std::regex returnRegex(R"(\breturn\b)");
+    sem.has_return_statement = std::regex_search(body, returnRegex);
+
+    // Check if macro is incomplete (ends with open syntax)
+    if (!body.empty()) {
+        int braces = 0, parens = 0;
+        for (char c : body) {
+            if (c == '{') braces++;
+            else if (c == '}') braces--;
+            else if (c == '(') parens++;
+            else if (c == ')') parens--;
+        }
+        sem.is_incomplete = (braces > 0 || parens > 0);
+    }
+
+    // Loop constructs
+    std::regex loopRegex(R"(\b(for|while)\s*\()");
+    sem.has_loop_construct = std::regex_search(body, loopRegex);
+
+    // Local variable creation (__xyz pattern)
+    std::regex localVarRegex(R"(\b(__[a-zA-Z_][a-zA-Z_0-9]*)\b)");
+    std::string::const_iterator searchStart = body.cbegin();
+    while (std::regex_search(searchStart, body.cend(), match, localVarRegex)) {
+        sem.local_vars.push_back(match[1].str());
+        sem.creates_local_vars = true;
+        searchStart = match.suffix().first;
+    }
+
+    return sem;
+}
+
+// Check if a macro has hazardous operations
+bool hasHazardousMacro(const axiom::MacroDefinition& macro) {
+    return macro.has_division ||
+           macro.has_pointer_ops ||
+           macro.has_casts ||
+           !macro.function_calls.empty();
+}
+
+// Check if a macro has interesting semantic patterns worth extracting
+bool hasSemanticPatterns(const MacroSemantics& sem) {
+    return sem.has_lambda_capture ||
+           sem.has_template_call ||
+           sem.is_incomplete ||
+           sem.creates_local_vars ||
+           sem.has_loop_construct;
+}
+
+// Create axioms from macro definitions (local copy to avoid linking issues)
+std::vector<axiom::Axiom> createMacroAxioms(const axiom::MacroDefinition& macro) {
+    std::vector<axiom::Axiom> axioms;
+
+    std::string signature = "#define " + macro.to_signature();
+    MacroSemantics sem = analyzeMacroSemantics(macro.body);
+
+    // Only extract from hazardous or semantically interesting macros
+    if (!hasHazardousMacro(macro) && !hasSemanticPatterns(sem)) {
+        return axioms;
+    }
+
+    // Division hazard -> precondition
+    if (macro.has_division) {
+        axiom::Axiom ax;
+        ax.id = macro.name + ".precond.divisor_nonzero";
+        ax.content = "Divisor in macro " + macro.name + " must not be zero";
+        ax.formal_spec = "divisor != 0";
+        ax.function = macro.name;
+        ax.signature = signature;
+        ax.header = macro.file_path;
+        ax.axiom_type = axiom::AxiomType::PRECONDITION;
+        ax.confidence = 0.9;
+        ax.source_type = axiom::SourceType::PATTERN;
+        ax.line = macro.line_start;
+        ax.hazard_type = axiom::HazardType::DIVISION;
+        ax.hazard_line = macro.line_start;
+        ax.has_guard = false;
+        axioms.push_back(std::move(ax));
+    }
+
+    // Reference capture [&] -> CONSTRAINT + ANTI_PATTERN
+    if (sem.has_reference_capture) {
+        {
+            axiom::Axiom ax;
+            ax.id = macro.name + ".constraint.reference_capture";
+            ax.content = "Variables used in " + macro.name + " are captured by reference ([&]), allowing modifications to affect the outer scope";
+            ax.formal_spec = "capture_mode == by_reference";
+            ax.function = macro.name;
+            ax.signature = signature;
+            ax.header = macro.file_path;
+            ax.axiom_type = axiom::AxiomType::CONSTRAINT;
+            ax.confidence = 1.0;
+            ax.source_type = axiom::SourceType::EXPLICIT;
+            ax.line = macro.line_start;
+            axioms.push_back(std::move(ax));
+        }
+        {
+            axiom::Axiom ax;
+            ax.id = macro.name + ".anti_pattern.dangling_reference";
+            ax.content = "Passing temporary objects to " + macro.name + " may cause dangling references due to [&] capture";
+            ax.formal_spec = "isTemporary(arg) -> undefined_behavior";
+            ax.function = macro.name;
+            ax.signature = signature;
+            ax.header = macro.file_path;
+            ax.axiom_type = axiom::AxiomType::ANTI_PATTERN;
+            ax.confidence = 0.9;
+            ax.source_type = axiom::SourceType::PATTERN;
+            ax.line = macro.line_start;
+            axioms.push_back(std::move(ax));
+        }
+    }
+
+    // Template call with parameter -> COMPLEXITY
+    if (sem.has_template_call && !sem.template_param.empty()) {
+        axiom::Axiom ax;
+        ax.id = macro.name + ".complexity.template_instantiation";
+        ax.content = "Each unique value of " + sem.template_param + " causes a separate template instantiation, increasing compile time and code size";
+        ax.formal_spec = "compile_time_cost proportional_to distinct_" + sem.template_param + "_values";
+        ax.function = macro.name;
+        ax.signature = signature;
+        ax.header = macro.file_path;
+        ax.axiom_type = axiom::AxiomType::COMPLEXITY;
+        ax.confidence = 0.95;
+        ax.source_type = axiom::SourceType::PATTERN;
+        ax.line = macro.line_start;
+        axioms.push_back(std::move(ax));
+    }
+
+    // Incomplete macro -> CONSTRAINT
+    if (sem.is_incomplete) {
+        axiom::Axiom ax;
+        ax.id = macro.name + ".constraint.requires_completion";
+        ax.content = "Macro " + macro.name + " is syntactically incomplete and requires a companion macro or closing syntax";
+        ax.formal_spec = "requires_companion_macro(" + macro.name + ")";
+        ax.function = macro.name;
+        ax.signature = signature;
+        ax.header = macro.file_path;
+        ax.axiom_type = axiom::AxiomType::CONSTRAINT;
+        ax.confidence = 1.0;
+        ax.source_type = axiom::SourceType::EXPLICIT;
+        ax.line = macro.line_start;
+        axioms.push_back(std::move(ax));
+    }
+
+    // Creates local variables -> POSTCONDITION
+    if (sem.creates_local_vars && !sem.local_vars.empty()) {
+        std::set<std::string> uniqueVars(sem.local_vars.begin(), sem.local_vars.end());
+        std::string varList;
+        for (const auto& v : uniqueVars) {
+            if (!varList.empty()) varList += ", ";
+            varList += v;
+        }
+
+        axiom::Axiom ax;
+        ax.id = macro.name + ".postcondition.local_vars_available";
+        ax.content = "After " + macro.name + " expansion, the following identifiers are available in scope: " + varList;
+        ax.formal_spec = "in_scope({" + varList + "})";
+        ax.function = macro.name;
+        ax.signature = signature;
+        ax.header = macro.file_path;
+        ax.axiom_type = axiom::AxiomType::POSTCONDITION;
+        ax.confidence = 0.95;
+        ax.source_type = axiom::SourceType::PATTERN;
+        ax.line = macro.line_start;
+        axioms.push_back(std::move(ax));
+    }
+
+    // Loop construct -> EFFECT
+    if (sem.has_loop_construct) {
+        axiom::Axiom ax;
+        ax.id = macro.name + ".effect.iteration";
+        ax.content = "Macro " + macro.name + " performs iteration over a range or condition";
+        ax.formal_spec = "has_iteration_semantics";
+        ax.function = macro.name;
+        ax.signature = signature;
+        ax.header = macro.file_path;
+        ax.axiom_type = axiom::AxiomType::EFFECT;
+        ax.confidence = 0.9;
+        ax.source_type = axiom::SourceType::PATTERN;
+        ax.line = macro.line_start;
+        axioms.push_back(std::move(ax));
+    }
+
+    return axioms;
+}
+
+// PPCallbacks implementation to capture macro definitions
+class MacroPPCallbacks : public PPCallbacks {
+public:
+    MacroPPCallbacks(SourceManager& sm, std::vector<axiom::MacroDefinition>& macros)
+        : sm_(sm), macros_(macros) {}
+
+    void MacroDefined(const Token& MacroNameTok,
+                      const MacroDirective* MD) override {
+        if (!MD) return;
+
+        const MacroInfo* MI = MD->getMacroInfo();
+        if (!MI) return;
+
+        // Skip built-in macros
+        auto loc = MI->getDefinitionLoc();
+        if (!loc.isValid() || sm_.isInSystemHeader(loc)) {
+            return;
+        }
+
+        axiom::MacroDefinition macro;
+        macro.name = MacroNameTok.getIdentifierInfo()->getName().str();
+        macro.is_function_like = MI->isFunctionLike();
+        macro.file_path = sm_.getFilename(loc).str();
+        macro.line_start = sm_.getSpellingLineNumber(loc);
+        macro.line_end = sm_.getSpellingLineNumber(MI->getDefinitionEndLoc());
+
+        // Check if file should be ignored
+        if (globalIgnoreFilter && shouldIgnorePath(globalIgnoreFilter, macro.file_path, globalProjectRoot, TestMode)) {
+            return;
+        }
+
+        // Get parameters for function-like macros
+        if (MI->isFunctionLike()) {
+            for (const auto* param : MI->params()) {
+                macro.parameters.push_back(param->getName().str());
+            }
+        }
+
+        // Build body from tokens
+        std::string body;
+        for (const auto& tok : MI->tokens()) {
+            if (!body.empty() && tok.hasLeadingSpace()) {
+                body += " ";
+            }
+            if (tok.isLiteral() && tok.getLiteralData()) {
+                body += std::string(tok.getLiteralData(), tok.getLength());
+            } else if (tok.getIdentifierInfo()) {
+                body += tok.getIdentifierInfo()->getName().str();
+            } else {
+                auto spelling = tok::getPunctuatorSpelling(tok.getKind());
+                if (spelling) {
+                    body += spelling;
+                }
+            }
+        }
+        macro.body = body;
+
+        // Analyze for hazards
+        analyzeMacroBody(body, macro);
+
+        macros_.push_back(std::move(macro));
+    }
+
+private:
+    SourceManager& sm_;
+    std::vector<axiom::MacroDefinition>& macros_;
+};
+
+// Custom FrontendAction that adds macro extraction
+class MacroExtractAction : public ASTFrontendAction {
+public:
+    MacroExtractAction(std::vector<axiom::MacroDefinition>& macros)
+        : macros_(macros) {}
+
+protected:
+    std::unique_ptr<ASTConsumer> CreateASTConsumer(CompilerInstance& CI,
+                                                    llvm::StringRef) override {
+        // Add PPCallbacks to capture macros
+        auto& PP = CI.getPreprocessor();
+        auto& SM = CI.getSourceManager();
+        PP.addPPCallbacks(std::make_unique<MacroPPCallbacks>(SM, macros_));
+
+        // Return empty consumer - we just want the preprocessor callbacks
+        return std::make_unique<ASTConsumer>();
+    }
+
+private:
+    std::vector<axiom::MacroDefinition>& macros_;
+};
+
+class MacroExtractActionFactory : public FrontendActionFactory {
+public:
+    MacroExtractActionFactory(std::vector<axiom::MacroDefinition>& macros)
+        : macros_(macros) {}
+
+    std::unique_ptr<FrontendAction> create() override {
+        return std::make_unique<MacroExtractAction>(macros_);
+    }
+
+private:
+    std::vector<axiom::MacroDefinition>& macros_;
+};
 
 namespace {
 
@@ -949,9 +1321,36 @@ BatchResult processBatch(
         finder.addMatcher(functionDecl(isDefinition()).bind("test_func"), testModeCallback.get());
     }
 
-    // Process files
+    // Process files for AST extraction
     ClangTool tool(compDb, files);
     batch.exitCode = tool.run(newFrontendActionFactory(&finder).get());
+
+    // Run macro extraction pass
+    std::vector<axiom::MacroDefinition> localMacros;
+    ClangTool macroTool(compDb, files);
+    MacroExtractActionFactory macroFactory(localMacros);
+    macroTool.run(&macroFactory);
+
+    // Convert macros to axioms and add to results
+    for (const auto& macro : localMacros) {
+        auto macroAxioms = createMacroAxioms(macro);
+        if (!macroAxioms.empty()) {
+            // Find or create result for this file
+            auto it = std::find_if(batch.results.begin(), batch.results.end(),
+                [&macro](const axiom::ExtractionResult& r) {
+                    return r.source_file == macro.file_path;
+                });
+
+            if (it == batch.results.end()) {
+                batch.results.push_back({macro.file_path, {}, {}});
+                it = batch.results.end() - 1;
+            }
+
+            for (auto& axiom : macroAxioms) {
+                it->axioms.push_back(std::move(axiom));
+            }
+        }
+    }
 
     // Update progress if tracking
     if (progress) {

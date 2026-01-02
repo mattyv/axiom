@@ -75,10 +75,21 @@ def find_axiom_extract() -> Path | None:
 def run_axiom_extract(
     compile_commands: Path | None = None,
     source_file: Path | None = None,
+    source_files: list[Path] | None = None,
     extra_args: str | None = None,
     recursive: bool = False,
+    parallel_jobs: int | None = None,
 ) -> dict:
-    """Run the axiom-extract C++ tool and return JSON output."""
+    """Run the axiom-extract C++ tool and return JSON output.
+
+    Args:
+        compile_commands: Path to compile_commands.json
+        source_file: Single source file or directory to analyze
+        source_files: Additional source files to analyze
+        extra_args: Extra compiler arguments (e.g., '-std=c++20 -I/path')
+        recursive: Recursively scan directories for C++ source files
+        parallel_jobs: Number of parallel jobs (-j flag)
+    """
     binary = find_axiom_extract()
     if not binary:
         raise FileNotFoundError(
@@ -91,14 +102,22 @@ def run_axiom_extract(
     if recursive:
         cmd.append("-r")
 
+    if parallel_jobs:
+        cmd.extend(["-j", str(parallel_jobs)])
+
     if compile_commands:
         cmd.extend(["-p", str(compile_commands.parent)])
 
     if source_file:
         cmd.append(str(source_file))
 
+    if source_files:
+        cmd.extend([str(f) for f in source_files])
+
+    # Add extra compiler args using -- separator (standard Clang tooling format)
     if extra_args:
-        cmd.extend(["--extra-arg", extra_args])
+        cmd.append("--")
+        cmd.extend(extra_args.split())
 
     logger.info(f"Running: {' '.join(cmd)}")
 
@@ -115,7 +134,7 @@ def link_depends_on(
     axioms: list[Axiom],
     vector_db_path: Path | None = None,
 ) -> list[Axiom]:
-    """Link axioms to foundation axioms using semantic search."""
+    """Link axioms to foundation axioms using batched semantic search."""
     if not vector_db_path:
         vector_db_path = Path(__file__).parent.parent / "data" / "lancedb"
 
@@ -129,12 +148,24 @@ def link_depends_on(
         logger.warning(f"Could not initialize LanceDBLoader: {e}")
         return axioms
 
+    # Check if table exists
+    if "axioms" not in loader.db.list_tables():
+        logger.warning("No axioms table in vector DB, skipping linking")
+        return axioms
+
+    table = loader.db.open_table("axioms")
+
+    # Batch encode all queries at once (major speedup)
+    queries = [f"{axiom.content} {axiom.formal_spec or ''}" for axiom in axioms]
+    logger.info(f"Batch encoding {len(queries)} queries...")
+    query_vectors = loader.model.encode(queries, show_progress_bar=False)
+
+    # Perform searches
+    logger.info("Searching for dependencies...")
     linked_axioms = []
-    for axiom in axioms:
-        # Search for related foundation axioms
-        query = f"{axiom.content} {axiom.formal_spec or ''}"
+    for i, axiom in enumerate(axioms):
         try:
-            results = loader.search(query, limit=5)
+            results = table.search(query_vectors[i].tolist()).limit(5).to_list()
             depends = []
             for result in results:
                 # Only link if similarity is high enough
@@ -294,12 +325,19 @@ def main() -> int:
     parser.add_argument(
         "--file",
         type=Path,
-        help="Single source file to analyze",
+        action="append",
+        dest="files",
+        help="Source file or directory to analyze (can be specified multiple times)",
     )
     parser.add_argument(
         "-r", "--recursive",
         action="store_true",
-        help="Recursively scan directory for C++ source files",
+        help="Recursively scan directories for C++ source files",
+    )
+    parser.add_argument(
+        "-j", "--jobs",
+        type=int,
+        help="Number of parallel jobs (default: number of CPU cores)",
     )
     parser.add_argument(
         "--args",
@@ -354,21 +392,26 @@ def main() -> int:
         format="%(levelname)s: %(message)s",
     )
 
-    if not args.compile_commands and not args.file:
+    if not args.compile_commands and not args.files:
         parser.error("Either --compile-commands or --file is required")
 
     try:
         # Run C++ extractor
         logger.info("Running axiom-extract...")
+        # Handle multiple files: first is source_file, rest are source_files
+        source_file = args.files[0] if args.files else None
+        source_files = args.files[1:] if args.files and len(args.files) > 1 else None
         json_str = run_axiom_extract(
             compile_commands=args.compile_commands,
-            source_file=args.file,
+            source_file=source_file,
+            source_files=source_files,
             extra_args=args.args,
             recursive=args.recursive,
+            parallel_jobs=args.jobs,
         )
 
         # Parse JSON output to AxiomCollection with call graph
-        source = str(args.compile_commands or args.file)
+        source = str(args.compile_commands or (args.files[0] if args.files else "unknown"))
         json_data = json.loads(json_str)
         collection, call_graph = parse_json_with_call_graph(json_data, source=source)
         logger.info(f"Extracted {len(collection.axioms)} axioms")

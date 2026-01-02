@@ -14,6 +14,15 @@
 namespace axiom {
 
 /// Parses .axignore files and filters paths based on glob patterns.
+///
+/// Supports two types of patterns:
+/// - Regular patterns: ignored during normal extraction
+/// - Test patterns (@test: prefix): ignored normally, but included in --test-mode
+///
+/// Example .axignore:
+///   build/           # Always ignored
+///   @test: tests/    # Ignored normally, used for test mining
+///   @test: *_test.cpp
 class IgnoreFilter {
 public:
     IgnoreFilter() = default;
@@ -41,7 +50,19 @@ public:
             line = line.substr(start, end - start + 1);
 
             if (!line.empty()) {
-                addPattern(line);
+                // Check for @test: prefix
+                const std::string testPrefix = "@test:";
+                if (line.find(testPrefix) == 0) {
+                    std::string pattern = line.substr(testPrefix.length());
+                    // Trim leading whitespace from pattern
+                    size_t patStart = pattern.find_first_not_of(" \t");
+                    if (patStart != std::string::npos) {
+                        pattern = pattern.substr(patStart);
+                        addTestPattern(pattern);
+                    }
+                } else {
+                    addPattern(line);
+                }
             }
         }
 
@@ -54,9 +75,43 @@ public:
         regexes_.push_back(globToRegex(pattern));
     }
 
-    /// Check if a path should be ignored
+    /// Add a test-only pattern (ignored normally, included in test mode)
+    void addTestPattern(const std::string& pattern) {
+        testPatterns_.push_back(pattern);
+        testRegexes_.push_back(globToRegex(pattern));
+    }
+
+    /// Check if a path should be ignored (normal mode)
     bool shouldIgnore(const std::string& path) const {
+        // In normal mode, ignore both regular patterns AND test patterns
         for (const auto& regex : regexes_) {
+            if (std::regex_search(path, regex)) {
+                return true;
+            }
+        }
+        for (const auto& regex : testRegexes_) {
+            if (std::regex_search(path, regex)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /// Check if a path should be ignored in test mode
+    /// In test mode: ignore regular patterns, but INCLUDE test patterns
+    bool shouldIgnoreInTestMode(const std::string& path) const {
+        // Only check regular patterns, not test patterns
+        for (const auto& regex : regexes_) {
+            if (std::regex_search(path, regex)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /// Check if a path is a test path (matches @test: patterns)
+    bool isTestPath(const std::string& path) const {
+        for (const auto& regex : testRegexes_) {
             if (std::regex_search(path, regex)) {
                 return true;
             }
@@ -66,24 +121,47 @@ public:
 
     /// Check if a path relative to project root should be ignored
     bool shouldIgnore(const std::string& path, const std::string& projectRoot) const {
-        // Make path relative to project root
-        std::string relativePath = path;
-        if (path.find(projectRoot) == 0) {
-            relativePath = path.substr(projectRoot.length());
-            if (!relativePath.empty() && relativePath[0] == '/') {
-                relativePath = relativePath.substr(1);
-            }
-        }
+        std::string relativePath = makeRelative(path, projectRoot);
         return shouldIgnore(relativePath);
     }
 
-    /// Get the number of patterns loaded
-    size_t patternCount() const { return patterns_.size(); }
+    /// Check if a path relative to project root should be ignored in test mode
+    bool shouldIgnoreInTestMode(const std::string& path, const std::string& projectRoot) const {
+        std::string relativePath = makeRelative(path, projectRoot);
+        return shouldIgnoreInTestMode(relativePath);
+    }
+
+    /// Check if a path relative to project root is a test path
+    bool isTestPath(const std::string& path, const std::string& projectRoot) const {
+        std::string relativePath = makeRelative(path, projectRoot);
+        return isTestPath(relativePath);
+    }
+
+    /// Get the number of patterns loaded (both regular and test)
+    size_t patternCount() const { return patterns_.size() + testPatterns_.size(); }
+
+    /// Get the number of test patterns
+    size_t testPatternCount() const { return testPatterns_.size(); }
 
     /// Get all patterns (for debugging)
     const std::vector<std::string>& patterns() const { return patterns_; }
 
+    /// Get all test patterns (for debugging)
+    const std::vector<std::string>& testPatterns() const { return testPatterns_; }
+
 private:
+    /// Make a path relative to the project root
+    std::string makeRelative(const std::string& path, const std::string& projectRoot) const {
+        if (path.find(projectRoot) == 0) {
+            size_t start = projectRoot.length();
+            if (start < path.length() && path[start] == '/') {
+                ++start;
+            }
+            return path.substr(start);
+        }
+        return path;
+    }
+
     /// Convert a glob pattern to a regex
     std::regex globToRegex(const std::string& glob) {
         std::string regex;
@@ -136,6 +214,8 @@ private:
 
     std::vector<std::string> patterns_;
     std::vector<std::regex> regexes_;
+    std::vector<std::string> testPatterns_;
+    std::vector<std::regex> testRegexes_;
 };
 
 /// Find .axignore file by walking up from a source file or directory

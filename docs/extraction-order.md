@@ -143,9 +143,18 @@ python scripts/extract_clang.py \
     --args="-std=c++20" \
     --output mylib_axioms.toml
 
-# Extract from a directory (recursive)
+# Extract from a directory (recursive) - simplest approach
 python scripts/extract_clang.py \
-    -r --file /path/to/library/ \
+    --file /path/to/library \
+    -r \
+    --args="-std=c++20 -I/path/to/library" \
+    --output mylib_axioms.toml
+
+# Parallel extraction with 4 jobs
+python scripts/extract_clang.py \
+    --file /path/to/library \
+    -r -j 4 \
+    --args="-std=c++20 -I/path/to/library" \
     --output mylib_axioms.toml
 
 # With compile_commands.json (best for complex projects)
@@ -173,7 +182,60 @@ python scripts/ingest.py mylib_axioms.toml
 - Confidence 0.95-1.0 for compiler-enforced constraints
 - Call graph extraction with precondition propagation
 - Automatic LanceDB linking to foundation axioms
-- Optional LLM refinement for low-confidence axioms
+- Optional LLM refinement for low-confidence axioms (<0.80 threshold)
+
+#### Axiom Types Extracted
+
+The Clang extractor automatically extracts the following axiom types:
+
+| Source | Axiom Type | Confidence | Example |
+|--------|------------|------------|---------|
+| `noexcept` | EXCEPTION | 1.0 | "foo is guaranteed not to throw exceptions" |
+| `[[nodiscard]]` | POSTCONDITION | 1.0 | "Return value must not be discarded" |
+| `[[deprecated]]` | ANTI_PATTERN | 1.0 | "Function is deprecated and should not be used" |
+| `const` method | EFFECT | 1.0 | "foo does not modify object state" |
+| `= delete` | CONSTRAINT | 1.0 | "Function is explicitly deleted and cannot be called" |
+| `constexpr` | CONSTRAINT | 1.0 | "foo can be evaluated at compile time" |
+| `consteval` | CONSTRAINT | 1.0 | "foo must be evaluated at compile time" |
+| `requires` clause | CONSTRAINT | 1.0 | "Template parameters must satisfy: Concept<T>" |
+| Division in body | PRECONDITION | 0.90 | "Divisor must not be zero" |
+| Null dereference | PRECONDITION | 0.90 | "Pointer must not be null" |
+| **Template function** | COMPLEXITY | 0.90-0.95 | "Each unique combination of template arguments causes a separate instantiation" |
+| **Return type `bool`** | POSTCONDITION | 0.85 | "Returns boolean indicating success/validity" |
+| **Return type `std::optional`** | POSTCONDITION | 0.95 | "Returns optional which may or may not contain a value" |
+| **Return type `std::expected`** | POSTCONDITION | 0.95 | "Returns expected which contains either a value or an error" |
+| **Return type pointer** | POSTCONDITION | 0.80 | "Returns pointer that may be null" |
+
+#### Macro Semantic Extraction
+
+Macros are analyzed for semantic patterns:
+
+| Pattern | Axiom Type | Confidence | Example |
+|---------|------------|------------|---------|
+| `[&]` lambda capture | CONSTRAINT + ANTI_PATTERN | 1.0, 0.9 | "Variables captured by reference; temporaries may dangle" |
+| Template call `<N>` | COMPLEXITY | 0.95 | "Each unique N causes separate template instantiation" |
+| Incomplete syntax | CONSTRAINT | 1.0 | "Macro requires companion macro for closing syntax" |
+| `__var` local vars | POSTCONDITION | 0.95 | "After expansion, __var is available in scope" |
+| `for`/`while` loop | EFFECT | 0.90 | "Macro performs iteration over a range" |
+| Division `/` | PRECONDITION | 0.90 | "Divisor must not be zero" |
+
+#### LLM Fallback
+
+When `--llm-fallback` is enabled, axioms with confidence < 0.80 are refined by Claude:
+
+```bash
+python scripts/extract_clang.py \
+    --file /path/to/mylib.cpp \
+    --llm-fallback \
+    --output mylib_axioms.toml
+```
+
+The LLM can:
+- Improve `content` and `formal_spec` fields
+- Adjust confidence scores
+- Add `rationale` explaining changes
+
+Axioms are processed in batches of 10 to minimize API calls.
 
 ### Option B: Tree-sitter + LLM Extraction (Interactive)
 
