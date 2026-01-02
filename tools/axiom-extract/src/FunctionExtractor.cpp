@@ -8,6 +8,7 @@
 #include <clang/AST/ASTContext.h>
 #include <clang/AST/Attr.h>
 #include <clang/AST/DeclCXX.h>
+#include <clang/AST/DeclTemplate.h>
 #include <clang/AST/Expr.h>
 #include <clang/AST/ExprCXX.h>
 #include <clang/AST/RecursiveASTVisitor.h>
@@ -27,8 +28,23 @@ public:
     }
 
     bool VisitFunctionDecl(clang::FunctionDecl* decl) {
-        // Skip implicit declarations and template specializations
-        if (decl->isImplicit() || !decl->isFirstDecl()) {
+        // Skip implicit declarations
+        if (decl->isImplicit()) {
+            return true;
+        }
+
+        // Skip if this is a templated function - we'll handle it in VisitFunctionTemplateDecl
+        if (decl->getDescribedFunctionTemplate()) {
+            return true;
+        }
+
+        // Skip template specializations/instantiations - handle in template visitor
+        if (decl->isFunctionTemplateSpecialization()) {
+            return true;
+        }
+
+        // Skip if not first declaration (but allow template pattern)
+        if (!decl->isFirstDecl()) {
             return true;
         }
 
@@ -49,6 +65,64 @@ public:
 
         // Extract C++20 attributes
         extractAttributes(decl, info);
+
+        functions_.push_back(std::move(info));
+        return true;
+    }
+
+    bool VisitFunctionTemplateDecl(clang::FunctionTemplateDecl* decl) {
+        // Skip if in system header
+        auto& sm = ctx_->getSourceManager();
+        if (sm.isInSystemHeader(decl->getLocation())) {
+            return true;
+        }
+
+        // Get the templated function
+        clang::FunctionDecl* func = decl->getTemplatedDecl();
+        if (!func) {
+            return true;
+        }
+
+        FunctionInfo info;
+        info.decl = func;
+        info.name = func->getNameAsString();
+        info.qualified_name = func->getQualifiedNameAsString();
+        info.signature = buildSignature(func);
+        info.header = getHeaderPath(func, sm);
+        info.line_start = sm.getSpellingLineNumber(decl->getBeginLoc());
+        info.line_end = sm.getSpellingLineNumber(decl->getEndLoc());
+
+        // Mark as template and extract template params
+        info.is_template = true;
+        auto* tpl = decl->getTemplateParameters();
+        if (tpl) {
+            info.template_param_count = tpl->size();
+            for (const auto* param : *tpl) {
+                if (param->isParameterPack()) {
+                    info.is_variadic_template = true;
+                }
+                // Get parameter name and type
+                std::string paramStr;
+                if (const auto* ttp = llvm::dyn_cast<clang::TemplateTypeParmDecl>(param)) {
+                    paramStr = "typename";
+                    if (!ttp->getName().empty()) {
+                        paramStr += " " + ttp->getNameAsString();
+                    }
+                    if (ttp->isParameterPack()) {
+                        paramStr += "...";
+                    }
+                } else if (const auto* nttp = llvm::dyn_cast<clang::NonTypeTemplateParmDecl>(param)) {
+                    paramStr = nttp->getType().getAsString();
+                    if (!nttp->getName().empty()) {
+                        paramStr += " " + nttp->getNameAsString();
+                    }
+                }
+                info.template_params.push_back(paramStr);
+            }
+        }
+
+        // Extract C++20 attributes from the function
+        extractAttributes(func, info);
 
         functions_.push_back(std::move(info));
         return true;
@@ -146,6 +220,55 @@ private:
             llvm::raw_string_ostream os(requiresStr);
             trail->printPretty(os, nullptr, ctx_->getPrintingPolicy());
             info.requires_clause = os.str();
+        }
+
+        // Template info
+        if (const auto* ftd = decl->getDescribedFunctionTemplate()) {
+            info.is_template = true;
+            auto* tpl = ftd->getTemplateParameters();
+            if (tpl) {
+                info.template_param_count = tpl->size();
+                for (const auto* param : *tpl) {
+                    // Check for parameter pack
+                    if (param->isParameterPack()) {
+                        info.is_variadic_template = true;
+                    }
+                    // Get parameter name and type
+                    std::string paramStr;
+                    if (const auto* ttp = llvm::dyn_cast<clang::TemplateTypeParmDecl>(param)) {
+                        paramStr = "typename";
+                        if (!ttp->getName().empty()) {
+                            paramStr += " " + ttp->getNameAsString();
+                        }
+                        if (ttp->isParameterPack()) {
+                            paramStr += "...";
+                        }
+                    } else if (const auto* nttp = llvm::dyn_cast<clang::NonTypeTemplateParmDecl>(param)) {
+                        paramStr = nttp->getType().getAsString();
+                        if (!nttp->getName().empty()) {
+                            paramStr += " " + nttp->getNameAsString();
+                        }
+                    }
+                    info.template_params.push_back(paramStr);
+                }
+            }
+        }
+        // Also check if this is a member of a template class
+        else if (const auto* method = llvm::dyn_cast<clang::CXXMethodDecl>(decl)) {
+            if (const auto* parent = method->getParent()) {
+                if (const auto* ctd = parent->getDescribedClassTemplate()) {
+                    info.is_template = true;
+                    auto* tpl = ctd->getTemplateParameters();
+                    if (tpl) {
+                        info.template_param_count = tpl->size();
+                        for (const auto* param : *tpl) {
+                            if (param->isParameterPack()) {
+                                info.is_variadic_template = true;
+                            }
+                        }
+                    }
+                }
+            }
         }
     }
 

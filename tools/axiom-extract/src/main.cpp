@@ -7,6 +7,7 @@
 #include "Extractors.h"
 #include "IgnoreFilter.h"
 
+#include <clang/AST/DeclTemplate.h>
 #include <clang/ASTMatchers/ASTMatchFinder.h>
 #include <clang/ASTMatchers/ASTMatchers.h>
 #include <clang/Frontend/FrontendActions.h>
@@ -17,12 +18,18 @@
 #include <llvm/Support/FileSystem.h>
 
 #include <algorithm>
+#include <atomic>
 #include <chrono>
 #include <ctime>
+#include <fcntl.h>
 #include <filesystem>
+#include <future>
 #include <iomanip>
 #include <iostream>
+#include <mutex>
 #include <sstream>
+#include <thread>
+#include <unistd.h>
 
 using namespace clang;
 using namespace clang::ast_matchers;
@@ -41,6 +48,12 @@ static llvm::cl::opt<std::string> OutputFile(
 static llvm::cl::opt<bool> Verbose(
     "v",
     llvm::cl::desc("Verbose output"),
+    llvm::cl::cat(AxiomExtractCategory)
+);
+
+static llvm::cl::opt<bool> Quiet(
+    "q",
+    llvm::cl::desc("Suppress informational messages (compilation database warnings, etc.)"),
     llvm::cl::cat(AxiomExtractCategory)
 );
 
@@ -98,6 +111,14 @@ static llvm::cl::opt<std::string> TestFrameworkOpt(
     llvm::cl::cat(AxiomExtractCategory)
 );
 
+static llvm::cl::opt<unsigned> NumJobs(
+    "j",
+    llvm::cl::desc("Number of parallel jobs (default: number of CPU cores)"),
+    llvm::cl::value_desc("N"),
+    llvm::cl::init(0),
+    llvm::cl::cat(AxiomExtractCategory)
+);
+
 // C++ source file extensions
 const std::vector<std::string> CPP_EXTENSIONS = {
     ".cpp", ".cc", ".cxx", ".hpp", ".h", ".hxx", ".C", ".H"
@@ -112,12 +133,21 @@ bool isCppSourceFile(const std::filesystem::path& path) {
     return false;
 }
 
+// Helper to check if a path should be ignored based on mode
+bool shouldIgnorePath(axiom::IgnoreFilter* filter, const std::string& path,
+                      const std::string& projectRoot, bool testMode) {
+    if (!filter) return false;
+    return testMode ? filter->shouldIgnoreInTestMode(path, projectRoot)
+                    : filter->shouldIgnore(path, projectRoot);
+}
+
 // Recursively find all C++ source files in a directory
 std::vector<std::string> findSourceFiles(
     const std::string& path,
     bool recursive,
     axiom::IgnoreFilter* ignoreFilter = nullptr,
-    const std::string& projectRoot = ""
+    const std::string& projectRoot = "",
+    bool testMode = false
 ) {
     std::vector<std::string> files;
     std::filesystem::path fsPath(path);
@@ -126,7 +156,7 @@ std::vector<std::string> findSourceFiles(
     if (std::filesystem::is_regular_file(fsPath)) {
         if (isCppSourceFile(fsPath)) {
             std::string absPath = std::filesystem::absolute(fsPath).string();
-            if (!ignoreFilter || !ignoreFilter->shouldIgnore(absPath, projectRoot)) {
+            if (!shouldIgnorePath(ignoreFilter, absPath, projectRoot, testMode)) {
                 files.push_back(absPath);
             }
         }
@@ -145,7 +175,7 @@ std::vector<std::string> findSourceFiles(
             for (const auto& entry : std::filesystem::recursive_directory_iterator(fsPath)) {
                 if (entry.is_regular_file() && isCppSourceFile(entry.path())) {
                     std::string absPath = std::filesystem::absolute(entry.path()).string();
-                    if (!ignoreFilter || !ignoreFilter->shouldIgnore(absPath, projectRoot)) {
+                    if (!shouldIgnorePath(ignoreFilter, absPath, projectRoot, testMode)) {
                         files.push_back(absPath);
                     }
                 }
@@ -154,7 +184,7 @@ std::vector<std::string> findSourceFiles(
             for (const auto& entry : std::filesystem::directory_iterator(fsPath)) {
                 if (entry.is_regular_file() && isCppSourceFile(entry.path())) {
                     std::string absPath = std::filesystem::absolute(entry.path()).string();
-                    if (!ignoreFilter || !ignoreFilter->shouldIgnore(absPath, projectRoot)) {
+                    if (!shouldIgnorePath(ignoreFilter, absPath, projectRoot, testMode)) {
                         files.push_back(absPath);
                     }
                 }
@@ -204,7 +234,7 @@ public:
             return;
 
         // Check if file should be ignored based on .axignore
-        if (globalIgnoreFilter && globalIgnoreFilter->shouldIgnore(filename, globalProjectRoot)) {
+        if (globalIgnoreFilter && shouldIgnorePath(globalIgnoreFilter, filename, globalProjectRoot, TestMode)) {
             if (Verbose) {
                 llvm::errs() << "Ignoring file (matched .axignore): " << filename << "\n";
             }
@@ -284,6 +314,37 @@ public:
             llvm::raw_string_ostream reqStream(reqStr);
             req->printPretty(reqStream, nullptr, result.Context->getPrintingPolicy());
             info.requires_clause = reqStr;
+        }
+
+        // Check if this is a template function
+        if (const auto* ftd = func->getDescribedFunctionTemplate()) {
+            info.is_template = true;
+            auto* tpl = ftd->getTemplateParameters();
+            if (tpl) {
+                info.template_param_count = tpl->size();
+                for (const auto* param : *tpl) {
+                    if (param->isParameterPack()) {
+                        info.is_variadic_template = true;
+                    }
+                }
+            }
+        }
+        // Also check if this is a member of a template class
+        else if (const auto* method = llvm::dyn_cast<CXXMethodDecl>(func)) {
+            if (const auto* parent = method->getParent()) {
+                if (const auto* ctd = parent->getDescribedClassTemplate()) {
+                    info.is_template = true;
+                    auto* tpl = ctd->getTemplateParameters();
+                    if (tpl) {
+                        info.template_param_count = tpl->size();
+                        for (const auto* param : *tpl) {
+                            if (param->isParameterPack()) {
+                                info.is_variadic_template = true;
+                            }
+                        }
+                    }
+                }
+            }
         }
 
         // Extract constraints to axioms
@@ -371,7 +432,7 @@ public:
         if (filename.empty())
             return;
 
-        if (globalIgnoreFilter && globalIgnoreFilter->shouldIgnore(filename, globalProjectRoot))
+        if (globalIgnoreFilter && shouldIgnorePath(globalIgnoreFilter, filename, globalProjectRoot, TestMode))
             return;
 
         // Find or create result for this file
@@ -481,7 +542,7 @@ public:
         if (filename.empty())
             return;
 
-        if (globalIgnoreFilter && globalIgnoreFilter->shouldIgnore(filename, globalProjectRoot))
+        if (globalIgnoreFilter && shouldIgnorePath(globalIgnoreFilter, filename, globalProjectRoot, TestMode))
             return;
 
         auto it = std::find_if(results_.begin(), results_.end(),
@@ -544,7 +605,7 @@ public:
         if (filename.empty())
             return;
 
-        if (globalIgnoreFilter && globalIgnoreFilter->shouldIgnore(filename, globalProjectRoot))
+        if (globalIgnoreFilter && shouldIgnorePath(globalIgnoreFilter, filename, globalProjectRoot, TestMode))
             return;
 
         auto it = std::find_if(results_.begin(), results_.end(),
@@ -620,7 +681,7 @@ public:
         if (filename.empty())
             return;
 
-        if (globalIgnoreFilter && globalIgnoreFilter->shouldIgnore(filename, globalProjectRoot))
+        if (globalIgnoreFilter && shouldIgnorePath(globalIgnoreFilter, filename, globalProjectRoot, TestMode))
             return;
 
         auto it = std::find_if(results_.begin(), results_.end(),
@@ -687,7 +748,7 @@ public:
         if (filename.empty())
             return;
 
-        if (globalIgnoreFilter && globalIgnoreFilter->shouldIgnore(filename, globalProjectRoot))
+        if (globalIgnoreFilter && shouldIgnorePath(globalIgnoreFilter, filename, globalProjectRoot, TestMode))
             return;
 
         auto it = std::find_if(results_.begin(), results_.end(),
@@ -819,9 +880,143 @@ std::string getCurrentTimestamp() {
     return ss.str();
 }
 
+// Thread-safe progress counter for parallel processing
+struct ParallelProgress {
+    std::atomic<size_t> filesProcessed{0};
+    size_t totalFiles{0};
+    std::mutex outputMutex;
+};
+
+// Process a batch of files and return extracted results
+// Each thread gets its own extractors and callbacks to avoid sharing mutable state
+struct BatchResult {
+    std::vector<axiom::ExtractionResult> results;
+    std::vector<std::pair<std::string, std::string>> callGraphEntries;
+    int exitCode = 0;
+};
+
+BatchResult processBatch(
+    const std::vector<std::string>& files,
+    CompilationDatabase& compDb,
+    bool extractHazards,
+    bool extractCallGraph,
+    bool testMode,
+    axiom::TestFramework testFramework,
+    ParallelProgress* progress = nullptr
+) {
+    BatchResult batch;
+
+    if (files.empty()) {
+        return batch;
+    }
+
+    // Create per-thread extractors
+    auto constraintExtractor = axiom::createConstraintExtractor();
+    std::unique_ptr<axiom::HazardDetector> hazardDetector;
+    if (extractHazards) {
+        hazardDetector = axiom::createHazardDetector();
+    }
+    std::unique_ptr<axiom::CallGraphExtractor> callGraphExtractor;
+    if (extractCallGraph) {
+        callGraphExtractor = axiom::createCallGraphExtractor();
+    }
+    std::unique_ptr<axiom::TestAssertExtractor> testExtractor;
+    if (testMode) {
+        testExtractor = axiom::createTestAssertExtractor(testFramework);
+    }
+
+    // Set up matchers with per-thread results
+    FunctionCallback funcCallback(batch.results, *constraintExtractor,
+                                   hazardDetector.get(), callGraphExtractor.get());
+    ClassCallback classCallback(batch.results);
+    EnumCallback enumCallback(batch.results);
+    StaticAssertCallback staticAssertCallback(batch.results);
+    ConceptCallback conceptCallback(batch.results);
+    TypeAliasCallback typeAliasCallback(batch.results);
+    std::unique_ptr<TestModeCallback> testModeCallback;
+    if (testMode && testExtractor) {
+        testModeCallback = std::make_unique<TestModeCallback>(batch.results, *testExtractor);
+    }
+
+    MatchFinder finder;
+    finder.addMatcher(functionDecl(isDefinition()).bind("func"), &funcCallback);
+    finder.addMatcher(cxxRecordDecl(isDefinition()).bind("class"), &classCallback);
+    finder.addMatcher(enumDecl(isDefinition()).bind("enum"), &enumCallback);
+    finder.addMatcher(staticAssertDecl().bind("static_assert"), &staticAssertCallback);
+    finder.addMatcher(conceptDecl().bind("concept"), &conceptCallback);
+    finder.addMatcher(typeAliasDecl().bind("alias"), &typeAliasCallback);
+    if (testMode && testModeCallback) {
+        finder.addMatcher(functionDecl(isDefinition()).bind("test_func"), testModeCallback.get());
+    }
+
+    // Process files
+    ClangTool tool(compDb, files);
+    batch.exitCode = tool.run(newFrontendActionFactory(&finder).get());
+
+    // Update progress if tracking
+    if (progress) {
+        size_t done = progress->filesProcessed.fetch_add(files.size()) + files.size();
+        if (Verbose) {
+            std::lock_guard<std::mutex> lock(progress->outputMutex);
+            llvm::errs() << "[" << done << "/" << progress->totalFiles << "] Processed "
+                        << files.size() << " file(s)\n";
+        }
+    }
+
+    return batch;
+}
+
+// Merge batch results into final results
+void mergeResults(std::vector<axiom::ExtractionResult>& target,
+                  std::vector<axiom::ExtractionResult>&& source) {
+    for (auto& result : source) {
+        // Check if we already have results for this file
+        auto it = std::find_if(target.begin(), target.end(),
+            [&result](const axiom::ExtractionResult& r) {
+                return r.source_file == result.source_file;
+            });
+
+        if (it != target.end()) {
+            // Merge axioms into existing result
+            for (auto& axiom : result.axioms) {
+                it->axioms.push_back(std::move(axiom));
+            }
+        } else {
+            target.push_back(std::move(result));
+        }
+    }
+}
+
 int main(int argc, const char** argv) {
+    // Check for -q/--quiet flag early to suppress compilation database warnings
+    bool quietMode = false;
+    for (int i = 1; i < argc; ++i) {
+        if (std::string(argv[i]) == "-q" || std::string(argv[i]) == "--quiet") {
+            quietMode = true;
+            break;
+        }
+    }
+
+    // Suppress stderr during option parsing if quiet mode
+    // (CommonOptionsParser prints noisy "compilation database not found" warnings)
+    int savedStderr = -1;
+    if (quietMode) {
+        savedStderr = dup(STDERR_FILENO);
+        int devNull = open("/dev/null", O_WRONLY);
+        if (devNull >= 0) {
+            dup2(devNull, STDERR_FILENO);
+            close(devNull);
+        }
+    }
+
     auto expectedParser = CommonOptionsParser::create(
         argc, argv, AxiomExtractCategory);
+
+    // Restore stderr
+    if (savedStderr >= 0) {
+        dup2(savedStderr, STDERR_FILENO);
+        close(savedStderr);
+    }
 
     if (!expectedParser) {
         llvm::errs() << expectedParser.takeError();
@@ -866,7 +1061,7 @@ int main(int argc, const char** argv) {
         // Recursive mode or directory input: find all source files
         for (const auto& inputPath : inputPaths) {
             auto found = findSourceFiles(inputPath, Recursive,
-                NoIgnore ? nullptr : &ignoreFilter, globalProjectRoot);
+                NoIgnore ? nullptr : &ignoreFilter, globalProjectRoot, TestMode);
             sourceFiles.insert(sourceFiles.end(), found.begin(), found.end());
         }
 
@@ -904,91 +1099,79 @@ int main(int argc, const char** argv) {
         compDb = &optionsParser.getCompilations();
     }
 
-    ClangTool tool(*compDb, sourceFiles);
+    // Determine number of parallel jobs
+    unsigned numJobs = NumJobs;
+    if (numJobs == 0) {
+        numJobs = std::thread::hardware_concurrency();
+        if (numJobs == 0) numJobs = 1;  // Fallback if detection fails
+    }
 
-    // Create extractors
-    auto constraintExtractor = axiom::createConstraintExtractor();
-    std::unique_ptr<axiom::HazardDetector> hazardDetector;
-    if (ExtractHazards) {
-        hazardDetector = axiom::createHazardDetector();
-    }
-    std::unique_ptr<axiom::CallGraphExtractor> callGraphExtractor;
-    if (ExtractCallGraph) {
-        callGraphExtractor = axiom::createCallGraphExtractor();
-    }
-    std::unique_ptr<axiom::TestAssertExtractor> testExtractor;
-    if (TestMode) {
-        auto framework = parseTestFramework(TestFrameworkOpt);
-        testExtractor = axiom::createTestAssertExtractor(framework);
-        if (Verbose) {
-            llvm::errs() << "Test mode enabled with framework: " << TestFrameworkOpt << "\n";
-        }
+    // Parse test framework once
+    axiom::TestFramework testFramework = parseTestFramework(TestFrameworkOpt);
+    if (TestMode && Verbose) {
+        llvm::errs() << "Test mode enabled with framework: " << TestFrameworkOpt << "\n";
     }
 
     // Storage for results
     std::vector<axiom::ExtractionResult> results;
     globalCallGraph.clear();  // Clear from any previous runs
+    int exitCode = 0;
 
-    // Set up matchers
-    FunctionCallback funcCallback(results, *constraintExtractor, hazardDetector.get(), callGraphExtractor.get());
-    ClassCallback classCallback(results);
-    EnumCallback enumCallback(results);
-    StaticAssertCallback staticAssertCallback(results);
-    ConceptCallback conceptCallback(results);
-    TypeAliasCallback typeAliasCallback(results);
-    std::unique_ptr<TestModeCallback> testModeCallback;
-    if (TestMode && testExtractor) {
-        testModeCallback = std::make_unique<TestModeCallback>(results, *testExtractor);
-    }
+    // Use parallel processing if we have multiple files and multiple jobs
+    if (numJobs > 1 && sourceFiles.size() > 1) {
+        if (Verbose) {
+            llvm::errs() << "Processing " << sourceFiles.size() << " files with "
+                        << numJobs << " parallel jobs\n";
+        }
 
-    MatchFinder finder;
+        // Split files into batches
+        std::vector<std::vector<std::string>> batches(numJobs);
+        for (size_t i = 0; i < sourceFiles.size(); ++i) {
+            batches[i % numJobs].push_back(sourceFiles[i]);
+        }
 
-    // Match functions
-    finder.addMatcher(
-        functionDecl(isDefinition()).bind("func"),
-        &funcCallback
-    );
+        // Progress tracking
+        ParallelProgress progress;
+        progress.totalFiles = sourceFiles.size();
 
-    // Match classes and structs
-    finder.addMatcher(
-        cxxRecordDecl(isDefinition()).bind("class"),
-        &classCallback
-    );
+        // Launch parallel tasks
+        std::vector<std::future<BatchResult>> futures;
+        for (unsigned i = 0; i < numJobs; ++i) {
+            if (!batches[i].empty()) {
+                futures.push_back(std::async(std::launch::async,
+                    processBatch,
+                    std::cref(batches[i]),
+                    std::ref(*compDb),
+                    ExtractHazards.getValue(),
+                    ExtractCallGraph.getValue(),
+                    TestMode.getValue(),
+                    testFramework,
+                    &progress
+                ));
+            }
+        }
 
-    // Match enums
-    finder.addMatcher(
-        enumDecl(isDefinition()).bind("enum"),
-        &enumCallback
-    );
+        // Collect results
+        for (auto& future : futures) {
+            BatchResult batch = future.get();
+            mergeResults(results, std::move(batch.results));
+            if (batch.exitCode != 0) {
+                exitCode = batch.exitCode;
+            }
+        }
+    } else {
+        // Single-threaded processing (original code path)
+        if (Verbose && sourceFiles.size() > 1) {
+            llvm::errs() << "Processing " << sourceFiles.size() << " files (single-threaded)\n";
+        }
 
-    // Match static_assert declarations
-    finder.addMatcher(
-        staticAssertDecl().bind("static_assert"),
-        &staticAssertCallback
-    );
-
-    // Match concept declarations (C++20)
-    finder.addMatcher(
-        conceptDecl().bind("concept"),
-        &conceptCallback
-    );
-
-    // Match type alias declarations (using)
-    finder.addMatcher(
-        typeAliasDecl().bind("alias"),
-        &typeAliasCallback
-    );
-
-    // Add test mode matcher - matches all functions to scan for test assertions
-    if (TestMode && testModeCallback) {
-        finder.addMatcher(
-            functionDecl(isDefinition()).bind("test_func"),
-            testModeCallback.get()
+        BatchResult batch = processBatch(
+            sourceFiles, *compDb,
+            ExtractHazards, ExtractCallGraph, TestMode, testFramework
         );
+        results = std::move(batch.results);
+        exitCode = batch.exitCode;
     }
-
-    // Run the tool
-    int exitCode = tool.run(newFrontendActionFactory(&finder).get());
 
     // Note: We don't fail on exitCode != 0 because some files may have parse errors
     // (missing includes, etc.) but we still want to output what we extracted.

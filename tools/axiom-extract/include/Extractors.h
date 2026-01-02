@@ -55,6 +55,12 @@ struct FunctionInfo {
     // Template constraints
     std::vector<std::string> template_constraints;
 
+    // Template info
+    bool is_template = false;
+    bool is_variadic_template = false;  // uses parameter packs
+    size_t template_param_count = 0;
+    std::vector<std::string> template_params;  // template parameter names/types
+
     // For method analysis
     const clang::FunctionDecl* decl = nullptr;
 };
