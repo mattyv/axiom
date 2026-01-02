@@ -168,31 +168,57 @@ def link_depends_on(
 
     # Use semantic_linker to search only foundation layer axioms
     logger.info(f"Searching for foundation axiom dependencies (link_type={link_type})...")
-    linked_axioms = []
-    for axiom in axioms:
-        try:
-            # Build search query
-            query = f"{axiom.content} {axiom.formal_spec or ''}"
 
-            # Use semantic_linker.search_foundations to filter to foundation layers only
-            candidates = semantic_linker.search_foundations(query, loader, limit=10)
+    if link_type == "semantic":
+        # Batched LLM-based linking: group by function to reduce LLM calls
+        logger.info("Using batched semantic linking to reduce LLM calls...")
+        function_groups = semantic_linker.group_by_function(axioms)
+        logger.info(f"Grouped {len(axioms)} axioms into {len(function_groups)} functions")
 
-            if link_type == "semantic":
-                # Use LLM to identify direct dependencies from candidates
-                new_depends = semantic_linker.link_axiom_with_llm(axiom, candidates)
-            else:
+        linked_axioms = []
+        for function_name, func_axioms in function_groups.items():
+            # For each function group, find union of candidates across all axioms
+            all_candidates = {}
+            for axiom in func_axioms:
+                query = f"{axiom.content} {axiom.formal_spec or ''}"
+                candidates = semantic_linker.search_foundations(query, loader, limit=10)
+                for c in candidates:
+                    all_candidates[c["id"]] = c
+
+            # Batch LLM call for all axioms in this function
+            candidate_list = list(all_candidates.values())
+            link_map = semantic_linker.link_axioms_batch_with_llm(
+                func_axioms,
+                candidate_list,
+                model="sonnet",
+            )
+
+            # Apply links to axioms
+            for axiom in func_axioms:
+                new_depends = link_map.get(axiom.id, [])
+                axiom.depends_on = semantic_linker.merge_depends_on(axiom.depends_on, new_depends)
+                linked_axioms.append(axiom)
+
+        return linked_axioms
+
+    else:
+        # Similarity-based linking: fast, no LLM
+        linked_axioms = []
+        for axiom in axioms:
+            try:
+                query = f"{axiom.content} {axiom.formal_spec or ''}"
+                candidates = semantic_linker.search_foundations(query, loader, limit=10)
+
                 # Similarity-based: top 3 candidates
                 new_depends = [c["id"] for c in candidates[:3] if c["id"] != axiom.id]
 
-            # Merge with existing depends_on using semantic_linker.merge_depends_on
-            axiom.depends_on = semantic_linker.merge_depends_on(axiom.depends_on, new_depends)
+                axiom.depends_on = semantic_linker.merge_depends_on(axiom.depends_on, new_depends)
+            except Exception as e:
+                logger.debug(f"Could not search for {axiom.id}: {e}")
 
-        except Exception as e:
-            logger.debug(f"Could not search for {axiom.id}: {e}")
+            linked_axioms.append(axiom)
 
-        linked_axioms.append(axiom)
-
-    return linked_axioms
+        return linked_axioms
 
 
 # LLM Refiner configuration

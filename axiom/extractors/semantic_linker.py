@@ -304,3 +304,66 @@ def link_axiom_with_llm(
 
     except (subprocess.TimeoutExpired, FileNotFoundError, Exception):
         return []
+
+
+def link_axioms_batch_with_llm(
+    axioms: list[Axiom],
+    candidates: list[dict],
+    model: str = "sonnet",
+) -> dict[str, list[str]]:
+    """Use LLM to identify direct dependencies for multiple axioms from the same function.
+
+    This batches axioms from the same function into a single LLM call.
+
+    Args:
+        axioms: List of axioms to link (should be from same function).
+        candidates: Candidate foundation axioms from semantic search.
+        model: Model to use ("sonnet", "opus", "haiku").
+
+    Returns:
+        Dict mapping axiom IDs to their direct dependency IDs.
+    """
+    import subprocess
+
+    if not candidates or not axioms:
+        return {}
+
+    # Build prompt for all axioms
+    function_name = axioms[0].function or "ungrouped"
+    prompt = build_linking_prompt(
+        function_name,
+        axioms,
+        candidates,
+    )
+
+    # Call Claude CLI
+    try:
+        result = subprocess.run(
+            [
+                "claude",
+                "--print",
+                "--model",
+                model,
+                "--dangerously-skip-permissions",
+                prompt,
+            ],
+            capture_output=True,
+            text=True,
+            timeout=120,  # Longer timeout for batch
+        )
+
+        if result.returncode != 0:
+            return {}
+
+        # Parse response
+        link_map = parse_llm_response(result.stdout)
+
+        # Validate that returned IDs exist in candidates
+        validated_map = {}
+        for axiom_id, links in link_map.items():
+            validated_map[axiom_id] = validate_candidate_ids(links, candidates)
+
+        return validated_map
+
+    except (subprocess.TimeoutExpired, FileNotFoundError, Exception):
+        return {}
