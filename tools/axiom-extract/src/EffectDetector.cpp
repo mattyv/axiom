@@ -10,9 +10,12 @@
 #include <clang/AST/DeclCXX.h>
 #include <clang/AST/Expr.h>
 #include <clang/AST/ExprCXX.h>
+#include <clang/AST/ParentMapContext.h>
 #include <clang/AST/RecursiveASTVisitor.h>
 #include <clang/AST/Stmt.h>
 #include <clang/Basic/SourceManager.h>
+#include <map>
+#include <set>
 #include <unordered_set>
 
 namespace axiom {
@@ -48,7 +51,30 @@ public:
         }
     }
 
-    std::vector<Effect> getEffects() { return std::move(effects_); }
+    std::vector<Effect> getEffects() {
+        // Generate call frequency effects before returning
+        generateCallFrequencyEffects();
+        return std::move(effects_);
+    }
+
+    // Track loop statements to determine occurs_at_start
+    bool VisitForStmt(clang::ForStmt* loop) {
+        int line = sm_.getSpellingLineNumber(loop->getBeginLoc());
+        loop_start_lines_.insert(line);
+        return true;
+    }
+
+    bool VisitWhileStmt(clang::WhileStmt* loop) {
+        int line = sm_.getSpellingLineNumber(loop->getBeginLoc());
+        loop_start_lines_.insert(line);
+        return true;
+    }
+
+    bool VisitCXXForRangeStmt(clang::CXXForRangeStmt* loop) {
+        int line = sm_.getSpellingLineNumber(loop->getBeginLoc());
+        loop_start_lines_.insert(line);
+        return true;
+    }
 
     // Assignment operators: x = y, x += y, etc.
     bool VisitBinaryOperator(clang::BinaryOperator* op) {
@@ -192,6 +218,15 @@ public:
         }
 
         std::string methodName = methodDecl->getNameAsString();
+        std::string qualified_name = methodDecl->getQualifiedNameAsString();
+        int line = sm_.getSpellingLineNumber(call->getBeginLoc());
+
+        // Track this member call for frequency analysis
+        CallInfo info;
+        info.expression = getExprText(call);
+        info.line = line;
+        info.result_is_cached = isCallResultCached(call);
+        call_frequencies_[qualified_name].push_back(info);
 
         // Check if it's a container modification method
         if (CONTAINER_MODIFY_METHODS.count(methodName)) {
@@ -199,7 +234,7 @@ public:
             e.kind = EffectKind::CONTAINER_MODIFY;
             e.target = getExprText(call->getImplicitObjectArgument());
             e.expression = getExprText(call);
-            e.line = sm_.getSpellingLineNumber(call->getBeginLoc());
+            e.line = line;
             e.confidence = 0.90;
             effects_.push_back(std::move(e));
         }
@@ -220,6 +255,15 @@ public:
         }
 
         std::string name = callee->getNameAsString();
+        std::string qualified_name = callee->getQualifiedNameAsString();
+        int line = sm_.getSpellingLineNumber(call->getBeginLoc());
+
+        // Track this call for frequency analysis
+        CallInfo info;
+        info.expression = getExprText(call);
+        info.line = line;
+        info.result_is_cached = isCallResultCached(call);
+        call_frequencies_[qualified_name].push_back(info);
 
         // malloc, calloc, realloc
         if (name == "malloc" || name == "calloc" || name == "realloc") {
@@ -227,7 +271,7 @@ public:
             e.kind = EffectKind::MEMORY_ALLOC;
             e.target = name;
             e.expression = getExprText(call);
-            e.line = sm_.getSpellingLineNumber(call->getBeginLoc());
+            e.line = line;
             e.confidence = 0.95;
             effects_.push_back(std::move(e));
         }
@@ -238,7 +282,7 @@ public:
             e.kind = EffectKind::MEMORY_FREE;
             e.target = call->getNumArgs() > 0 ? getExprText(call->getArg(0)) : "unknown";
             e.expression = getExprText(call);
-            e.line = sm_.getSpellingLineNumber(call->getBeginLoc());
+            e.line = line;
             e.confidence = 0.95;
             effects_.push_back(std::move(e));
         }
@@ -258,6 +302,76 @@ private:
             return true;
         }
         return false;
+    }
+
+    // Check if call result is stored in a variable (cached)
+    bool isCallResultCached(const clang::CallExpr* call) {
+        // Walk up the AST to find if this call is on the RHS of an assignment/declaration
+        clang::DynTypedNodeList parents = ctx_.getParents(*call);
+        if (parents.empty()) {
+            return false;
+        }
+
+        const clang::DynTypedNode& parent = parents[0];
+
+        // Check if parent is a variable declaration: auto x = call();
+        if (parent.get<clang::VarDecl>()) {
+            return true;
+        }
+
+        // Check if parent is assignment operator RHS: x = call();
+        if (const auto* binOp = parent.get<clang::BinaryOperator>()) {
+            if (binOp->isAssignmentOp()) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    // Generate CALL_FREQUENCY effects from collected call data
+    void generateCallFrequencyEffects() {
+        if (!func_->hasBody()) {
+            return;
+        }
+
+        // Find the first line of actual code (after declarations)
+        int function_start_line = sm_.getSpellingLineNumber(func_->getBody()->getBeginLoc());
+
+        for (const auto& [func_name, calls] : call_frequencies_) {
+            // Skip if no calls (shouldn't happen)
+            if (calls.empty()) {
+                continue;
+            }
+
+            Effect e;
+            e.kind = EffectKind::CALL_FREQUENCY;
+            e.target = func_name;
+            e.call_count = static_cast<int>(calls.size());
+
+            // Check if result is cached and reused (single call with stored result)
+            // Multiple calls means NOT cached/reused, even if each individual result is stored
+            e.is_cached = (calls.size() == 1 && calls[0].result_is_cached);
+
+            // Check if all calls occur before any loops
+            e.occurs_at_start = true;
+            if (!loop_start_lines_.empty()) {
+                int first_loop_line = *loop_start_lines_.begin();
+                for (const auto& call_info : calls) {
+                    if (call_info.line >= first_loop_line) {
+                        e.occurs_at_start = false;
+                        break;
+                    }
+                }
+            }
+
+            // Use first call's info for expression and line
+            e.expression = calls[0].expression;
+            e.line = calls[0].line;
+            e.confidence = 0.90;
+
+            effects_.push_back(std::move(e));
+        }
     }
 
     std::string getExprText(const clang::Expr* expr) {
@@ -281,6 +395,15 @@ private:
     std::unordered_set<std::string> pointerParams_;
     bool isConstMethod_ = false;
     std::vector<Effect> effects_;
+
+    // Call frequency tracking
+    struct CallInfo {
+        std::string expression;
+        int line;
+        bool result_is_cached;  // Result stored in a variable
+    };
+    std::map<std::string, std::vector<CallInfo>> call_frequencies_;  // function name -> call sites
+    std::set<int> loop_start_lines_;  // Track which lines are inside loops
 };
 
 class EffectDetectorImpl : public EffectDetector {
