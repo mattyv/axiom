@@ -43,6 +43,7 @@ from pathlib import Path
 # Add project root to path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
+from axiom.extractors import semantic_linker
 from axiom.extractors.clang_loader import parse_json_with_call_graph
 from axiom.extractors.enricher import enrich_axioms
 from axiom.extractors.propagation import propagate_preconditions
@@ -135,7 +136,7 @@ def link_depends_on(
     axioms: list[Axiom],
     vector_db_path: Path | None = None,
 ) -> list[Axiom]:
-    """Link axioms to foundation axioms using batched semantic search."""
+    """Link axioms to foundation axioms using semantic search filtered to foundation layers."""
     if not vector_db_path:
         vector_db_path = Path(__file__).parent.parent / "data" / "lancedb"
 
@@ -156,28 +157,24 @@ def link_depends_on(
         logger.warning("No axioms table in vector DB, skipping linking")
         return axioms
 
-    table = loader.db.open_table("axioms")
-
-    # Batch encode all queries at once (major speedup)
-    queries = [f"{axiom.content} {axiom.formal_spec or ''}" for axiom in axioms]
-    logger.info(f"Batch encoding {len(queries)} queries...")
-    query_vectors = loader.model.encode(queries, show_progress_bar=False)
-
-    # Perform searches
-    logger.info("Searching for dependencies...")
+    # Use semantic_linker to search only foundation layer axioms
+    logger.info("Searching for foundation axiom dependencies...")
     linked_axioms = []
-    for i, axiom in enumerate(axioms):
+    for axiom in axioms:
         try:
-            results = table.search(query_vectors[i].tolist()).limit(5).to_list()
-            depends = []
-            for result in results:
-                # Only link if similarity is high enough
-                if result.get("_distance", 1.0) < 0.5:
-                    dep_id = result.get("id")
-                    if dep_id and dep_id != axiom.id:
-                        depends.append(dep_id)
+            # Build search query
+            query = f"{axiom.content} {axiom.formal_spec or ''}"
 
-            axiom.depends_on = depends[:3]  # Limit to top 3
+            # Use semantic_linker.search_foundations to filter to foundation layers only
+            candidates = semantic_linker.search_foundations(query, loader, limit=10)
+
+            # For now, use similarity-based linking (top 3 candidates)
+            # TODO: Integrate LLM-based direct dependency identification
+            new_depends = [c["id"] for c in candidates[:3] if c["id"] != axiom.id]
+
+            # Merge with existing depends_on using semantic_linker.merge_depends_on
+            axiom.depends_on = semantic_linker.merge_depends_on(axiom.depends_on, new_depends)
+
         except Exception as e:
             logger.debug(f"Could not search for {axiom.id}: {e}")
 
