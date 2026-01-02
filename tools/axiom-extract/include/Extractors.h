@@ -205,6 +205,39 @@ public:
     virtual std::string emit(const std::vector<ExtractionResult>& results) = 0;
 };
 
+// Test framework enumeration
+enum class TestFramework {
+    AUTO,       // Auto-detect from includes
+    CATCH2,     // Catch2 test framework
+    GTEST,      // Google Test
+    BOOST_TEST  // Boost.Test
+};
+
+// Test assertion information
+struct TestAssertion {
+    std::string condition;       // The assertion condition
+    std::string function_tested; // Function being tested (if detectable)
+    std::string test_name;       // Name of the test case
+    std::string section_name;    // Section/fixture name (optional)
+    AxiomType axiom_type;        // Inferred axiom type
+    double confidence;           // Confidence level
+    int line;                    // Source line
+    TestFramework framework;     // Which framework
+    bool is_fatal;               // REQUIRE/ASSERT vs CHECK/EXPECT
+};
+
+// Interface for extracting test assertions
+class TestAssertExtractor {
+public:
+    virtual ~TestAssertExtractor() = default;
+
+    // Extract test assertions from a translation unit
+    virtual std::vector<TestAssertion> extractAssertions(clang::ASTContext& ctx) = 0;
+
+    // Convert assertions to axioms
+    virtual std::vector<Axiom> toAxioms(const std::vector<TestAssertion>& assertions) = 0;
+};
+
 // Factory functions (implemented in .cpp files)
 std::unique_ptr<FunctionExtractor> createFunctionExtractor();
 std::unique_ptr<ConstraintExtractor> createConstraintExtractor();
@@ -212,5 +245,6 @@ std::unique_ptr<HazardDetector> createHazardDetector();
 std::unique_ptr<GuardAnalyzer> createGuardAnalyzer();
 std::unique_ptr<CallGraphExtractor> createCallGraphExtractor();
 std::unique_ptr<JsonEmitter> createJsonEmitter();
+std::unique_ptr<TestAssertExtractor> createTestAssertExtractor(TestFramework framework = TestFramework::AUTO);
 
 } // namespace axiom

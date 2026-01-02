@@ -43,6 +43,7 @@ set(SOURCES
     src/CallGraphExtractor.cpp
     src/JsonEmitter.cpp
     src/MacroExtractor.cpp
+    src/TestAssertExtractor.cpp
 )
 
 # Main executable

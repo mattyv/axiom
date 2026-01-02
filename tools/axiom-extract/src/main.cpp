@@ -83,6 +83,21 @@ static llvm::cl::opt<bool> ExtractCallGraph(
     llvm::cl::cat(AxiomExtractCategory)
 );
 
+static llvm::cl::opt<bool> TestMode(
+    "test-mode",
+    llvm::cl::desc("Enable test mining mode to extract axioms from test assertions"),
+    llvm::cl::init(false),
+    llvm::cl::cat(AxiomExtractCategory)
+);
+
+static llvm::cl::opt<std::string> TestFrameworkOpt(
+    "test-framework",
+    llvm::cl::desc("Test framework to use (auto, catch2, gtest, boost). Default: auto"),
+    llvm::cl::value_desc("framework"),
+    llvm::cl::init("auto"),
+    llvm::cl::cat(AxiomExtractCategory)
+);
+
 // C++ source file extensions
 const std::vector<std::string> CPP_EXTENSIONS = {
     ".cpp", ".cc", ".cxx", ".hpp", ".h", ".hxx", ".C", ".H"
@@ -722,7 +737,79 @@ private:
     std::vector<axiom::ExtractionResult>& results_;
 };
 
+// Callback for test mode - extracts assertions from test frameworks
+class TestModeCallback : public MatchFinder::MatchCallback {
+public:
+    TestModeCallback(std::vector<axiom::ExtractionResult>& results,
+                     axiom::TestAssertExtractor& extractor)
+        : results_(results)
+        , extractor_(extractor) {}
+
+    void run(const MatchFinder::MatchResult& result) override {
+        // Extract test assertions from the translation unit
+        auto assertions = extractor_.extractAssertions(*result.Context);
+        if (assertions.empty())
+            return;
+
+        // Convert to axioms
+        auto axioms = extractor_.toAxioms(assertions);
+
+        // Get source file from first assertion
+        auto& sm = result.Context->getSourceManager();
+        std::string filename;
+        if (!axioms.empty() && axioms[0].line > 0) {
+            // Try to get filename from source manager
+            auto mainFileID = sm.getMainFileID();
+            // Use getFilename() which returns StringRef directly
+            filename = sm.getFilename(sm.getLocForStartOfFile(mainFileID)).str();
+        }
+
+        if (filename.empty() && !assertions.empty()) {
+            filename = "unknown";
+        }
+
+        // Find or create result for this file
+        auto it = std::find_if(results_.begin(), results_.end(),
+            [&filename](const axiom::ExtractionResult& r) {
+                return r.source_file == filename;
+            });
+
+        if (it == results_.end()) {
+            results_.push_back({filename, {}, {}});
+            it = results_.end() - 1;
+        }
+
+        // Add extracted axioms
+        for (auto& axiom : axioms) {
+            if (axiom.header.empty()) {
+                size_t lastSlash = filename.rfind('/');
+                axiom.header = (lastSlash != std::string::npos)
+                    ? filename.substr(lastSlash + 1)
+                    : filename;
+            }
+            it->axioms.push_back(std::move(axiom));
+        }
+
+        if (Verbose) {
+            llvm::errs() << "Extracted " << axioms.size()
+                        << " test axioms from " << filename << "\n";
+        }
+    }
+
+private:
+    std::vector<axiom::ExtractionResult>& results_;
+    axiom::TestAssertExtractor& extractor_;
+};
+
 } // anonymous namespace
+
+// Parse test framework from command line option
+axiom::TestFramework parseTestFramework(const std::string& opt) {
+    if (opt == "catch2") return axiom::TestFramework::CATCH2;
+    if (opt == "gtest") return axiom::TestFramework::GTEST;
+    if (opt == "boost") return axiom::TestFramework::BOOST_TEST;
+    return axiom::TestFramework::AUTO;
+}
 
 std::string getCurrentTimestamp() {
     auto now = std::chrono::system_clock::now();
@@ -829,6 +916,14 @@ int main(int argc, const char** argv) {
     if (ExtractCallGraph) {
         callGraphExtractor = axiom::createCallGraphExtractor();
     }
+    std::unique_ptr<axiom::TestAssertExtractor> testExtractor;
+    if (TestMode) {
+        auto framework = parseTestFramework(TestFrameworkOpt);
+        testExtractor = axiom::createTestAssertExtractor(framework);
+        if (Verbose) {
+            llvm::errs() << "Test mode enabled with framework: " << TestFrameworkOpt << "\n";
+        }
+    }
 
     // Storage for results
     std::vector<axiom::ExtractionResult> results;
@@ -841,6 +936,10 @@ int main(int argc, const char** argv) {
     StaticAssertCallback staticAssertCallback(results);
     ConceptCallback conceptCallback(results);
     TypeAliasCallback typeAliasCallback(results);
+    std::unique_ptr<TestModeCallback> testModeCallback;
+    if (TestMode && testExtractor) {
+        testModeCallback = std::make_unique<TestModeCallback>(results, *testExtractor);
+    }
 
     MatchFinder finder;
 
@@ -880,6 +979,14 @@ int main(int argc, const char** argv) {
         &typeAliasCallback
     );
 
+    // Add test mode matcher - matches all functions to scan for test assertions
+    if (TestMode && testModeCallback) {
+        finder.addMatcher(
+            functionDecl(isDefinition()).bind("test_func"),
+            testModeCallback.get()
+        );
+    }
+
     // Run the tool
     int exitCode = tool.run(newFrontendActionFactory(&finder).get());
 
@@ -913,6 +1020,12 @@ int main(int argc, const char** argv) {
     if (ExtractCallGraph && !globalCallGraph.empty()) {
         output["call_graph"] = globalCallGraph;
         output["total_calls"] = globalCallGraph.size();
+    }
+
+    // Add test mode info
+    if (TestMode) {
+        output["test_mode"] = true;
+        output["test_framework"] = TestFrameworkOpt.getValue();
     }
 
     // Output
