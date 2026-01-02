@@ -45,16 +45,22 @@ enum class EffectKind {
     MEMBER_WRITE,      // Member variable write (this->x = ...)
     MEMORY_ALLOC,      // Memory allocation (new, malloc)
     MEMORY_FREE,       // Memory deallocation (delete, free)
-    CONTAINER_MODIFY   // Container modification (push_back, insert, etc.)
+    CONTAINER_MODIFY,  // Container modification (push_back, insert, etc.)
+    CALL_FREQUENCY     // Function call frequency tracking
 };
 
 // Detected effect in a function
 struct Effect {
     EffectKind kind;
-    std::string target;       // Variable/member being modified
+    std::string target;       // Variable/member being modified OR function being called
     std::string expression;   // Full expression text
     int line = 0;
     double confidence = 0.90;
+
+    // For CALL_FREQUENCY effects
+    int call_count = 0;            // Number of times this call appears
+    bool is_cached = false;        // Result stored and reused
+    bool occurs_at_start = false;  // Called before any loops/branches
 };
 
 // Macro definition structure
@@ -177,7 +183,8 @@ NLOHMANN_JSON_SERIALIZE_ENUM(EffectKind, {
     {EffectKind::MEMBER_WRITE, "member_write"},
     {EffectKind::MEMORY_ALLOC, "memory_alloc"},
     {EffectKind::MEMORY_FREE, "memory_free"},
-    {EffectKind::CONTAINER_MODIFY, "container_modify"}
+    {EffectKind::CONTAINER_MODIFY, "container_modify"},
+    {EffectKind::CALL_FREQUENCY, "call_frequency"}
 })
 
 inline void to_json(nlohmann::json& j, const Effect& e) {
@@ -188,6 +195,12 @@ inline void to_json(nlohmann::json& j, const Effect& e) {
         {"line", e.line},
         {"confidence", e.confidence}
     };
+    // Add call frequency fields if present
+    if (e.kind == EffectKind::CALL_FREQUENCY) {
+        j["call_count"] = e.call_count;
+        j["is_cached"] = e.is_cached;
+        j["occurs_at_start"] = e.occurs_at_start;
+    }
 }
 
 inline void to_json(nlohmann::json& j, const Axiom& a) {

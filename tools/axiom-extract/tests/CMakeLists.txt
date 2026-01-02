@@ -19,10 +19,12 @@ add_executable(axiom-extract-tests
     test_constraint_extractor.cpp
     test_hazard_detector.cpp
     test_signature_builder.cpp
+    test_effect_detector.cpp
     ${CMAKE_SOURCE_DIR}/src/SignatureBuilder.cpp
     ${CMAKE_SOURCE_DIR}/src/ConstraintExtractor.cpp
     ${CMAKE_SOURCE_DIR}/src/HazardDetector.cpp
     ${CMAKE_SOURCE_DIR}/src/GuardAnalyzer.cpp
+    ${CMAKE_SOURCE_DIR}/src/EffectDetector.cpp
 )
 
 target_include_directories(axiom-extract-tests PRIVATE
