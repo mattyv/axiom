@@ -135,8 +135,17 @@ def run_axiom_extract(
 def link_depends_on(
     axioms: list[Axiom],
     vector_db_path: Path | None = None,
+    link_type: str = "similarity",
 ) -> list[Axiom]:
-    """Link axioms to foundation axioms using semantic search filtered to foundation layers."""
+    """Link axioms to foundation axioms using semantic search filtered to foundation layers.
+
+    Args:
+        axioms: List of axioms to link
+        vector_db_path: Path to LanceDB vector database
+        link_type: Type of linking to use:
+            - "similarity": Top-3 similarity-based linking (fast, no LLM)
+            - "semantic": LLM-based direct dependency identification (accurate, uses LLM)
+    """
     if not vector_db_path:
         vector_db_path = Path(__file__).parent.parent / "data" / "lancedb"
 
@@ -158,7 +167,7 @@ def link_depends_on(
         return axioms
 
     # Use semantic_linker to search only foundation layer axioms
-    logger.info("Searching for foundation axiom dependencies...")
+    logger.info(f"Searching for foundation axiom dependencies (link_type={link_type})...")
     linked_axioms = []
     for axiom in axioms:
         try:
@@ -168,9 +177,14 @@ def link_depends_on(
             # Use semantic_linker.search_foundations to filter to foundation layers only
             candidates = semantic_linker.search_foundations(query, loader, limit=10)
 
-            # For now, use similarity-based linking (top 3 candidates)
-            # TODO: Integrate LLM-based direct dependency identification
-            new_depends = [c["id"] for c in candidates[:3] if c["id"] != axiom.id]
+            if link_type == "semantic":
+                # TODO: Use LLM to identify direct dependencies from candidates
+                # For now, fall back to similarity-based
+                logger.warning("Semantic linking not yet implemented, falling back to similarity")
+                new_depends = [c["id"] for c in candidates[:3] if c["id"] != axiom.id]
+            else:
+                # Similarity-based: top 3 candidates
+                new_depends = [c["id"] for c in candidates[:3] if c["id"] != axiom.id]
 
             # Merge with existing depends_on using semantic_linker.merge_depends_on
             axiom.depends_on = semantic_linker.merge_depends_on(axiom.depends_on, new_depends)
@@ -385,6 +399,13 @@ def main() -> int:
         help="Skip linking to foundation axioms",
     )
     parser.add_argument(
+        "--link-type",
+        type=str,
+        choices=["similarity", "semantic"],
+        default="similarity",
+        help="Type of dependency linking: 'similarity' (fast, top-3) or 'semantic' (LLM-based, accurate)",
+    )
+    parser.add_argument(
         "--vector-db",
         type=Path,
         help="Path to LanceDB vector database",
@@ -439,7 +460,11 @@ def main() -> int:
         # Link to foundation axioms
         if args.link:
             logger.info("Linking to foundation axioms...")
-            collection.axioms = link_depends_on(list(collection.axioms), args.vector_db)
+            collection.axioms = link_depends_on(
+                list(collection.axioms),
+                vector_db_path=args.vector_db,
+                link_type=args.link_type,
+            )
 
         # LLM fallback for low-confidence axioms
         if args.llm_fallback:
