@@ -40,6 +40,7 @@ set(SOURCES
     src/ConstraintExtractor.cpp
     src/HazardDetector.cpp
     src/GuardAnalyzer.cpp
+    src/CallGraphExtractor.cpp
     src/JsonEmitter.cpp
     src/MacroExtractor.cpp
 )

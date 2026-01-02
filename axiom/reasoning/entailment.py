@@ -105,6 +105,7 @@ class EntailmentClassifier:
             r"\bderef\b",
             r"\bdereference\b",
             r"\bdereferencing\b",
+            r"\binvalid pointer\b",
         ],
         "integer": [
             r"\binteger\b",
@@ -124,8 +125,54 @@ class EntailmentClassifier:
             r"\bdelete\b",
             r"\bfree\b",
             r"\bdeallocate\b",
+            r"\bdouble.?delete\b",
+        ],
+        "iterator": [
+            r"\biterator\b",
+            r"\bForwardIterator\b",
+            r"\bInputIterator\b",
+            r"\bRandomAccessIterator\b",
+            r"\bBidirectionalIterator\b",
+            r"\bOutputIterator\b",
+            r"\bpass\b",  # single-pass, multi-pass
+        ],
+        "vector": [
+            r"\bvector\b",
+            r"\bstd::vector\b",
+            r"\belements?\b",
+            r"\bcontiguous\b",
+            r"\bstored\b",
+        ],
+        "macro": [
+            r"\bmacro\b",
+            r"\bILP_\w+\b",
+            r"\bpaired\b",
+            r"\bmatching\b",
         ],
     }
+
+    # Semantic opposition pairs - claim pattern vs axiom pattern that contradict
+    # Format: (claim_pattern, axiom_pattern, explanation)
+    SEMANTIC_OPPOSITIONS = [
+        # Pass count: single vs multi
+        (r"\bsingle.?pass\b", r"\bmulti.?pass\b", "single-pass contradicts multi-pass"),
+        (r"\bmulti.?pass\b", r"\bsingle.?pass\b", "multi-pass contradicts single-pass"),
+        # Direction: reverse vs increasing/forward
+        (r"\breverse\s+order\b", r"\bincreasing\b", "reverse order contradicts increasing order"),
+        (r"\breverse\s+order\b", r"\bforward\b", "reverse order contradicts forward order"),
+        (r"\bincreasing\b", r"\breverse\b", "increasing contradicts reverse"),
+        # Pairing: without vs must be paired
+        (r"\bwithout\s+matching\b", r"\bmust\s+be\s+paired\b", "without matching contradicts must be paired"),
+        (r"\bwithout\s+matching\b", r"\brequires.*matching\b", "without matching contradicts requires matching"),
+        (r"\bcan\s+be\s+used\s+without\b", r"\bmust\s+be\s+paired\b", "can be used without contradicts must be paired"),
+        # Valid/invalid
+        (r"\binvalid\b", r"\bvalid\b", "invalid contradicts valid"),
+        (r"\bvalid\b", r"\binvalid\b", "valid contradicts invalid"),
+        # Safety with undefined behavior
+        (r"\bis\s+safe\b", r"\binvalid pointer\b", "is safe contradicts invalid pointer error"),
+        (r"\bis\s+safe\b", r"\bundefined\s+behavior\b", "is safe contradicts undefined behavior"),
+        (r"\bcompletely\s+safe\b", r"\bundefined\s+behavior\b", "completely safe contradicts UB"),
+    ]
 
     # Word form normalization for lemmatization
     LEMMA_MAP = {
@@ -260,6 +307,15 @@ class EntailmentClassifier:
                     f"Claim describes {claim_action} action but axiom describes "
                     f"{axiom_action} action - these are semantically incompatible"
                 ),
+            )
+
+        # Check for semantic opposition patterns (e.g., "single-pass" vs "multi-pass")
+        opposition = self._check_semantic_opposition(claim, axiom_content)
+        if opposition:
+            return EntailmentResult(
+                relationship="CONTRADICTS",
+                confidence=0.88,
+                explanation=f"Semantic opposition: {opposition}",
             )
 
         # Positive claim vs Negative axiom = CONTRADICTION
@@ -486,3 +542,25 @@ class EntailmentClassifier:
                 )
 
         return False, ""
+
+    def _check_semantic_opposition(self, claim: str, axiom_content: str) -> str | None:
+        """Check if claim and axiom have semantic opposition patterns.
+
+        Args:
+            claim: The claim text.
+            axiom_content: The axiom content text.
+
+        Returns:
+            Explanation string if opposition found, None otherwise.
+        """
+        claim_lower = claim.lower()
+        axiom_lower = axiom_content.lower()
+
+        for claim_pattern, axiom_pattern, explanation in self.SEMANTIC_OPPOSITIONS:
+            if (
+                re.search(claim_pattern, claim_lower, re.IGNORECASE)
+                and re.search(axiom_pattern, axiom_lower, re.IGNORECASE)
+            ):
+                return explanation
+
+        return None

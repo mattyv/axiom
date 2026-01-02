@@ -87,6 +87,27 @@ inline void to_json(nlohmann::json& j, const MacroDefinition& m) {
     };
 }
 
+// Function call information for call graph extraction
+struct FunctionCall {
+    std::string caller;           // Qualified name of calling function
+    std::string callee;           // Qualified name of called function
+    std::string callee_signature; // Full signature of callee
+    int line = 0;                 // Line number of call
+    std::vector<std::string> arguments;  // Argument expressions
+    bool is_virtual = false;      // True if virtual dispatch
+};
+
+inline void to_json(nlohmann::json& j, const FunctionCall& c) {
+    j = nlohmann::json{
+        {"caller", c.caller},
+        {"callee", c.callee},
+        {"callee_signature", c.callee_signature},
+        {"line", c.line},
+        {"arguments", c.arguments},
+        {"is_virtual", c.is_virtual}
+    };
+}
+
 // Extracted axiom structure
 struct Axiom {
     std::string id;

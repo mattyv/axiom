@@ -21,6 +21,7 @@ class FunctionExtractor;
 class ConstraintExtractor;
 class HazardDetector;
 class GuardAnalyzer;
+class CallGraphExtractor;
 class JsonEmitter;
 
 // Function information extracted from AST
@@ -183,6 +184,18 @@ public:
     ) = 0;
 };
 
+// Interface for extracting call graph
+class CallGraphExtractor {
+public:
+    virtual ~CallGraphExtractor() = default;
+
+    // Extract function calls from a function body
+    virtual std::vector<FunctionCall> extractCalls(
+        const clang::FunctionDecl* func,
+        clang::ASTContext& ctx
+    ) = 0;
+};
+
 // Interface for JSON output
 class JsonEmitter {
 public:
@@ -197,6 +210,7 @@ std::unique_ptr<FunctionExtractor> createFunctionExtractor();
 std::unique_ptr<ConstraintExtractor> createConstraintExtractor();
 std::unique_ptr<HazardDetector> createHazardDetector();
 std::unique_ptr<GuardAnalyzer> createGuardAnalyzer();
+std::unique_ptr<CallGraphExtractor> createCallGraphExtractor();
 std::unique_ptr<JsonEmitter> createJsonEmitter();
 
 } // namespace axiom

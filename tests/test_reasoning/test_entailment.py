@@ -457,3 +457,111 @@ class TestNumericContradiction:
         # Result depends on polarity/topic analysis
         # Just verify it doesn't crash and returns a result
         assert result.relationship in ("SUPPORTS", "CONTRADICTS", "RELATED_TO")
+
+
+class TestRealWorldFalsePositives:
+    """Tests for specific false positive cases found in production.
+
+    These are real claims that were incorrectly validated as true in the
+    MCP testing session (2025-12-31).
+    """
+
+    def test_double_delete_safe_contradicts_already_freed(self):
+        """Double delete is safe should contradict 'already freed' error axiom."""
+        classifier = EntailmentClassifier()
+        result = classifier.classify(
+            claim="Double delete is safe",
+            axiom={
+                "content": "Called free on memory that was already freed",
+                "formal_spec": "error_condition: double_free",
+            },
+        )
+        assert result.relationship == "CONTRADICTS"
+        assert result.confidence >= 0.8
+
+    def test_double_delete_safe_contradicts_double_free(self):
+        """Double delete is safe should contradict 'double free' axiom."""
+        classifier = EntailmentClassifier()
+        result = classifier.classify(
+            claim="Double delete is safe",
+            axiom={
+                "content": "Double free leads to undefined behavior",
+                "formal_spec": "",
+            },
+        )
+        assert result.relationship == "CONTRADICTS"
+
+    def test_double_delete_safe_contradicts_invalid_free(self):
+        """Double delete is safe should contradict 'invalid free' axiom."""
+        classifier = EntailmentClassifier()
+        result = classifier.classify(
+            claim="Double delete is completely safe",
+            axiom={
+                "content": "Calling delete on an invalid pointer is undefined behavior",
+                "formal_spec": "",
+            },
+        )
+        assert result.relationship == "CONTRADICTS"
+
+    def test_std_move_moves_contradicts_cast(self):
+        """std::move moves object contradicts 'is a cast' axiom."""
+        classifier = EntailmentClassifier()
+        result = classifier.classify(
+            claim="std::move moves object to new location",
+            axiom={
+                "content": "std::move returns static_cast<remove_reference_t<T>&&>(t)",
+                "formal_spec": "static_cast<std::remove_reference_t<T>&&>(t)",
+            },
+        )
+        assert result.relationship == "CONTRADICTS"
+        assert result.confidence >= 0.8
+
+    def test_std_move_deep_copy_contradicts_cast(self):
+        """std::move performs deep copy contradicts 'is a cast' axiom."""
+        classifier = EntailmentClassifier()
+        result = classifier.classify(
+            claim="std::move performs a deep copy of the object",
+            axiom={
+                "content": "std::move is equivalent to static_cast to rvalue reference",
+                "formal_spec": "",
+            },
+        )
+        assert result.relationship == "CONTRADICTS"
+
+    def test_forward_iterator_single_pass_contradiction(self):
+        """ForwardIterator allows single-pass contradicts multi-pass requirement."""
+        classifier = EntailmentClassifier()
+        result = classifier.classify(
+            claim="ForwardIterator requirements allow only single-pass iteration",
+            axiom={
+                "content": "ForwardIterator must be multi-pass: can iterate multiple times",
+                "formal_spec": "multipass_guarantee: true",
+            },
+        )
+        # This should contradict because "only single-pass" vs "multi-pass"
+        assert result.relationship == "CONTRADICTS"
+
+    def test_vector_reverse_order_contradiction(self):
+        """vector stores in reverse order contradicts contiguous storage."""
+        classifier = EntailmentClassifier()
+        result = classifier.classify(
+            claim="std::vector guarantees elements stored in reverse order",
+            axiom={
+                "content": "std::vector elements are stored contiguously in increasing index order",
+                "formal_spec": "&v[n] == &v[0] + n",
+            },
+        )
+        # Should contradict (reverse vs increasing order)
+        assert result.relationship == "CONTRADICTS"
+
+    def test_ilp_end_without_ilp_for_contradiction(self):
+        """ILP_END without ILP_FOR contradicts pairing requirement."""
+        classifier = EntailmentClassifier()
+        result = classifier.classify(
+            claim="ILP_END can be used without matching ILP_FOR macro",
+            axiom={
+                "content": "ILP_END must be paired with ILP_FOR opening macro",
+                "formal_spec": "requires: matching_ilp_for",
+            },
+        )
+        assert result.relationship == "CONTRADICTS"

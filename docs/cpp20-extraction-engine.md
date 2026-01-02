@@ -9,9 +9,9 @@ A comprehensive design for extracting axioms from any C++20 codebase with high q
 | **Phase 1: Clang Analysis** | ✅ Complete | Native C++ tool using LibTooling |
 | **Phase 2: Explicit Constraints** | ✅ Complete | noexcept, nodiscard, const, constexpr, delete, requires, static_assert, concepts, enums, type aliases |
 | **Phase 3: Hazard Detection** | ✅ Complete | Division, pointer deref, array access with guard analysis |
-| **Phase 4: Call Graph** | ❌ Not Started | Precondition propagation (future) |
+| **Phase 4: Call Graph** | ✅ Complete | CallGraphExtractor + precondition propagation |
 | **Phase 5: Foundation Linking** | ✅ Complete | LanceDB semantic search integration |
-| **Phase 6: LLM Assist** | ⚠️ Placeholder | TODO in extract_clang.py |
+| **Phase 6: LLM Assist** | ✅ Complete | Claude CLI integration with batched refinement |
 
 ### Quick Start
 

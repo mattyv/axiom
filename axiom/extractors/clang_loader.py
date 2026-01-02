@@ -75,6 +75,22 @@ def parse_json(data: dict[str, Any], source: str = "axiom-extract") -> AxiomColl
     Returns:
         AxiomCollection with extracted axioms
     """
+    collection, _ = parse_json_with_call_graph(data, source)
+    return collection
+
+
+def parse_json_with_call_graph(
+    data: dict[str, Any], source: str = "axiom-extract"
+) -> tuple[AxiomCollection, list[dict[str, Any]]]:
+    """Parse axiom-extract JSON output to AxiomCollection with call graph.
+
+    Args:
+        data: Parsed JSON dict from axiom-extract
+        source: Source identifier for the collection
+
+    Returns:
+        Tuple of (AxiomCollection, call_graph list)
+    """
     axioms = []
     seen_ids: set[str] = set()
 
@@ -96,6 +112,9 @@ def parse_json(data: dict[str, Any], source: str = "axiom-extract") -> AxiomColl
                     axioms.append(axiom)
                     seen_ids.add(axiom.id)
 
+    # Extract call graph
+    call_graph: list[dict[str, Any]] = data.get("call_graph", [])
+
     # Extract metadata
     extracted_at = data.get("extracted_at")
     created = None
@@ -114,12 +133,14 @@ def parse_json(data: dict[str, Any], source: str = "axiom-extract") -> AxiomColl
     if len(source_files) > 3:
         source_str += f" (+{len(source_files) - 3} more)"
 
-    return AxiomCollection(
+    collection = AxiomCollection(
         version=data.get("version", "1.0"),
         source=source_str or source,
         extracted_at=created or datetime.now(UTC),
         axioms=axioms,
     )
+
+    return collection, call_graph
 
 
 def _parse_axiom(data: dict[str, Any]) -> Axiom:

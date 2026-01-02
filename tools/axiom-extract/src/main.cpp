@@ -76,6 +76,13 @@ static llvm::cl::alias RecursiveAlias(
     llvm::cl::aliasopt(Recursive)
 );
 
+static llvm::cl::opt<bool> ExtractCallGraph(
+    "call-graph",
+    llvm::cl::desc("Extract function call graph for precondition propagation"),
+    llvm::cl::init(true),
+    llvm::cl::cat(AxiomExtractCategory)
+);
+
 // C++ source file extensions
 const std::vector<std::string> CPP_EXTENSIONS = {
     ".cpp", ".cc", ".cxx", ".hpp", ".h", ".hxx", ".C", ".H"
@@ -149,6 +156,9 @@ std::vector<std::string> findSourceFiles(
 static axiom::IgnoreFilter* globalIgnoreFilter = nullptr;
 static std::string globalProjectRoot;
 
+// Global storage for call graph (collected across all files)
+static std::vector<axiom::FunctionCall> globalCallGraph;
+
 namespace {
 
 // Callback for matching function declarations
@@ -156,10 +166,12 @@ class FunctionCallback : public MatchFinder::MatchCallback {
 public:
     FunctionCallback(std::vector<axiom::ExtractionResult>& results,
                      axiom::ConstraintExtractor& constraintExtractor,
-                     axiom::HazardDetector* hazardDetector)
+                     axiom::HazardDetector* hazardDetector,
+                     axiom::CallGraphExtractor* callGraphExtractor)
         : results_(results)
         , constraintExtractor_(constraintExtractor)
-        , hazardDetector_(hazardDetector) {}
+        , hazardDetector_(hazardDetector)
+        , callGraphExtractor_(callGraphExtractor) {}
 
     void run(const MatchFinder::MatchResult& result) override {
         const auto* func = result.Nodes.getNodeAs<FunctionDecl>("func");
@@ -303,6 +315,14 @@ public:
             }
         }
 
+        // Extract call graph if enabled
+        if (callGraphExtractor_ && func->hasBody()) {
+            auto calls = callGraphExtractor_->extractCalls(func, *result.Context);
+            for (auto& call : calls) {
+                globalCallGraph.push_back(std::move(call));
+            }
+        }
+
         if (Verbose) {
             llvm::errs() << "Extracted " << it->axioms.size()
                         << " axioms from " << info.qualified_name << "\n";
@@ -313,6 +333,7 @@ private:
     std::vector<axiom::ExtractionResult>& results_;
     axiom::ConstraintExtractor& constraintExtractor_;
     axiom::HazardDetector* hazardDetector_;
+    axiom::CallGraphExtractor* callGraphExtractor_;
 };
 
 // Callback for matching class/struct declarations
@@ -804,12 +825,17 @@ int main(int argc, const char** argv) {
     if (ExtractHazards) {
         hazardDetector = axiom::createHazardDetector();
     }
+    std::unique_ptr<axiom::CallGraphExtractor> callGraphExtractor;
+    if (ExtractCallGraph) {
+        callGraphExtractor = axiom::createCallGraphExtractor();
+    }
 
     // Storage for results
     std::vector<axiom::ExtractionResult> results;
+    globalCallGraph.clear();  // Clear from any previous runs
 
     // Set up matchers
-    FunctionCallback funcCallback(results, *constraintExtractor, hazardDetector.get());
+    FunctionCallback funcCallback(results, *constraintExtractor, hazardDetector.get(), callGraphExtractor.get());
     ClassCallback classCallback(results);
     EnumCallback enumCallback(results);
     StaticAssertCallback staticAssertCallback(results);
@@ -881,6 +907,12 @@ int main(int argc, const char** argv) {
     if (globalIgnoreFilter) {
         output["ignore_patterns"] = globalIgnoreFilter->patternCount();
         output["project_root"] = globalProjectRoot;
+    }
+
+    // Add call graph if extracted
+    if (ExtractCallGraph && !globalCallGraph.empty()) {
+        output["call_graph"] = globalCallGraph;
+        output["total_calls"] = globalCallGraph.size();
     }
 
     // Output

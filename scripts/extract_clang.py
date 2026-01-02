@@ -36,12 +36,15 @@ import logging
 import shutil
 import subprocess
 import sys
+import tomllib
+from collections.abc import Iterator
 from pathlib import Path
 
 # Add project root to path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from axiom.extractors.clang_loader import load_from_string
+from axiom.extractors.clang_loader import parse_json_with_call_graph
+from axiom.extractors.propagation import propagate_preconditions
 from axiom.models import Axiom
 from axiom.vectors.loader import LanceDBLoader
 
@@ -114,7 +117,7 @@ def link_depends_on(
 ) -> list[Axiom]:
     """Link axioms to foundation axioms using semantic search."""
     if not vector_db_path:
-        vector_db_path = Path(__file__).parent.parent / "knowledge" / "lancedb"
+        vector_db_path = Path(__file__).parent.parent / "data" / "lancedb"
 
     if not vector_db_path.exists():
         logger.warning(f"Vector DB not found at {vector_db_path}, skipping linking")
@@ -147,6 +150,133 @@ def link_depends_on(
         linked_axioms.append(axiom)
 
     return linked_axioms
+
+
+# LLM Refiner configuration
+LLM_CONFIDENCE_THRESHOLD = 0.80
+LLM_BATCH_SIZE = 10
+
+
+def chunk(items: list, size: int) -> Iterator[list]:
+    """Yield successive chunks of items."""
+    for i in range(0, len(items), size):
+        yield items[i : i + size]
+
+
+def build_refinement_prompt(axioms: list[Axiom]) -> str:
+    """Build prompt for axiom refinement."""
+    axiom_lines = []
+    for a in axioms:
+        axiom_lines.append(
+            f"""[[axioms]]
+id = "{a.id}"
+content = "{a.content}"
+formal_spec = "{a.formal_spec}"
+confidence = {a.confidence}
+function = "{a.function or ''}"
+"""
+        )
+
+    return f"""Review these low-confidence axioms extracted from C++ code.
+For each axiom:
+1. Verify correctness against C++ semantics
+2. Improve the content/formal_spec if needed
+3. Set confidence to your level of certainty (0.0-1.0)
+4. Add rationale explaining your changes
+
+Return ONLY valid TOML with refined axioms:
+
+{chr(10).join(axiom_lines)}
+
+Respond with refined axioms in the same TOML format, adding a 'rationale' field."""
+
+
+def call_claude_cli(prompt: str) -> str:
+    """Call Claude CLI for refinement."""
+    try:
+        result = subprocess.run(
+            [
+                "claude",
+                "--print",
+                "--model",
+                "sonnet",
+                "--dangerously-skip-permissions",
+                prompt,
+            ],
+            capture_output=True,
+            text=True,
+            timeout=120,
+        )
+        return result.stdout
+    except subprocess.TimeoutExpired:
+        logger.warning("LLM call timed out")
+        return ""
+    except FileNotFoundError:
+        logger.warning("Claude CLI not found")
+        return ""
+
+
+def parse_refinement_response(response: str, originals: list[Axiom]) -> list[Axiom]:
+    """Parse TOML response and update axioms."""
+    try:
+        # Extract TOML block if wrapped in markdown
+        if "```toml" in response:
+            start = response.index("```toml") + 7
+            end = response.index("```", start)
+            response = response[start:end]
+
+        data = tomllib.loads(response)
+        refined_map = {a["id"]: a for a in data.get("axioms", [])}
+
+        result = []
+        for orig in originals:
+            if orig.id in refined_map:
+                r = refined_map[orig.id]
+                # Update axiom with refined values
+                orig.content = r.get("content", orig.content)
+                orig.formal_spec = r.get("formal_spec", orig.formal_spec)
+                orig.confidence = r.get("confidence", orig.confidence)
+            result.append(orig)
+        return result
+    except Exception as e:
+        logger.warning(f"Failed to parse LLM response: {e}")
+        return list(originals)
+
+
+def refine_low_confidence_axioms(
+    axioms: list[Axiom],
+    use_llm: bool = False,
+) -> list[Axiom]:
+    """Refine low-confidence axioms using LLM.
+
+    Axioms with confidence below LLM_CONFIDENCE_THRESHOLD are sent to the
+    Claude CLI in batches for refinement.
+    """
+    if not use_llm:
+        return list(axioms)
+
+    # Identify axioms needing refinement
+    needs_refinement = [a for a in axioms if a.confidence < LLM_CONFIDENCE_THRESHOLD]
+    if not needs_refinement:
+        logger.info("No axioms need LLM refinement")
+        return list(axioms)
+
+    logger.info(f"Refining {len(needs_refinement)} axioms with LLM...")
+
+    refined = []
+    for batch in chunk(needs_refinement, LLM_BATCH_SIZE):
+        prompt = build_refinement_prompt(batch)
+        response = call_claude_cli(prompt)
+        if response:
+            batch_refined = parse_refinement_response(response, batch)
+            refined.extend(batch_refined)
+        else:
+            # Keep originals if LLM fails
+            refined.extend(batch)
+
+    # Merge: replace refined axioms, keep others
+    refined_ids = {a.id for a in refined}
+    return [a for a in axioms if a.id not in refined_ids] + refined
 
 
 def main() -> int:
@@ -237,26 +367,39 @@ def main() -> int:
             recursive=args.recursive,
         )
 
-        # Parse JSON output to AxiomCollection
+        # Parse JSON output to AxiomCollection with call graph
         source = str(args.compile_commands or args.file)
-        collection = load_from_string(json_str, source=source)
+        json_data = json.loads(json_str)
+        collection, call_graph = parse_json_with_call_graph(json_data, source=source)
         logger.info(f"Extracted {len(collection.axioms)} axioms")
+
+        # Propagate preconditions through call graph
+        if call_graph:
+            logger.info(f"Propagating preconditions from {len(call_graph)} calls...")
+            original_count = len(collection.axioms)
+            collection.axioms = propagate_preconditions(list(collection.axioms), call_graph)
+            propagated_count = len(collection.axioms) - original_count
+            if propagated_count > 0:
+                logger.info(f"Added {propagated_count} propagated preconditions")
 
         # Link to foundation axioms
         if args.link:
             logger.info("Linking to foundation axioms...")
             collection.axioms = link_depends_on(list(collection.axioms), args.vector_db)
 
-        # TODO: LLM fallback for low-confidence axioms
+        # LLM fallback for low-confidence axioms
         if args.llm_fallback:
-            logger.warning("LLM fallback not yet implemented")
+            original_count = len(collection.axioms)
+            collection.axioms = refine_low_confidence_axioms(
+                list(collection.axioms), use_llm=True
+            )
+            logger.info(f"LLM refinement complete ({len(collection.axioms)} axioms)")
 
         # Save to TOML using the built-in method
         collection.save_toml(args.output)
         logger.info(f"Saved {len(collection.axioms)} axioms to {args.output}")
 
         # Print statistics
-        json_data = json.loads(json_str)
         stats = json_data.get("statistics", {})
         if stats:
             logger.info(f"Statistics: {stats.get('files_processed', 0)} files, "
