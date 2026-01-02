@@ -246,3 +246,61 @@ Only include axioms for language features explicitly used in the implementation.
 
 Return JSON mapping each library axiom ID to its direct foundation dependencies:
 {{"lib_axiom_id_1": ["foundation_id_1", ...], "lib_axiom_id_2": [...], ...}}"""
+
+
+def link_axiom_with_llm(
+    axiom: Axiom,
+    candidates: list[dict],
+    model: str = "sonnet",
+) -> list[str]:
+    """Use LLM to identify direct dependencies for a single axiom.
+
+    Args:
+        axiom: The axiom to link.
+        candidates: Candidate foundation axioms from semantic search.
+        model: Model to use ("sonnet", "opus", "haiku").
+
+    Returns:
+        List of foundation axiom IDs that are direct dependencies.
+    """
+    import subprocess
+
+    if not candidates:
+        return []
+
+    # Build prompt for this single axiom
+    prompt = build_linking_prompt(
+        axiom.function or axiom.id,
+        [axiom],
+        candidates,
+    )
+
+    # Call Claude CLI
+    try:
+        result = subprocess.run(
+            [
+                "claude",
+                "--print",
+                "--model",
+                model,
+                "--dangerously-skip-permissions",
+                prompt,
+            ],
+            capture_output=True,
+            text=True,
+            timeout=60,
+        )
+
+        if result.returncode != 0:
+            return []
+
+        # Parse response
+        link_map = parse_llm_response(result.stdout)
+        links = link_map.get(axiom.id, [])
+
+        # Validate that returned IDs exist in candidates
+        validated = validate_candidate_ids(links, candidates)
+        return validated
+
+    except (subprocess.TimeoutExpired, FileNotFoundError, Exception):
+        return []

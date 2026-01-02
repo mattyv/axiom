@@ -178,10 +178,8 @@ def link_depends_on(
             candidates = semantic_linker.search_foundations(query, loader, limit=10)
 
             if link_type == "semantic":
-                # TODO: Use LLM to identify direct dependencies from candidates
-                # For now, fall back to similarity-based
-                logger.warning("Semantic linking not yet implemented, falling back to similarity")
-                new_depends = [c["id"] for c in candidates[:3] if c["id"] != axiom.id]
+                # Use LLM to identify direct dependencies from candidates
+                new_depends = semantic_linker.link_axiom_with_llm(axiom, candidates)
             else:
                 # Similarity-based: top 3 candidates
                 new_depends = [c["id"] for c in candidates[:3] if c["id"] != axiom.id]
