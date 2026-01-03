@@ -198,9 +198,40 @@ std::vector<Axiom> extractMacroAxioms(const MacroDefinition& macro) {
     std::string signature = "#define " + macro.to_signature();
     MacroSemantics sem = analyzeMacroSemantics(macro.body, macro);
 
-    // Only extract from hazardous or semantically interesting macros
-    if (!hasHazardousMacro(macro) && !hasSemanticPatterns(sem)) {
-        return axioms;
+    // Always create a basic axiom for every function-like macro
+    if (macro.is_function_like) {
+        Axiom axiom;
+        axiom.id = macro.name + ".macro_definition";
+        axiom.content = "Macro " + macro.name + " is a function-like macro";
+        if (!macro.parameters.empty()) {
+            axiom.content += " with parameters: ";
+            for (size_t i = 0; i < macro.parameters.size(); ++i) {
+                if (i > 0) axiom.content += ", ";
+                axiom.content += macro.parameters[i];
+            }
+        }
+        axiom.formal_spec = "is_function_like_macro(" + macro.name + ")";
+        axiom.function = macro.name;
+        axiom.signature = signature;
+        axiom.header = macro.file_path;
+        axiom.axiom_type = AxiomType::CONSTRAINT;
+        axiom.confidence = 1.0;
+        axiom.source_type = SourceType::EXPLICIT;
+        axiom.line = macro.line_start;
+
+        // Add referenced macros as context
+        if (!macro.referenced_macros.empty()) {
+            axiom.content += ". Expands to: ";
+            for (size_t i = 0; i < macro.referenced_macros.size() && i < 3; ++i) {
+                if (i > 0) axiom.content += ", ";
+                axiom.content += macro.referenced_macros[i];
+            }
+            if (macro.referenced_macros.size() > 3) {
+                axiom.content += "...";
+            }
+        }
+
+        axioms.push_back(std::move(axiom));
     }
 
     // --- Hazard-based axioms ---
