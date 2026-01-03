@@ -9,8 +9,13 @@
 This script wraps the axiom-extract C++ tool and converts its JSON output
 to TOML format compatible with the Axiom knowledge base.
 
+By default, extraction includes:
+- Foundation axiom linking (similarity-based)
+- LLM refinement for low-confidence axioms
+- Enrichment with on_violation descriptions
+
 Usage:
-    # Extract from library with compile_commands.json
+    # Extract from library with compile_commands.json (full pipeline)
     python scripts/extract_clang.py \\
         --compile-commands /path/to/build/compile_commands.json \\
         --output knowledge/libraries/mylib.toml
@@ -21,21 +26,25 @@ Usage:
         --args="-std=c++20 -I/path/to/include" \\
         --output axioms.toml
 
-    # Without LLM refinement (faster, lower quality)
+    # Fast extraction (no LLM, no enrichment)
     python scripts/extract_clang.py \\
         --compile-commands build/compile_commands.json \\
-        --no-llm-fallback \\
+        --no-llm-fallback --no-enrich \\
         --output mylib.toml
 """
 
 from __future__ import annotations
 
 import argparse
+import itertools
 import json
 import logging
+import os
 import shutil
 import subprocess
 import sys
+import threading
+import time
 import tomllib
 from collections.abc import Iterator
 from pathlib import Path
@@ -51,6 +60,87 @@ from axiom.models import Axiom
 from axiom.vectors.loader import LanceDBLoader
 
 logger = logging.getLogger(__name__)
+
+
+class ExtractionProgress:
+    """Progress tracker with spinner for extraction phases."""
+
+    FRAMES = ["⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏"]
+
+    def __init__(self, total_items: int, phase: str = "Processing", width: int = 20):
+        self.total_items = total_items
+        self.current_item = 0
+        self.processed_count = 0
+        self.phase = phase
+        self.width = width
+        self.start_time = time.time()
+        self._stop_event = threading.Event()
+        self._thread: threading.Thread | None = None
+        self._lock = threading.Lock()
+        self._status = "Starting..."
+        self._last_len = 0
+
+    def _render(self, frame: str) -> str:
+        with self._lock:
+            percent = self.current_item / self.total_items if self.total_items > 0 else 0
+            filled = int(self.width * percent)
+            bar = "█" * filled + "░" * (self.width - filled)
+
+            elapsed = time.time() - self.start_time
+            if self.current_item > 0:
+                eta = (elapsed / self.current_item) * (self.total_items - self.current_item)
+                eta_min = int(eta // 60)
+                eta_sec = int(eta % 60)
+                eta_str = f"{eta_min}m{eta_sec:02d}s"
+            else:
+                eta_str = "..."
+
+            pct = int(percent * 100)
+            parts = [
+                f"{frame}",
+                f"[{bar}]",
+                f"{pct:3d}%",
+                f"{self.current_item}/{self.total_items}",
+                f"ETA {eta_str}",
+                f"| {self._status}",
+            ]
+
+            return " ".join(parts)
+
+    def _spin(self):
+        for frame in itertools.cycle(self.FRAMES):
+            if self._stop_event.is_set():
+                break
+            line = self._render(frame)
+            padding = max(0, self._last_len - len(line))
+            sys.stdout.write(f"\r{line}{' ' * padding}")
+            sys.stdout.flush()
+            self._last_len = len(line)
+            time.sleep(0.1)
+
+    def start(self):
+        self._stop_event.clear()
+        self._thread = threading.Thread(target=self._spin, daemon=True)
+        self._thread.start()
+
+    def stop(self, success: bool = True):
+        self._stop_event.set()
+        if self._thread:
+            self._thread.join(timeout=0.5)
+        sys.stdout.write("\r" + " " * self._last_len + "\r")
+        elapsed = time.time() - self.start_time
+        if success:
+            print(f"✓ {self.phase} complete: {self.processed_count}/{self.total_items} ({elapsed:.1f}s)")
+        else:
+            print(f"✗ {self.phase} failed after {elapsed:.1f}s")
+        sys.stdout.flush()
+
+    def update(self, item_num: int, status: str, processed: int | None = None):
+        with self._lock:
+            self.current_item = item_num
+            self._status = status
+            if processed is not None:
+                self.processed_count = processed
 
 
 def find_axiom_extract() -> Path | None:
@@ -136,6 +226,7 @@ def link_depends_on(
     axioms: list[Axiom],
     vector_db_path: Path | None = None,
     link_type: str = "similarity",
+    show_progress: bool = True,
 ) -> list[Axiom]:
     """Link axioms to foundation axioms using semantic search filtered to foundation layers.
 
@@ -145,6 +236,7 @@ def link_depends_on(
         link_type: Type of linking to use:
             - "similarity": Top-3 similarity-based linking (fast, no LLM)
             - "semantic": LLM-based direct dependency identification (accurate, uses LLM)
+        show_progress: Whether to show interactive progress
     """
     if not vector_db_path:
         vector_db_path = Path(__file__).parent.parent / "data" / "lancedb"
@@ -153,11 +245,36 @@ def link_depends_on(
         logger.warning(f"Vector DB not found at {vector_db_path}, skipping linking")
         return axioms
 
+    # Suppress noisy SentenceTransformer/tqdm/LanceDB output
+    import warnings
+    warnings.filterwarnings("ignore", category=FutureWarning)
+    os.environ["TOKENIZERS_PARALLELISM"] = "false"
+
+    # Silence SentenceTransformer logging
+    logging.getLogger("sentence_transformers").setLevel(logging.WARNING)
+    logging.getLogger("lancedb").setLevel(logging.WARNING)
+    logging.getLogger("pylance").setLevel(logging.WARNING)
+
+    # Redirect stdout/stderr to suppress model loading messages
+    old_stdout = sys.stdout
+    old_stderr = sys.stderr
+    sys.stdout = open(os.devnull, 'w')
+    sys.stderr = open(os.devnull, 'w')
+
     try:
         loader = LanceDBLoader(str(vector_db_path))
     except Exception as e:
+        sys.stdout.close()
+        sys.stderr.close()
+        sys.stdout = old_stdout
+        sys.stderr = old_stderr
         logger.warning(f"Could not initialize LanceDBLoader: {e}")
         return axioms
+    finally:
+        sys.stdout.close()
+        sys.stderr.close()
+        sys.stdout = old_stdout
+        sys.stderr = old_stderr
 
     # Check if table exists
     tables = loader.db.list_tables()
@@ -166,26 +283,45 @@ def link_depends_on(
         logger.warning("No axioms table in vector DB, skipping linking")
         return axioms
 
-    # Use semantic_linker to search only foundation layer axioms
-    logger.info(f"Searching for foundation axiom dependencies (link_type={link_type})...")
+    # Initialize progress tracker
+    progress: ExtractionProgress | None = None
+    if show_progress and sys.stdout.isatty():
+        progress = ExtractionProgress(len(axioms), f"Linking ({link_type})")
+        progress.start()
+
+    linked_count = 0
 
     if link_type == "semantic":
         # Batched LLM-based linking: group by function to reduce LLM calls
-        logger.info("Using batched semantic linking to reduce LLM calls...")
         function_groups = semantic_linker.group_by_function(axioms)
-        logger.info(f"Grouped {len(axioms)} axioms into {len(function_groups)} functions")
 
         linked_axioms = []
+        item_num = 0
         for _function_name, func_axioms in function_groups.items():
             # For each function group, find union of candidates across all axioms
             all_candidates = {}
             for axiom in func_axioms:
-                query = f"{axiom.content} {axiom.formal_spec or ''}"
-                candidates = semantic_linker.search_foundations(query, loader, limit=10)
-                for c in candidates:
-                    all_candidates[c["id"]] = c
+                item_num += 1
+                if progress:
+                    func_short = _function_name[:20] + "..." if len(_function_name) > 20 else _function_name
+                    progress.update(item_num, f"Searching {func_short}", linked_count)
+
+                # Suppress tqdm during search
+                old_stderr = sys.stderr
+                sys.stderr = open(os.devnull, 'w')
+                try:
+                    query = f"{axiom.content} {axiom.formal_spec or ''}"
+                    candidates = semantic_linker.search_foundations(query, loader, limit=10)
+                    for c in candidates:
+                        all_candidates[c["id"]] = c
+                finally:
+                    sys.stderr.close()
+                    sys.stderr = old_stderr
 
             # Batch LLM call for all axioms in this function
+            if progress:
+                progress.update(item_num, f"LLM linking {len(func_axioms)} axioms", linked_count)
+
             candidate_list = list(all_candidates.values())
             link_map = semantic_linker.link_axioms_batch_with_llm(
                 func_axioms,
@@ -197,27 +333,48 @@ def link_depends_on(
             for axiom in func_axioms:
                 new_depends = link_map.get(axiom.id, [])
                 axiom.depends_on = semantic_linker.merge_depends_on(axiom.depends_on, new_depends)
+                if new_depends:
+                    linked_count += 1
                 linked_axioms.append(axiom)
 
+        if progress:
+            progress.processed_count = linked_count
+            progress.stop(success=True)
         return linked_axioms
 
     else:
         # Similarity-based linking: fast, no LLM
         linked_axioms = []
-        for axiom in axioms:
+        for i, axiom in enumerate(axioms):
+            if progress:
+                func_short = (axiom.function or "global")[:20]
+                progress.update(i + 1, f"{func_short}", linked_count)
+
             try:
-                query = f"{axiom.content} {axiom.formal_spec or ''}"
-                candidates = semantic_linker.search_foundations(query, loader, limit=10)
+                # Suppress tqdm during search
+                old_stderr = sys.stderr
+                sys.stderr = open(os.devnull, 'w')
+                try:
+                    query = f"{axiom.content} {axiom.formal_spec or ''}"
+                    candidates = semantic_linker.search_foundations(query, loader, limit=10)
+                finally:
+                    sys.stderr.close()
+                    sys.stderr = old_stderr
 
                 # Similarity-based: top 3 candidates
                 new_depends = [c["id"] for c in candidates[:3] if c["id"] != axiom.id]
 
                 axiom.depends_on = semantic_linker.merge_depends_on(axiom.depends_on, new_depends)
+                if new_depends:
+                    linked_count += 1
             except Exception as e:
                 logger.debug(f"Could not search for {axiom.id}: {e}")
 
             linked_axioms.append(axiom)
 
+        if progress:
+            progress.processed_count = linked_count
+            progress.stop(success=True)
         return linked_axioms
 
 
@@ -479,6 +636,7 @@ def refine_low_confidence_axioms(
     model: str = LLM_MODEL,
     batch_size: int = LLM_BATCH_SIZE,
     vector_db: LanceDBLoader | None = None,
+    show_progress: bool = True,
 ) -> list[Axiom]:
     """Refine low-confidence axioms using LLM with RAG context.
 
@@ -492,6 +650,7 @@ def refine_low_confidence_axioms(
         model: Model to use (default: haiku).
         batch_size: Number of axioms per LLM call (default: 25).
         vector_db: Optional LanceDB loader for RAG context.
+        show_progress: Whether to show interactive progress.
     """
     if not use_llm:
         return list(axioms)
@@ -499,24 +658,48 @@ def refine_low_confidence_axioms(
     # Identify axioms needing refinement
     needs_refinement = [a for a in axioms if a.confidence < LLM_CONFIDENCE_THRESHOLD]
     if not needs_refinement:
-        logger.info("No axioms need LLM refinement")
+        print(f"✓ No axioms need LLM refinement (all confidence >= {LLM_CONFIDENCE_THRESHOLD})")
         return list(axioms)
-
-    logger.info(f"Refining {len(needs_refinement)} axioms with LLM ({model}, batch={batch_size})...")
 
     # Group by function for coherent batching
     groups = group_axioms_by_function(needs_refinement)
-    logger.info(f"Grouped into {len(groups)} functions")
+
+    # Calculate total batches
+    total_batches = sum(
+        (len(func_axioms) + batch_size - 1) // batch_size
+        for func_axioms in groups.values()
+    )
+
+    # Initialize progress tracker
+    progress: ExtractionProgress | None = None
+    if show_progress and sys.stdout.isatty():
+        progress = ExtractionProgress(total_batches, f"Refining ({model})")
+        progress.start()
 
     refined = []
+    batch_num = 0
+    refined_count = 0
+
     for func_name, func_axioms in groups.items():
-        # Query RAG for this function's axioms
-        related = query_rag_for_refinement(func_axioms, vector_db) if vector_db else []
-        if related:
-            logger.debug(f"Found {len(related)} related foundation axioms for {func_name}")
+        # Query RAG for this function's axioms (suppress tqdm)
+        if vector_db:
+            old_stderr = sys.stderr
+            sys.stderr = open(os.devnull, 'w')
+            try:
+                related = query_rag_for_refinement(func_axioms, vector_db)
+            finally:
+                sys.stderr.close()
+                sys.stderr = old_stderr
+        else:
+            related = []
 
         # Process in batches within this function group
         for batch in chunk(func_axioms, batch_size):
+            batch_num += 1
+            func_short = func_name[:20] + "..." if len(func_name) > 20 else func_name
+            if progress:
+                progress.update(batch_num, f"{func_short} ({len(batch)} axioms)", refined_count)
+
             if vector_db:
                 prompt = build_refinement_prompt_with_rag(batch, related)
             else:
@@ -529,9 +712,14 @@ def refine_low_confidence_axioms(
                 else:
                     batch_refined = parse_refinement_response(response, batch)
                 refined.extend(batch_refined)
+                refined_count += len(batch_refined)
             else:
                 # Keep originals if LLM fails
                 refined.extend(batch)
+
+    if progress:
+        progress.processed_count = refined_count
+        progress.stop(success=True)
 
     # Merge: replace refined axioms, keep others
     refined_ids = {a.id for a in refined}
@@ -602,9 +790,9 @@ def main() -> int:
         help=f"Batch size for LLM refinement (default: {LLM_BATCH_SIZE})",
     )
     parser.add_argument(
-        "--enrich",
+        "--no-enrich",
         action="store_true",
-        help="Enrich axioms with on_violation descriptions and infer new axioms",
+        help="Skip enrichment (enrichment enabled by default)",
     )
     parser.add_argument(
         "--enrich-model",
@@ -714,10 +902,9 @@ def main() -> int:
             )
             logger.info(f"LLM refinement complete ({len(collection.axioms)} axioms)")
 
-        # Enrich axioms with on_violation and inferred axioms
-        if args.enrich:
+        # Enrich axioms with on_violation and inferred axioms (enabled by default)
+        if not args.no_enrich:
             original_count = len(collection.axioms)
-            logger.info(f"Enriching {original_count} axioms...")
             collection.axioms = enrich_axioms(
                 list(collection.axioms),
                 use_llm=True,
@@ -726,7 +913,6 @@ def main() -> int:
             new_count = len(collection.axioms) - original_count
             if new_count > 0:
                 logger.info(f"Enrichment added {new_count} inferred axioms")
-            logger.info(f"Enrichment complete ({len(collection.axioms)} axioms)")
 
         # Save to TOML using the built-in method
         collection.save_toml(args.output)
