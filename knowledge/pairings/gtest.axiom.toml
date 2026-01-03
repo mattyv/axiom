@@ -1,7 +1,112 @@
-# GTest Library Function Pairings
-# This file defines semantic relationships between GTest functions that must be used together.
-#
-# GTest Lifecycle:
+# GTest Library Axioms and Pairings
+# This file defines semantic relationships and domain knowledge for Google Test.
+
+[metadata]
+layer = "gtest"
+version = "1.0.0"
+
+# =============================================================================
+# Domain Knowledge Axioms
+# These explain the "why" behind GTest design decisions and execution model
+# =============================================================================
+
+[[axioms]]
+id = "gtest.lifecycle.execution_order"
+function = "TEST_F"
+header = "gtest/gtest.h"
+axiom_type = "effect"
+content = "GTest executes tests in deterministic order: SetUpTestSuite (once), then for each test: Constructor → SetUp → TestBody → TearDown → Destructor, finally TearDownTestSuite (once). Tests within a suite run in registration order by default."
+formal_spec = "order(test_execution) = SetUpTestSuite → (Constructor → SetUp → TestBody → TearDown → Destructor)* → TearDownTestSuite"
+confidence = 1.0
+
+[[axioms]]
+id = "gtest.lifecycle.fresh_fixture"
+function = "TEST_F"
+header = "gtest/gtest.h"
+axiom_type = "invariant"
+content = "Each TEST_F gets a fresh fixture instance. The test fixture class is constructed anew for each test, guaranteeing test isolation. SetUp/TearDown provide virtual hook points for subclass customization."
+formal_spec = "forall tests t1, t2: fixture_instance(t1) != fixture_instance(t2)"
+confidence = 1.0
+
+[[axioms]]
+id = "gtest.assertions.fatal_vs_nonfatal"
+function = "ASSERT_TRUE"
+header = "gtest/gtest.h"
+axiom_type = "effect"
+content = "ASSERT_* macros are fatal: failure aborts the current test immediately via return. EXPECT_* macros are non-fatal: failure records the error but continues test execution. Use ASSERT when subsequent code depends on the condition, EXPECT for independent checks."
+formal_spec = "ASSERT_*(false) => return from test; EXPECT_*(false) => continue with failure recorded"
+on_violation = "Using ASSERT when EXPECT is appropriate may miss additional failures in a single test run"
+confidence = 1.0
+
+[[axioms]]
+id = "gtest.assertions.return_type"
+function = "ASSERT_TRUE"
+header = "gtest/gtest.h"
+axiom_type = "constraint"
+content = "ASSERT_* macros use early return, so they can only be used in functions returning void. In non-void functions, use EXPECT_* with explicit control flow, or restructure to call a void helper function that uses ASSERT_*."
+formal_spec = "ASSERT_* requires enclosing function returns void"
+on_violation = "Compilation error if ASSERT_* used in non-void function"
+confidence = 1.0
+
+[[axioms]]
+id = "gtest.death_tests.subprocess"
+function = "EXPECT_DEATH"
+header = "gtest/gtest.h"
+axiom_type = "effect"
+content = "Death tests run the statement in a subprocess to safely capture crashes/exits. The test process forks, the child executes the death-inducing statement, and the parent waits and checks the exit status/output. This avoids corrupting the main test process."
+formal_spec = "EXPECT_DEATH(stmt, regex) => fork(); child: exec(stmt); parent: wait_and_verify(exit_status, stderr, regex)"
+confidence = 1.0
+
+[[axioms]]
+id = "gtest.death_tests.naming"
+function = "EXPECT_DEATH"
+header = "gtest/gtest.h"
+axiom_type = "constraint"
+content = "Death test suites should be named with 'DeathTest' suffix (e.g., FooDeathTest). GTest runs death tests before other tests to avoid potential forking issues from accumulated state in the parent process."
+formal_spec = "test_suite_name ends with 'DeathTest' => runs before non-death tests"
+on_violation = "Death tests may run in suboptimal order, potentially causing fork-related issues"
+confidence = 1.0
+
+[[axioms]]
+id = "gtest.parameterized.instantiation"
+function = "INSTANTIATE_TEST_SUITE_P"
+header = "gtest/gtest.h"
+axiom_type = "constraint"
+content = "Every TEST_P must have at least one INSTANTIATE_TEST_SUITE_P. The instantiation generates concrete tests for each parameter value. Without instantiation, TEST_P defines a template but generates no runnable tests."
+formal_spec = "TEST_P(Suite, Name) requires INSTANTIATE_TEST_SUITE_P(Prefix, Suite, ...)"
+on_violation = "Linker warning: 'No tests from Suite are run'"
+confidence = 1.0
+
+[[axioms]]
+id = "gtest.mocking.strict_vs_nice"
+function = "StrictMock"
+header = "gmock/gmock.h"
+axiom_type = "effect"
+content = "NiceMock ignores unexpected calls (with default return). NaggyMock (default) prints warnings for unexpected calls. StrictMock treats unexpected calls as test failures. Choose based on how tightly you want to specify behavior."
+formal_spec = "StrictMock<T> => unexpected_call causes FAIL; NiceMock<T> => unexpected_call returns default; NaggyMock<T> => unexpected_call warns + returns default"
+confidence = 1.0
+
+[[axioms]]
+id = "gtest.mocking.expectation_saturation"
+function = "EXPECT_CALL"
+header = "gmock/gmock.h"
+axiom_type = "effect"
+content = "EXPECT_CALL expectations are saturated in reverse order (LIFO). Later expectations take precedence for matching. Unsatisfied expectations cause test failure. Use InSequence or Sequence to enforce call ordering when needed."
+formal_spec = "EXPECT_CALL matching order: last-defined-first-matched; unsatisfied at test end => FAIL"
+on_violation = "Test failure with 'Unsatisfied expectation' message"
+confidence = 1.0
+
+[[axioms]]
+id = "gtest.shared_resources.suite_vs_fixture"
+function = "SetUpTestSuite"
+header = "gtest/gtest.h"
+axiom_type = "effect"
+content = "SetUpTestSuite/TearDownTestSuite are static methods called once per test suite - use for expensive shared resources (database connections, file fixtures). SetUp/TearDown are instance methods called per-test - use for per-test state that must be fresh."
+formal_spec = "SetUpTestSuite: called once; SetUp: called N times for N tests in suite"
+confidence = 1.0
+
+# =============================================================================
+# GTest Lifecycle (reference):
 # 1. SetUpTestSuite() - once before all tests in suite
 # 2. For each test:
 #    a. Constructor
@@ -10,10 +115,7 @@
 #    d. TearDown()
 #    e. Destructor
 # 3. TearDownTestSuite() - once after all tests in suite
-
-[metadata]
-layer = "gtest"
-version = "1.0.0"
+# =============================================================================
 
 # =============================================================================
 # Fixture Lifecycle Pairings

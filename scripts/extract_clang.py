@@ -750,19 +750,20 @@ def refine_low_confidence_axioms(
     return [a for a in axioms if a.id not in refined_ids] + refined
 
 
-def _save_pairings_toml(
+def _format_pairings_toml(
     pairings: list,
     idioms: list,
-    output_path: Path,
-) -> None:
-    """Save pairings and idioms to a TOML file.
+) -> str:
+    """Format pairings and idioms as TOML sections.
 
     Args:
         pairings: List of Pairing objects
         idioms: List of Idiom objects
-        output_path: Path to save the TOML file
+
+    Returns:
+        TOML-formatted string with [[pairing]] and [[idiom]] sections
     """
-    lines = ["# Function pairings and usage idioms", ""]
+    lines = ["", "# Function pairings and usage idioms", ""]
 
     if pairings:
         for p in pairings:
@@ -773,7 +774,9 @@ def _save_pairings_toml(
             lines.append(f"confidence = {p.confidence}")
             lines.append(f'source = "{p.source}"')
             if p.evidence:
-                lines.append(f'evidence = "{p.evidence}"')
+                # Escape quotes in evidence
+                escaped = p.evidence.replace('"', '\\"')
+                lines.append(f'evidence = "{escaped}"')
             if p.cell:
                 lines.append(f'cell = "{p.cell}"')
             lines.append("")
@@ -793,7 +796,7 @@ def _save_pairings_toml(
             lines.append(f'source = "{i.source}"')
             lines.append("")
 
-    output_path.write_text("\n".join(lines))
+    return "\n".join(lines)
 
 
 def main() -> int:
@@ -994,11 +997,7 @@ def main() -> int:
             if new_count > 0:
                 logger.info(f"Enrichment added {new_count} inferred axioms")
 
-        # Save to TOML using the built-in method
-        collection.save_toml(args.output)
-        logger.info(f"Saved {len(collection.axioms)} axioms to {args.output}")
-
-        # Handle .axiom.toml pairings
+        # Handle .axiom.toml - load axioms, pairings, idioms BEFORE saving
         axiom_toml_path = args.axiom_toml
         if not axiom_toml_path and not args.no_axiom_toml:
             # Auto-discover from source path
@@ -1007,16 +1006,33 @@ def main() -> int:
             if axiom_toml_path:
                 logger.info(f"Discovered .axiom.toml at: {axiom_toml_path}")
 
+        pairings = []
+        idioms = []
         if axiom_toml_path and axiom_toml_path.exists():
-            from scripts.load_pairings import load_pairings_from_toml
+            from scripts.load_pairings import load_axiom_toml
 
-            pairings, idioms = load_pairings_from_toml(axiom_toml_path)
+            pairings, idioms, manual_axioms = load_axiom_toml(axiom_toml_path)
+
+            # Merge manual axioms into collection (prepend so they appear first)
+            if manual_axioms:
+                existing_ids = {a.id for a in collection.axioms}
+                new_axioms = [a for a in manual_axioms if a.id not in existing_ids]
+                collection.axioms = new_axioms + list(collection.axioms)
+                logger.info(f"Merged {len(new_axioms)} domain knowledge axioms from {axiom_toml_path.name}")
+
             if pairings or idioms:
                 logger.info(f"Loaded {len(pairings)} pairings and {len(idioms)} idioms from {axiom_toml_path.name}")
-                # Save pairings alongside the axioms output
-                pairings_output = args.output.with_suffix(".pairings.toml")
-                _save_pairings_toml(pairings, idioms, pairings_output)
-                logger.info(f"Saved pairings to {pairings_output}")
+
+        # Save to TOML using the built-in method
+        collection.save_toml(args.output)
+        logger.info(f"Saved {len(collection.axioms)} axioms to {args.output}")
+
+        # Append pairings/idioms after the axioms
+        if pairings or idioms:
+            pairings_toml = _format_pairings_toml(pairings, idioms)
+            with open(args.output, "a") as f:
+                f.write(pairings_toml)
+            logger.info(f"Appended pairings/idioms to {args.output}")
 
         # Print statistics
         stats = json_data.get("statistics", {})
