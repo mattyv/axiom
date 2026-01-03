@@ -14,27 +14,37 @@
 namespace axiom {
 namespace {
 
-// Helper to parse code and get the first function
-clang::FunctionDecl* parseFunctionDecl(const std::string& code) {
-    auto ast = clang::tooling::buildASTFromCode(code);
-    if (!ast) return nullptr;
+// Helper struct to keep AST alive while using FunctionDecl
+struct ParsedFunction {
+    std::unique_ptr<clang::ASTUnit> ast;
+    clang::FunctionDecl* func = nullptr;
 
-    auto& ctx = ast->getASTContext();
+    explicit operator bool() const { return func != nullptr; }
+};
+
+// Helper to parse code and get the first function
+ParsedFunction parseFunctionDecl(const std::string& code) {
+    ParsedFunction result;
+    result.ast = clang::tooling::buildASTFromCode(code);
+    if (!result.ast) return result;
+
+    auto& ctx = result.ast->getASTContext();
     auto* tu = ctx.getTranslationUnitDecl();
 
     for (auto* decl : tu->decls()) {
         if (auto* func = llvm::dyn_cast<clang::FunctionDecl>(decl)) {
-            return func;
+            result.func = func;
+            break;
         }
     }
-    return nullptr;
+    return result;
 }
 
 TEST(SignatureBuilderTest, SimpleFunction) {
-    auto* func = parseFunctionDecl("int add(int a, int b) { return a + b; }");
-    ASSERT_NE(func, nullptr);
+    auto parsed = parseFunctionDecl("int add(int a, int b) { return a + b; }");
+    ASSERT_TRUE(parsed);
 
-    std::string sig = buildFunctionSignature(func);
+    std::string sig = buildFunctionSignature(parsed.func);
 
     // Should have no body
     EXPECT_EQ(sig.find("{"), std::string::npos);
@@ -45,11 +55,11 @@ TEST(SignatureBuilderTest, SimpleFunction) {
 }
 
 TEST(SignatureBuilderTest, ConstexprFunction) {
-    auto* func = parseFunctionDecl(
+    auto parsed = parseFunctionDecl(
         "constexpr int factorial(int n) { return n <= 1 ? 1 : n * factorial(n-1); }");
-    ASSERT_NE(func, nullptr);
+    ASSERT_TRUE(parsed);
 
-    std::string sig = buildFunctionSignature(func);
+    std::string sig = buildFunctionSignature(parsed.func);
 
     // Should include constexpr keyword
     EXPECT_NE(sig.find("constexpr"), std::string::npos);
@@ -62,10 +72,10 @@ TEST(SignatureBuilderTest, ConstexprFunction) {
 }
 
 TEST(SignatureBuilderTest, InlineFunction) {
-    auto* func = parseFunctionDecl("inline int square(int x) { return x * x; }");
-    ASSERT_NE(func, nullptr);
+    auto parsed = parseFunctionDecl("inline int square(int x) { return x * x; }");
+    ASSERT_TRUE(parsed);
 
-    std::string sig = buildFunctionSignature(func);
+    std::string sig = buildFunctionSignature(parsed.func);
 
     EXPECT_NE(sig.find("inline"), std::string::npos);
     EXPECT_EQ(sig.find("{"), std::string::npos);
@@ -73,11 +83,11 @@ TEST(SignatureBuilderTest, InlineFunction) {
 }
 
 TEST(SignatureBuilderTest, StaticInlineConstexpr) {
-    auto* func = parseFunctionDecl(
+    auto parsed = parseFunctionDecl(
         "static inline constexpr int max(int a, int b) { return a > b ? a : b; }");
-    ASSERT_NE(func, nullptr);
+    ASSERT_TRUE(parsed);
 
-    std::string sig = buildFunctionSignature(func);
+    std::string sig = buildFunctionSignature(parsed.func);
 
     // Should have all keywords
     EXPECT_NE(sig.find("static"), std::string::npos);
@@ -92,10 +102,10 @@ TEST(SignatureBuilderTest, StaticInlineConstexpr) {
 // TEST(SignatureBuilderTest, ConstMethod) { ... }
 
 TEST(SignatureBuilderTest, NoexceptFunction) {
-    auto* func = parseFunctionDecl("int safe() noexcept { return 0; }");
-    ASSERT_NE(func, nullptr);
+    auto parsed = parseFunctionDecl("int safe() noexcept { return 0; }");
+    ASSERT_TRUE(parsed);
 
-    std::string sig = buildFunctionSignature(func);
+    std::string sig = buildFunctionSignature(parsed.func);
 
     EXPECT_NE(sig.find("noexcept"), std::string::npos);
     EXPECT_EQ(sig.find("{"), std::string::npos);
@@ -107,16 +117,16 @@ TEST(SignatureBuilderTest, NoexceptFunction) {
 
 TEST(SignatureBuilderTest, NoPreprocessorDirectives) {
     // This will fail with current raw source extraction approach
-    auto* func = parseFunctionDecl(
+    auto parsed = parseFunctionDecl(
         "#ifdef FOO\n"
         "inline\n"
         "#else\n"
         "static\n"
         "#endif\n"
         "int conditional() { return 1; }");
-    ASSERT_NE(func, nullptr);
+    ASSERT_TRUE(parsed);
 
-    std::string sig = buildFunctionSignature(func);
+    std::string sig = buildFunctionSignature(parsed.func);
 
     // Should NOT contain preprocessor directives
     EXPECT_EQ(sig.find("#ifdef"), std::string::npos);

@@ -761,10 +761,10 @@ public:
 
         // Check for requires clause (C++20 concepts)
         // Check trailing requires clause on the function itself
-        if (auto* req = func->getTrailingRequiresClause()) {
+        if (auto req = func->getTrailingRequiresClause(); req.ConstraintExpr) {
             std::string reqStr;
             llvm::raw_string_ostream reqStream(reqStr);
-            req->printPretty(reqStream, nullptr, result.Context->getPrintingPolicy());
+            req.ConstraintExpr->printPretty(reqStream, nullptr, result.Context->getPrintingPolicy());
             info.requires_clause = reqStr;
         }
 

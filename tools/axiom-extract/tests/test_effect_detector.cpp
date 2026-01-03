@@ -28,7 +28,11 @@ protected:
     // Parse code and find the function declaration
     std::unique_ptr<clang::ASTUnit> parseCode(const std::string& code) {
         return clang::tooling::buildASTFromCodeWithArgs(
-            code, {"-std=c++20"}, "test.cpp");
+            code, {"-std=c++20",
+                   "-isystem", LIBCXX_INCLUDE_DIR,
+                   "-isystem", CLANG_RESOURCE_DIR "/include",
+                   "-isystem", SYSTEM_INCLUDE_DIR},
+            "test.cpp");
     }
 
     const clang::FunctionDecl* findFunction(clang::ASTUnit* ast,

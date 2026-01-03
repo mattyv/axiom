@@ -33,6 +33,36 @@ target_include_directories(axiom-extract-tests PRIVATE
     ${CMAKE_SOURCE_DIR}/include
 )
 
+# Find clang resource dir for builtin headers
+execute_process(
+    COMMAND ${LLVM_TOOLS_BINARY_DIR}/clang -print-resource-dir
+    OUTPUT_VARIABLE CLANG_RESOURCE_DIR
+    OUTPUT_STRIP_TRAILING_WHITESPACE
+)
+
+# Find libc++ include path
+get_filename_component(LLVM_INSTALL_PREFIX "${LLVM_TOOLS_BINARY_DIR}" DIRECTORY)
+set(LIBCXX_INCLUDE_DIR "${LLVM_INSTALL_PREFIX}/include/c++/v1")
+
+# Find system SDK include path (platform-specific)
+if(APPLE)
+    execute_process(
+        COMMAND xcrun --show-sdk-path
+        OUTPUT_VARIABLE SDK_PATH
+        OUTPUT_STRIP_TRAILING_WHITESPACE
+    )
+    set(SYSTEM_INCLUDE_DIR "${SDK_PATH}/usr/include")
+else()
+    set(SYSTEM_INCLUDE_DIR "/usr/include")
+endif()
+
+# Pass include paths to tests as compile definitions
+target_compile_definitions(axiom-extract-tests PRIVATE
+    CLANG_RESOURCE_DIR="${CLANG_RESOURCE_DIR}"
+    LIBCXX_INCLUDE_DIR="${LIBCXX_INCLUDE_DIR}"
+    SYSTEM_INCLUDE_DIR="${SYSTEM_INCLUDE_DIR}"
+)
+
 target_link_libraries(axiom-extract-tests PRIVATE
     GTest::gtest_main
     GTest::gmock
