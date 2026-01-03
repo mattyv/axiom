@@ -21,10 +21,10 @@ Usage:
         --args="-std=c++20 -I/path/to/include" \\
         --output axioms.toml
 
-    # With LLM fallback for low-confidence axioms
+    # Without LLM refinement (faster, lower quality)
     python scripts/extract_clang.py \\
         --compile-commands build/compile_commands.json \\
-        --llm-fallback \\
+        --no-llm-fallback \\
         --output mylib.toml
 """
 
@@ -395,9 +395,9 @@ def main() -> int:
         help="Library name for the axiom collection",
     )
     parser.add_argument(
-        "--llm-fallback",
+        "--no-llm-fallback",
         action="store_true",
-        help="Use LLM for low-confidence axioms",
+        help="Disable LLM refinement for low-confidence axioms (enabled by default)",
     )
     parser.add_argument(
         "--enrich",
@@ -490,8 +490,8 @@ def main() -> int:
                 link_type=args.link_type,
             )
 
-        # LLM fallback for low-confidence axioms
-        if args.llm_fallback:
+        # LLM fallback for low-confidence axioms (enabled by default)
+        if not args.no_llm_fallback:
             original_count = len(collection.axioms)
             collection.axioms = refine_low_confidence_axioms(
                 list(collection.axioms), use_llm=True
