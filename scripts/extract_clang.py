@@ -176,7 +176,7 @@ def link_depends_on(
         logger.info(f"Grouped {len(axioms)} axioms into {len(function_groups)} functions")
 
         linked_axioms = []
-        for function_name, func_axioms in function_groups.items():
+        for _function_name, func_axioms in function_groups.items():
             # For each function group, find union of candidates across all axioms
             all_candidates = {}
             for axiom in func_axioms:
@@ -223,7 +223,8 @@ def link_depends_on(
 
 # LLM Refiner configuration
 LLM_CONFIDENCE_THRESHOLD = 0.80
-LLM_BATCH_SIZE = 10
+LLM_BATCH_SIZE = 25  # Optimized for haiku model
+LLM_MODEL = "haiku"  # Fast model sufficient for refinement
 
 
 def chunk(items: list, size: int) -> Iterator[list]:
@@ -260,7 +261,7 @@ Return ONLY valid TOML with refined axioms:
 Respond with refined axioms in the same TOML format, adding a 'rationale' field."""
 
 
-def call_claude_cli(prompt: str) -> str:
+def call_claude_cli(prompt: str, model: str = LLM_MODEL) -> str:
     """Call Claude CLI for refinement."""
     try:
         result = subprocess.run(
@@ -268,7 +269,7 @@ def call_claude_cli(prompt: str) -> str:
                 "claude",
                 "--print",
                 "--model",
-                "sonnet",
+                model,
                 "--dangerously-skip-permissions",
                 prompt,
             ],
@@ -312,14 +313,185 @@ def parse_refinement_response(response: str, originals: list[Axiom]) -> list[Axi
         return list(originals)
 
 
+def group_axioms_by_function(axioms: list[Axiom]) -> dict[str, list[Axiom]]:
+    """Group axioms by function for coherent batching."""
+    from collections import defaultdict
+    groups: dict[str, list[Axiom]] = defaultdict(list)
+    for axiom in axioms:
+        key = axiom.function or "__global__"
+        groups[key].append(axiom)
+    return dict(groups)
+
+
+def build_refinement_queries(axiom: Axiom) -> list[str]:
+    """Generate semantic search queries for RAG context."""
+    queries = []
+    content = axiom.content.lower()
+
+    # Operation-based queries
+    if "divis" in content or "modulo" in content or "/" in content:
+        queries.append("division by zero undefined behavior integer modulo")
+    if "pointer" in content or "null" in content or "nullptr" in content:
+        queries.append("null pointer dereference undefined behavior")
+    if "array" in content or "index" in content or "bounds" in content:
+        queries.append("array index bounds out of range undefined behavior")
+    if "memory" in content or "alloc" in content or "new" in content or "delete" in content:
+        queries.append("memory allocation deallocation new delete")
+    if "overflow" in content or "integer" in content:
+        queries.append("integer overflow signed unsigned undefined behavior")
+    if "thread" in content or "mutex" in content or "lock" in content:
+        queries.append("thread synchronization mutex data race")
+    if "assert" in content or "expect" in content:
+        queries.append("assertion precondition postcondition invariant")
+
+    # Generic query from content
+    if axiom.content:
+        queries.append(axiom.content[:100])
+
+    return queries[:5]  # Limit to 5 queries
+
+
+def query_rag_for_refinement(
+    axioms: list[Axiom],
+    vector_db: LanceDBLoader | None,
+) -> list[dict]:
+    """Query vector DB for related foundation axioms."""
+    if not vector_db:
+        return []
+
+    all_candidates: dict[str, dict] = {}
+    for axiom in axioms:
+        for query in build_refinement_queries(axiom):
+            try:
+                results = semantic_linker.search_foundations(query, vector_db, limit=5)
+                for r in results:
+                    if r["id"] not in all_candidates:
+                        all_candidates[r["id"]] = r
+            except Exception as e:
+                logger.debug(f"RAG query failed for {axiom.id}: {e}")
+
+    # Return top candidates by relevance (deduplicated)
+    return list(all_candidates.values())[:15]
+
+
+def format_related_axioms(related: list[dict]) -> str:
+    """Format related foundation axioms for the prompt."""
+    if not related:
+        return "No related foundation axioms found."
+
+    lines = []
+    for r in related[:10]:  # Limit to 10 for prompt size
+        lines.append(f"- {r['id']}: {r.get('content', '')[:100]}")
+    return "\n".join(lines)
+
+
+def build_refinement_prompt_with_rag(
+    axioms: list[Axiom],
+    related_axioms: list[dict],
+) -> str:
+    """Build prompt for axiom refinement with RAG context."""
+    axiom_lines = []
+    for a in axioms:
+        axiom_lines.append(
+            f"""[[axioms]]
+id = "{a.id}"
+content = "{a.content}"
+formal_spec = "{a.formal_spec or ''}"
+confidence = {a.confidence}
+function = "{a.function or ''}"
+depends_on = []
+"""
+        )
+
+    related_section = format_related_axioms(related_axioms)
+
+    return f"""You are an expert in C/C++ semantics. Review these low-confidence axioms.
+
+## Related Foundation Axioms (from C11/C++20 standards)
+
+{related_section}
+
+## Axioms to Refine
+
+{chr(10).join(axiom_lines)}
+
+## Task
+
+For each axiom:
+1. Verify correctness against C++ semantics
+2. Improve content/formal_spec if needed
+3. Add `depends_on` array with IDs of relevant foundation axioms from above
+4. Set confidence:
+   - 1.0: Direct match to foundation axiom
+   - 0.8-0.9: Clear semantic requirement
+   - 0.6-0.7: Context-dependent
+   - <0.6: Uncertain
+
+Return ONLY valid TOML with refined axioms. Include depends_on = ["id1", "id2"] for linked axioms."""
+
+
+def parse_refinement_response_with_depends(
+    response: str,
+    originals: list[Axiom],
+) -> list[Axiom]:
+    """Parse TOML response and update axioms including depends_on."""
+    try:
+        # Extract TOML block if wrapped in markdown
+        if "```toml" in response:
+            start = response.index("```toml") + 7
+            end = response.index("```", start)
+            response = response[start:end]
+        elif "```" in response:
+            start = response.index("```") + 3
+            newline_idx = response.find("\n", start)
+            if newline_idx != -1:
+                start = newline_idx + 1
+            end = response.index("```", start)
+            response = response[start:end]
+
+        data = tomllib.loads(response)
+        refined_map = {a["id"]: a for a in data.get("axioms", [])}
+
+        result = []
+        for orig in originals:
+            if orig.id in refined_map:
+                r = refined_map[orig.id]
+                # Update axiom with refined values
+                orig.content = r.get("content", orig.content)
+                orig.formal_spec = r.get("formal_spec", orig.formal_spec)
+                orig.confidence = r.get("confidence", orig.confidence)
+                # Update depends_on if provided
+                if "depends_on" in r and r["depends_on"]:
+                    new_deps = r["depends_on"]
+                    existing = orig.depends_on or []
+                    # Merge without duplicates
+                    orig.depends_on = list(dict.fromkeys(existing + new_deps))
+            result.append(orig)
+        return result
+    except Exception as e:
+        logger.warning(f"Failed to parse LLM response: {e}")
+        return list(originals)
+
+
 def refine_low_confidence_axioms(
     axioms: list[Axiom],
     use_llm: bool = False,
+    model: str = LLM_MODEL,
+    batch_size: int = LLM_BATCH_SIZE,
+    vector_db: LanceDBLoader | None = None,
 ) -> list[Axiom]:
-    """Refine low-confidence axioms using LLM.
+    """Refine low-confidence axioms using LLM with RAG context.
 
     Axioms with confidence below LLM_CONFIDENCE_THRESHOLD are sent to the
-    Claude CLI in batches for refinement.
+    Claude CLI in batches for refinement. When vector_db is provided,
+    related foundation axioms are included for context.
+
+    Args:
+        axioms: List of axioms to refine.
+        use_llm: Whether to use LLM for refinement.
+        model: Model to use (default: haiku).
+        batch_size: Number of axioms per LLM call (default: 25).
+        vector_db: Optional LanceDB loader for RAG context.
     """
     if not use_llm:
         return list(axioms)
@@ -330,18 +502,36 @@ def refine_low_confidence_axioms(
         logger.info("No axioms need LLM refinement")
         return list(axioms)
 
-    logger.info(f"Refining {len(needs_refinement)} axioms with LLM...")
+    logger.info(f"Refining {len(needs_refinement)} axioms with LLM ({model}, batch={batch_size})...")
+
+    # Group by function for coherent batching
+    groups = group_axioms_by_function(needs_refinement)
+    logger.info(f"Grouped into {len(groups)} functions")
 
     refined = []
-    for batch in chunk(needs_refinement, LLM_BATCH_SIZE):
-        prompt = build_refinement_prompt(batch)
-        response = call_claude_cli(prompt)
-        if response:
-            batch_refined = parse_refinement_response(response, batch)
-            refined.extend(batch_refined)
-        else:
-            # Keep originals if LLM fails
-            refined.extend(batch)
+    for func_name, func_axioms in groups.items():
+        # Query RAG for this function's axioms
+        related = query_rag_for_refinement(func_axioms, vector_db) if vector_db else []
+        if related:
+            logger.debug(f"Found {len(related)} related foundation axioms for {func_name}")
+
+        # Process in batches within this function group
+        for batch in chunk(func_axioms, batch_size):
+            if vector_db:
+                prompt = build_refinement_prompt_with_rag(batch, related)
+            else:
+                prompt = build_refinement_prompt(batch)
+
+            response = call_claude_cli(prompt, model)
+            if response:
+                if vector_db:
+                    batch_refined = parse_refinement_response_with_depends(response, batch)
+                else:
+                    batch_refined = parse_refinement_response(response, batch)
+                refined.extend(batch_refined)
+            else:
+                # Keep originals if LLM fails
+                refined.extend(batch)
 
     # Merge: replace refined axioms, keep others
     refined_ids = {a.id for a in refined}
@@ -398,6 +588,18 @@ def main() -> int:
         "--no-llm-fallback",
         action="store_true",
         help="Disable LLM refinement for low-confidence axioms (enabled by default)",
+    )
+    parser.add_argument(
+        "--refine-model",
+        type=str,
+        default=LLM_MODEL,
+        help=f"Model for LLM refinement (default: {LLM_MODEL})",
+    )
+    parser.add_argument(
+        "--refine-batch-size",
+        type=int,
+        default=LLM_BATCH_SIZE,
+        help=f"Batch size for LLM refinement (default: {LLM_BATCH_SIZE})",
     )
     parser.add_argument(
         "--enrich",
@@ -492,9 +694,23 @@ def main() -> int:
 
         # LLM fallback for low-confidence axioms (enabled by default)
         if not args.no_llm_fallback:
+            # Initialize vector DB for RAG context if available
+            vector_db = None
+            vector_db_path = args.vector_db or Path(__file__).parent.parent / "data" / "lancedb"
+            if vector_db_path.exists():
+                try:
+                    vector_db = LanceDBLoader(str(vector_db_path))
+                    logger.info("Using RAG context for LLM refinement")
+                except Exception as e:
+                    logger.debug(f"Could not load vector DB for refinement: {e}")
+
             original_count = len(collection.axioms)
             collection.axioms = refine_low_confidence_axioms(
-                list(collection.axioms), use_llm=True
+                list(collection.axioms),
+                use_llm=True,
+                model=args.refine_model,
+                batch_size=args.refine_batch_size,
+                vector_db=vector_db,
             )
             logger.info(f"LLM refinement complete ({len(collection.axioms)} axioms)")
 
