@@ -1,0 +1,217 @@
+# GTest Library Function Pairings
+# This file defines semantic relationships between GTest functions that must be used together.
+#
+# GTest Lifecycle:
+# 1. SetUpTestSuite() - once before all tests in suite
+# 2. For each test:
+#    a. Constructor
+#    b. SetUp()
+#    c. Test body (TEST_F)
+#    d. TearDown()
+#    e. Destructor
+# 3. TearDownTestSuite() - once after all tests in suite
+
+[metadata]
+layer = "gtest"
+version = "1.0.0"
+
+# =============================================================================
+# Fixture Lifecycle Pairings
+# SetUp/TearDown are called around each test in a fixture
+# =============================================================================
+
+[[pairing]]
+opener = "SetUp"
+closer = "TearDown"
+required = true
+evidence = "GTest fixture lifecycle: SetUp is called before each TEST_F, TearDown after. Virtual methods that can be overridden in test fixtures."
+
+[[pairing]]
+opener = "SetUpTestSuite"
+closer = "TearDownTestSuite"
+required = true
+evidence = "GTest suite lifecycle: SetUpTestSuite runs once before the first test in a suite, TearDownTestSuite after the last. Static methods for expensive shared setup."
+
+# =============================================================================
+# Environment Lifecycle Pairings
+# Global test environment setup/teardown
+# =============================================================================
+
+[[pairing]]
+opener = "Environment::SetUp"
+closer = "Environment::TearDown"
+required = true
+evidence = "GTest Environment lifecycle: SetUp runs before all test suites, TearDown after all suites complete."
+
+# =============================================================================
+# Death Test Pairings
+# Death tests verify that code terminates as expected
+# =============================================================================
+
+[[pairing]]
+opener = "EXPECT_DEATH"
+closer = "GTEST_FLAG_SET(death_test_style)"
+required = false
+evidence = "Death tests may require specific death_test_style (threadsafe vs fast) depending on environment"
+
+[[pairing]]
+opener = "ASSERT_DEATH"
+closer = "GTEST_FLAG_SET(death_test_style)"
+required = false
+evidence = "Death tests may require specific death_test_style configuration"
+
+# =============================================================================
+# Matcher Composition Pairings
+# Matchers that work together
+# =============================================================================
+
+[[pairing]]
+opener = "EXPECT_THAT"
+closer = "Matcher"
+required = true
+evidence = "EXPECT_THAT requires a matcher as second argument (e.g., Eq, Contains, HasSubstr)"
+
+[[pairing]]
+opener = "ASSERT_THAT"
+closer = "Matcher"
+required = true
+evidence = "ASSERT_THAT requires a matcher as second argument"
+
+# =============================================================================
+# Scoped Trace Pairing
+# SCOPED_TRACE adds context that applies until scope ends
+# =============================================================================
+
+[[pairing]]
+opener = "SCOPED_TRACE"
+closer = "scope_exit"
+required = true
+evidence = "SCOPED_TRACE adds failure context until the current scope exits"
+
+# =============================================================================
+# Idiom Templates
+# Common usage patterns showing correct GTest composition
+# =============================================================================
+
+[[idiom]]
+name = "fixture_lifecycle"
+participants = ["SetUp", "TearDown", "TEST_F"]
+template = '''
+class MyFixture : public ::testing::Test {
+protected:
+    void SetUp() override {
+        // Initialize test state before each test
+    }
+    void TearDown() override {
+        // Clean up after each test
+    }
+};
+
+TEST_F(MyFixture, TestName) {
+    // SetUp() has been called
+    EXPECT_TRUE(condition);
+    // TearDown() will be called after this
+}
+'''
+
+[[idiom]]
+name = "suite_lifecycle"
+participants = ["SetUpTestSuite", "TearDownTestSuite", "TEST_F"]
+template = '''
+class MySuite : public ::testing::Test {
+public:
+    static void SetUpTestSuite() {
+        // Expensive one-time initialization for all tests
+        shared_resource_ = new ExpensiveResource();
+    }
+    static void TearDownTestSuite() {
+        // Clean up shared resources
+        delete shared_resource_;
+    }
+protected:
+    static ExpensiveResource* shared_resource_;
+};
+'''
+
+[[idiom]]
+name = "death_test"
+participants = ["EXPECT_DEATH", "EXPECT_EXIT", "ASSERT_DEATH"]
+template = '''
+TEST_F(MyDeathTest, CrashOnNullPointer) {
+    // Death tests run in a subprocess
+    EXPECT_DEATH(FunctionThatCrashes(nullptr), ".*null.*");
+}
+
+TEST_F(MyDeathTest, ExitWithCode) {
+    EXPECT_EXIT(exit(42), ::testing::ExitedWithCode(42), "");
+}
+'''
+
+[[idiom]]
+name = "parameterized_test"
+participants = ["TEST_P", "INSTANTIATE_TEST_SUITE_P", "GetParam"]
+template = '''
+class MyParamTest : public ::testing::TestWithParam<int> {};
+
+TEST_P(MyParamTest, WorksWithParam) {
+    int param = GetParam();
+    EXPECT_GT(param, 0);
+}
+
+INSTANTIATE_TEST_SUITE_P(
+    Positive,
+    MyParamTest,
+    ::testing::Values(1, 2, 3, 4, 5)
+);
+'''
+
+[[idiom]]
+name = "typed_test"
+participants = ["TYPED_TEST", "TYPED_TEST_SUITE", "TypeParam"]
+template = '''
+template <typename T>
+class TypedTest : public ::testing::Test {};
+
+using MyTypes = ::testing::Types<int, float, double>;
+TYPED_TEST_SUITE(TypedTest, MyTypes);
+
+TYPED_TEST(TypedTest, WorksWithType) {
+    TypeParam value = 0;
+    EXPECT_EQ(value, TypeParam(0));
+}
+'''
+
+[[idiom]]
+name = "mock_expectations"
+participants = ["EXPECT_CALL", "ON_CALL", "WillOnce", "WillRepeatedly"]
+template = '''
+class MockFoo : public FooInterface {
+public:
+    MOCK_METHOD(int, Bar, (int x), (override));
+};
+
+TEST_F(MockTest, UseMock) {
+    MockFoo mock;
+    EXPECT_CALL(mock, Bar(5))
+        .WillOnce(Return(10));
+
+    EXPECT_EQ(mock.Bar(5), 10);
+}
+'''
+
+[[idiom]]
+name = "scoped_trace"
+participants = ["SCOPED_TRACE", "EXPECT_TRUE", "ASSERT_TRUE"]
+template = '''
+void HelperThatMayFail(int i) {
+    SCOPED_TRACE(testing::Message() << "Iteration " << i);
+    // If this fails, the trace shows which iteration
+    EXPECT_GT(i, 0);
+}
+
+TEST_F(MyTest, LoopWithTrace) {
+    for (int i = 1; i <= 10; ++i) {
+        HelperThatMayFail(i);
+    }
+}
+'''

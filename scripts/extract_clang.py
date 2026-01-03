@@ -62,6 +62,30 @@ from axiom.vectors.loader import LanceDBLoader
 logger = logging.getLogger(__name__)
 
 
+def discover_axiom_toml(source_path: Path) -> Path | None:
+    """Look for .axiom.toml in source directory or parents.
+
+    Searches the given path (if directory) or its parent (if file),
+    then walks up to 3 parent levels looking for .axiom.toml files.
+    The closest .axiom.toml takes precedence.
+
+    Args:
+        source_path: Path to source file or directory
+
+    Returns:
+        Path to .axiom.toml if found, None otherwise
+    """
+    path = source_path if source_path.is_dir() else source_path.parent
+
+    # Check current directory first, then walk up to 3 levels
+    for parent in [path] + list(path.parents)[:3]:
+        candidate = parent / ".axiom.toml"
+        if candidate.exists():
+            return candidate
+
+    return None
+
+
 class ExtractionProgress:
     """Progress tracker with spinner for extraction phases."""
 
@@ -726,6 +750,52 @@ def refine_low_confidence_axioms(
     return [a for a in axioms if a.id not in refined_ids] + refined
 
 
+def _save_pairings_toml(
+    pairings: list,
+    idioms: list,
+    output_path: Path,
+) -> None:
+    """Save pairings and idioms to a TOML file.
+
+    Args:
+        pairings: List of Pairing objects
+        idioms: List of Idiom objects
+        output_path: Path to save the TOML file
+    """
+    lines = ["# Function pairings and usage idioms", ""]
+
+    if pairings:
+        for p in pairings:
+            lines.append("[[pairing]]")
+            lines.append(f'opener = "{p.opener_id}"')
+            lines.append(f'closer = "{p.closer_id}"')
+            lines.append(f"required = {'true' if p.required else 'false'}")
+            lines.append(f"confidence = {p.confidence}")
+            lines.append(f'source = "{p.source}"')
+            if p.evidence:
+                lines.append(f'evidence = "{p.evidence}"')
+            if p.cell:
+                lines.append(f'cell = "{p.cell}"')
+            lines.append("")
+
+    if idioms:
+        for i in idioms:
+            lines.append("[[idiom]]")
+            lines.append(f'id = "{i.id}"')
+            lines.append(f'name = "{i.name}"')
+            participants_str = ", ".join(f'"{p}"' for p in i.participants)
+            lines.append(f"participants = [{participants_str}]")
+            if i.template:
+                # Use multiline string for template
+                lines.append("template = '''")
+                lines.append(i.template.strip())
+                lines.append("'''")
+            lines.append(f'source = "{i.source}"')
+            lines.append("")
+
+    output_path.write_text("\n".join(lines))
+
+
 def main() -> int:
     """Main entry point."""
     parser = argparse.ArgumentParser(
@@ -829,6 +899,16 @@ def main() -> int:
         action="store_true",
         help="Enable verbose logging",
     )
+    parser.add_argument(
+        "--axiom-toml",
+        type=Path,
+        help="Path to .axiom.toml file with pairings/idioms (auto-discovered if not specified)",
+    )
+    parser.add_argument(
+        "--no-axiom-toml",
+        action="store_true",
+        help="Disable auto-discovery of .axiom.toml files",
+    )
 
     args = parser.parse_args()
 
@@ -917,6 +997,26 @@ def main() -> int:
         # Save to TOML using the built-in method
         collection.save_toml(args.output)
         logger.info(f"Saved {len(collection.axioms)} axioms to {args.output}")
+
+        # Handle .axiom.toml pairings
+        axiom_toml_path = args.axiom_toml
+        if not axiom_toml_path and not args.no_axiom_toml:
+            # Auto-discover from source path
+            source_path = args.files[0] if args.files else args.compile_commands.parent
+            axiom_toml_path = discover_axiom_toml(source_path)
+            if axiom_toml_path:
+                logger.info(f"Discovered .axiom.toml at: {axiom_toml_path}")
+
+        if axiom_toml_path and axiom_toml_path.exists():
+            from scripts.load_pairings import load_pairings_from_toml
+
+            pairings, idioms = load_pairings_from_toml(axiom_toml_path)
+            if pairings or idioms:
+                logger.info(f"Loaded {len(pairings)} pairings and {len(idioms)} idioms from {axiom_toml_path.name}")
+                # Save pairings alongside the axioms output
+                pairings_output = args.output.with_suffix(".pairings.toml")
+                _save_pairings_toml(pairings, idioms, pairings_output)
+                logger.info(f"Saved pairings to {pairings_output}")
 
         # Print statistics
         stats = json_data.get("statistics", {})
