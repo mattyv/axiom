@@ -34,8 +34,8 @@ jobs:
         run: |
           wget https://apt.llvm.org/llvm.sh
           chmod +x llvm.sh
-          sudo ./llvm.sh 18
-          sudo apt-get install -y libclang-18-dev llvm-18-dev cmake ninja-build
+          sudo ./llvm.sh 19
+          sudo apt-get install -y libclang-19-dev llvm-19-dev cmake ninja-build
 
       - name: Build axiom-extract
         run: |
@@ -43,8 +43,8 @@ jobs:
           mkdir -p build && cd build
           cmake .. -G Ninja \
             -DCMAKE_BUILD_TYPE=Release \
-            -DLLVM_DIR=/usr/lib/llvm-18/cmake \
-            -DClang_DIR=/usr/lib/cmake/clang-18
+            -DLLVM_DIR=/usr/lib/llvm-19/cmake \
+            -DClang_DIR=/usr/lib/cmake/clang-19
           ninja
 
       - name: Run linting
