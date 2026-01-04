@@ -1,0 +1,54 @@
+# Axiom LSP Configuration
+# This file configures how Axiom LSP treats files in this project.
+
+[extract]
+# Path to compile_commands.json (for compiler flags)
+compile_commands = "tools/axiom-extract/build/compile_commands.json"
+
+# Path to axiom-extract binary
+axiom_extract_path = "tools/axiom-extract/build/axiom-extract"
+
+[live]
+# Storage backend for live layer
+# "memory" = fast in-memory (default)
+# "sqlite" = persistent, for very large projects
+storage = "memory"
+
+# SQLite path if using sqlite storage
+# sqlite_path = ".axiom/live.db"
+
+[static]
+# Neo4j connection for static layer (foundation + library axioms)
+neo4j_uri = "bolt://localhost:7687"
+neo4j_user = "neo4j"
+neo4j_password = "axiompass"
+
+# LanceDB path for vector search
+lancedb_path = "data/lancedb"
+
+[diagnostics]
+# Diagnostic mode
+# "default" = emit all, let client filter
+# "llm" = emit all (explicit, same as default)
+# "human" = suppress axiom-context hints server-side
+mode = "default"
+
+[hover]
+# Maximum depth for dependency chain in hover
+# Omit or set to 0 for full chain to foundation axioms
+# Set to 2 to show only 2 levels of dependencies
+# max_depth = 0
+
+# Show full chain to C11/C++ core axioms
+show_full_chain = true
+
+[overrides]
+# Force specific paths to be treated as static layer
+# (even if they appear in compile_commands.json)
+static = []
+
+# Force specific paths to be treated as live layer
+# (even if they don't appear in compile_commands.json)
+live = [
+    "examples/"
+]

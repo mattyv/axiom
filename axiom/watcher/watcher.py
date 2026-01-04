@@ -177,15 +177,17 @@ class AxiomWatcher:
         logger.info("Axiom watcher stopped")
 
     def extract_all(self) -> int:
-        """Extract axioms from all files in compile_commands.json.
+        """Extract axioms from all files in live layer.
+
+        Includes files from compile_commands.json and live override paths.
 
         Returns:
             Number of axioms extracted.
         """
         total_axioms = 0
-        compile_commands_files = self.extractor._load_compile_commands_files()
+        live_files = self.extractor.get_all_live_files()
 
-        for file_path in compile_commands_files:
+        for file_path in live_files:
             path = Path(file_path)
             if path.suffix.lower() in CPP_EXTENSIONS and path.exists():
                 try:
@@ -197,7 +199,7 @@ class AxiomWatcher:
                     logger.error("Failed to extract %s: %s", path, e)
 
         logger.info("Initial extraction complete: %d axioms from %d files",
-                    total_axioms, len(compile_commands_files))
+                    total_axioms, len(live_files))
         return total_axioms
 
     def __enter__(self) -> AxiomWatcher:

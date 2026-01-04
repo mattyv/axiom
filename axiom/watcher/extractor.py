@@ -16,6 +16,7 @@ import subprocess
 from pathlib import Path
 from typing import TYPE_CHECKING
 
+from axiom.config import AxiomConfig
 from axiom.extractors.clang_loader import parse_json
 
 if TYPE_CHECKING:
@@ -40,25 +41,32 @@ class AxiomExtractor:
         self,
         axiom_extract_path: str | Path | None = None,
         compile_commands_path: str | Path | None = None,
+        config: AxiomConfig | None = None,
     ) -> None:
         """Initialize extractor.
 
         Args:
             axiom_extract_path: Path to axiom-extract binary.
-                Defaults to tools/axiom-extract/build/axiom-extract relative to project.
+                If config is provided, uses config.extract.axiom_extract_path.
+                Otherwise defaults to tools/axiom-extract/build/axiom-extract.
             compile_commands_path: Path to compile_commands.json.
-                Defaults to build/compile_commands.json relative to cwd.
+                If config is provided, uses config.extract.compile_commands.
+                Otherwise defaults to build/compile_commands.json.
+            config: Optional AxiomConfig for path resolution and layer overrides.
         """
-        if axiom_extract_path is None:
-            # Try to find relative to this package
-            package_root = Path(__file__).parent.parent.parent
-            axiom_extract_path = package_root / "tools" / "axiom-extract" / "build" / "axiom-extract"
+        # Load config if not provided
+        if config is None:
+            config = AxiomConfig.load()
+        self.config = config
 
+        # Resolve axiom-extract path
+        if axiom_extract_path is None:
+            axiom_extract_path = config.resolve_path(config.extract.axiom_extract_path)
         self.axiom_extract_path = Path(axiom_extract_path)
 
+        # Resolve compile_commands.json path
         if compile_commands_path is None:
-            compile_commands_path = Path.cwd() / "build" / "compile_commands.json"
-
+            compile_commands_path = config.resolve_path(config.extract.compile_commands)
         self.compile_commands_path = Path(compile_commands_path)
 
         # Cache the set of files in compile_commands.json
@@ -91,8 +99,11 @@ class AxiomExtractor:
     def is_live_layer_file(self, file_path: str | Path) -> bool:
         """Check if a file belongs to the live layer.
 
-        Files in compile_commands.json are live layer (working directory).
-        Everything else is static layer (libraries, system headers).
+        Layer detection priority:
+        1. Static override in config → static layer
+        2. Live override in config → live layer
+        3. Files in compile_commands.json → live layer
+        4. Everything else → static layer
 
         Args:
             file_path: Path to check.
@@ -100,8 +111,18 @@ class AxiomExtractor:
         Returns:
             True if file is in live layer.
         """
-        file_path = str(Path(file_path).resolve())
-        return file_path in self._load_compile_commands_files()
+        file_path = Path(file_path).resolve()
+
+        # Check static override first (takes priority)
+        if self.config.is_static_override(file_path):
+            return False
+
+        # Check live override
+        if self.config.is_live_override(file_path):
+            return True
+
+        # Check compile_commands.json
+        return str(file_path) in self._load_compile_commands_files()
 
     def extract_file(self, file_path: str | Path) -> AxiomCollection:
         """Extract axioms from a single source file.
@@ -170,3 +191,29 @@ class AxiomExtractor:
         Call this when compile_commands.json changes.
         """
         self._compile_commands_files = None
+
+    def get_all_live_files(self) -> set[str]:
+        """Get all files in the live layer.
+
+        Combines files from compile_commands.json with live override paths.
+
+        Returns:
+            Set of absolute file paths in the live layer.
+        """
+        live_files = set(self._load_compile_commands_files())
+
+        # Add files from live override directories
+        for pattern in self.config.overrides.live:
+            override_path = self.config.root_dir / pattern
+            if override_path.is_dir():
+                # Find all C/C++ files in the directory
+                for ext in (".cpp", ".cc", ".cxx", ".c", ".hpp", ".hh", ".hxx", ".h"):
+                    for file_path in override_path.rglob(f"*{ext}"):
+                        resolved = str(file_path.resolve())
+                        # Skip if in static override
+                        if not self.config.is_static_override(file_path):
+                            live_files.add(resolved)
+            elif override_path.is_file():
+                live_files.add(str(override_path.resolve()))
+
+        return live_files
