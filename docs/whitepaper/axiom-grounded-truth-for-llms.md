@@ -1,8 +1,8 @@
-# Axiom: Grounded Truth Composition for Large Language Models
+# Axiom: Compositional Truth for Grounded Reasoning
 
-## A Framework for Eliminating Hallucination Through Atomic Semantic Units
+## A Framework for Constructing Complex Knowledge from Atomic Truths
 
-**Version 1.0 - January 2026**
+**Version 2.0 - January 2026**
 
 **Author:** Matt Varendorff
 **Institution:** Independent Research
@@ -12,1092 +12,632 @@
 
 ## Abstract
 
-Large Language Models (LLMs) have demonstrated remarkable capabilities in code generation, mathematical reasoning, and scientific discourse. However, their tendency to confidently produce plausible-sounding but incorrect information—colloquially termed "hallucination"—remains a fundamental limitation with potentially catastrophic consequences in safety-critical domains.
+This paper presents a framework for constructing and validating complex knowledge claims by composing atomic units of verified truth—*axioms*—into directed acyclic graphs (DAGs). The fundamental insight is ancient: since Euclid, mathematicians have known that complex theorems can be derived from simple axioms through chains of logical inference. We formalise this compositional structure for computational use, enabling semantic search over truth-spaces and proof-chain validation of arbitrary claims.
 
-This paper introduces **Axiom**, a framework that addresses hallucination by constructing knowledge from atomic units of verified truth—called *axioms*—composed into directed acyclic graphs (DAGs) that enable semantic search and proof-chain validation. We demonstrate the framework's application to C/C++ code validation through integration with formal semantics (K-Framework) and language standards, then generalise the approach to mathematics, physics, and other domains where grounded truth matters.
+The framework addresses a critical problem in Large Language Model (LLM) deployment: hallucination. By grounding LLM outputs in verifiable axiom compositions, we transform the question "is this claim true?" into "can we construct a derivation of this claim from established axioms?"
 
-The core insight is simple: an LLM cannot hallucinate about a fact if we can trace that fact back to a formally verified source through an unbroken chain of logical dependencies. Rather than asking "is this claim true?", Axiom asks "can we construct a proof that this claim follows from established axioms?"
+We demonstrate the generic applicability of this axiom-DAG-search pattern across multiple domains: formal programming language semantics, mathematical theorem proving, and physical law verification. The pattern is domain-agnostic; only the axiom corpus and composition rules vary.
 
 ---
 
-## 1. Introduction: The Hallucination Problem
+## 1. Introduction: The Compositional Nature of Truth
 
-### 1.1 A Yarn About a Nasty Bug
+### 1.1 A Tale of Two Approaches
 
-Let me tell you a story, mate.
+Let me tell you about two ways of knowing things, mate.
 
-Picture this: you're a junior dev at a fintech startup in Melbourne. It's 2 AM, you're absolutely knackered, and your AI coding assistant just wrote what looks like perfectly reasonable code to handle currency conversions. The code compiles. The tests pass. You ship it.
+The first way is pattern matching. You see enough examples of swans, and you conclude "swans are white." This works brilliantly—until you sail to Australia and discover black swans. The knowledge was inductively derived from observations, and it was wrong.
 
-Three days later, your company's lost $47,000 because the AI confidently used `int` arithmetic for dollar amounts, and when someone converted $2,147,483,648 worth of Indonesian Rupiah... well, signed integer overflow is undefined behaviour in C. The number wrapped around. Money vanished into the mathematical aether.
+The second way is axiomatic derivation. You start with truths you're absolutely certain about (axioms), and you derive new truths through logical rules. Euclid started with five postulates about points and lines, and derived all of plane geometry. The knowledge isn't guessed from examples—it's *constructed* from foundations.
 
-The LLM knew what `int` meant. It knew the syntax. It even knew overflow was "something to watch out for." But it didn't *truly* understand that signed overflow in C isn't just a warning—it's a cosmic permission slip for the compiler to do literally anything, including optimising your bounds check into oblivion.
+Large Language Models are, fundamentally, pattern matchers of extraordinary sophistication. They've "seen" billions of examples and can generate remarkably plausible text. But plausible isn't the same as correct. When an LLM confidently states that a certain C++ operation is safe, or that a mathematical proof follows, or that a physical law applies—it's pattern matching, not deriving.
 
-This, in essence, is the hallucination problem: LLMs pattern-match on surface features without access to the deep semantic grounding that would prevent such errors.
+This paper describes a system for the second way of knowing: compositional truth construction.
 
-### 1.2 Why Existing Solutions Fall Short
+### 1.2 The Core Insight
 
-Current approaches to LLM reliability fall into several categories, each with fundamental limitations:
+The central observation is this:
 
-**Retrieval-Augmented Generation (RAG):** Fetches relevant documents to provide context. However, RAG provides *information* without *validation*. An LLM can retrieve a document explaining undefined behaviour and still generate code that invokes it—because retrieval doesn't guarantee comprehension or constraint satisfaction.
+> **Complex knowledge can be decomposed into atomic truths (axioms) connected by logical dependencies, forming a directed acyclic graph. Any claim can be validated by constructing a path through this graph from established axioms to the claim.**
 
-**Fine-tuning and RLHF:** Improves general behaviour but cannot guarantee specific semantic constraints. A model fine-tuned on "safe C code" might still produce unsafe code in novel situations outside its training distribution.
+This is not a new idea. It's the foundation of mathematics since Euclid, formalised in the 19th century by Frege, Peano, and Russell, and computationally realised in the 20th century through proof assistants like Coq and Lean. What *is* new is applying this pattern to ground LLM outputs across arbitrary domains.
 
-**Static Analysis Tools:** Excellent at catching known patterns but operate at the syntactic level. They can't validate semantic claims like "this library requires thread-safe types" unless specifically programmed for that pattern.
+### 1.3 The Axiom-DAG-Search Pattern
 
-**Formal Verification:** Provides mathematical guarantees but requires enormous effort to specify and verify. Impractical for general-purpose code generation.
+The framework consists of three components:
 
-### 1.3 The Axiom Approach
+1. **Axioms**: Atomic units of verified truth, each with a formal specification and confidence score
+2. **DAG Structure**: Directed edges representing logical relationships (DEPENDS_ON, DERIVES_FROM, CONTRADICTS)
+3. **Semantic Search**: Vector embeddings enabling discovery of relevant axioms for any claim
 
-Axiom takes a different path. Rather than trying to make LLMs "understand" constraints, we externalise that understanding into a queryable knowledge graph where:
+```mermaid
+graph TB
+    subgraph "Axiom Layer"
+        A1[Axiom α₁]
+        A2[Axiom α₂]
+        A3[Axiom α₃]
+    end
 
-1. **Axioms** are atomic units of verified truth, extracted from formal specifications
-2. **Relationships** connect axioms through logical dependencies (DEPENDS_ON, DERIVES_FROM, CONTRADICTS)
-3. **Semantic search** enables finding relevant axioms for any claim
-4. **Proof chains** trace claims back to foundational truths
+    subgraph "Derived Layer"
+        D1[Derived β₁]
+        D2[Derived β₂]
+    end
 
-When an LLM claims "you can use `std::string` with `foo()`", Axiom doesn't ask the LLM if this is true. It searches for relevant axioms, traverses the dependency graph, and either:
-- Constructs a proof chain validating the claim, or
-- Identifies a contradiction with a specific axiom and formal reference
+    subgraph "Claim"
+        C1[Claim γ]
+    end
 
-The LLM becomes a *consumer* of verified knowledge rather than a *source* of unverified claims.
+    D1 -->|DERIVES_FROM| A1
+    D1 -->|DEPENDS_ON| A2
+    D2 -->|DERIVES_FROM| A2
+    D2 -->|DEPENDS_ON| A3
+    C1 -->|DERIVES_FROM| D1
+    C1 -->|DEPENDS_ON| D2
+```
+
+**Figure 1:** Compositional structure of derived knowledge
+
+The DAG property (no cycles) is crucial: it ensures that derivation chains terminate and that every claim has a finite proof path back to foundational axioms.
 
 ---
 
 ## 2. Theoretical Foundations
 
-### 2.1 What Is an Axiom?
+### 2.1 Historical Context: The Axiomatic Method
 
-In mathematical logic, an axiom is a statement accepted as true without proof—a foundational building block from which theorems are derived. Axiom (the framework) adopts this concept for software semantics:
+The axiomatic method has a rich history spanning millennia:
 
-**Definition 2.1 (Axiom):** An axiom is a triple `(content, formal_spec, source)` where:
-- `content` is a human-readable description of the truth
+**Euclid (c. 300 BCE)**: The *Elements* demonstrated that complex geometric theorems could be derived from five simple postulates. This established the paradigm of axiomatic mathematics.
+
+**Gottlob Frege (1879)**: In *Begriffsschrift*, Frege developed the first rigorous formal logic and attempted to derive arithmetic from logical axioms alone. Though his system contained a paradox (discovered by Russell), it established that axiomatisation could be formalised with mathematical precision [1].
+
+**Giuseppe Peano (1889)**: The Peano axioms reduced all of arithmetic to five foundational principles, demonstrating that even our intuitive understanding of numbers could be grounded in explicit axioms [2].
+
+**Bertrand Russell & Alfred North Whitehead (1910-1913)**: *Principia Mathematica* attempted to derive all of mathematics from logical foundations, introducing type theory to avoid paradoxes [3].
+
+**Haskell Curry & William Alvin Howard (1934-1969)**: The Curry-Howard correspondence revealed a deep isomorphism: *proofs are programs, propositions are types* [4]. This meant that proof composition follows the same laws as program composition—both form well-typed terms in a lambda calculus.
+
+The key insight threading through this history: **derived knowledge inherits its validity from the axioms it depends on.** A theorem is true precisely because it can be traced back through a chain of valid inferences to accepted axioms.
+
+### 2.2 Formal Definition of Axiom Composition
+
+**Definition 2.1 (Axiom):** An axiom is a tuple `(id, content, formal_spec, confidence, source)` where:
+- `id` is a unique identifier
+- `content` is a natural language description
 - `formal_spec` is a machine-checkable specification (when available)
-- `source` is a reference to the authoritative origin (standard, specification, formal proof)
+- `confidence ∈ [0,1]` indicates certainty (1.0 for formal proofs)
+- `source` references the authoritative origin
 
-**Example 2.1:** A C11 axiom for division by zero:
+**Definition 2.2 (Axiom Composition):** Given axioms α₁, α₂, ..., αₙ and a derivation rule R, a new proposition β is a *valid composition* if:
+- R(α₁, α₂, ..., αₙ) → β
+- The derivation preserves truth (soundness)
+- β inherits confidence: conf(β) ≤ min(conf(α₁), ..., conf(αₙ))
 
-```toml
-[[axioms]]
-id = "c11_expr_div_by_zero_ub"
-content = "Division by zero is undefined behavior in C"
-formal_spec = "rule <k> I1 / 0 => undefined ... </k>"
-source = "C11 Standard §6.5.5¶5"
-layer = "c11_core"
-confidence = 1.0
+**Definition 2.3 (Axiom DAG):** An axiom DAG is a directed acyclic graph G = (V, E) where:
+- V is the set of axioms and derived propositions
+- E ⊆ V × V × {DEPENDS_ON, DERIVES_FROM, CONTRADICTS}
+- The graph is acyclic: ∄ path v → v for any v ∈ V
+
+**Theorem 2.1 (Proof Chain Existence):** For any claim γ in a consistent axiom DAG, either:
+1. There exists a path from foundational axioms to γ (γ is validated), or
+2. There exists an axiom α such that (γ, α) ∈ E with type CONTRADICTS (γ is refuted), or
+3. No path exists (γ is undetermined with respect to the axiom corpus)
+
+### 2.3 The Role of Semantic Search
+
+Traditional theorem provers require exact queries. But when validating arbitrary natural language claims, we need *semantic* discovery of relevant axioms. This is achieved through vector embeddings:
+
+```
+claim: "division by zero causes undefined behaviour"
+                    ↓ embed
+            vector v ∈ ℝ³⁸⁴
+                    ↓ similarity search
+    [c11_div_zero_ub, c11_arithmetic_except, ...]
+                    ↓ graph traversal
+            proof chain to C11 standard
 ```
 
-The key insight is that this axiom's truth doesn't depend on an LLM's "belief"—it's grounded in the ISO C11 standard and formalised in K-Framework semantics.
+The embedding model maps both claims and axiom contents to a shared vector space where semantic similarity corresponds to geometric proximity. This enables discovering axioms that are *about* the same concepts as the claim, even when phrased differently.
 
-### 2.2 The Axiom Hierarchy
+### 2.4 Compositionality and the Curry-Howard Correspondence
 
-Axioms exist in layers of increasing specificity:
+The Curry-Howard correspondence [4] tells us that:
+
+| Logic | Programming | Category Theory |
+|-------|-------------|-----------------|
+| Propositions | Types | Objects |
+| Proofs | Programs | Morphisms |
+| Implication A → B | Function A → B | Arrow A → B |
+| Conjunction A ∧ B | Product (A, B) | Product A × B |
+| Proof composition | Function composition | Morphism composition |
+
+This correspondence is not merely analogical—it's a formal isomorphism. A proof that "from A and B we can derive C" corresponds exactly to a function `(A, B) → C`. Composing proofs corresponds to composing functions.
+
+For our framework, this means:
+- **Axiom composition is type-safe**: Invalid derivations fail to "type check"
+- **Proof chains are programs**: They can be executed, optimised, and verified
+- **The DAG is a category**: Objects are propositions, morphisms are proof paths
+
+This categorical perspective explains why the framework is domain-agnostic: the compositional structure is universal, independent of whether the axioms concern programming languages, mathematics, or physics.
+
+---
+
+## 3. The Generic Axiom-DAG-Search Pattern
+
+### 3.1 Pattern Overview
+
+The pattern consists of four phases:
+
+```mermaid
+flowchart LR
+    subgraph Phase1["1. Axiom Extraction"]
+        E1[Identify atomic truths]
+        E2[Formalise specifications]
+        E3[Assign confidence]
+    end
+
+    subgraph Phase2["2. DAG Construction"]
+        D1[Establish dependencies]
+        D2[Detect contradictions]
+        D3[Verify acyclicity]
+    end
+
+    subgraph Phase3["3. Semantic Indexing"]
+        S1[Embed axiom content]
+        S2[Build vector index]
+        S3[Enable similarity search]
+    end
+
+    subgraph Phase4["4. Claim Validation"]
+        V1[Embed claim]
+        V2[Find related axioms]
+        V3[Traverse proof paths]
+        V4[Check contradictions]
+    end
+
+    Phase1 --> Phase2 --> Phase3 --> Phase4
+```
+
+**Figure 2:** The four-phase axiom-DAG-search pattern
+
+### 3.2 Phase 1: Axiom Extraction
+
+Axioms must be extracted from authoritative sources appropriate to the domain:
+
+| Domain | Authoritative Sources | Extraction Method |
+|--------|----------------------|-------------------|
+| Programming Languages | ISO standards, K-Framework semantics | Automated parsing, LLM-assisted |
+| Mathematics | Lean mathlib, Coq libraries, textbooks | Proof export, structured extraction |
+| Physics | Peer-reviewed literature, established laws | Expert curation, dimensional validation |
+
+The critical property: extracted axioms must be *atomic*—they should not be further decomposable into simpler truths within the domain. Composite claims belong in the derived layer.
+
+### 3.3 Phase 2: DAG Construction
+
+Edges in the DAG represent logical relationships:
+
+**DEPENDS_ON (α → β):** β requires α to hold. If α is falsified, β loses its justification.
+
+**DERIVES_FROM (α → β):** β can be logically inferred from α through a valid derivation rule.
+
+**CONTRADICTS (α ↔ β):** α and β are mutually exclusive; both cannot be true simultaneously.
+
+```mermaid
+graph LR
+    A[Non-zero divisor]
+    B[Division defined]
+    C[Zero divisor]
+
+    B -->|DEPENDS_ON| A
+    C -->|CONTRADICTS| A
+```
+
+**Figure 3:** Relationship types in the axiom DAG
+
+The DAG property must be maintained: cycles indicate circular reasoning and must be resolved. In practice, cycles often indicate axiom granularity problems—an axiom that should be split.
+
+### 3.4 Phase 3: Semantic Indexing
+
+Vector embeddings enable semantic search. The embedding model should be:
+- **Domain-appropriate**: Technical language should cluster correctly
+- **Efficient**: Sub-second search over millions of axioms
+- **Stable**: Similar concepts should have similar embeddings across sessions
+
+Current implementation uses `all-MiniLM-L6-v2` (384-dimensional embeddings) with LanceDB for vector storage and Neo4j for graph traversal.
+
+### 3.5 Phase 4: Claim Validation
+
+Given a claim γ, validation proceeds:
+
+1. **Embed** γ to get vector v_γ
+2. **Search** for axioms with vectors similar to v_γ
+3. **Traverse** the DAG from found axioms, following DEPENDS_ON edges
+4. **Classify** relationship between γ and each axiom (supports/contradicts/neutral)
+5. **Construct** proof chain if supportive path exists
+6. **Report** contradiction if conflicting axiom found
+
+The result is one of:
+- **VALID**: Proof chain constructed from axioms to claim
+- **INVALID**: Contradiction with established axiom identified
+- **UNDETERMINED**: No relevant axioms found (claim outside knowledge scope)
+
+---
+
+## 4. Application: Programming Language Semantics
+
+### 4.1 Domain-Specific Axiomatisation
+
+Programming languages have well-defined formal semantics. C and C++ are particularly interesting because:
+1. They have formal standards (ISO C11, ISO C++20)
+2. They have formal operational semantics (K-Framework)
+3. Undefined behaviour makes correctness critical
+
+The axiom hierarchy for programming languages:
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
 │                     Layer 4: Library Axioms                      │
-│        Application-specific constraints (FitHub, OpenSSL)        │
+│            (FitHub API contracts, OpenSSL requirements)          │
 ├─────────────────────────────────────────────────────────────────┤
 │                   Layer 3: Standard Library                      │
-│         Container requirements, iterator guarantees              │
+│         (Container guarantees, iterator validity rules)          │
 ├─────────────────────────────────────────────────────────────────┤
 │                   Layer 2: Language Features                     │
-│          C++20 concepts, templates, memory model                 │
+│          (C++20 concepts, templates, memory model)               │
 ├─────────────────────────────────────────────────────────────────┤
 │                  Layer 1: Core Semantics                         │
-│         C11/C++ formal semantics from K-Framework                │
+│         (C11/C++ operational semantics from K-Framework)         │
 └─────────────────────────────────────────────────────────────────┘
 ```
 
-**Figure 1:** The Axiom layer hierarchy
+**Figure 4:** Programming language axiom hierarchy
 
-Each layer builds upon the previous, with explicit `depends_on` relationships forming the DAG structure. A library axiom stating "foo() requires trivially_destructible types" depends on the C++20 language axiom defining `trivially_destructible`, which in turn depends on core axioms about object lifetimes.
+Each layer builds on the previous through DEPENDS_ON relationships.
 
-### 2.3 The Directed Acyclic Graph (DAG)
+### 4.2 Example: Validating a Type Claim
 
-The axiom collection forms a DAG where:
-- **Nodes** are axioms (foundational truths or derived knowledge)
-- **Edges** represent logical relationships:
-  - `DEPENDS_ON`: Axiom A requires Axiom B to hold
-  - `DERIVES_FROM`: Axiom A can be logically inferred from Axiom B
-  - `CONTRADICTS`: Axiom A is logically incompatible with Axiom B
+**Claim:** "std::string can be used with template function foo<T>(T x)"
 
-```mermaid
-graph TB
-    subgraph "Layer 1: Core Semantics"
-        C1[C11 Object Lifetime]
-        C2[C11 Undefined Behavior]
-    end
-
-    subgraph "Layer 2: Language"
-        L1[C++20 Trivial Destructor]
-        L2[C++20 Object Representation]
-    end
-
-    subgraph "Layer 3: stdlib"
-        S1[std::string Non-Trivial]
-        S2[std::vector Requirements]
-    end
-
-    subgraph "Layer 4: Library"
-        F1[foo Requires Trivial Types]
-    end
-
-    F1 -->|DEPENDS_ON| L1
-    S1 -->|CONTRADICTS with| F1
-    L1 -->|DEPENDS_ON| C1
-    L2 -->|DEPENDS_ON| C2
-    S2 -->|DEPENDS_ON| L2
-```
-
-**Figure 2:** Example DAG structure showing cross-layer dependencies
-
-The DAG property (no cycles) is crucial: it ensures proof chains terminate and validation is decidable. When cycles are detected during ingestion, they're flagged for manual resolution.
-
-### 2.4 Semantic Search and Embedding
-
-Axioms are stored with vector embeddings enabling semantic similarity search. When validating a claim:
-
-1. **Embed the claim** using the same embedding model (all-MiniLM-L6-v2)
-2. **Search for related axioms** across all layers
-3. **Traverse the graph** from found axioms to their dependencies
-4. **Identify contradictions** through relationship analysis
-
-```mermaid
-flowchart LR
-    Claim["'std::string works with foo()'"]
-    Embed["Embed Claim"]
-    Search["Vector Search"]
-    Traverse["Graph Traversal"]
-    Validate["Contradiction Detection"]
-    Result["INVALID + Proof Chain"]
-
-    Claim --> Embed --> Search --> Traverse --> Validate --> Result
-```
-
-**Figure 3:** The validation pipeline
-
-The dual-database architecture (LanceDB for vectors, Neo4j for graph traversal) enables both semantic discovery and logical reasoning.
-
----
-
-## 3. Architecture and Implementation
-
-### 3.1 System Overview
-
-Axiom consists of four major subsystems:
-
-```mermaid
-flowchart TB
-    subgraph Extraction["Axiom Extraction"]
-        E1[K-Framework Parser]
-        E2[C++ Standard Extractor]
-        E3[Library Header Analyzer]
-        E4[LLM-Assisted Extraction]
-    end
-
-    subgraph Storage["Dual Database"]
-        DB1[(Neo4j Graph)]
-        DB2[(LanceDB Vectors)]
-    end
-
-    subgraph Reasoning["Validation Engine"]
-        R1[Semantic Search]
-        R2[Proof Generator]
-        R3[Entailment Classifier]
-        R4[Contradiction Detector]
-    end
-
-    subgraph Integration["LLM Integration"]
-        I1[MCP Server]
-        I2[Clangd Plugin]
-        I3[REST API]
-    end
-
-    Extraction --> Storage
-    Storage --> Reasoning
-    Reasoning --> Integration
-```
-
-**Figure 4:** High-level system architecture
-
-### 3.2 Axiom Extraction
-
-The extraction pipeline transforms various sources into normalised axiom format:
-
-**K-Framework Extraction (Automated):**
-
-The K-Framework provides formal operational semantics for C11 and C++. Axiom parses `.k` files extracting rules as axioms:
-
-```python
-# From axiom/extractors/k_semantics.py
-def extract_rule(rule: KRule) -> Axiom:
-    return Axiom(
-        id=generate_id(rule),
-        content=generate_natural_language(rule),
-        formal_spec=rule.k_cell,
-        layer="c11_core",
-        confidence=1.0,  # Formal specs get full confidence
-        source_file=rule.source_file,
-        source_line=rule.line_number
-    )
-```
-
-**Standard Extraction (LLM-Assisted):**
-
-For C++20 standard text, we use a hybrid approach:
-
-1. Fetch specification sections from eel.is/c++draft
-2. Convert to clean text
-3. Use Claude to extract structured axioms with references
-4. Human review for quality assurance
-
-The extraction prompt instructs Claude to identify:
-- Preconditions ("requires", "shall not", "must be")
-- Postconditions ("returns", "effects")
-- Undefined behaviour triggers
-- Exception specifications
-- Complexity guarantees
-
-**Library Extraction (Interactive):**
-
-Library authors extract axioms through an interactive session:
-
-```bash
-python scripts/ingest_library.py -r /path/to/fithub
-
-# Interactive review:
-# [1/42] WorkoutSession::start()
-#   Extracted: "start() must not be called on an already-started session"
-#   Confidence: 0.85
-#   [A]pprove, [E]dit, [R]eject, [S]kip? A
-```
-
-Header annotations provide hints:
-
-```cpp
-// @axiom:precondition workout != nullptr
-// @axiom:pairs_with end_session
-// @axiom:thread_safety single_threaded
-void start_session(Workout* workout);
-```
-
-### 3.3 The Knowledge Graph Schema
-
-Neo4j stores axioms and relationships with the following schema:
-
-```cypher
-// Node types
-(:Axiom {
-    id: STRING,
-    content: STRING,
-    formal_spec: STRING,
-    layer: STRING,
-    confidence: FLOAT,
-    function: STRING?,
-    axiom_type: STRING
-})
-
-// Relationship types
-(:Axiom)-[:DEPENDS_ON {reason: STRING, required: BOOL}]->(:Axiom)
-(:Axiom)-[:CONTRADICTS {explanation: STRING}]->(:Axiom)
-(:Axiom)-[:DERIVES_FROM {inference_rule: STRING}]->(:Axiom)
-```
-
-The current knowledge base contains:
-
-| Layer | Axiom Count | Primary Source |
-|-------|-------------|----------------|
-| c11_core | ~890 | K-Framework C Semantics |
-| cpp_core | ~825 | K-Framework C++ Semantics |
-| cpp20_language | ~400 | ISO C++ Draft |
-| cpp20_stdlib | ~300 | ISO C++ Draft |
-| **Total** | **~3,500** | |
-
-### 3.4 Validation Pipeline
-
-When validating a claim, Axiom performs:
-
-```python
-def validate_claim(claim: str) -> ValidationResult:
-    # 1. Semantic search for related axioms
-    related = vector_db.search(embed(claim), top_k=20)
-
-    # 2. Filter by layer and confidence
-    foundation = [a for a in related
-                  if a.layer in FOUNDATION_LAYERS]
-
-    # 3. Generate proof chain
-    proof_chain = proof_generator.generate(
-        claim=claim,
-        axioms=foundation
-    )
-
-    # 4. Classify entailment relationships
-    for step in proof_chain.steps:
-        step.relationship = entailment_classifier.classify(
-            claim, step.axiom
-        )
-
-    # 5. Detect contradictions
-    contradictions = [s for s in proof_chain.steps
-                      if s.relationship == "CONTRADICTS"]
-
-    return ValidationResult(
-        claim=claim,
-        is_valid=len(contradictions) == 0,
-        contradictions=contradictions,
-        proof_chain=proof_chain
-    )
-```
-
-The entailment classifier uses polarity analysis: when a claim's sentiment ("is safe", "works with") conflicts with an axiom's polarity ("undefined behaviour", "must not"), a contradiction is flagged.
-
----
-
-## 4. Case Study: The FitHub Library
-
-### 4.1 Background
-
-Let's make this concrete with a hypothetical example. FitHub is a C++ library for fitness tracking applications, providing APIs for:
-
-- Workout session management
-- Heart rate zone calculations
-- Calorie expenditure estimation
-- Exercise pattern recognition
-
-An LLM assisting with FitHub integration faces challenges: the library has implicit constraints about threading, object lifetimes, and data validity that aren't obvious from API signatures alone.
-
-### 4.2 Extracting FitHub Axioms
-
-After running the extraction pipeline on FitHub, we obtain axioms like:
+**Axiom search returns:**
 
 ```toml
 [[axioms]]
-id = "fithub_workout_session_start_precondition"
-content = "WorkoutSession::start() must not be called on an already-active session"
-formal_spec = "requires(!is_active())"
-layer = "library"
-function = "WorkoutSession::start"
-signature = "void WorkoutSession::start()"
-header = "fithub/workout.h"
-axiom_type = "precondition"
-depends_on = ["cpp20_class_member_functions_this_validity"]
+id = "lib_foo_trivially_destructible"
+content = "foo<T> requires T to be trivially destructible"
+formal_spec = "requires trivially_destructible<T>"
+depends_on = ["cpp20_trivially_destructible_concept"]
 
 [[axioms]]
-id = "fithub_heartrate_zone_range_constraint"
-content = "Heart rate values must be between 30 and 250 BPM for zone calculations"
-formal_spec = "30 <= heart_rate && heart_rate <= 250"
-layer = "library"
-function = "calculate_zone"
-axiom_type = "precondition"
-depends_on = ["c11_expr_relational_comparison_defined"]
-
-[[axioms]]
-id = "fithub_calorie_callback_thread_safety"
-content = "Calorie update callbacks are invoked from a background thread"
-formal_spec = "callback_thread != caller_thread"
-layer = "library"
-function = "set_calorie_callback"
-axiom_type = "effect"
-depends_on = ["cpp20_thread_safety_data_race_ub"]
+id = "cpp20_string_destructor"
+content = "std::string has a non-trivial destructor"
+formal_spec = "!is_trivially_destructible_v<std::string>"
+depends_on = ["cpp20_string_allocator_aware"]
 ```
 
-### 4.3 Validation in Action
-
-**Scenario 1: The Naive Integration**
-
-A developer asks their AI assistant: "Write code to track a 30-minute run using FitHub."
-
-The LLM generates:
-
-```cpp
-void track_run() {
-    FitHub::WorkoutSession session;
-    session.start();
-
-    // ... later, user clicks "resume after pause"
-    session.start();  // Uh oh
-
-    session.end();
-}
-```
-
-Without Axiom, this code compiles and might even appear to work. With Axiom:
+**Proof chain construction:**
 
 ```
-VALIDATION RESULT: INVALID
+Claim: "std::string works with foo<T>"
+    ↓ requires
+foo<T> precondition: trivially_destructible<T>
+    ↓ CONTRADICTS
+std::string: !trivially_destructible
 
-Claim: "Calling start() after previous start() is valid"
-Contradicts: fithub_workout_session_start_precondition
-
-Proof chain:
-1. session.start() at line 3 activates the session
-2. session.start() at line 6 violates precondition
-3. Axiom: "start() must not be called on an already-active session"
-4. Grounded in: WorkoutSession state machine invariants
-
-Suggested fix: Check is_active() before calling start(), or use resume()
+RESULT: INVALID
+  Contradiction: std::string fails foo<T>'s type constraint
+  Proof chain: [lib_foo_trivially_destructible] ← [cpp20_trivially_destructible_concept]
+                          ↕ CONTRADICTS
+               [cpp20_string_destructor] ← [cpp20_string_allocator_aware]
 ```
 
-**Scenario 2: The Threading Footgun**
+The claim is refuted not by pattern matching but by constructing a formal contradiction from axioms.
 
-```cpp
-void update_ui_calories(FitHub::Session& session) {
-    session.set_calorie_callback([this](double cal) {
-        // Called from background thread!
-        ui_label.setText(format_calories(cal));  // UI from wrong thread
-    });
-}
-```
+### 4.3 The C++20 Extraction Engine
 
-Axiom validation:
+For the C++ domain, we developed a six-phase extraction pipeline that minimises LLM involvement:
 
-```
-VALIDATION RESULT: WARNING
+1. **Clang Semantic Analysis**: Full AST, type resolution, template instantiation
+2. **Explicit Constraint Extraction**: noexcept, [[nodiscard]], requires clauses, static_assert
+3. **Hazard Detection**: Division, null pointer dereference, bounds violations
+4. **Call Graph Propagation**: Preconditions propagate from callees to callers
+5. **Foundation Linking**: Semantic matching to ISO standard axioms
+6. **LLM Assist**: Only for complex invariants (~5% of cases)
 
-Claim: "Updating UI from calorie callback is safe"
-Potential contradiction: fithub_calorie_callback_thread_safety
+Confidence hierarchy:
+- 1.0: Compiler-enforced constraints (Clang)
+- 0.95: Pattern + CFG analysis (Clang)
+- 0.90: Propagated from callees (Clang)
+- 0.85: Matched to ISO specification (LLM-verified)
+- 0.70: LLM-extracted (requires human review)
 
-Proof chain:
-1. set_calorie_callback() registers a callback
-2. Axiom: "callbacks are invoked from a background thread"
-3. UI updates from non-main thread may cause crashes or corruption
-4. Depends on: cpp20_thread_safety_data_race_ub
-
-Suggested fix: Post callback results to main thread queue
-```
-
-### 4.4 The Proof Chain Advantage
-
-The critical difference from traditional linting: Axiom doesn't just say "this might be wrong." It provides a *proof chain* tracing the issue back to formal semantics:
-
-```
-FitHub callback threading issue
-    ↓ depends_on
-C++20 data race undefined behaviour
-    ↓ depends_on
-C11 memory model non-atomic access
-    ↓ formalised_in
-K-Framework concurrent semantics rules
-```
-
-This chain serves multiple purposes:
-
-1. **Explanation**: The LLM (and human) understands *why* something is problematic
-2. **Verification**: The reasoning can be audited and corrected
-3. **Learning**: Patterns emerge from accumulated proof chains
-4. **Confidence**: Claims backed by formal semantics carry more weight
+This demonstrates a key principle: **use the highest-confidence extraction method available for each axiom type.**
 
 ---
 
-## 5. The C++20 Extraction Engine
+## 5. Application: Mathematics
 
-### 5.1 Design Philosophy: Exploit What C++ Gives Us
+### 5.1 Mathematical Axiom Systems
 
-Here's where it gets properly interesting, mate. Modern C++ is increasingly *explicit* about constraints. C++20 gave us concepts, requires clauses, `[[nodiscard]]`, and a stack of other features that make constraints visible in the code itself.
-
-The extraction engine exploits this. Instead of relying entirely on LLM interpretation (expensive, slow, sometimes wrong), we use Clang's semantic analysis to extract constraints at near-perfect confidence:
-
-```
-┌────────┬──────────────────────────────────────────────────────────┐
-│  1.0   │ Clang: Compiler-enforced (noexcept, [[nodiscard]], etc) │
-├────────┼──────────────────────────────────────────────────────────┤
-│  0.95  │ Clang: Pattern + CFG (hazard with guard analysis)       │
-├────────┼──────────────────────────────────────────────────────────┤
-│  0.90  │ Clang: Propagated (inherited from callee preconditions) │
-├────────┼──────────────────────────────────────────────────────────┤
-│  0.85  │ Spec KB: Matched to foundation axiom (eel.is extract)   │
-├────────┼──────────────────────────────────────────────────────────┤
-│  0.70  │ LLM Fallback: Batched, targeted questions (~5% of code) │
-└────────┴──────────────────────────────────────────────────────────┘
-```
-
-**Figure 8:** Confidence hierarchy for extraction sources
-
-The philosophy is: try cheap and accurate first (Clang), fall back to LLM only for the 5% of cases that genuinely need interpretation.
-
-### 5.2 Six-Phase Extraction Pipeline
-
-The extraction engine runs in six phases:
-
-```mermaid
-flowchart TB
-    subgraph Phase1["Phase 1: Clang Semantic Analysis"]
-        P1A[Full AST with type info]
-        P1B[Template instantiation]
-        P1C[Control flow graphs]
-        P1D[Data flow analysis]
-    end
-
-    subgraph Phase2["Phase 2: Explicit Constraints"]
-        P2A[noexcept specifications]
-        P2B["[[nodiscard]], [[deprecated]]"]
-        P2C[C++20 concepts & requires]
-        P2D[static_assert, = delete]
-    end
-
-    subgraph Phase3["Phase 3: Hazard Detection"]
-        P3A[Division operations]
-        P3B[Pointer dereference]
-        P3C[Array access bounds]
-        P3D[Guard analysis]
-    end
-
-    subgraph Phase4["Phase 4: Call Graph"]
-        P4A[Build call graph]
-        P4B[Propagate preconditions]
-        P4C[Detect satisfaction]
-    end
-
-    subgraph Phase5["Phase 5: Foundation Linking"]
-        P5A[Semantic similarity]
-        P5B[depends_on edges]
-    end
-
-    subgraph Phase6["Phase 6: LLM Assist"]
-        P6A[Batched questions]
-        P6B[Targeted gaps only]
-    end
-
-    Phase1 --> Phase2 --> Phase3 --> Phase4 --> Phase5 --> Phase6
-```
-
-**Figure 9:** The six-phase extraction pipeline
-
-**Phase 1: Clang Semantic Analysis**
-
-We use a native C++ tool built with LibTooling, not Python bindings. Why? Because libclang's Python bindings are incomplete—many AST nodes aren't exposed, C++20 features have limited support, and CFG/dataflow analysis requires direct Clang API access.
-
-**Phase 2: Explicit Constraint Extraction**
-
-Modern C++ tells us a lot:
-
-```cpp
-// These all become axioms automatically:
-[[nodiscard]] Result process() noexcept;  // Must use return, won't throw
-requires std::integral<T>                  // T must be integral type
-void foo(T x);
-
-static_assert(sizeof(T) >= 4);            // Size constraint
-
-template<typename T>                       // Only for default-constructible
-void bar() requires std::default_initializable<T>;
-```
-
-Each of these generates an axiom with confidence 1.0—the compiler enforces them.
-
-**Phase 3: Hazard Detection**
-
-Pattern matching identifies hazardous operations:
-- Division → divisor must not be zero
-- Pointer dereference → pointer must not be null
-- Array access → index must be in bounds
-
-But we're cleverer than that. Guard analysis checks if a hazard is already protected:
-
-```cpp
-void process(int* ptr, int divisor) {
-    if (ptr == nullptr) return;   // Guard detected!
-    if (divisor == 0) return;     // Guard detected!
-
-    *ptr = 100 / divisor;         // Hazards are guarded - no precondition needed
-}
-```
-
-**Phase 4: Call Graph & Propagation**
-
-If function `A` calls function `B`, and `B` has a precondition, that precondition propagates to `A` unless `A` satisfies it before the call:
-
-```cpp
-void B(int* p) {
-    // Axiom: p must not be null
-    *p = 42;
-}
-
-void A(int* p) {
-    B(p);  // Propagated: A requires p non-null (inherited from B)
-}
-
-void C(int* p) {
-    if (p != nullptr) {
-        B(p);  // NOT propagated: precondition satisfied by guard
-    }
-}
-```
-
-**Phase 5: Foundation Linking**
-
-Extracted axioms are linked to foundation axioms via semantic similarity search:
-
-```python
-# Library axiom from extraction
-library_axiom = "process() requires ptr != nullptr"
-
-# Semantic search finds:
-foundation_axiom = "c11_null_pointer_dereference_ub"
-# Content: "Dereferencing a null pointer is undefined behavior"
-
-# Creates: depends_on relationship
-```
-
-**Phase 6: LLM Assist (Minimal)**
-
-Only ~5% of cases need LLM interpretation—typically complex invariants that can't be detected through patterns:
-
-```cpp
-// This needs LLM: the relationship between cache_ and compute() isn't obvious
-class LazyValue {
-    mutable std::optional<T> cache_;
-    T compute() const;
-public:
-    T get() const {
-        if (!cache_) cache_ = compute();  // What's the invariant here?
-        return *cache_;
-    }
-};
-```
-
-LLM calls are batched (10+ functions per call) and ask targeted questions, not open-ended interpretation.
-
-### 5.3 Real-World Case Study: GoogleTest
-
-Let's look at a real extraction. Running the engine on GoogleTest produces 7,000+ axioms:
-
-```toml
-[[axioms]]
-id = "testing::MatchResultListener.abstract"
-content = "MatchResultListener is abstract and cannot be instantiated directly"
-formal_spec = "is_abstract(MatchResultListener)"
-layer = "user_library"
-confidence = 1.0
-source_file = "gtest-matchers.h"
-axiom_type = "constraint"
-on_violation = "Compilation error when attempting direct instantiation"
-depends_on = ["cpp20_over_match_general_illfomed_no_best_viable"]
-
-[[axioms]]
-id = "testing::MatchResultListener.virtual_dtor"
-content = "MatchResultListener has virtual destructor (safe for polymorphic use)"
-formal_spec = "has_virtual_destructor(MatchResultListener)"
-layer = "user_library"
-confidence = 1.0
-axiom_type = "constraint"
-on_violation = "Undefined behavior if destroyed through base pointer"
-depends_on = ["cpp20_has_virtual_destructor_precond_complete"]
-
-[[axioms]]
-id = "testing::MatchResultListener::operator<<.complexity.template_instantiation"
-content = "operator<< is a template; each unique argument combo causes separate instantiation"
-formal_spec = "instantiation_count = O(unique_template_args^1)"
-layer = "user_library"
-confidence = 0.95
-axiom_type = "complexity"
-on_violation = "Increased binary size and compilation time"
-```
-
-**The Power of Automatic Extraction:**
-
-Without manual annotation, the engine discovered:
-- Abstract class constraints (can't instantiate directly)
-- Virtual destructor presence (safe polymorphism)
-- Template instantiation complexity
-- Macro semantics (EXPECT_DEATH, ASSERT_TRUE, etc.)
-- Function pairing relationships (SetUp/TearDown)
-
-An LLM using GoogleTest now has access to 7,000+ grounded facts about its API.
-
-### 5.4 Two Complementary Axiom Sources
-
-The extraction engine complements spec-based extraction:
-
-```
-┌─────────────────────────────────────┐
-│   C++ Standard Spec (eel.is)        │  ← Spec-based (LLM extraction)
-│   "What the standard guarantees"    │
-│   - Formal semantics                │
-│   - UB definitions                  │
-│   - Algorithm complexity            │
-│   - Confidence: 0.85                │
-└─────────────────────────────────────┘
-                    +
-┌─────────────────────────────────────┐
-│   Actual C++ Code (Clang analysis)  │  ← Code-based (this engine)
-│   "What the code actually does"     │
-│   - Compiler-enforced constraints   │
-│   - Hazardous operations            │
-│   - Call graph preconditions        │
-│   - Confidence: 0.95-1.0            │
-└─────────────────────────────────────┘
-                    =
-┌─────────────────────────────────────┐
-│   Combined Knowledge Base           │
-│   - Spec axioms validate code       │
-│   - Code axioms ground spec claims  │
-│   - Cross-validation possible       │
-└─────────────────────────────────────┘
-```
-
-**Figure 10:** Complementary axiom sources
-
-The spec tells us what *should* happen. The code tells us what *does* happen. Together, they provide comprehensive grounding.
-
----
-
-## 6. Generalisation to Mathematics
-
-### 6.1 The Mathematical Axiom System
-
-The axiom-DAG-search pattern applies naturally to mathematical reasoning. Consider a system grounded in ZFC set theory:
+Mathematics is the original domain of axiomatic reasoning. The framework maps directly:
 
 ```mermaid
 graph TB
-    subgraph "Foundation: ZFC Axioms"
-        ZFC1[Axiom of Extensionality]
-        ZFC2[Axiom of Empty Set]
-        ZFC3[Axiom of Pairing]
-        ZFC4[Axiom of Union]
-        ZFC5[Axiom of Infinity]
-        ZFC6[Axiom of Power Set]
-        ZFC7[Axiom of Choice]
+    subgraph "ZFC Set Theory"
+        Z1[Extensionality]
+        Z2[Empty Set]
+        Z3[Pairing]
+        Z4[Union]
+        Z5[Infinity]
+        Z6[Power Set]
+        Z7[Replacement]
+        Z8[Choice]
     end
 
-    subgraph "Natural Numbers"
+    subgraph "Number Theory"
         N1[Peano Axioms]
-        N2[Induction Principle]
-        N3[Successor Function]
+        N2[Induction]
     end
 
-    subgraph "Arithmetic"
-        A1[Addition Definition]
-        A2[Multiplication Definition]
-        A3[Distributive Law]
+    subgraph "Real Analysis"
+        R1[Completeness]
+        R2[Archimedean Property]
     end
 
-    subgraph "Claims"
-        C1["2 + 2 = 4"]
+    subgraph "Theorems"
+        T1["√2 is irrational"]
+        T2[Intermediate Value Theorem]
     end
 
-    N1 -->|DERIVES_FROM| ZFC5
+    N1 -->|DERIVES_FROM| Z5
     N2 -->|DEPENDS_ON| N1
-    A1 -->|DEPENDS_ON| N3
-    A2 -->|DEPENDS_ON| A1
-    C1 -->|DERIVES_FROM| A1
-    C1 -->|DEPENDS_ON| N3
+    R1 -->|DERIVES_FROM| Z5
+    R1 -->|DEPENDS_ON| Z6
+    T1 -->|DERIVES_FROM| N2
+    T2 -->|DERIVES_FROM| R1
 ```
 
-**Figure 5:** Mathematical axiom hierarchy
+**Figure 5:** Mathematical axiom DAG (simplified)
 
-### 6.2 Validating Mathematical Claims
+### 5.2 Example: Validating a Proof Claim
 
-**Scenario: The Student's Error**
+**Claim:** "The limit of the sum equals the sum of the limits"
 
-An LLM tutoring a student encounters: "Prove that √2 is rational."
-
-The student claims: "Let √2 = p/q where p, q are coprime integers."
-
-Traditional approach: The LLM might hallucinate a flawed proof or correctly identify the impossibility.
-
-Axiom approach:
-
-```
-CLAIM: "√2 can be expressed as p/q with coprime integers"
-
-VALIDATION: CONTRADICTION DETECTED
-
-Proof chain:
-1. Assume √2 = p/q (hypothesis for proof by contradiction)
-2. Then 2 = p²/q², so 2q² = p²
-3. Therefore p² is even, so p is even (axiom: even_square_implies_even)
-4. Let p = 2k, then 4k² = 2q², so q² = 2k²
-5. Therefore q is even
-6. Both p and q even contradicts coprimality assumption
-7. Grounded in: Fundamental theorem of arithmetic, Peano axioms
-
-RESULT: The claim leads to contradiction. √2 is irrational.
-```
-
-The system doesn't just "know" √2 is irrational—it constructs a proof chain demonstrating why.
-
-### 6.3 Mathematical Axiom Extraction
-
-Mathematical axiom extraction differs from programming languages:
-
-**From Formal Proof Systems:**
-- Lean 4 mathlib contains thousands of proven theorems
-- Each theorem becomes an axiom with its proof as `formal_spec`
-- Dependencies map to Lean's dependency graph
-
-**From Textbooks and Papers:**
-- LLM-assisted extraction of definitions and theorems
-- Cross-reference with formal proofs where available
-- Lower confidence for informal sources
-
-**Example Mathematical Axiom:**
+**Axiom search returns:**
 
 ```toml
 [[axioms]]
-id = "math_real_completeness"
-content = "Every non-empty bounded above subset of real numbers has a least upper bound"
-formal_spec = "∀S ⊆ ℝ, S ≠ ∅ ∧ (∃M, ∀x ∈ S, x ≤ M) → ∃sup(S)"
-layer = "real_analysis"
-confidence = 1.0
-source = "Dedekind completeness axiom"
-depends_on = ["zfc_axiom_of_union", "real_number_construction"]
+id = "real_analysis_limit_sum"
+content = "If lim(aₙ) = L and lim(bₙ) = M, then lim(aₙ + bₙ) = L + M"
+formal_spec = "∀ε>0 ∃N: n>N → |aₙ+bₙ - (L+M)| < ε"
+depends_on = ["real_analysis_limit_def", "real_analysis_triangle_inequality"]
 
 [[axioms]]
-id = "math_intermediate_value_theorem"
-content = "A continuous function on [a,b] attains all values between f(a) and f(b)"
-formal_spec = "continuous(f, [a,b]) ∧ f(a) < y < f(b) → ∃c ∈ (a,b), f(c) = y"
-layer = "real_analysis"
-confidence = 1.0
-source = "Bolzano's theorem proof"
-depends_on = ["math_real_completeness", "math_continuous_function_def"]
+id = "real_analysis_limit_existence_required"
+content = "Limit arithmetic rules require both limits to exist"
+formal_spec = "∃L: lim(aₙ) = L ∧ ∃M: lim(bₙ) = M"
+depends_on = ["real_analysis_limit_def"]
 ```
 
-### 6.4 Preventing Mathematical Hallucination
-
-LLMs commonly make mathematical errors like:
-
-1. **Invalid limit manipulations** (swapping limits and integrals incorrectly)
-2. **Incorrect convergence claims** (assuming pointwise implies uniform)
-3. **Unstated assumptions** (using AC without noting it)
-
-With Axiom:
+**Proof chain construction:**
 
 ```
-CLAIM: "lim(∫fₙ) = ∫(lim fₙ) for this sequence"
+Claim: "lim(aₙ + bₙ) = lim(aₙ) + lim(bₙ)"
 
-VALIDATION: INSUFFICIENT
+Validation: CONDITIONAL
 
-This claim requires:
-1. Convergence mode of fₙ → f (pointwise/uniform/L¹)
-2. Dominating function (for Lebesgue DCT)
-3. Measure space specification
+The claim is VALID if:
+  1. lim(aₙ) exists (precondition from real_analysis_limit_existence_required)
+  2. lim(bₙ) exists (precondition from real_analysis_limit_existence_required)
 
-Related axioms found:
-- Dominated Convergence Theorem (with requirements)
-- Monotone Convergence Theorem
-- Fatou's Lemma
-
-The claim cannot be validated without specifying convergence type.
-Proof chain incomplete at: convergence_mode_specification
+Proof chain:
+  real_analysis_limit_sum
+    ← DEPENDS_ON: real_analysis_limit_def
+    ← DEPENDS_ON: real_analysis_triangle_inequality
+      ← DERIVES_FROM: [ZFC axioms...]
 ```
+
+The system identifies that the claim has *preconditions*—it's not universally true, but conditionally true given certain requirements.
+
+### 5.3 Integration with Proof Assistants
+
+The framework can ingest theorem databases from proof assistants:
+
+| Proof Assistant | Axiom Source | Confidence |
+|-----------------|--------------|------------|
+| Lean 4 mathlib | Proven theorems | 1.0 |
+| Coq | Verified lemmas | 1.0 |
+| Isabelle/HOL | Formal proofs | 1.0 |
+
+These provide the highest possible confidence because every theorem is machine-verified.
 
 ---
 
-## 7. Generalisation to Physics
+## 6. Application: Physics
 
-### 7.1 Physical Axiom Structure
+### 6.1 Domain-Specific Challenges
 
-Physics presents unique challenges: axioms often carry implicit domains of applicability (classical limits, relativistic regimes, quantum scales).
-
-```mermaid
-graph TB
-    subgraph "Foundational Frameworks"
-        F1[Classical Mechanics]
-        F2[Special Relativity]
-        F3[Quantum Mechanics]
-        F4[General Relativity]
-        F5[Quantum Field Theory]
-    end
-
-    subgraph "Bridge Conditions"
-        B1[v << c]
-        B2[ℏ → 0]
-        B3[Weak Field]
-    end
-
-    subgraph "Derived Laws"
-        D1[Newton's Laws]
-        D2[Maxwell's Equations]
-        D3[Schrödinger Equation]
-    end
-
-    F1 -->|limit| D1
-    F2 -->|reduces_to via| B1
-    B1 --> F1
-    F3 -->|classical_limit via| B2
-    B2 --> F1
-    F4 -->|reduces_to via| B3
-    B3 --> F2
-```
-
-**Figure 6:** Physical theory relationships and limit conditions
-
-### 7.2 Physics Axiom Examples
-
-```toml
-[[axioms]]
-id = "phys_newton_second_law"
-content = "Force equals mass times acceleration in an inertial reference frame"
-formal_spec = "F = m·a"
-layer = "classical_mechanics"
-confidence = 1.0
-domain_constraints = ["v << c", "quantum_effects_negligible"]
-depends_on = ["phys_inertial_frame_def", "phys_mass_conservation"]
-
-[[axioms]]
-id = "phys_energy_momentum_relativistic"
-content = "E² = (pc)² + (mc²)² relates energy and momentum relativistically"
-formal_spec = "E² = p²c² + m₀²c⁴"
-layer = "special_relativity"
-confidence = 1.0
-supersedes = ["phys_newton_kinetic_energy"]  # New relationship type
-depends_on = ["phys_lorentz_invariance", "phys_spacetime_interval"]
-
-[[axioms]]
-id = "phys_heisenberg_uncertainty"
-content = "Position and momentum cannot be simultaneously measured with arbitrary precision"
-formal_spec = "Δx·Δp ≥ ℏ/2"
-layer = "quantum_mechanics"
-confidence = 1.0
-depends_on = ["qm_canonical_commutation", "qm_observable_def"]
-```
-
-### 7.3 The Domain Applicability Problem
-
-A critical extension for physics: axioms carry **domain constraints** specifying when they're valid.
+Physics axioms carry implicit *domain constraints*—regimes where they're valid:
 
 ```python
 class PhysicsAxiom(Axiom):
-    domain_constraints: List[str]  # ["v << c", "T > 0"]
-    supersedes: List[str]          # What it replaces in its domain
+    domain_constraints: List[str]  # ["v << c", "ℏ → 0", "weak_field"]
     regime: str                    # "classical", "relativistic", "quantum"
+    supersedes: Optional[str]      # What it replaces in its domain
 ```
 
-When validating a physics claim:
+Newton's laws aren't *wrong*—they're the classical limit of more general theories.
 
+### 6.2 The Regime Hierarchy
+
+```mermaid
+graph TB
+    subgraph "Regime Relationships"
+        QFT[Quantum Field Theory]
+        GR[General Relativity]
+        QM[Quantum Mechanics]
+        SR[Special Relativity]
+        CM[Classical Mechanics]
+        NG[Newtonian Gravity]
+    end
+
+    CM -->|"v << c"| SR
+    NG -->|"weak field"| GR
+    CM -->|"ℏ → 0"| QM
+    SR --> QFT
+    QM --> QFT
 ```
-CLAIM: "Using F=ma to calculate electron motion in an atom"
 
-VALIDATION: DOMAIN MISMATCH
+**Figure 6:** Physics regime hierarchy with limit relationships
 
-phys_newton_second_law applies when:
-  - v << c ✓ (electron velocities typically << c)
-  - quantum_effects_negligible ✗ (atomic scale)
+### 6.3 Example: Validating a Physics Claim
 
-At atomic scales, must use:
-  - phys_schrodinger_equation (quantum regime)
-  - or phys_dirac_equation (relativistic quantum)
+**Claim:** "Using F=ma to calculate electron motion in hydrogen atom"
 
-Proof chain shows:
-  Newton's laws → classical limit of QM
-  But this is the quantum regime, not classical limit
-```
-
-### 7.4 Dimensional Analysis as Axiom
-
-Physics offers a powerful cross-check: dimensional analysis.
+**Axiom search returns:**
 
 ```toml
 [[axioms]]
-id = "phys_dimensional_consistency"
-content = "Physical equations must be dimensionally consistent"
-formal_spec = "dim(LHS) = dim(RHS) for any valid equation"
-layer = "meta_physics"
-confidence = 1.0
-# This axiom is used for validation, not derivation
+id = "classical_newton_second_law"
+content = "F = ma in inertial reference frames"
+formal_spec = "F = m·a"
+domain_constraints = ["v << c", "ℏ → 0"]
+regime = "classical"
 
 [[axioms]]
-id = "phys_dimension_rules"
-content = "Dimensional analysis rules"
-formal_spec = """
-[velocity] = [length]/[time]
-[acceleration] = [velocity]/[time]
-[force] = [mass]·[acceleration]
-[energy] = [force]·[length]
-"""
-layer = "meta_physics"
+id = "quantum_atomic_scale"
+content = "Atomic-scale phenomena require quantum treatment"
+formal_spec = "r ~ a₀ → quantum_required"
+domain_constraints = ["r ≈ 10⁻¹⁰ m"]
+regime = "quantum"
 ```
 
-This enables automatic validation:
+**Validation result:**
 
 ```
-CLAIM: "E = mv² is the kinetic energy formula"
+Claim: "F=ma for atomic electron"
 
-VALIDATION: DIMENSIONALLY INCORRECT
+INVALID: Domain mismatch
 
-Checking dimensions:
-  LHS: [E] = [energy] = ML²T⁻²
-  RHS: [m][v²] = M · (LT⁻¹)² = ML²T⁻²
+classical_newton_second_law requires: ℏ → 0 (classical limit)
+Atomic scale violates this: r ~ a₀ ~ 10⁻¹⁰ m → quantum regime
 
-Wait, dimensions match! But checking against formal axioms:
+Correct axiom for this domain:
+  quantum_schrodinger_equation
+  or
+  quantum_dirac_equation (if relativistic effects significant)
+```
 
-  phys_kinetic_energy_classical: KE = ½mv²
+### 6.4 Dimensional Analysis as Meta-Axiom
 
-Contradiction: Missing factor of ½
-The claim E = mv² is dimensionally valid but formally incorrect.
+Physics offers a powerful cross-validation: dimensional analysis.
+
+```toml
+[[axioms]]
+id = "physics_dimensional_consistency"
+content = "Physical equations must be dimensionally consistent"
+formal_spec = "dim(LHS) = dim(RHS)"
+layer = "meta"
+confidence = 1.0
+```
+
+This meta-axiom can catch errors even when domain axioms are incomplete:
+
+```
+Claim: "E = mv² is kinetic energy"
+
+Dimensional check:
+  LHS: [E] = ML²T⁻²
+  RHS: [m][v²] = M·(LT⁻¹)² = ML²T⁻²
+
+Dimensions match! But checking against formal axiom:
+  kinetic_energy_classical: KE = ½mv²
+
+INVALID: Missing factor ½
+  Dimensionally valid but formally incorrect.
 ```
 
 ---
 
-## 8. The Hallucination Mitigation Mechanism
+## 7. The Hallucination Problem and Grounding
 
-### 8.1 Why This Works
+### 7.1 Why LLMs Hallucinate
 
-LLM hallucination stems from several sources. Axiom addresses each:
+LLMs hallucinate because they're trained to produce *plausible* text, not *correct* text. The training objective rewards outputs that match the statistical patterns of the training corpus, not outputs that follow from verified axioms.
 
-| Hallucination Source | How Axiom Mitigates |
-|---------------------|---------------------|
-| **Training data gaps** | Axioms extracted from authoritative sources fill gaps |
-| **Distributional drift** | Proof chains anchor claims to formal specs |
-| **Confident uncertainty** | Validation returns explicit confidence and proof completeness |
-| **Context window limits** | Relevant axioms surfaced via semantic search |
-| **Subtle constraint violations** | Contradiction detection catches logical incompatibilities |
+| Training Signal | Resulting Behaviour |
+|-----------------|---------------------|
+| "Predict next token" | Fluent but potentially fabricated |
+| "Match human preferences" | Confident but potentially wrong |
+| "Minimise perplexity" | Plausible but not necessarily valid |
 
-### 8.2 The Grounding Chain
+### 7.2 Grounding Through Axiom Composition
 
-Consider how claims flow through the system:
+The framework addresses hallucination by transforming the problem:
+
+**Without Axiom:**
+> LLM: "You can use std::string with foo()"
+> Human: Is this true?
+> Answer: Unknown (depends on LLM's training data)
+
+**With Axiom:**
+> LLM: "You can use std::string with foo()"
+> Axiom: Can we derive this from established axioms?
+> Answer: No—contradiction with trivially_destructible requirement
+> Proof chain: [axiom₁] → [axiom₂] → CONTRADICTION
+
+The claim's truth is no longer a function of the LLM's "knowledge"—it's a function of the axiom DAG's structure.
+
+### 7.3 Integration with RAG and Reasoning
+
+Recent research [5][6][7] identifies three paradigms for hallucination mitigation:
+
+1. **Retrieval-Augmented Generation (RAG)**: Fetch relevant documents
+2. **Reasoning Enhancement**: Chain-of-thought, self-consistency
+3. **Agentic Systems**: Tool use, self-verification
+
+Our framework strengthens all three:
+
+| Paradigm | Without Axioms | With Axioms |
+|----------|----------------|-------------|
+| RAG | Retrieves documents | Retrieves *axioms with proof chains* |
+| Reasoning | Generates plausible reasoning | Follows *valid derivation rules* |
+| Agentic | Uses tools heuristically | *Validates* tool outputs against axioms |
+
+The key addition is *verification*: not just retrieving information, but checking that claims follow from verified foundations.
+
+---
+
+## 8. Implementation Architecture
+
+### 8.1 Dual-Database Design
+
+The framework uses two complementary databases:
+
+**Neo4j (Graph Database):**
+- Stores axiom nodes and relationship edges
+- Enables Cypher queries for proof chain traversal
+- Supports DEPENDS_ON, DERIVES_FROM, CONTRADICTS relationships
+
+**LanceDB (Vector Database):**
+- Stores axiom embeddings for semantic search
+- Enables fast similarity search over millions of axioms
+- Uses all-MiniLM-L6-v2 (384-dimensional vectors)
 
 ```mermaid
-sequenceDiagram
-    participant LLM
-    participant Axiom
-    participant VectorDB
-    participant GraphDB
-
-    LLM->>Axiom: validate("std::string with foo()")
-    Axiom->>VectorDB: embed & search
-    VectorDB-->>Axiom: Related axioms (ranked)
-    Axiom->>GraphDB: Traverse dependencies
-    GraphDB-->>Axiom: Proof chain nodes
-    Axiom->>Axiom: Entailment classification
-    Axiom-->>LLM: INVALID + proof chain to C++ standard
+flowchart LR
+    Claim --> Embed[Embed Claim]
+    Embed --> LanceDB[(LanceDB)]
+    LanceDB --> Similar[Similar Axioms]
+    Similar --> Neo4j[(Neo4j)]
+    Neo4j --> Traverse[Traverse DAG]
+    Traverse --> ProofChain[Proof Chain]
 ```
 
-**Figure 7:** Claim validation sequence
+**Figure 7:** Dual-database query flow
 
-### 8.3 Confidence Propagation
+### 8.2 MCP Integration for Claude Code
 
-Axioms carry confidence scores (0.0-1.0) that propagate through the graph:
-
-- **Formal specifications**: 1.0 (K-Framework, ISO standards)
-- **Official documentation**: 0.9-0.95
-- **LLM-extracted with review**: 0.7-0.9
-- **LLM-extracted unreviewed**: 0.5-0.7
-
-Proof chain confidence = minimum confidence along the chain:
-
-```python
-def proof_chain_confidence(chain: List[Axiom]) -> float:
-    return min(axiom.confidence for axiom in chain)
-```
-
-This ensures that weak links are surfaced:
-
-```
-Proof chain confidence: 0.72
-Weakest link: mylib_threading_assumption (LLM-extracted, unreviewed)
-Consider manual review of this axiom before relying on validation.
-```
-
----
-
-## 9. Integration and Tooling
-
-### 9.1 MCP Server Integration
-
-Axiom integrates with Claude Code via Model Context Protocol (MCP):
+The framework integrates with Claude Code via Model Context Protocol:
 
 ```json
 {
@@ -1110,228 +650,148 @@ Axiom integrates with Claude Code via Model Context Protocol (MCP):
 }
 ```
 
-Available tools:
+**Available Tools:**
 
 | Tool | Purpose |
 |------|---------|
-| `validate_claim` | Check if a claim contradicts known axioms |
-| `search_axioms` | Find axioms semantically related to a query |
-| `get_axiom` | Retrieve specific axiom with full details |
-| `get_stats` | Knowledge base statistics |
+| `validate_claim` | Check claim against axiom DAG |
+| `search_axioms` | Find semantically related axioms |
+| `get_axiom` | Retrieve specific axiom with dependencies |
+| `get_proof_chain` | Construct derivation from axioms to claim |
 
-### 9.2 Clangd Plugin (Planned)
+### 8.3 Confidence Propagation
 
-For real-time feedback during coding:
+Confidence propagates through the DAG according to:
 
 ```
-memory.c:87:5: error: [axiom:heap-use-after-free] use after free
-    buffer->data[0] = 'x';
-    ^~~~~~~~~~~~~~~~~~~
-
-  Violation: Pointer 'buffer' was freed at line 82
-  Formal: C11 §7.22.3.3 - accessing freed memory is undefined behavior
-
-  Proof chain:
-    1. free(buffer) called at memory.c:82
-    2. No reassignment of 'buffer' between free and use
-    3. This access is undefined behavior
+conf(derived) = min(conf(dependency₁), conf(dependency₂), ..., conf(derivation_rule))
 ```
 
-Diagnostic levels:
-- **ERROR**: Definite violation (must fix)
-- **WARNING**: Likely issue (should investigate)
-- **INFO**: Semantic context (good to know)
-- **HINT**: Exploration prompt (can query via MCP for details)
-
-### 9.3 REST API
-
-For programmatic access:
-
-```bash
-curl -X POST http://localhost:8000/validate \
-  -H "Content-Type: application/json" \
-  -d '{"claim": "std::string works with foo()"}'
-```
-
-Response:
-```json
-{
-  "valid": false,
-  "contradictions": [{
-    "axiom_id": "mylib_foo_trivial_type",
-    "content": "foo() requires trivially destructible types",
-    "formal_ref": "trivially_destructible<T>"
-  }],
-  "proof_chain": [
-    {"step": 1, "axiom": "mylib_foo_trivial_type", "layer": "library"},
-    {"step": 2, "axiom": "cpp20_trivially_destructible", "layer": "cpp20_language"},
-    {"step": 3, "axiom": "cpp20_string_nontrivial_dtor", "layer": "cpp20_stdlib"}
-  ],
-  "confidence": 0.95
-}
-```
+This ensures that:
+- High-confidence axioms produce high-confidence derivations
+- Any weak link in the proof chain is surfaced
+- Users can assess the reliability of validation results
 
 ---
 
-## 10. Limitations and Future Work
+## 9. Limitations and Future Directions
 
-### 10.1 Current Limitations
+### 9.1 Current Limitations
 
-**Extraction Completeness:**
-Not all constraints are extractable. Some are implicit in code patterns, runtime behaviour, or documentation that's ambiguous.
+**Axiom Completeness:** No axiom corpus is complete. Claims outside the knowledge scope return UNDETERMINED rather than VALID/INVALID.
 
-**False Positives:**
-Semantic similarity search can surface axioms that seem related but aren't actually applicable. The entailment classifier mitigates this but isn't perfect.
+**Extraction Quality:** Automated extraction may miss implicit constraints or introduce errors. Human review remains necessary for high-stakes domains.
 
-**Domain-Specific Knowledge:**
-Extending to new domains (mathematics, physics) requires bootstrapping foundational axioms—a significant effort.
+**Semantic Search Precision:** Vector similarity is approximate. Some relevant axioms may be missed; some irrelevant axioms may be returned.
 
-**Dynamic Behaviour:**
-Axiom reasons about static properties. Runtime behaviour, timing, and external state are harder to capture.
+**Dynamic Behaviour:** The framework reasons about static properties. Runtime behaviour, timing, and external state require different approaches.
 
-### 10.2 Future Directions
+### 9.2 Future Directions
 
-**Automatic Axiom Discovery:**
-Use LLMs to propose axioms from code behaviour, then validate through testing or formal verification.
+**Automatic Axiom Discovery:** Use LLMs to propose candidate axioms, validate through testing or formal verification, then integrate into the corpus.
 
-**Temporal Axioms:**
-Extend to capture ordering constraints, lifecycle patterns, and protocol states.
+**Temporal Axioms:** Extend to capture ordering constraints, lifecycle patterns, and protocol states.
 
-**Cross-Language Generalisation:**
-Adapt the framework for Rust (borrow checker semantics), Python (dynamic typing), and others.
+**Community Repositories:** Like package managers for code, enable sharing and composition of axiom corpora across projects and domains.
 
-**Proof Synthesis:**
-When a claim isn't directly validated, attempt to synthesise a proof from available axioms.
-
-**Community Axiom Repositories:**
-Like package managers for dependencies, enable axiom sharing for common libraries.
+**Proof Synthesis:** When no direct proof chain exists, attempt to synthesise one using automated theorem proving techniques.
 
 ---
 
-## 11. Related Work
+## 10. Related Work
 
-### 11.1 Formal Methods
+### 10.1 Formal Methods
 
-**K-Framework (Rosu et al.):** Provides the formal semantic foundation for C11 and C++ axioms. Axiom extends this by making semantics queryable.
+**K-Framework [8]:** Provides operational semantics for C11 and C++. Our framework uses K-derived axioms as foundational layer.
 
-**Coq and Lean:** Formal proof assistants that verify mathematical claims. Axiom could integrate their theorem databases.
+**Coq and Lean [9]:** Proof assistants where theorems are machine-verified. Potential sources for mathematical axiom corpora with confidence 1.0.
 
-**CBMC and other model checkers:** Verify specific properties but don't provide queryable knowledge graphs.
+**Hoare Logic [10]:** Axiomatic semantics for program verification. The pattern of preconditions/postconditions maps directly to our axiom types.
 
-### 11.2 RAG and Knowledge Graphs
+### 10.2 Knowledge Graphs
 
-**GraphRAG (Microsoft):** Uses knowledge graphs for retrieval. Axiom specialises this for formal verification chains.
+**GraphRAG [11]:** Uses knowledge graphs for retrieval-augmented generation. Our framework adds formal verification and proof chains.
 
-**LangChain and LlamaIndex:** General RAG frameworks. Axiom adds the validation layer.
+**RDF/OWL Ontologies [12]:** Provide structured knowledge representation. Axiom framework extends this with formal semantics and derivation rules.
 
-### 11.3 Code Analysis
+### 10.3 LLM Hallucination Mitigation
 
-**Clang Static Analyzer:** Pattern-based bug detection. Axiom provides semantic grounding beyond patterns.
+**SAFE [5]:** Search-augmented factuality evaluation. Uses search to ground claims, but lacks formal proof structure.
 
-**Infer (Facebook):** Separation logic analysis. Could be integrated as an axiom source.
+**Self-Consistency [6]:** Multiple generation with voting. Improves reliability but doesn't guarantee correctness.
+
+**Knowledge Graph Integration [7]:** Grounds LLM outputs in structured knowledge. Our framework formalises this with compositional semantics.
 
 ---
 
-## 12. Conclusion
+## 11. Conclusion
 
-### 12.1 Summary
+### 11.1 Summary
 
-Axiom addresses LLM hallucination through a fundamentally different approach: rather than trying to make models "understand" constraints, we externalise understanding into a queryable knowledge graph grounded in formal specifications.
+This paper has presented a framework for grounding knowledge claims in compositional axiom structures. The key contributions are:
 
-The key contributions are:
+1. **Axiom Composition Pattern:** Complex knowledge decomposes into atomic truths connected by logical dependencies, forming a DAG.
 
-1. **Axiom model**: Atomic units of verified truth with formal specifications
-2. **DAG composition**: Logical relationships enabling proof chains
-3. **Semantic search**: Finding relevant axioms for any claim
-4. **Validation pipeline**: Contradiction detection with explainable results
-5. **Generalisation**: The pattern applies to code, mathematics, physics, and beyond
+2. **Semantic Search Over Truth-Spaces:** Vector embeddings enable discovery of relevant axioms for arbitrary claims.
 
-### 12.2 The Bigger Picture
+3. **Proof Chain Validation:** Claims are validated by constructing derivation paths from established axioms, not by pattern matching.
 
-Look, here's the thing. LLMs are bloody brilliant at pattern matching and generating plausible-sounding stuff. But "plausible" and "correct" aren't the same thing, especially when you're writing code that handles money, or medical data, or anything where being wrong actually matters.
+4. **Domain Genericity:** The pattern applies uniformly to programming languages, mathematics, physics, and potentially any domain with formalizable axioms.
 
-Axiom doesn't make LLMs smarter. It makes them *accountable*. Every claim can be traced. Every contradiction is explained. Every validation comes with a proof chain back to formal sources.
+5. **LLM Grounding:** The framework transforms LLM hallucination from an unsolvable problem (how do we know if the LLM is right?) to a tractable one (can we derive this claim from verified axioms?).
 
-It's like having a really pedantic mate who's memorised the C++ standard looking over your shoulder. Annoying sometimes, yeah. But better than shipping a use-after-free to production.
+### 11.2 The Philosophical Insight
 
-### 12.3 Call to Arms
+Look, here's the thing, mate. We've known since Euclid that you can build reliable knowledge from simple foundations. The Greeks didn't have computers, but they had the right idea: start with what you're certain about, derive what follows logically, and you can trust the conclusions.
 
-This framework is open source and actively developed. We're looking for:
+LLMs are bloody brilliant at generating plausible stuff. But "plausible" isn't "correct." When you're writing code that handles money, or proving theorems for a journal, or calculating whether a bridge will hold—you need *correct*, not plausible.
 
-- **Library maintainers** to extract and ship axioms with their libraries
-- **Formal methods researchers** to improve axiom extraction and validation
-- **Domain experts** in mathematics and physics to bootstrap axiom sets
-- **Tool developers** to build integrations beyond what we've done
+The axiom framework doesn't make LLMs smarter. It makes them *accountable*. Every claim gets traced. Every validation comes with a proof chain. If the system says something's wrong, it tells you *why*, grounded in formal specifications that don't depend on what the model "feels" is right.
 
-The codebase is at https://github.com/mattyv/axiom. Chuck a PR, file an issue, or just have a yarn with us about where this could go.
+It's like having a really pedantic mate who's memorised the standards looking over your shoulder. Annoying sometimes, yeah. But better than shipping undefined behaviour to production.
+
+### 11.3 Call to Arms
+
+This is open source and actively developed at https://github.com/mattyv/axiom.
+
+We're looking for:
+- **Domain experts** to bootstrap axiom corpora (mathematics, physics, other PLs)
+- **Formal methods researchers** to improve extraction and validation
+- **Tool developers** to build integrations
+- **Sceptics** to find where this breaks
+
+The pattern is simple. The implications are profound. Complex knowledge *can* be grounded in atomic truths. Let's build it.
 
 ---
 
 ## References
 
-1. Roşu, G., & Şerbănuţă, T. F. (2010). An overview of the K semantic framework. *Journal of Logic and Algebraic Programming*, 79(6), 397-434.
+[1] Frege, G. (1879). *Begriffsschrift, eine der arithmetischen nachgebildete Formelsprache des reinen Denkens*. Halle: Louis Nebert.
 
-2. ISO/IEC 9899:2011. *Programming languages — C*. International Organization for Standardization.
+[2] Peano, G. (1889). *Arithmetices principia, nova methodo exposita*. Turin: Bocca.
 
-3. ISO/IEC 14882:2020. *Programming languages — C++*. International Organization for Standardization.
+[3] Whitehead, A. N., & Russell, B. (1910-1913). *Principia Mathematica*. Cambridge University Press.
 
-4. Lewis, P., et al. (2020). Retrieval-augmented generation for knowledge-intensive NLP tasks. *Advances in Neural Information Processing Systems*.
+[4] Howard, W. A. (1980). The formulae-as-types notion of construction. In *To H.B. Curry: Essays on Combinatory Logic, Lambda Calculus and Formalism*. Academic Press.
 
-5. Brown, T., et al. (2020). Language models are few-shot learners. *Advances in Neural Information Processing Systems*.
+[5] Lavrinovics, T., et al. (2025). Knowledge Graphs, Large Language Models, and Hallucinations. *ScienceDirect*.
 
-6. OpenAI. (2023). GPT-4 technical report. *arXiv preprint arXiv:2303.08774*.
+[6] Wang, X., et al. (2023). Self-Consistency Improves Chain of Thought Reasoning in Language Models. *ICLR*.
 
-7. Anthropic. (2024). Claude Model Card. https://www.anthropic.com/model-card
+[7] Hogan, A., et al. (2021). Knowledge Graphs. *ACM Computing Surveys*.
 
-8. Mathlib Community. (2020-). Mathlib: A unified library of mathematics formalized in Lean. https://leanprover-community.github.io/
+[8] Roşu, G., & Şerbănuţă, T. F. (2010). An overview of the K semantic framework. *Journal of Logic and Algebraic Programming*.
 
-9. Coq Development Team. (1999-). The Coq proof assistant reference manual. INRIA.
+[9] The mathlib Community. (2020). The Lean Mathematical Library. *CPP 2020*.
 
-10. Calcagno, C., et al. (2015). Moving fast with software verification. *NASA Formal Methods Symposium*.
+[10] Hoare, C. A. R. (1969). An Axiomatic Basis for Computer Programming. *Communications of the ACM*.
 
----
+[11] Microsoft Research. (2024). GraphRAG: A Modular Graph-Based RAG System.
 
-## Appendices
-
-### Appendix A: Axiom TOML Schema
-
-```toml
-version = "1.0"
-source = "library_name"
-
-[[axioms]]
-id = "unique_identifier"            # Required: globally unique
-content = "Human readable truth"    # Required: natural language
-formal_spec = "machine_checkable"   # Optional: formal specification
-layer = "layer_name"                # Required: c11_core, library, etc.
-confidence = 0.95                   # Required: 0.0-1.0
-function = "function_name"          # Optional: related function
-signature = "void foo(int x)"       # Optional: function signature
-header = "lib/foo.h"                # Optional: source header
-axiom_type = "precondition"         # Required: precondition, postcondition, etc.
-depends_on = ["other_axiom_id"]     # Optional: dependency list
-tags = ["memory", "safety"]         # Optional: searchable tags
-```
-
-### Appendix B: Layer Definitions
-
-| Layer | Source | Confidence Range | Description |
-|-------|--------|------------------|-------------|
-| c11_core | K-Framework | 1.0 | C11 formal semantics |
-| cpp_core | K-Framework | 1.0 | C++ formal semantics |
-| cpp20_language | ISO C++20 | 0.95-1.0 | Language features |
-| cpp20_stdlib | ISO C++20 | 0.90-0.95 | Standard library |
-| library | Extraction | 0.70-0.95 | User library axioms |
-
-### Appendix C: Relationship Types
-
-| Type | Direction | Meaning | Example |
-|------|-----------|---------|---------|
-| DEPENDS_ON | A → B | A requires B to hold | foo_precond → trivially_destructible |
-| DERIVES_FROM | A → B | A logically follows from B | theorem → axiom |
-| CONTRADICTS | A ↔ B | A and B cannot both be true | string_nontrivial ↔ foo_requires_trivial |
-| SUPERSEDES | A → B | A replaces B in certain domain | relativistic → classical |
+[12] W3C. (2004). OWL Web Ontology Language. W3C Recommendation.
 
 ---
 
-*Document version 1.0. Last updated January 2026.*
+*Document version 2.0. January 2026.*
+*The axiom corpus for C/C++ currently contains ~3,500 axioms across 6 layers.*
+*This work is licensed under BSL-1.0.*
