@@ -215,10 +215,10 @@ private:
         info.is_defaulted = decl->isDefaulted();
 
         // requires clause (C++20)
-        if (auto trail = decl->getTrailingRequiresClause(); trail.ConstraintExpr) {
+        if (auto* trailExpr = decl->getTrailingRequiresClause(); trailExpr) {
             std::string requiresStr;
             llvm::raw_string_ostream os(requiresStr);
-            trail.ConstraintExpr->printPretty(os, nullptr, ctx_->getPrintingPolicy());
+            trailExpr->printPretty(os, nullptr, ctx_->getPrintingPolicy());
             info.requires_clause = os.str();
         }
 
