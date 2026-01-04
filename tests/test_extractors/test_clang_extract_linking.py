@@ -2,7 +2,12 @@
 
 from unittest.mock import Mock, patch
 
+import pytest
+
 from axiom.models import Axiom, AxiomType, SourceLocation
+
+# Skip all tests in this module if lancedb is not installed
+pytest.importorskip("lancedb", reason="lancedb not installed")
 
 
 class TestSemanticLinking:

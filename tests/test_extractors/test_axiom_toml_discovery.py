@@ -5,9 +5,16 @@
 
 """Tests for .axiom.toml discovery and loading functionality."""
 
+import importlib.util
 from pathlib import Path
 
+import pytest
 
+# Check if lancedb is available (required for scripts.extract_clang imports)
+HAS_LANCEDB = importlib.util.find_spec("lancedb") is not None
+
+
+@pytest.mark.skipif(not HAS_LANCEDB, reason="lancedb not installed")
 class TestDiscoverAxiomToml:
     """Tests for discover_axiom_toml function."""
 
