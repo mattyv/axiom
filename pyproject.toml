@@ -64,6 +64,13 @@ full = [
     "tree-sitter>=0.21.0",
     "tree-sitter-c>=0.21.0",
     "tree-sitter-cpp>=0.21.0",
+    # File watching for live layer
+    "watchdog>=3.0.0",
+]
+
+lsp = [
+    # File watching for live layer
+    "watchdog>=3.0.0",
 ]
 
 dev = [
@@ -91,6 +98,7 @@ axiom-api = "axiom.api.main:run"
 axiom-mcp = "axiom.mcp.server:main"
 axiom-extract = "scripts.extract_all:main"
 axiom-bootstrap = "scripts.bootstrap:main"
+axiom-query-server = "axiom.query.server:main"
 
 [tool.setuptools.packages.find]
 where = ["."]
