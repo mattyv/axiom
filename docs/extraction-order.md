@@ -2,6 +2,50 @@
 
 When rebuilding the knowledge base from scratch, axioms must be extracted and loaded in this order:
 
+## Quick Start
+
+Most of the time you just need to re-ingest the existing TOML files. The foundation axioms are already extracted and stored in `knowledge/foundations/`.
+
+### Prerequisites
+
+Install Podman or Docker to run Neo4j:
+
+**macOS:**
+```bash
+# Option A: Podman (lighter weight)
+brew install podman podman-compose
+podman machine init    # First time only - downloads VM image
+podman machine start   # Start the VM (run each session)
+
+# Option B: Docker Desktop
+# Download from https://www.docker.com/products/docker-desktop/
+```
+
+**Ubuntu/Debian:**
+```bash
+# Option A: Podman
+sudo apt update && sudo apt install -y podman podman-compose
+
+# Option B: Docker
+sudo apt update && sudo apt install -y docker.io docker-compose
+sudo usermod -aG docker $USER  # then log out and back in
+```
+
+### Ingest Foundation Axioms
+
+```bash
+# Start Neo4j
+podman-compose up -d   # or: docker compose up -d
+
+# Wait ~15 seconds for Neo4j to start, then:
+python scripts/ingest.py --clear   # Clear Neo4j and LanceDB
+python scripts/ingest.py           # Ingest all foundation TOMLs
+```
+
+This loads ~2,500+ axioms from `knowledge/foundations/*.toml` into both databases.
+
+---
+
 ## Scripts Overview
 
 | Script | Purpose |
