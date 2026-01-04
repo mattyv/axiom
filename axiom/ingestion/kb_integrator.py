@@ -3,10 +3,15 @@
 # https://github.com/mattyv/axiom
 # SPDX-License-Identifier: BSL-1.0
 
-"""Knowledge base integrator for ingested axioms.
+"""Knowledge base integrator for ingesting axioms into the KB.
 
-This module provides the integration layer between the ingestion pipeline
-(extraction + review) and the knowledge base (Neo4j + LanceDB).
+This module provides the ingestion layer between extracted axioms
+(from TOML files or review sessions) and the knowledge base (Neo4j + LanceDB).
+
+Terminology:
+- Extraction: Creating TOML files from source code
+- Ingestion: Loading TOML files into databases (this module)
+- Linking: Creating depends_on relationships
 
 Note: Full functionality requires optional dependencies: pip install axiom[full]
 """
@@ -27,8 +32,8 @@ if TYPE_CHECKING:
 
 
 @dataclass
-class IntegrationResult:
-    """Result of integrating axioms into the KB."""
+class IngestionResult:
+    """Result of ingesting axioms into the KB."""
 
     axioms_loaded: int
     neo4j_nodes_created: int
@@ -37,11 +42,15 @@ class IntegrationResult:
     errors: list[str]
 
 
+# Backwards compatibility alias (deprecated)
+IntegrationResult = IngestionResult
+
+
 class KBIntegrator:
-    """Integrates reviewed axioms into Neo4j and LanceDB.
+    """Ingests reviewed axioms into Neo4j and LanceDB.
 
     This class provides the final step in the ingestion pipeline:
-    1. Takes approved axioms from review sessions
+    1. Takes approved axioms from review sessions or TOML files
     2. Loads them into Neo4j with DEPENDS_ON relationships
     3. Loads them into LanceDB for semantic search
     """
@@ -63,23 +72,23 @@ class KBIntegrator:
         self.lancedb_loader = lancedb_loader
         self.review_manager = review_manager or ReviewSessionManager()
 
-    def integrate_from_session(
+    def ingest_from_session(
         self,
         session_id: str,
         table_name: str = "axioms",
-    ) -> IntegrationResult:
-        """Integrate approved axioms from a review session.
+    ) -> IngestionResult:
+        """Ingest approved axioms from a review session.
 
         Args:
             session_id: ID of the review session.
             table_name: LanceDB table name.
 
         Returns:
-            IntegrationResult with counts and errors.
+            IngestionResult with counts and errors.
         """
         session = self.review_manager.load_session(session_id)
         if session is None:
-            return IntegrationResult(
+            return IngestionResult(
                 axioms_loaded=0,
                 neo4j_nodes_created=0,
                 lancedb_records_created=0,
@@ -88,25 +97,28 @@ class KBIntegrator:
             )
 
         axioms = session.get_approved_axioms()
-        return self.integrate_axioms(axioms, table_name=table_name)
+        return self.ingest_axioms(axioms, table_name=table_name)
 
-    def integrate_from_toml(
+    # Backwards compatibility alias (deprecated)
+    integrate_from_session = ingest_from_session
+
+    def ingest_from_toml(
         self,
         toml_path: str,
         table_name: str = "axioms",
-    ) -> IntegrationResult:
-        """Integrate axioms from a TOML file.
+    ) -> IngestionResult:
+        """Ingest axioms from a TOML file.
 
         Args:
             toml_path: Path to TOML file with axioms.
             table_name: LanceDB table name.
 
         Returns:
-            IntegrationResult with counts and errors.
+            IngestionResult with counts and errors.
         """
         path = Path(toml_path)
         if not path.exists():
-            return IntegrationResult(
+            return IngestionResult(
                 axioms_loaded=0,
                 neo4j_nodes_created=0,
                 lancedb_records_created=0,
@@ -116,9 +128,9 @@ class KBIntegrator:
 
         try:
             collection = AxiomCollection.load_toml(path)
-            return self.integrate_axioms(collection.axioms, table_name=table_name)
+            return self.ingest_axioms(collection.axioms, table_name=table_name)
         except Exception as e:
-            return IntegrationResult(
+            return IngestionResult(
                 axioms_loaded=0,
                 neo4j_nodes_created=0,
                 lancedb_records_created=0,
@@ -126,19 +138,22 @@ class KBIntegrator:
                 errors=[f"Failed to parse TOML: {e}"],
             )
 
-    def integrate_axioms(
+    # Backwards compatibility alias (deprecated)
+    integrate_from_toml = ingest_from_toml
+
+    def ingest_axioms(
         self,
         axioms: list[Axiom],
         table_name: str = "axioms",
-    ) -> IntegrationResult:
-        """Integrate a list of axioms into the KB.
+    ) -> IngestionResult:
+        """Ingest a list of axioms into the KB.
 
         Args:
-            axioms: List of axioms to integrate.
+            axioms: List of axioms to ingest.
             table_name: LanceDB table name.
 
         Returns:
-            IntegrationResult with counts and errors.
+            IngestionResult with counts and errors.
         """
         errors = []
         neo4j_count = 0
@@ -164,13 +179,16 @@ class KBIntegrator:
                 except Exception as e:
                     errors.append(f"LanceDB error for {axiom.id}: {e}")
 
-        return IntegrationResult(
+        return IngestionResult(
             axioms_loaded=len(axioms),
             neo4j_nodes_created=neo4j_count,
             lancedb_records_created=lancedb_count,
             dependencies_created=deps_count,
             errors=errors,
         )
+
+    # Backwards compatibility alias (deprecated)
+    integrate_axioms = ingest_axioms
 
     def validate_dependencies(self, axioms: list[Axiom]) -> list[str]:
         """Check if all depends_on references exist in the KB.
@@ -220,20 +238,20 @@ class KBIntegrator:
         return stats
 
 
-def load_approved_axioms_to_kb(
+def ingest_axioms_to_kb(
     toml_path: str,
     neo4j_uri: str = "bolt://localhost:7687",
     neo4j_user: str = "neo4j",
     neo4j_password: str = "axiompass",
     lancedb_path: str = "./data/lancedb",
     table_name: str = "axioms",
-) -> IntegrationResult:
-    """Convenience function to load approved axioms into the KB.
+) -> IngestionResult:
+    """Convenience function to ingest axioms from TOML into the KB.
 
     Requires optional dependencies: pip install axiom[full]
 
     Args:
-        toml_path: Path to TOML file with approved axioms.
+        toml_path: Path to TOML file with axioms.
         neo4j_uri: Neo4j connection URI.
         neo4j_user: Neo4j username.
         neo4j_password: Neo4j password.
@@ -241,7 +259,7 @@ def load_approved_axioms_to_kb(
         table_name: LanceDB table name.
 
     Returns:
-        IntegrationResult with counts and errors.
+        IngestionResult with counts and errors.
     """
     # Import at runtime to avoid requiring heavy dependencies
     from axiom.graph.loader import Neo4jLoader
@@ -268,7 +286,7 @@ def load_approved_axioms_to_kb(
         errors.append(f"Could not initialize LanceDB: {e}")
 
     if neo4j_loader is None and lancedb_loader is None:
-        return IntegrationResult(
+        return IngestionResult(
             axioms_loaded=0,
             neo4j_nodes_created=0,
             lancedb_records_created=0,
@@ -281,9 +299,13 @@ def load_approved_axioms_to_kb(
             neo4j_loader=neo4j_loader,
             lancedb_loader=lancedb_loader,
         )
-        result = integrator.integrate_from_toml(toml_path, table_name=table_name)
+        result = integrator.ingest_from_toml(toml_path, table_name=table_name)
         result.errors.extend(errors)
         return result
     finally:
         if neo4j_loader is not None:
             neo4j_loader.close()
+
+
+# Backwards compatibility alias (deprecated)
+load_approved_axioms_to_kb = ingest_axioms_to_kb

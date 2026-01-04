@@ -105,6 +105,7 @@ class EntailmentClassifier:
             r"\bderef\b",
             r"\bdereference\b",
             r"\bdereferencing\b",
+            r"\binvalid pointer\b",
         ],
         "integer": [
             r"\binteger\b",
@@ -112,7 +113,66 @@ class EntailmentClassifier:
             r"\bunsigned\b",
             r"\bint\b",
         ],
+        "std_move": [
+            r"\bstd::move\b",
+            r"\bmove\b",
+        ],
+        "std_forward": [
+            r"\bstd::forward\b",
+            r"\bforward\b",
+        ],
+        "delete": [
+            r"\bdelete\b",
+            r"\bfree\b",
+            r"\bdeallocate\b",
+            r"\bdouble.?delete\b",
+        ],
+        "iterator": [
+            r"\biterator\b",
+            r"\bForwardIterator\b",
+            r"\bInputIterator\b",
+            r"\bRandomAccessIterator\b",
+            r"\bBidirectionalIterator\b",
+            r"\bOutputIterator\b",
+            r"\bpass\b",  # single-pass, multi-pass
+        ],
+        "vector": [
+            r"\bvector\b",
+            r"\bstd::vector\b",
+            r"\belements?\b",
+            r"\bcontiguous\b",
+            r"\bstored\b",
+        ],
+        "macro": [
+            r"\bmacro\b",
+            r"\bILP_\w+\b",
+            r"\bpaired\b",
+            r"\bmatching\b",
+        ],
     }
+
+    # Semantic opposition pairs - claim pattern vs axiom pattern that contradict
+    # Format: (claim_pattern, axiom_pattern, explanation)
+    SEMANTIC_OPPOSITIONS = [
+        # Pass count: single vs multi
+        (r"\bsingle.?pass\b", r"\bmulti.?pass\b", "single-pass contradicts multi-pass"),
+        (r"\bmulti.?pass\b", r"\bsingle.?pass\b", "multi-pass contradicts single-pass"),
+        # Direction: reverse vs increasing/forward
+        (r"\breverse\s+order\b", r"\bincreasing\b", "reverse order contradicts increasing order"),
+        (r"\breverse\s+order\b", r"\bforward\b", "reverse order contradicts forward order"),
+        (r"\bincreasing\b", r"\breverse\b", "increasing contradicts reverse"),
+        # Pairing: without vs must be paired
+        (r"\bwithout\s+matching\b", r"\bmust\s+be\s+paired\b", "without matching contradicts must be paired"),
+        (r"\bwithout\s+matching\b", r"\brequires.*matching\b", "without matching contradicts requires matching"),
+        (r"\bcan\s+be\s+used\s+without\b", r"\bmust\s+be\s+paired\b", "can be used without contradicts must be paired"),
+        # Valid/invalid
+        (r"\binvalid\b", r"\bvalid\b", "invalid contradicts valid"),
+        (r"\bvalid\b", r"\binvalid\b", "valid contradicts invalid"),
+        # Safety with undefined behavior
+        (r"\bis\s+safe\b", r"\binvalid pointer\b", "is safe contradicts invalid pointer error"),
+        (r"\bis\s+safe\b", r"\bundefined\s+behavior\b", "is safe contradicts undefined behavior"),
+        (r"\bcompletely\s+safe\b", r"\bundefined\s+behavior\b", "completely safe contradicts UB"),
+    ]
 
     # Word form normalization for lemmatization
     LEMMA_MAP = {
@@ -123,6 +183,40 @@ class EntailmentClassifier:
         "allocating": "allocation",
         "allocates": "allocation",
     }
+
+    # Action categories for semantic understanding
+    # Distinguishes between different types of operations that may superficially seem similar
+    ACTION_CATEGORIES = {
+        # Syntactic transformations (no runtime effect on object state)
+        "syntactic": [
+            r"\bcast\b",
+            r"\bstatic_cast\b",
+            r"\breinterpret_cast\b",
+            r"\bconst_cast\b",
+            r"\bdynamic_cast\b",
+        ],
+        # Semantic transfers (changes object state/ownership)
+        # Note: Exclude "std::move" from patterns - it's a function name, not an action
+        "transfer": [
+            r"(?<!std::)(?<!::)\bmoves\b",  # "moves" but not part of "std::move"
+            r"(?<!std::)(?<!::)\btransfer\b",
+            r"\btransfers ownership\b",
+            r"\btransfer ownership\b",
+        ],
+        # Duplication (creates new object)
+        "duplication": [
+            r"\bcopy\b",
+            r"\bcopies\b",
+            r"\bduplicate\b",
+            r"\bclone\b",
+        ],
+    }
+
+    # Pattern to extract numeric assertions like "size() == 0" or "count() != 1"
+    NUMERIC_ASSERTION_PATTERN = re.compile(
+        r"\b(\w+\(\))\s*(==|!=|<=|>=|<|>)\s*(\d+)",
+        re.IGNORECASE,
+    )
 
     # Terse axiom patterns that imply negative polarity (error condition)
     # These are K-semantics axioms that describe UB without saying "undefined"
@@ -135,8 +229,12 @@ class EntailmentClassifier:
         r"out of bounds",
         r"dangling pointer",
         r"use after free",
-        r"double free",
-        r"integer division",  # Often describes error condition
+        r"double.?free",          # Matches "double free" or "double-free"
+        r"already freed",         # State descriptor for double-free scenarios
+        r"freed memory",          # State descriptor
+        r"deallocated memory",    # State descriptor
+        r"invalid pointer",       # Generic invalid pointer state
+        r"integer division",      # Often describes error condition
     ]
 
     def classify(self, claim: str, axiom: dict) -> EntailmentResult:
@@ -164,6 +262,25 @@ class EntailmentClassifier:
         if axiom_polarity == "neutral" and self._matches_error_pattern(axiom_content):
             axiom_polarity = "negative"
 
+        # Check for numeric value contradictions FIRST (e.g., size()==1 vs size()==0)
+        # These are strong signals that don't require topic overlap
+        claim_numerics = self._extract_numeric_assertions(claim)
+        # Parse both content and formal_spec for axiom numerics
+        axiom_numerics = self._extract_numeric_assertions(axiom_content)
+        formal_numerics = self._extract_numeric_assertions(axiom.get("formal_spec", ""))
+        axiom_numerics.update(formal_numerics)
+
+        if claim_numerics and axiom_numerics:
+            contradicts, explanation = self._numeric_values_contradict(
+                claim_numerics, axiom_numerics
+            )
+            if contradicts:
+                return EntailmentResult(
+                    relationship="CONTRADICTS",
+                    confidence=0.90,
+                    explanation=f"Numeric contradiction: {explanation}",
+                )
+
         # Check topic overlap
         claim_topics = self._extract_topics(claim)
         axiom_topics = self._extract_topics(axiom_content)
@@ -175,6 +292,30 @@ class EntailmentClassifier:
                 relationship="RELATED_TO",
                 confidence=0.3,
                 explanation="No topic overlap between claim and axiom",
+            )
+
+        # Check for semantic action contradictions (e.g., "cast" vs "move")
+        # This catches cases where both appear positive but describe incompatible actions
+        claim_action = self._extract_action_category(claim)
+        axiom_action = self._extract_action_category(axiom_content)
+
+        if claim_action and axiom_action and claim_action != axiom_action:
+            return EntailmentResult(
+                relationship="CONTRADICTS",
+                confidence=0.85,
+                explanation=(
+                    f"Claim describes {claim_action} action but axiom describes "
+                    f"{axiom_action} action - these are semantically incompatible"
+                ),
+            )
+
+        # Check for semantic opposition patterns (e.g., "single-pass" vs "multi-pass")
+        opposition = self._check_semantic_opposition(claim, axiom_content)
+        if opposition:
+            return EntailmentResult(
+                relationship="CONTRADICTS",
+                confidence=0.88,
+                explanation=f"Semantic opposition: {opposition}",
             )
 
         # Positive claim vs Negative axiom = CONTRADICTION
@@ -280,6 +421,28 @@ class EntailmentClassifier:
             result = re.sub(rf"\b{word}\b", lemma, result, flags=re.IGNORECASE)
         return result
 
+    def _extract_action_category(self, text: str) -> str | None:
+        """Extract action category from text to detect semantic contradictions.
+
+        Args:
+            text: The text to analyze.
+
+        Returns:
+            Action category ("syntactic", "transfer", "duplication") or None.
+        """
+        text_lower = text.lower()
+
+        # Check categories in priority order: duplication > transfer > syntactic
+        # This ensures "copies" is detected before "moves" in ambiguous text
+        priority_order = ["duplication", "transfer", "syntactic"]
+
+        for category in priority_order:
+            if category in self.ACTION_CATEGORIES:
+                for pattern in self.ACTION_CATEGORIES[category]:
+                    if re.search(pattern, text_lower):
+                        return category
+        return None
+
     def _is_error_axiom(self, axiom: dict) -> bool:
         """Check if axiom is from an error context.
 
@@ -318,3 +481,86 @@ class EntailmentClassifier:
             if re.search(pattern, text_lower, re.IGNORECASE):
                 return True
         return False
+
+    def _extract_numeric_assertions(self, text: str) -> dict[str, tuple[str, int]]:
+        """Extract numeric assertions like 'size() == 0' from text.
+
+        Args:
+            text: The text to analyze.
+
+        Returns:
+            Dict mapping function name to (operator, value).
+            Example: {"size()": ("==", 0)}
+        """
+        assertions = {}
+        for match in self.NUMERIC_ASSERTION_PATTERN.finditer(text):
+            func_name = match.group(1).lower()
+            operator = match.group(2)
+            value = int(match.group(3))
+            assertions[func_name] = (operator, value)
+        return assertions
+
+    def _numeric_values_contradict(
+        self,
+        claim_nums: dict[str, tuple[str, int]],
+        axiom_nums: dict[str, tuple[str, int]],
+    ) -> tuple[bool, str]:
+        """Check if numeric assertions contradict.
+
+        Args:
+            claim_nums: Numeric assertions from claim.
+            axiom_nums: Numeric assertions from axiom.
+
+        Returns:
+            Tuple of (contradicts, explanation).
+        """
+        for func_name, (claim_op, claim_val) in claim_nums.items():
+            if func_name not in axiom_nums:
+                continue
+
+            axiom_op, axiom_val = axiom_nums[func_name]
+
+            # Both assert equality to different values
+            if claim_op == "==" and axiom_op == "==" and claim_val != axiom_val:
+                return (
+                    True,
+                    f"{func_name} == {claim_val} contradicts {func_name} == {axiom_val}",
+                )
+
+            # Claim asserts equality, axiom asserts inequality to same value
+            if claim_op == "==" and axiom_op == "!=" and claim_val == axiom_val:
+                return (
+                    True,
+                    f"{func_name} == {claim_val} contradicts {func_name} != {axiom_val}",
+                )
+
+            # Claim asserts inequality, axiom asserts equality to same value
+            if claim_op == "!=" and axiom_op == "==" and claim_val == axiom_val:
+                return (
+                    True,
+                    f"{func_name} != {claim_val} contradicts {func_name} == {axiom_val}",
+                )
+
+        return False, ""
+
+    def _check_semantic_opposition(self, claim: str, axiom_content: str) -> str | None:
+        """Check if claim and axiom have semantic opposition patterns.
+
+        Args:
+            claim: The claim text.
+            axiom_content: The axiom content text.
+
+        Returns:
+            Explanation string if opposition found, None otherwise.
+        """
+        claim_lower = claim.lower()
+        axiom_lower = axiom_content.lower()
+
+        for claim_pattern, axiom_pattern, explanation in self.SEMANTIC_OPPOSITIONS:
+            if (
+                re.search(claim_pattern, claim_lower, re.IGNORECASE)
+                and re.search(axiom_pattern, axiom_lower, re.IGNORECASE)
+            ):
+                return explanation
+
+        return None

@@ -149,7 +149,7 @@ def get_type_axioms_for_section() -> dict[str, list[dict]]:
     return results
 
 
-def extract_section(section: str, output_file: Path, dry_run: bool = False) -> int:
+def extract_section(section: str, output_file: Path, dry_run: bool = False, timeout: int = 300) -> int:
     """Extract axioms from a section using Claude CLI."""
     print(f"\n{'=' * 60}")
     print(f"Section: {section}")
@@ -197,7 +197,7 @@ def extract_section(section: str, output_file: Path, dry_run: bool = False) -> i
             ],
             capture_output=True,
             text=True,
-            timeout=120,
+            timeout=timeout,
         )
     except subprocess.TimeoutExpired:
         print("  Error: Claude CLI timed out")
@@ -270,6 +270,7 @@ def main() -> int:
     parser.add_argument("--batch-library", action="store_true", help="Extract all library sections")
     parser.add_argument("--list", action="store_true", help="List sections")
     parser.add_argument("--dry-run", action="store_true", help="Don't call Claude, just show what would happen")
+    parser.add_argument("--timeout", type=int, default=300, help="Claude CLI timeout in seconds (default: 300)")
 
     args = parser.parse_args()
 
@@ -286,12 +287,12 @@ def main() -> int:
         # Determine output file based on section type
         is_library = args.section in HIGH_SIGNAL_LIBRARY_SECTIONS
         output_file = LIBRARY_OUTPUT_FILE if is_library else LANGUAGE_OUTPUT_FILE
-        return extract_section(args.section, output_file, args.dry_run)
+        return extract_section(args.section, output_file, args.dry_run, args.timeout)
 
     if args.batch_language:
         failed = 0
         for section in HIGH_SIGNAL_SECTIONS:
-            if extract_section(section, LANGUAGE_OUTPUT_FILE, args.dry_run) != 0:
+            if extract_section(section, LANGUAGE_OUTPUT_FILE, args.dry_run, args.timeout) != 0:
                 failed += 1
         print(f"\nDone. {len(HIGH_SIGNAL_SECTIONS) - failed}/{len(HIGH_SIGNAL_SECTIONS)} succeeded")
         return 0 if failed == 0 else 1
@@ -299,7 +300,7 @@ def main() -> int:
     if args.batch_library:
         failed = 0
         for section in HIGH_SIGNAL_LIBRARY_SECTIONS:
-            if extract_section(section, LIBRARY_OUTPUT_FILE, args.dry_run) != 0:
+            if extract_section(section, LIBRARY_OUTPUT_FILE, args.dry_run, args.timeout) != 0:
                 failed += 1
         print(f"\nDone. {len(HIGH_SIGNAL_LIBRARY_SECTIONS) - failed}/{len(HIGH_SIGNAL_LIBRARY_SECTIONS)} succeeded")
         return 0 if failed == 0 else 1

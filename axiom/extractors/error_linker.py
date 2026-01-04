@@ -9,8 +9,13 @@
 from axiom.models import Axiom, AxiomCollection, ErrorCode, ViolationRef
 
 
-class AxiomLinker:
-    """Link axioms to their corresponding error codes."""
+class ErrorCodeLinker:
+    """Link axioms to their corresponding error codes.
+
+    This linker matches axioms to error codes based on:
+    1. Error rules from K files (same module, related predicates)
+    2. Pattern matching on shared terms (fallback)
+    """
 
     def __init__(self) -> None:
         """Initialize the linker."""
