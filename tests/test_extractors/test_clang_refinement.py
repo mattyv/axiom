@@ -1,7 +1,6 @@
 """Tests for RAG-based refinement in extract_clang.py script."""
 
-import pytest
-from unittest.mock import Mock, patch, MagicMock
+from unittest.mock import Mock, patch
 
 from axiom.models import Axiom, AxiomType, SourceLocation
 

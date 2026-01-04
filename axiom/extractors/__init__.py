@@ -5,9 +5,12 @@
 
 """Extractors for parsing K semantics and error codes."""
 
+from . import enricher
 from .c_signatures import CSignatureExtractor, SignatureInfo
+from .clang_loader import load_from_json, load_from_string, parse_json
 from .content_generator import ContentGenerator
 from .error_codes import ErrorCodesParser
+from .error_linker import ErrorCodeLinker
 from .k_dependencies import (
     KDependencyExtractor,
     build_function_index,
@@ -21,12 +24,6 @@ from .k_pairings import (
     extract_pairings_from_rules,
 )
 from .k_semantics import KSemanticsExtractor, ParsedRule
-from .error_linker import ErrorCodeLinker
-from .clang_loader import load_from_json, load_from_string, parse_json
-from . import enricher
-
-# Backwards compatibility alias (deprecated)
-AxiomLinker = ErrorCodeLinker
 from .prompts import (
     EXTRACTION_PROMPT,
     HIGH_SIGNAL_LIBRARY_SECTIONS,
@@ -35,6 +32,9 @@ from .prompts import (
     generate_dedup_prompt,
     generate_extraction_prompt,
 )
+
+# Backwards compatibility alias (deprecated)
+AxiomLinker = ErrorCodeLinker
 
 __all__ = [
     "AxiomLinker",  # Deprecated alias

@@ -204,8 +204,6 @@ class TestEnableIfPatterns:
         """
         axioms = extract_axioms(code)
 
-        # Should extract function with some constraint info
-        square_axioms = [a for a in axioms if a.function and "square" in a.function]
         # The function should be extracted (even if constraint isn't explicit axiom)
         assert len(axioms) >= 0  # At minimum, no crash
 

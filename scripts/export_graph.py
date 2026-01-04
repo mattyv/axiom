@@ -7,11 +7,8 @@
 """Export the axiom graph to an interactive HTML file using WebGL (sigma.js)."""
 
 import argparse
-import html
 import json
 import math
-from collections import defaultdict
-from datetime import datetime, UTC
 from pathlib import Path
 
 from neo4j import GraphDatabase
@@ -105,25 +102,25 @@ def compute_layout(axioms: list, edges: list) -> dict:
     import networkx as nx
 
     print("  Building networkx graph...")
-    G = nx.DiGraph()
+    graph = nx.DiGraph()
 
     # Add nodes with layer attribute
     for ax in axioms:
-        G.add_node(ax["id"], layer=ax.get("layer", "unknown"))
+        graph.add_node(ax["id"], layer=ax.get("layer", "unknown"))
 
     # Add edges
     for from_id, to_id in edges:
-        if G.has_node(from_id) and G.has_node(to_id):
-            G.add_edge(from_id, to_id)
+        if graph.has_node(from_id) and graph.has_node(to_id):
+            graph.add_edge(from_id, to_id)
 
-    print(f"  Graph has {G.number_of_nodes()} nodes, {G.number_of_edges()} edges")
+    print(f"  Graph has {graph.number_of_nodes()} nodes, {graph.number_of_edges()} edges")
     print("  Computing spring layout (this may take a moment)...")
 
     # Use spring layout (Fruchterman-Reingold)
     # k controls optimal distance between nodes, iterations controls quality
     pos = nx.spring_layout(
-        G,
-        k=2.0 / math.sqrt(G.number_of_nodes()),  # Optimal distance
+        graph,
+        k=2.0 / math.sqrt(graph.number_of_nodes()),  # Optimal distance
         iterations=50,  # Balance speed vs quality
         seed=42,  # Reproducible
         scale=1000,  # Scale up for better spread
@@ -132,7 +129,7 @@ def compute_layout(axioms: list, edges: list) -> dict:
     print("  Layout complete.")
 
     # Calculate degree for sizing
-    degree = dict(G.degree())
+    degree = dict(graph.degree())
 
     positions = {}
     for node_id, (x, y) in pos.items():

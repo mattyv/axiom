@@ -98,9 +98,7 @@ class TestAssertExtraction:
         """
         axioms = extract_axioms(code)
 
-        # Should have bounds-related axiom
-        bounds = [a for a in axioms if "bound" in a.content.lower() or "index" in a.content.lower()]
-        # If not from assert, should at least have array access precondition
+        # Should have array access precondition
         array_axioms = [a for a in axioms if a.axiom_type == AxiomType.PRECONDITION]
         assert len(array_axioms) > 0, "Expected at least one precondition"
 
@@ -115,8 +113,6 @@ class TestAssertExtraction:
         """
         axioms = extract_axioms(code)
 
-        # Look for any axiom mentioning the assertion or x > 0
-        relevant = [a for a in axioms if "x" in a.content.lower() or "positive" in a.content.lower()]
         # Note: This may not be implemented yet - test documents expected behavior
         assert len(axioms) >= 0  # Placeholder until implemented
 
@@ -150,12 +146,8 @@ class TestEarlyReturnPatterns:
             return *ptr;
         }
         """
-        axioms = extract_axioms(code)
-
+        extract_axioms(code)
         # The pointer dereference should be detected as guarded
-        # So we either get a guarded precondition or no unguarded precondition
-        ptr_axioms = [a for a in axioms if "ptr" in a.content.lower()]
-        # Either guarded (no precondition) or precondition with guard
         # This test documents expected behavior - may not be implemented
 
     def test_if_invalid_return_error(self):
@@ -166,7 +158,7 @@ class TestEarlyReturnPatterns:
             return data * 2;
         }
         """
-        axioms = extract_axioms(code)
+        extract_axioms(code)
         # This pattern may or may not generate axioms depending on implementation
 
 
@@ -183,7 +175,7 @@ class TestRAIIPatterns:
             x++;
         }
         """
-        axioms = extract_axioms(code)
+        extract_axioms(code)
         # RAII detection may or may not be implemented
         # Test documents expected behavior
 

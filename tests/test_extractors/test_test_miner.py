@@ -166,7 +166,6 @@ class TestCatch2Mining:
         axioms = extract_test_axioms(code, "catch2")
 
         # Should have either CONSTRAINT or evidence that function is noexcept
-        relevant = [a for a in axioms if "nothrow" in a.content.lower() or "noexcept" in a.content.lower()]
         assert len(axioms) > 0, "Expected axiom from REQUIRE_NOTHROW"
 
     def test_section_provides_context(self):
@@ -568,7 +567,6 @@ class TestTestMiningHeuristics:
         """
         axioms = extract_test_axioms(code, "catch2")
 
-        postconds = [a for a in axioms if a.axiom_type == AxiomType.POSTCONDITION]
         # Should recognize this as a postcondition about compute()
         assert len(axioms) >= 0  # At minimum should not crash
 

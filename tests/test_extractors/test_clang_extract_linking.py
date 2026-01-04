@@ -1,8 +1,6 @@
 """Tests for semantic linking in extract_clang.py script."""
 
-import pytest
-from pathlib import Path
-from unittest.mock import Mock, patch, MagicMock
+from unittest.mock import Mock, patch
 
 from axiom.models import Axiom, AxiomType, SourceLocation
 

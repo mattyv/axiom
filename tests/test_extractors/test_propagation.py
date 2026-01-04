@@ -5,7 +5,6 @@
 
 """Tests for precondition propagation."""
 
-import pytest
 
 from axiom.extractors.propagation import propagate_preconditions
 from axiom.models import Axiom, AxiomType, SourceLocation

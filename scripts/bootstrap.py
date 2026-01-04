@@ -14,8 +14,8 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from axiom.extractors import (
-    ErrorCodeLinker,
     CSignatureExtractor,
+    ErrorCodeLinker,
     ErrorCodesParser,
     KDependencyExtractor,
     KSemanticsExtractor,

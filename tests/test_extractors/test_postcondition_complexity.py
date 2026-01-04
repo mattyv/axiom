@@ -100,7 +100,7 @@ class TestPostconditionFromReturnType:
         # Should have postcondition about boolean return
         postcond = [a for a in axioms if a.axiom_type == AxiomType.POSTCONDITION
                    and a.function and "is_valid" in a.function]
-        assert len(postcond) > 0, f"Expected POSTCONDITION for bool return"
+        assert len(postcond) > 0, "Expected POSTCONDITION for bool return"
 
     def test_constexpr_bool_return_generates_postcondition(self):
         """constexpr bool return should also generate POSTCONDITION."""
@@ -202,10 +202,10 @@ class TestComplexityFromTemplates:
 
         # Should have complexity axiom about recursive template
         complexity = [a for a in axioms if a.axiom_type == AxiomType.COMPLEXITY]
-        assert len(complexity) > 0, f"Expected COMPLEXITY axiom for recursive template"
+        assert len(complexity) > 0, "Expected COMPLEXITY axiom for recursive template"
         # Should have constexpr constraint too
         constexpr_axioms = [a for a in axioms if a.formal_spec == "constexpr == true"]
-        assert len(constexpr_axioms) > 0, f"Expected constexpr constraint for constexpr template"
+        assert len(constexpr_axioms) > 0, "Expected constexpr constraint for constexpr template"
 
     def test_variadic_template_generates_complexity(self):
         """Variadic template should note parameter pack expansion."""
@@ -220,7 +220,7 @@ class TestComplexityFromTemplates:
         # Should have complexity axiom about variadic template
         complexity = [a for a in axioms if a.axiom_type == AxiomType.COMPLEXITY]
         # Variadic templates have complexity due to pack expansion
-        assert len(complexity) > 0, f"Expected COMPLEXITY axiom for variadic template"
+        assert len(complexity) > 0, "Expected COMPLEXITY axiom for variadic template"
 
 
 class TestNodeiscardPostcondition:
@@ -238,7 +238,7 @@ class TestNodeiscardPostcondition:
         # Should have postcondition from nodiscard
         postcond = [a for a in axioms if a.axiom_type == AxiomType.POSTCONDITION]
         nodiscard = [a for a in postcond if "discard" in a.content.lower()]
-        assert len(nodiscard) > 0, f"Expected POSTCONDITION for [[nodiscard]]"
+        assert len(nodiscard) > 0, "Expected POSTCONDITION for [[nodiscard]]"
 
     def test_nodiscard_with_message(self):
         """[[nodiscard("reason")]] should include the reason."""

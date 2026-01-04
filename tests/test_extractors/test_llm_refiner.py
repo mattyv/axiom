@@ -13,7 +13,6 @@ import pytest
 
 from axiom.models import Axiom, AxiomType, SourceLocation
 
-
 # We'll test the functions once they're added to extract_clang
 # For now, define the functions inline for TDD
 
