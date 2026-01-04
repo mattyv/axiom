@@ -49,6 +49,8 @@ dependencies = [
 full = [
     # Graph database
     "neo4j>=5.15.0",
+    # Graph algorithms (for layout computation)
+    "networkx>=3.0",
     # Vector database
     "lancedb>=0.4.0",
     # Embeddings

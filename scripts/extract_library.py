@@ -4,9 +4,9 @@
 # https://github.com/mattyv/axiom
 # SPDX-License-Identifier: BSL-1.0
 
-"""Ingest axioms from a C/C++ library using Claude CLI.
+"""Extract axioms from a C/C++ library using Claude CLI.
 
-This script provides end-to-end ingestion of library axioms:
+This script provides end-to-end extraction of library axioms:
 1. Parse source files and build function/macro subgraphs
 2. Extract axioms using Claude CLI + RAG
 3. Create review session for human approval
@@ -15,35 +15,35 @@ This script provides end-to-end ingestion of library axioms:
 By default, axioms are extracted from BOTH functions AND macros.
 
 Usage:
-    # Ingest a single file (functions + macros)
-    python scripts/ingest_library.py path/to/source.cpp
+    # Extract from a single file (functions + macros)
+    python scripts/extract_library.py path/to/source.cpp
 
-    # Ingest a directory recursively (functions + macros)
-    python scripts/ingest_library.py path/to/library/ --recursive
+    # Extract from a directory recursively (functions + macros)
+    python scripts/extract_library.py path/to/library/ --recursive
 
     # Only extract from functions (skip macros)
-    python scripts/ingest_library.py path/to/source.cpp --functions-only
+    python scripts/extract_library.py path/to/source.cpp --functions-only
 
     # Only extract from macros (skip functions)
-    python scripts/ingest_library.py path/to/source.cpp --macros-only
+    python scripts/extract_library.py path/to/source.cpp --macros-only
 
     # Only extract from hazardous macros (with division, pointers, casts, calls)
-    python scripts/ingest_library.py path/to/source.cpp --hazardous-only
+    python scripts/extract_library.py path/to/source.cpp --hazardous-only
 
-    # Ingest specific functions
-    python scripts/ingest_library.py path/to/source.cpp -f malloc -f free
+    # Extract specific functions
+    python scripts/extract_library.py path/to/source.cpp -f malloc -f free
 
     # Use existing RAG database
-    python scripts/ingest_library.py path/to/source.cpp --rag-db ./data/lancedb
+    python scripts/extract_library.py path/to/source.cpp --rag-db ./data/lancedb
 
     # Skip extraction, just parse and show subgraphs
-    python scripts/ingest_library.py path/to/source.cpp --parse-only
+    python scripts/extract_library.py path/to/source.cpp --parse-only
 
     # Resume a review session
-    python scripts/ingest_library.py --review <session_id>
+    python scripts/extract_library.py --review <session_id>
 
     # Ignore additional patterns
-    python scripts/ingest_library.py path/to/lib/ -r --ignore "test*" --ignore "bench/"
+    python scripts/extract_library.py path/to/lib/ -r --ignore "test*" --ignore "bench/"
 
 Ignore Patterns (.axignore):
     The script automatically loads a .axignore file from the source directory.

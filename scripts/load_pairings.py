@@ -37,6 +37,21 @@ def load_pairings_from_toml(toml_path: Path) -> tuple[list[Pairing], list[Idiom]
     Returns:
         Tuple of (pairings, idioms) loaded from the file.
     """
+    pairings, idioms, _ = load_axiom_toml(toml_path)
+    return pairings, idioms
+
+
+def load_axiom_toml(toml_path: Path) -> tuple[list[Pairing], list[Idiom], list]:
+    """Load pairings, idioms, and axioms from a .axiom.toml file.
+
+    Args:
+        toml_path: Path to the TOML file.
+
+    Returns:
+        Tuple of (pairings, idioms, axioms) loaded from the file.
+    """
+    from axiom.models import Axiom, AxiomType, SourceLocation
+
     with open(toml_path, "rb") as f:
         data = tomllib.load(f)
 
@@ -65,7 +80,39 @@ def load_pairings_from_toml(toml_path: Path) -> tuple[list[Pairing], list[Idiom]
             )
         )
 
-    return pairings, idioms
+    # Load axioms (domain knowledge)
+    axioms = []
+    metadata = data.get("metadata", {})
+    layer = metadata.get("layer", "library")
+
+    for a in data.get("axioms", []):
+        axiom_type = None
+        if a.get("axiom_type"):
+            try:
+                axiom_type = AxiomType(a["axiom_type"])
+            except ValueError:
+                pass
+
+        axioms.append(
+            Axiom(
+                id=a["id"],
+                content=a["content"],
+                formal_spec=a.get("formal_spec", ""),
+                source=SourceLocation(
+                    file=a.get("header", ""),
+                    module=layer,
+                ),
+                layer=layer,
+                confidence=a.get("confidence", 1.0),
+                function=a.get("function"),
+                header=a.get("header"),
+                signature=a.get("signature"),
+                axiom_type=axiom_type,
+                on_violation=a.get("on_violation"),
+            )
+        )
+
+    return pairings, idioms, axioms
 
 
 def main() -> None:

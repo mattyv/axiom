@@ -14,7 +14,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from axiom.extractors import (
-    AxiomLinker,
+    ErrorCodeLinker,
     CSignatureExtractor,
     ErrorCodesParser,
     KDependencyExtractor,
@@ -233,7 +233,7 @@ def main() -> int:
 
     # Step 3: Link axioms to error codes
     print("\nStep 3: Linking axioms to error codes...")
-    linker = AxiomLinker()
+    linker = ErrorCodeLinker()
     collection = linker.link(axioms, error_codes)
     collection.source = f"kframework/c-semantics/{args.layer}"
 

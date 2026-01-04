@@ -2,6 +2,45 @@
 
 A comprehensive design for extracting axioms from any C++20 codebase with high quality and minimal LLM usage.
 
+## Implementation Status
+
+| Component | Status | Notes |
+|-----------|--------|-------|
+| **Phase 1: Clang Analysis** | ✅ Complete | Native C++ tool using LibTooling |
+| **Phase 2: Explicit Constraints** | ✅ Complete | noexcept, nodiscard, const, constexpr, delete, requires, static_assert, concepts, enums, type aliases |
+| **Phase 3: Hazard Detection** | ✅ Complete | Division, pointer deref, array access with guard analysis |
+| **Phase 4: Call Graph** | ✅ Complete | CallGraphExtractor + precondition propagation |
+| **Phase 5: Foundation Linking** | ✅ Complete | LanceDB semantic search integration |
+| **Phase 6: LLM Assist** | ✅ Complete | Claude CLI integration with batched refinement |
+
+### Quick Start
+
+```bash
+# Build the C++ tool
+cd tools/axiom-extract && mkdir build && cd build
+cmake .. && make
+
+# Extract from a library (recursive)
+python scripts/extract_clang.py \
+    -r --file /path/to/library \
+    --output axioms.toml
+
+# With compile_commands.json
+python scripts/extract_clang.py \
+    --compile-commands /path/to/build/compile_commands.json \
+    --output axioms.toml
+```
+
+### Key Files
+
+| File | Purpose |
+|------|---------|
+| `tools/axiom-extract/` | Native C++ extraction tool |
+| `scripts/extract_clang.py` | Python wrapper with LanceDB linking |
+| `axiom/extractors/clang_loader.py` | JSON → AxiomCollection conversion |
+
+---
+
 ## Design Philosophy
 
 1. **Exploit what C++20 gives us** - Modern C++ is increasingly explicit about constraints
@@ -9,6 +48,87 @@ A comprehensive design for extracting axioms from any C++20 codebase with high q
 3. **Rules for patterns** - Hazard detection is pattern matching, not understanding
 4. **Propagation for completeness** - Call graph analysis propagates preconditions
 5. **LLM only for gaps** - ~5% of cases, batched and targeted
+
+## Two Complementary Axiom Sources
+
+This engine extracts axioms from **code** (what the implementation does). It complements the existing spec-based extraction (what the standard says):
+
+```
+┌─────────────────────────────────────┐
+│   C++ Standard Spec (eel.is)        │  ← Existing approach (LLM extraction)
+│   "What the standard guarantees"    │
+│   - Formal semantics                │
+│   - UB definitions                  │
+│   - Algorithm complexity            │
+│   - Confidence: 0.85                │
+└─────────────────────────────────────┘
+                    +
+┌─────────────────────────────────────┐
+│   Actual C++ Code (Clang analysis)  │  ← This engine
+│   "What the code actually does"     │
+│   - Compiler-enforced constraints   │
+│   - Hazardous operations            │
+│   - Call graph preconditions        │
+│   - Confidence: 0.95-1.0            │
+└─────────────────────────────────────┘
+                    =
+┌─────────────────────────────────────┐
+│   Combined Knowledge Base           │
+│   - Spec axioms validate code       │
+│   - Code axioms ground spec claims  │
+│   - Cross-validation possible       │
+└─────────────────────────────────────┘
+```
+
+## Confidence-Based Extraction Hierarchy
+
+Extraction sources are tried in order of confidence, falling back to LLM only when needed:
+
+```
+┌────────┬──────────────────────────────────────────────────────────┐
+│  1.0   │ Clang: Compiler-enforced (noexcept, [[nodiscard]], etc) │
+├────────┼──────────────────────────────────────────────────────────┤
+│  0.95  │ Clang: Pattern + CFG (hazard with guard analysis)       │
+├────────┼──────────────────────────────────────────────────────────┤
+│  0.90  │ Clang: Propagated (inherited from callee preconditions) │
+├────────┼──────────────────────────────────────────────────────────┤
+│  0.85  │ Spec KB: Matched to foundation axiom (eel.is extract)   │
+├────────┼──────────────────────────────────────────────────────────┤
+│  0.70  │ LLM Fallback: Batched, targeted questions (~5% of code) │
+└────────┴──────────────────────────────────────────────────────────┘
+```
+
+**The flow:**
+
+```
+Source code
+    │
+    ▼
+┌─────────────────────────────┐
+│  Clang extraction           │  ← Try first (fast, accurate)
+│  - Explicit constraints     │
+│  - Hazard detection + CFG   │
+└─────────────────────────────┘
+    │
+    │ confidence >= 0.95? ──────────────────► Done ✓
+    │
+    ▼
+┌─────────────────────────────┐
+│  Match to spec axioms       │  ← Link to foundation KB
+│  (existing extracted KB)    │
+└─────────────────────────────┘
+    │
+    │ confidence >= 0.85? ──────────────────► Done ✓
+    │
+    ▼
+┌─────────────────────────────┐
+│  LLM assist (batched)       │  ← Last resort
+│  "Given this pattern,       │
+│   what's the precondition?" │
+└─────────────────────────────┘
+    │
+    ▼
+   Done (confidence 0.70)
 
 ## Architecture Overview
 
@@ -91,9 +211,100 @@ A comprehensive design for extracting axioms from any C++20 codebase with high q
 | Cross-file analysis | Limited | Full |
 | Overload resolution | No | Yes |
 
-### Implementation
+### Implementation: Native C++ Tool (Recommended)
 
-Use `libclang` Python bindings or Clang's JSON compilation database:
+**Why C++ instead of Python libclang:**
+- libclang Python bindings are incomplete (many AST nodes not exposed)
+- C++20 features (concepts, requires) have limited Python support
+- CFG/dataflow analysis requires direct Clang C++ API access
+- Better performance for large codebases
+
+**Architecture:**
+
+```
+┌─────────────────────────────────────────┐
+│         axiom-extract (C++)             │
+│  - Uses Clang's LibTooling              │
+│  - Full AST/CFG/dataflow access         │
+│  - Outputs JSON                         │
+├─────────────────────────────────────────┤
+│  Input: compile_commands.json           │
+│         or directory with -r flag       │
+│  Output: extracted_axioms.json          │
+└─────────────────────────────────────────┘
+                    │
+                    ▼
+┌─────────────────────────────────────────┐
+│         Python (existing axiom/)        │
+│  - Loads JSON output                    │
+│  - Foundation linking (embeddings)      │
+│  - LLM assist (batched)                 │
+│  - TOML export                          │
+└─────────────────────────────────────────┘
+```
+
+**Implemented Tool Structure:**
+
+```
+tools/axiom-extract/
+├── CMakeLists.txt           # Build configuration
+├── include/
+│   ├── Axiom.h              # Axiom data structures
+│   ├── Extractors.h         # Extractor interfaces
+│   └── IgnoreFilter.h       # .axignore pattern matching
+└── src/
+    ├── main.cpp             # Entry point, AST matchers, JSON output
+    ├── ConstraintExtractor.cpp  # noexcept, nodiscard, const, etc.
+    ├── HazardDetector.cpp   # CFG-based hazard detection
+    ├── GuardAnalyzer.cpp    # Dominator-based guard detection
+    └── MacroExtractor.cpp   # Preprocessor macro extraction
+```
+
+**Command Line Options:**
+
+```bash
+axiom-extract [options] <source files or directories>
+
+Options:
+  -r, --recursive      Recursively scan directories for C++ files
+  -o, --output FILE    Write JSON to file instead of stdout
+  -v, --verbose        Enable verbose output
+  --hazards           Enable hazard detection (division, deref, array)
+  --ignore FILE       Path to .axignore file
+  --no-ignore         Disable .axignore filtering
+  -p PATH             Path to compile_commands.json directory
+  -- <clang args>     Extra arguments passed to Clang
+```
+
+**Build with CMake:**
+
+```bash
+cd tools/axiom-extract
+mkdir build && cd build
+cmake .. -DCMAKE_BUILD_TYPE=Release
+make -j$(nproc)
+```
+
+**Essential: compile_commands.json**
+
+Real C++ projects require a compilation database:
+
+```bash
+# CMake projects
+cmake -DCMAKE_EXPORT_COMPILE_COMMANDS=ON ..
+
+# Meson projects
+meson setup build
+
+# Any build system (via Bear)
+bear -- make
+```
+
+Without this, Clang can't resolve includes, macros, or flags.
+
+### Alternative: Python libclang (Limited)
+
+For simple extraction (explicit constraints only), Python bindings work:
 
 ```python
 import clang.cindex
@@ -125,6 +336,8 @@ def extract_function_info(cursor) -> dict:
         'body': extract_body(cursor),
     }
 ```
+
+**Limitation:** CFG/dataflow analysis not available in Python bindings.
 
 ### AST Database Schema
 
@@ -716,46 +929,54 @@ CONFIDENCE_THRESHOLDS = {
 
 ## Implementation Roadmap
 
-### Phase 1: Clang Integration (3-5 days)
+### Phase 1: Clang Integration ✅ COMPLETE
 
-1. Set up libclang Python bindings
-2. Parse C++ files into AST database
-3. Extract function metadata (noexcept, nodiscard, const, etc.)
-4. Extract template constraints and requires clauses
+- [x] Native C++ tool using LibTooling (not Python bindings)
+- [x] Parse C++ files with full AST access
+- [x] Extract function metadata (noexcept, nodiscard, const, etc.)
+- [x] Extract template constraints and requires clauses
+- [x] Recursive directory scanning with .axignore support
 
-### Phase 2: Hazard Detection (2-3 days)
+### Phase 2: Hazard Detection ✅ COMPLETE
 
-1. Implement hazard detection (division, deref, array access)
-2. Build control flow graphs
-3. Implement guard detection algorithm
-4. Link hazards to guards
+- [x] Implement hazard detection (division, deref, array access)
+- [x] Build control flow graphs via Clang CFG
+- [x] Implement guard detection algorithm (dominator analysis)
+- [x] Link hazards to guards
+- [x] Macro hazard detection
 
-### Phase 3: Rule Engine (2-3 days)
+### Phase 3: Explicit Constraint Extraction ✅ COMPLETE
 
-1. Implement explicit constraint rules
-2. Implement hazard pattern rules
-3. Generate candidate axioms
-4. Confidence scoring
+- [x] noexcept specifications
+- [x] [[nodiscard]], [[deprecated]] attributes
+- [x] const/constexpr/consteval methods
+- [x] = delete specifications
+- [x] static_assert declarations
+- [x] C++20 concepts and requires clauses
+- [x] Scoped enums (enum class)
+- [x] Trivially copyable structs/classes
+- [x] Type aliases
 
-### Phase 4: Call Graph & Propagation (2-3 days)
+### Phase 4: Call Graph & Propagation ❌ NOT STARTED
 
-1. Build call graph from AST database
-2. Implement precondition propagation
-3. Detect satisfied preconditions at call sites
-4. Handle virtual dispatch
+- [ ] Build call graph from AST database
+- [ ] Implement precondition propagation
+- [ ] Detect satisfied preconditions at call sites
+- [ ] Handle virtual dispatch
 
-### Phase 5: Foundation Linking (1-2 days)
+### Phase 5: Foundation Linking ✅ COMPLETE
 
-1. Keyword-based linking
-2. Embedding similarity (optional)
-3. Populate depends_on fields
+- [x] LanceDB semantic search integration
+- [x] Embedding similarity matching
+- [x] Populate depends_on fields via extract_clang.py --link
 
-### Phase 6: LLM Integration (1-2 days)
+### Phase 6: LLM Integration ⚠️ PLACEHOLDER
 
-1. Identify functions needing LLM assist
-2. Implement batched queries
-3. Validate LLM output
-4. Merge with rule-generated axioms
+- [x] Placeholder in extract_clang.py (--llm-fallback flag)
+- [ ] Identify functions needing LLM assist
+- [ ] Implement batched queries
+- [ ] Validate LLM output
+- [ ] Merge with rule-generated axioms
 
 ---
 
