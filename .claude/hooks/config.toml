@@ -1,0 +1,13 @@
+# Axiom hook configuration
+
+[axiom_injection]
+# Mode for axiom injection:
+#   "selection" - Only inject axioms for IDE-selected code (default)
+#   "comprehensive" - Inject axioms for entire files mentioned
+mode = "comprehensive"
+
+# Maximum number of axioms to inject per file (in comprehensive mode)
+max_axioms = 30
+
+# Whether to include formal specifications in output
+show_formal = false
