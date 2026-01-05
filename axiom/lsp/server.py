@@ -408,11 +408,12 @@ class AxiomLanguageServer(LanguageServer):
         Returns:
             List of matching axioms (deduplicated).
         """
-        # 1. Check function name directly (fast path for std library)
-        if callee in self._axioms_by_function:
+        # 1. Check function name directly (fast path for std library functions)
+        # Skip this for operators - they need semantic search for type context
+        if callee in self._axioms_by_function and not callee.startswith("operator"):
             return self._axioms_by_function[callee]
 
-        # 2. Try semantic search if LanceDB is available
+        # 2. Try semantic search if LanceDB is available (preferred for operators)
         if self._lance is not None:
             query = build_axiom_query(callee, signature)
             results = self._lance.search(query, limit=10)

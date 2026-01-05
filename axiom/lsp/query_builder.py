@@ -182,9 +182,10 @@ def build_axiom_query(callee: str, signature: str | None) -> str:
         parts.append("divisor")
         parts.append("zero")
 
-    # For subscript, add "bounds" hint
+    # For subscript, add "array" and "index" hints
     if operator == "operator[]":
-        parts.append("bounds")
+        parts.append("array")
+        parts.append("index")
 
     # For dereference, add "null" hint
     if operator == "operator*" and right_type == "pointer":
