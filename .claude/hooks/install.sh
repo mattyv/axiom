@@ -64,11 +64,31 @@ echo ""
 echo "Hook installation complete!"
 echo ""
 echo "To enable hooks, add this to .claude/settings.local.json:"
-echo '  "hooks": {'
-echo '    "UserPromptSubmit": [{'
-echo '      "hooks": [{'
-echo '        "type": "command",'
-echo '        "command": "python3 \"$PROJECT_DIR/.claude/hooks/inject_axioms.py\""'
-echo '      }]'
-echo '    }]'
-echo '  }'
+cat << 'EXAMPLE'
+{
+  "hooks": {
+    "UserPromptSubmit": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 .claude/hooks/inject_axioms.py"
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 .claude/hooks/inject_axioms.py"
+          }
+        ]
+      }
+    ]
+  }
+}
+EXAMPLE
