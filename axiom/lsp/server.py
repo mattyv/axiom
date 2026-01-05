@@ -298,7 +298,9 @@ class AxiomLanguageServer(LanguageServer):
         # Initialize LanceDB for semantic search (optional, used when available)
         self._lance: LanceDBLoader | None = None
         try:
-            self._lance = LanceDBLoader()
+            # Resolve lancedb_path relative to config root
+            lancedb_path = self._config.resolve_path(self._config.static.lancedb_path)
+            self._lance = LanceDBLoader(db_path=str(lancedb_path))
             if self._lance.count() > 0:
                 logger.info("LanceDB loaded with %d axioms for semantic search", self._lance.count())
             else:

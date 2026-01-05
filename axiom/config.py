@@ -10,6 +10,7 @@ Reads .axiom/config.toml from workspace root.
 
 from __future__ import annotations
 
+import os
 import tomllib
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -84,13 +85,20 @@ class AxiomConfig:
         """Load configuration from .axiom/config.toml.
 
         Args:
-            workspace_root: Workspace root directory. Defaults to cwd.
+            workspace_root: Workspace root directory. If not specified,
+                checks AXIOM_PROJECT_DIR or CLAUDE_PROJECT_DIR env vars,
+                then falls back to cwd.
 
         Returns:
             AxiomConfig with loaded or default values.
         """
         if workspace_root is None:
-            workspace_root = Path.cwd()
+            # Check environment variables first
+            env_root = os.environ.get("AXIOM_PROJECT_DIR") or os.environ.get("CLAUDE_PROJECT_DIR")
+            if env_root:
+                workspace_root = Path(env_root)
+            else:
+                workspace_root = Path.cwd()
 
         config_path = workspace_root / ".axiom" / "config.toml"
 
