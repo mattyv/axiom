@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
 """Claude Code hook to inject axiom context for C++ files.
 
-This hook runs on UserPromptSubmit and injects relevant axioms
-into Claude's context based on C++ files being discussed.
+This hook runs on:
+- UserPromptSubmit: injects axioms for C++ files mentioned in user prompts
+- PostToolUse (Write/Edit): injects axioms for C++ files Claude just wrote/edited
 """
 
 import json
@@ -47,6 +48,14 @@ def find_cpp_files_in_context(context: dict) -> list[tuple[str, int | None, int 
     start_line/end_line are None if no specific selection.
     """
     files = []
+
+    # Check for PostToolUse context (Write/Edit tool)
+    tool_input = context.get("tool_input", {})
+    if tool_input:
+        file_path = tool_input.get("file_path", "")
+        if file_path and any(file_path.endswith(ext) for ext in CPP_EXTENSIONS):
+            if os.path.exists(file_path):
+                files.append((file_path, None, None))
 
     # Get the user's prompt
     prompt = context.get("prompt", "")
