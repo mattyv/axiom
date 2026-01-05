@@ -1,22 +1,42 @@
 #!/bin/bash
-# Start Axiom LSP services
-# Run this before opening VS Code
+# Start Axiom LSP server
+# Copyright (c) 2026 Matt Varendorff
+# SPDX-License-Identifier: BSL-1.0
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(dirname "$SCRIPT_DIR")"
 
 cd "$PROJECT_ROOT"
-source .venv/bin/activate
 
-echo "Starting Axiom Query Server..."
-axiom-query-server &
-QUERY_PID=$!
+# Activate virtual environment
+if [ -f ".venv/bin/activate" ]; then
+    source .venv/bin/activate
+else
+    echo "Error: Virtual environment not found. Run scripts/install-lsp.sh first."
+    exit 1
+fi
 
-echo "Query server started (PID: $QUERY_PID)"
-echo ""
-echo "Press Ctrl+C to stop all services"
+# Parse arguments
+MODE="llm"
+VERBOSE=""
 
-# Wait for interrupt
-trap "kill $QUERY_PID 2>/dev/null; exit 0" INT TERM
+while [[ $# -gt 0 ]]; do
+    case $1 in
+        --mode)
+            MODE="$2"
+            shift 2
+            ;;
+        -v|--verbose)
+            VERBOSE="-v"
+            shift
+            ;;
+        *)
+            echo "Unknown option: $1"
+            echo "Usage: $0 [--mode default|llm|human] [-v|--verbose]"
+            exit 1
+            ;;
+    esac
+done
 
-wait $QUERY_PID
+echo "Starting Axiom LSP server (mode: $MODE)..."
+exec axiom-lsp --mode "$MODE" $VERBOSE

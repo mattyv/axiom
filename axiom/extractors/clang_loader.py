@@ -99,17 +99,28 @@ def parse_json_with_call_graph(
         # Flat format
         for axiom_data in data.get("axioms", []):
             axiom = _parse_axiom(axiom_data)
-            if axiom.id not in seen_ids:
-                axioms.append(axiom)
+            # Skip axioms with empty content
+            if not axiom.content:
+                continue
+            # Deduplicate by ID (only if ID is non-empty)
+            if axiom.id and axiom.id in seen_ids:
+                continue
+            axioms.append(axiom)
+            if axiom.id:
                 seen_ids.add(axiom.id)
     elif "files" in data:
         # Nested format from axiom-extract recursive mode
         for file_data in data.get("files", []):
             for axiom_data in file_data.get("axioms", []):
                 axiom = _parse_axiom(axiom_data)
-                # Deduplicate: same header may be processed from multiple TUs
-                if axiom.id not in seen_ids:
-                    axioms.append(axiom)
+                # Skip axioms with empty content
+                if not axiom.content:
+                    continue
+                # Deduplicate by ID (only if ID is non-empty)
+                if axiom.id and axiom.id in seen_ids:
+                    continue
+                axioms.append(axiom)
+                if axiom.id:
                     seen_ids.add(axiom.id)
 
     # Extract call graph

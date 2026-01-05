@@ -3,10 +3,10 @@
 # Copyright (c) 2026 Matt Varendorff
 # SPDX-License-Identifier: BSL-1.0
 #
-# This script sets up the Axiom LSP for VS Code:
-# 1. Builds the clangd plugin
+# This script sets up the Axiom LSP:
+# 1. Builds the axiom-extract C++ tool
 # 2. Installs Python dependencies
-# 3. Configures VS Code settings
+# 3. Verifies the installation
 
 set -e
 
@@ -16,23 +16,79 @@ PROJECT_ROOT="$(dirname "$SCRIPT_DIR")"
 echo "=== Axiom LSP Installation ==="
 echo ""
 
+# Detect OS and set platform-specific variables
+detect_platform() {
+    case "$(uname -s)" in
+        Darwin*)
+            PLATFORM="macos"
+            if [ -d "/opt/homebrew/opt/llvm" ]; then
+                LLVM_PATH="/opt/homebrew/opt/llvm"
+            elif [ -d "/usr/local/opt/llvm" ]; then
+                LLVM_PATH="/usr/local/opt/llvm"
+            else
+                LLVM_PATH=""
+            fi
+            ;;
+        Linux*)
+            PLATFORM="linux"
+            # Check common LLVM locations on Linux
+            if [ -d "/usr/lib/llvm-18" ]; then
+                LLVM_PATH="/usr/lib/llvm-18"
+            elif [ -d "/usr/lib/llvm-17" ]; then
+                LLVM_PATH="/usr/lib/llvm-17"
+            elif [ -d "/usr/lib/llvm-16" ]; then
+                LLVM_PATH="/usr/lib/llvm-16"
+            elif [ -d "/usr/lib/llvm-15" ]; then
+                LLVM_PATH="/usr/lib/llvm-15"
+            elif command -v llvm-config &> /dev/null; then
+                LLVM_PATH="$(llvm-config --prefix)"
+            else
+                LLVM_PATH=""
+            fi
+            ;;
+        *)
+            echo "Error: Unsupported platform: $(uname -s)"
+            exit 1
+            ;;
+    esac
+
+    echo "Detected platform: $PLATFORM"
+    if [ -n "$LLVM_PATH" ]; then
+        echo "LLVM path: $LLVM_PATH"
+    fi
+}
+
 # Check prerequisites
 check_prereqs() {
     echo "Checking prerequisites..."
 
     if ! command -v cmake &> /dev/null; then
         echo "Error: cmake is required but not installed."
-        echo "Install with: brew install cmake"
+        if [ "$PLATFORM" = "macos" ]; then
+            echo "Install with: brew install cmake"
+        else
+            echo "Install with: sudo apt install cmake"
+        fi
         exit 1
     fi
 
-    if ! command -v clangd &> /dev/null; then
-        echo "Warning: clangd not found in PATH."
-        echo "VS Code clangd extension will need to be installed."
+    if ! command -v python3 &> /dev/null; then
+        echo "Error: python3 is required but not installed."
+        if [ "$PLATFORM" = "linux" ]; then
+            echo "Install with: sudo apt install python3 python3-venv python3-pip"
+        fi
+        exit 1
     fi
 
-    if [ ! -d "/opt/homebrew/opt/llvm" ] && [ ! -d "/usr/local/opt/llvm" ]; then
-        echo "Error: LLVM not found. Install with: brew install llvm"
+    # Check for LLVM (needed for axiom-extract)
+    if [ -z "$LLVM_PATH" ]; then
+        echo "Error: LLVM not found."
+        if [ "$PLATFORM" = "macos" ]; then
+            echo "Install with: brew install llvm"
+        else
+            echo "Install with: sudo apt install llvm-18-dev libclang-18-dev clang-18"
+            echo "  (or llvm-17-dev, etc.)"
+        fi
         exit 1
     fi
 
@@ -40,27 +96,35 @@ check_prereqs() {
     echo ""
 }
 
-# Build clangd plugin
-build_plugin() {
-    echo "Building axiom-clangd plugin..."
+# Build axiom-extract C++ tool
+build_extractor() {
+    EXTRACT_DIR="$PROJECT_ROOT/tools/axiom-extract"
+    BUILD_DIR="$EXTRACT_DIR/build"
+    BINARY="$BUILD_DIR/axiom-extract"
 
-    PLUGIN_DIR="$PROJECT_ROOT/tools/axiom-clangd"
-    BUILD_DIR="$PLUGIN_DIR/build"
+    # Skip if binary already exists
+    if [ -x "$BINARY" ]; then
+        echo "axiom-extract already built: $BINARY"
+        echo "  (delete it to force rebuild)"
+        echo ""
+        return 0
+    fi
+
+    echo "Building axiom-extract..."
 
     mkdir -p "$BUILD_DIR"
     cd "$BUILD_DIR"
 
-    # Determine LLVM path
-    if [ -d "/opt/homebrew/opt/llvm" ]; then
-        LLVM_PATH="/opt/homebrew/opt/llvm"
+    cmake -DCMAKE_PREFIX_PATH="$LLVM_PATH" ..
+
+    # Use appropriate parallel build command
+    if [ "$PLATFORM" = "macos" ]; then
+        make -j$(sysctl -n hw.ncpu)
     else
-        LLVM_PATH="/usr/local/opt/llvm"
+        make -j$(nproc)
     fi
 
-    cmake -DCMAKE_PREFIX_PATH="$LLVM_PATH" ..
-    make -j$(sysctl -n hw.ncpu)
-
-    echo "Plugin built: $BUILD_DIR/libaxiom-clangd.dylib"
+    echo "axiom-extract built: $BINARY"
     echo ""
 }
 
@@ -84,76 +148,71 @@ install_python_deps() {
     echo ""
 }
 
-# Configure VS Code
-configure_vscode() {
-    echo "Configuring VS Code..."
+# Create compile_commands.json for C++ standard library support
+create_compile_commands() {
+    echo "Creating compile_commands.json..."
 
-    VSCODE_SETTINGS_DIR="$PROJECT_ROOT/.vscode"
-    mkdir -p "$VSCODE_SETTINGS_DIR"
+    CC_BUILD_DIR="$PROJECT_ROOT/build"
+    mkdir -p "$CC_BUILD_DIR"
 
-    SETTINGS_FILE="$VSCODE_SETTINGS_DIR/settings.json"
+    # Get LLVM version for include paths
+    LLVM_VERSION=$("$LLVM_PATH/bin/clang" --version | head -1 | grep -oE '[0-9]+\.[0-9]+\.[0-9]+' | head -1)
+    LLVM_MAJOR=$(echo "$LLVM_VERSION" | cut -d. -f1)
 
-    # Check if settings.json exists
-    if [ -f "$SETTINGS_FILE" ]; then
-        echo "VS Code settings already exist at $SETTINGS_FILE"
-        echo "Please manually add the clangd configuration if needed."
-    else
-        cat > "$SETTINGS_FILE" << 'EOF'
-{
-    "clangd.path": "clangd",
-    "clangd.arguments": [
-        "--background-index",
-        "--clang-tidy",
-        "--header-insertion=iwyu",
-        "--completion-style=detailed"
-    ],
-    "[cpp]": {
-        "editor.defaultFormatter": "llvm-vs-code-extensions.vscode-clangd"
-    },
-    "[c]": {
-        "editor.defaultFormatter": "llvm-vs-code-extensions.vscode-clangd"
-    }
-}
+    if [ "$PLATFORM" = "macos" ]; then
+        # macOS: use libc++ with SDK sysroot
+        cat > "$CC_BUILD_DIR/compile_commands.json" << EOF
+[
+  {
+    "directory": "$PROJECT_ROOT",
+    "command": "$LLVM_PATH/bin/clang++ -std=c++17 -stdlib=libc++ -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk -isystem $LLVM_PATH/include/c++/v1 -isystem $LLVM_PATH/lib/clang/$LLVM_MAJOR/include -c examples/demo_axiom_issues.cpp -o /dev/null",
+    "file": "$PROJECT_ROOT/examples/demo_axiom_issues.cpp"
+  }
+]
 EOF
-        echo "Created $SETTINGS_FILE"
+    else
+        # Linux: use libstdc++ (default) or libc++ if available
+        cat > "$CC_BUILD_DIR/compile_commands.json" << EOF
+[
+  {
+    "directory": "$PROJECT_ROOT",
+    "command": "$LLVM_PATH/bin/clang++ -std=c++17 -c examples/demo_axiom_issues.cpp -o /dev/null",
+    "file": "$PROJECT_ROOT/examples/demo_axiom_issues.cpp"
+  }
+]
+EOF
     fi
 
+    echo "Created $CC_BUILD_DIR/compile_commands.json"
     echo ""
 }
 
-# Create launch script for query server
-create_launch_script() {
-    echo "Creating launch script..."
+# Verify installation
+verify_install() {
+    echo "Verifying installation..."
 
-    LAUNCH_SCRIPT="$PROJECT_ROOT/scripts/start-axiom-lsp.sh"
+    cd "$PROJECT_ROOT"
+    source .venv/bin/activate
 
-    cat > "$LAUNCH_SCRIPT" << 'EOF'
-#!/bin/bash
-# Start Axiom LSP services
-# Run this before opening VS Code
+    # Check axiom-extract binary exists
+    if [ ! -x "$PROJECT_ROOT/tools/axiom-extract/build/axiom-extract" ]; then
+        echo "Error: axiom-extract binary not found"
+        exit 1
+    fi
 
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-PROJECT_ROOT="$(dirname "$SCRIPT_DIR")"
+    # Check axiom-lsp command works
+    if ! command -v axiom-lsp &> /dev/null; then
+        echo "Error: axiom-lsp command not found"
+        exit 1
+    fi
 
-cd "$PROJECT_ROOT"
-source .venv/bin/activate
+    # Check compile_commands.json exists
+    if [ ! -f "$PROJECT_ROOT/build/compile_commands.json" ]; then
+        echo "Error: build/compile_commands.json not found"
+        exit 1
+    fi
 
-echo "Starting Axiom Query Server..."
-axiom-query-server &
-QUERY_PID=$!
-
-echo "Query server started (PID: $QUERY_PID)"
-echo ""
-echo "Press Ctrl+C to stop all services"
-
-# Wait for interrupt
-trap "kill $QUERY_PID 2>/dev/null; exit 0" INT TERM
-
-wait $QUERY_PID
-EOF
-
-    chmod +x "$LAUNCH_SCRIPT"
-    echo "Created $LAUNCH_SCRIPT"
+    echo "Installation verified"
     echo ""
 }
 
@@ -163,32 +222,33 @@ print_usage() {
     echo ""
     echo "To use Axiom LSP:"
     echo ""
-    echo "1. Start the query server (in a terminal):"
-    echo "   ./scripts/start-axiom-lsp.sh"
+    echo "1. Activate the virtual environment:"
+    echo "   source .venv/bin/activate"
     echo ""
-    echo "2. Open VS Code in this directory"
+    echo "2. Start the LSP server:"
+    echo "   axiom-lsp"
     echo ""
-    echo "3. Install the clangd extension if not already installed:"
-    echo "   code --install-extension llvm-vs-code-extensions.vscode-clangd"
+    echo "   Options:"
+    echo "     --mode human     Suppress axiom-context hints (for human use)"
+    echo "     --mode llm       Emit all diagnostics (default, for LLM use)"
+    echo "     -v, --verbose    Enable debug logging"
     echo ""
-    echo "Note: The clangd plugin integration is experimental."
-    echo "Currently, axiom diagnostics require running axiom-query-server"
-    echo "and the full clangd plugin integration is pending clangd's"
-    echo "plugin API stabilization."
+    echo "3. Configure your editor to use axiom-lsp for C/C++ files"
     echo ""
-    echo "For Claude Code integration:"
-    echo "   export ENABLE_LSP_TOOL=1"
-    echo "   claude"
+    echo "For file watching (live extraction):"
+    echo "   axiom-watcher -v"
     echo ""
 }
 
 # Main
 main() {
+    detect_platform
+    echo ""
     check_prereqs
-    build_plugin
+    build_extractor
     install_python_deps
-    configure_vscode
-    create_launch_script
+    create_compile_commands
+    verify_install
     print_usage
 }
 

@@ -1,0 +1,20 @@
+# Axiom ignore patterns for this project
+# Files matching these patterns will be excluded from live layer extraction
+
+# Axiom's own C++ tools (avoid self-analysis)
+tools/
+
+# Build artifacts
+build/
+_deps/
+cmake-build*/
+
+# Third-party dependencies
+vendor/
+third_party/
+external/
+
+# Test patterns - included with --test-mode
+@test: tests/
+@test: *_test.cpp
+@test: test_*.cpp

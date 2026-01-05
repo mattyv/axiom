@@ -1,0 +1,48 @@
+{
+    "name": "axiom-lsp",
+    "displayName": "Axiom LSP",
+    "description": "Axiom language server for C/C++ axiom extraction and validation",
+    "version": "0.1.0",
+    "publisher": "axiom",
+    "engines": {
+        "vscode": "^1.75.0"
+    },
+    "categories": ["Programming Languages", "Linters"],
+    "activationEvents": [
+        "onLanguage:c",
+        "onLanguage:cpp"
+    ],
+    "main": "./out/extension.js",
+    "contributes": {
+        "configuration": {
+            "type": "object",
+            "title": "Axiom LSP",
+            "properties": {
+                "axiom-lsp.path": {
+                    "type": "string",
+                    "default": "axiom-lsp",
+                    "description": "Path to axiom-lsp executable"
+                },
+                "axiom-lsp.mode": {
+                    "type": "string",
+                    "default": "human",
+                    "enum": ["default", "llm", "human"],
+                    "description": "Diagnostic mode (human=suppress hints, llm=all diagnostics)"
+                }
+            }
+        }
+    },
+    "scripts": {
+        "vscode:prepublish": "npm run compile",
+        "compile": "tsc -p ./",
+        "watch": "tsc -watch -p ./"
+    },
+    "dependencies": {
+        "vscode-languageclient": "^9.0.1"
+    },
+    "devDependencies": {
+        "@types/node": "^20.0.0",
+        "@types/vscode": "^1.75.0",
+        "typescript": "^5.0.0"
+    }
+}

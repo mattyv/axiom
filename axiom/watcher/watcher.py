@@ -210,3 +210,73 @@ class AxiomWatcher:
     def __exit__(self, *args: object) -> None:
         """Context manager exit."""
         self.stop()
+
+
+def main() -> None:
+    """Entry point for axiom-watcher command."""
+    import argparse
+    import signal
+    import sys
+
+    parser = argparse.ArgumentParser(description="Axiom file watcher for live extraction")
+    parser.add_argument(
+        "paths",
+        nargs="*",
+        default=["."],
+        help="Directories to watch (default: current directory)",
+    )
+    parser.add_argument(
+        "-v",
+        "--verbose",
+        action="store_true",
+        help="Enable verbose logging",
+    )
+    parser.add_argument(
+        "--no-initial",
+        action="store_true",
+        help="Skip initial extraction of all files",
+    )
+
+    args = parser.parse_args()
+
+    # Configure logging
+    logging.basicConfig(
+        level=logging.DEBUG if args.verbose else logging.INFO,
+        format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+    )
+
+    # Create watcher
+    watcher = AxiomWatcher(watch_paths=args.paths)
+
+    # Handle shutdown
+    def shutdown(signum: int, frame: object) -> None:
+        logger.info("Shutting down...")
+        watcher.stop()
+        sys.exit(0)
+
+    signal.signal(signal.SIGINT, shutdown)
+    signal.signal(signal.SIGTERM, shutdown)
+
+    # Initial extraction
+    if not args.no_initial:
+        logger.info("Performing initial extraction...")
+        count = watcher.extract_all()
+        logger.info("Extracted %d axioms", count)
+
+    # Start watching
+    watcher.start()
+    logger.info("Watching for changes. Press Ctrl+C to stop.")
+
+    # Keep running
+    try:
+        while True:
+            import time
+            time.sleep(1)
+    except KeyboardInterrupt:
+        pass
+    finally:
+        watcher.stop()
+
+
+if __name__ == "__main__":
+    main()
