@@ -230,6 +230,9 @@ def main():
         # No valid JSON context, nothing to do
         sys.exit(0)
 
+    # Determine if this is a PostToolUse hook (has tool_input) or UserPromptSubmit
+    is_post_tool_use = "tool_input" in context
+
     # Load configuration
     config = load_config()
 
@@ -255,7 +258,20 @@ def main():
 
     # Output to stdout for injection
     if output_parts:
-        print("\n\n".join(output_parts))
+        axiom_context = "\n\n".join(output_parts)
+
+        if is_post_tool_use:
+            # PostToolUse requires JSON with additionalContext for Claude to see it
+            output = {
+                "hookSpecificOutput": {
+                    "hookEventName": "PostToolUse",
+                    "additionalContext": axiom_context
+                }
+            }
+            print(json.dumps(output))
+        else:
+            # UserPromptSubmit can use plain text
+            print(axiom_context)
 
     sys.exit(0)
 
