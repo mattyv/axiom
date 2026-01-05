@@ -80,35 +80,57 @@ fi
 # Make hook script executable
 chmod +x "$SCRIPT_DIR/inject_axioms.py"
 
+# Configure hooks in settings.local.json
+SETTINGS_FILE="$PROJECT_DIR/.claude/settings.local.json"
+
+echo "Configuring Claude Code hooks..."
+
+"$PROJECT_DIR/.venv/bin/python" -c "
+import json
+from pathlib import Path
+
+settings_file = Path('$SETTINGS_FILE')
+
+hooks_config = {
+    'PostToolUse': [
+        {
+            'matcher': 'Write|Edit',
+            'hooks': [
+                {
+                    'type': 'command',
+                    'command': '.venv/bin/python .claude/hooks/inject_axioms.py'
+                }
+            ]
+        }
+    ]
+}
+
+# Load existing settings or create new
+if settings_file.exists():
+    with open(settings_file) as f:
+        settings = json.load(f)
+else:
+    settings = {}
+
+# Merge hooks (don't overwrite existing hooks)
+if 'hooks' not in settings:
+    settings['hooks'] = {}
+
+for hook_type, hook_list in hooks_config.items():
+    if hook_type not in settings['hooks']:
+        settings['hooks'][hook_type] = hook_list
+        print(f'  ✓ Added {hook_type} hook')
+    else:
+        print(f'  ⚠ {hook_type} hook already configured, skipping')
+
+# Write back
+with open(settings_file, 'w') as f:
+    json.dump(settings, f, indent=2)
+
+print('✓ Hooks configured in .claude/settings.local.json')
+"
+
 echo ""
 echo "Hook installation complete!"
 echo ""
-echo "To enable hooks, add this to .claude/settings.local.json:"
-cat << 'EXAMPLE'
-{
-  "hooks": {
-    "UserPromptSubmit": [
-      {
-        "matcher": "",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "python3 .claude/hooks/inject_axioms.py"
-          }
-        ]
-      }
-    ],
-    "PostToolUse": [
-      {
-        "matcher": "Write|Edit",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "python3 .claude/hooks/inject_axioms.py"
-          }
-        ]
-      }
-    ]
-  }
-}
-EXAMPLE
+echo "Restart Claude Code for hooks to take effect."

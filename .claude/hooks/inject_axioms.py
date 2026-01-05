@@ -2,7 +2,6 @@
 """Claude Code hook to inject axiom context for C++ files.
 
 This hook runs on:
-- UserPromptSubmit: injects axioms for C++ files mentioned in user prompts
 - PostToolUse (Write/Edit): injects axioms for C++ files Claude just wrote/edited
 """
 
@@ -12,9 +11,19 @@ import re
 import sys
 from pathlib import Path
 
-# Add project root to path for imports
-PROJECT_DIR = Path(__file__).parent.parent.parent
+# Determine project directory - prefer CLAUDE_PROJECT_DIR env var
+PROJECT_DIR = Path(os.environ.get("CLAUDE_PROJECT_DIR", Path(__file__).parent.parent.parent))
 sys.path.insert(0, str(PROJECT_DIR))
+
+# Debug log file
+DEBUG_LOG = Path("/tmp/axiom_hook_debug.log")
+
+
+def log_debug(msg: str):
+    """Write debug message to log file."""
+    import datetime
+    with open(DEBUG_LOG, "a") as f:
+        f.write(f"[{datetime.datetime.now().isoformat()}] {msg}\n")
 
 # C++ file extensions
 CPP_EXTENSIONS = {".cpp", ".cc", ".cxx", ".c", ".hpp", ".hh", ".hxx", ".h"}
@@ -56,6 +65,24 @@ INTERNAL_PATTERNS = [
     "is a null pointer constant, and operand is a pointer type",
     # Offset internals
     "Offset ≤ Sz",
+    # K Framework variable comparisons (cryptic single-letter vars)
+    "B =/=Int", "I =/=Int", "N ==Int", "I ==Int", "W ==Int", "V =/=Int",
+    "J =/=Int", "=/=Int 0", "==Int 0", "==Int -1", "==Int Size", "==Int min(",
+    # K Framework execution state
+    "Execution()", "isEvalVal(", "referenceBindingResult(",
+    # K Framework type internals
+    "#arePromotedTypesCompat", "isFlexibleType", "utype(", "getParams(T)",
+    "isShortCircuit(", "isInt(value(",
+    # Generic operator constraints (not actionable)
+    "O ≠ operator", "O = operator", "one of: O =",
+    "operand types must match", "operand types differ",
+    # Comparison internals
+    "Comparison requires:",
+    # More K Framework internals
+    "fromArray(", "isFromArray(", ":/=K", ":=K", "isType(T)",
+    "N =/=Int min(T)", "value is indeterminate",
+    # Truncated axioms (not useful)
+    "...",
 ]
 
 
@@ -269,7 +296,10 @@ def get_axioms_for_file(
         return all_axioms
 
     except Exception as e:
-        # Silently fail - don't break Claude's workflow
+        # Log error but don't break Claude's workflow
+        log_debug(f"Error getting axioms for {file_path}: {e}")
+        import traceback
+        log_debug(traceback.format_exc())
         return []
 
 
@@ -313,11 +343,27 @@ def format_axioms(file_path: str, axioms: list[dict], start_line: int | None, en
 
 def main():
     """Main hook entry point."""
+    log_debug("=== Hook triggered ===")
+    log_debug(f"CWD: {os.getcwd()}")
+    log_debug(f"PROJECT_DIR: {PROJECT_DIR}")
+    log_debug(f"CLAUDE_PROJECT_DIR env: {os.environ.get('CLAUDE_PROJECT_DIR', 'not set')}")
+
     # Read context from stdin
     try:
-        context = json.load(sys.stdin)
-    except json.JSONDecodeError:
-        # No valid JSON context, nothing to do
+        stdin_data = sys.stdin.read()
+        log_debug(f"stdin length: {len(stdin_data)}")
+        if not stdin_data.strip():
+            log_debug("Empty stdin, exiting")
+            sys.exit(0)
+        context = json.loads(stdin_data)
+        log_debug(f"Context keys: {list(context.keys())}")
+        if "tool_input" in context:
+            log_debug(f"tool_input: {json.dumps(context['tool_input'])[:200]}")
+    except json.JSONDecodeError as e:
+        log_debug(f"JSON decode error: {e}")
+        sys.exit(0)
+    except Exception as e:
+        log_debug(f"Error reading stdin: {e}")
         sys.exit(0)
 
     # Determine if this is a PostToolUse hook (has tool_input) or UserPromptSubmit
@@ -337,11 +383,15 @@ def main():
     # Get axioms for each file
     output_parts = []
     for file_path, start_line, end_line in cpp_files:
+        log_debug(f"Processing {file_path} lines {start_line}-{end_line}")
+
         # In selection/edit mode, skip files without line range
         if mode in ("selection", "edit") and start_line is None:
+            log_debug(f"  Skipping - no line range in {mode} mode")
             continue
 
         axioms = get_axioms_for_file(file_path, start_line, end_line, config)
+        log_debug(f"  Found {len(axioms)} axioms")
         if axioms:
             formatted = format_axioms(file_path, axioms, start_line, end_line)
             if formatted:
@@ -350,6 +400,7 @@ def main():
     # Output to stdout for injection
     if output_parts:
         axiom_context = "\n\n".join(output_parts)
+        log_debug(f"Outputting {len(output_parts)} formatted sections")
 
         if is_post_tool_use:
             # PostToolUse requires JSON with additionalContext for Claude to see it
@@ -363,6 +414,8 @@ def main():
         else:
             # UserPromptSubmit can use plain text
             print(axiom_context)
+    else:
+        log_debug("No axioms to output")
 
     sys.exit(0)
 
