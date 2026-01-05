@@ -79,7 +79,7 @@ class LanceDBLoader:
             return 0
 
         # Add to existing table or create new one
-        if table_name in self.db.table_names():
+        if table_name in self.db.list_tables():
             table = self.db.open_table(table_name)
             table.add(records)
         else:
@@ -99,7 +99,7 @@ class LanceDBLoader:
         """
         record = self._axiom_to_record(axiom)
 
-        if table_name in self.db.table_names():
+        if table_name in self.db.list_tables():
             table = self.db.open_table(table_name)
             table.add([record])
         else:
@@ -189,7 +189,7 @@ class LanceDBLoader:
         Returns:
             List of matching axiom records.
         """
-        if table_name not in self.db.table_names():
+        if table_name not in self.db.list_tables():
             return []
 
         table = self.db.open_table(table_name)
@@ -212,7 +212,7 @@ class LanceDBLoader:
         Returns:
             List of matching axiom records.
         """
-        if table_name not in self.db.table_names():
+        if table_name not in self.db.list_tables():
             return []
 
         table = self.db.open_table(table_name)
@@ -231,7 +231,7 @@ class LanceDBLoader:
         Returns:
             Number of records.
         """
-        if table_name not in self.db.table_names():
+        if table_name not in self.db.list_tables():
             return 0
 
         table = self.db.open_table(table_name)
@@ -251,7 +251,7 @@ class LanceDBLoader:
         Returns:
             List of matching axiom records.
         """
-        if table_name not in self.db.table_names():
+        if table_name not in self.db.list_tables():
             return []
 
         table = self.db.open_table(table_name)
@@ -273,7 +273,7 @@ class LanceDBLoader:
         Returns:
             List of matching axiom records.
         """
-        if table_name not in self.db.table_names():
+        if table_name not in self.db.list_tables():
             return []
 
         table = self.db.open_table(table_name)
@@ -295,7 +295,7 @@ class LanceDBLoader:
         Returns:
             List of matching axiom records.
         """
-        if table_name not in self.db.table_names():
+        if table_name not in self.db.list_tables():
             return []
 
         table = self.db.open_table(table_name)
@@ -319,7 +319,7 @@ class LanceDBLoader:
         Returns:
             True if update was successful, False otherwise.
         """
-        if table_name not in self.db.table_names():
+        if table_name not in self.db.list_tables():
             return False
 
         table = self.db.open_table(table_name)
