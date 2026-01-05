@@ -100,9 +100,16 @@ def find_cpp_files_in_context(context: dict, mode: str = "comprehensive") -> lis
 
                 # In edit mode, find the lines that were edited
                 if mode == "edit":
+                    # Edit tool uses new_string, Write tool uses content
                     new_string = tool_input.get("new_string", "")
+                    content = tool_input.get("content", "")
+
                     if new_string:
                         start_line, end_line = find_edited_lines(file_path, new_string)
+                    elif content:
+                        # For Write, analyze the whole file
+                        line_count = content.count("\n") + 1
+                        start_line, end_line = 1, line_count
 
                 files.append((file_path, start_line, end_line))
 
