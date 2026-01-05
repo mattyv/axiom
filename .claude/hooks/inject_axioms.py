@@ -21,15 +21,41 @@ CPP_EXTENSIONS = {".cpp", ".cc", ".cxx", ".c", ".hpp", ".hh", ".hxx", ".h"}
 
 # Internal K Framework patterns to filter out (not useful for developers)
 INTERNAL_PATTERNS = [
+    # K Framework internal state
     "in_keys(", "Debug()", "isLinkerLoc", "fileScope", "in Opts",
     "NoNativeFallback", "isNativeLoc", "isBlockScope", "isMainScope",
-    "ExtTypes", "in_keys(Env)", "in_keys(Mem)", "in_keys(Exts)",
-    "caseLabel(", "SwitchNum", "popLocals", "structOrUnionAtTop",
+    "ExtTypes", "caseLabel(", "SwitchNum", "popLocals", "structOrUnionAtTop",
     "isInFieldInit", "isAtIndexInit", "byteAlignofType", "wstring(",
     "ordChar(", "lengthString(", "=/=String", "==String", "isSign(",
-    "isDigit(", "isCPP", "isPRExpr", "in_keys(M)", "in_keys(S)",
-    "isAggregateOrUnionType", "handlerMatches", "FOffset", "isInt(V)",
-    "W ≠ \"\"", "I > 0", "expression is held for evaluation",
+    "isDigit(", "isCPP", "isPRExpr", "isAggregateOrUnionType", "handlerMatches",
+    "FOffset", "isInt(V)", "expression is held for evaluation",
+    # Restrict qualifier internals
+    "hasRestrict(", "RestrictStack", "RestrictBlocks", "isRestrictConflict",
+    "Tag in Restrict", "Restrict",
+    # Internal state markers
+    "MainTU", ".K", ".List", "#NoName", "emptyValue", "ThreadId",
+    "isNCLHold", "isThreadDuration", "isAutoDuration", "Loc in Locs",
+    # Held expression internals
+    "is a held rvalue", "is not held", "expression is not held",
+    # Type checking internals (not actionable)
+    "isVariableLengthArrayType", "isVariablyModifiedType", "isFunctionType(",
+    # Empty/trivial conditions
+    "Requires: \n", "Requires: ", "≠ \"\"", "≠ variadic", "≠ \"builtin\"",
+    # Memory location internals
+    "value is not a memory location", "SizeofExpression(",
+    # Storage class and qualifier internals
+    "StorageClass", "storageClass", "getStorageSpecifiers", "getQualifiers",
+    "validLocalStorageClass", "validGlobalStorageClass", "validPrototypeStorageClass",
+    "noQuals", "isFileScope", "areDeclCompat",
+    # Control flow internals
+    "controlAtTop", "noMoreFields",
+    # Character/string type internals (not safety-critical)
+    "wide character type", "character type", "character string literals",
+    "size(S) ==Int", "size(S) <",
+    # Null pointer when not relevant to the operation
+    "is a null pointer constant, and operand is a pointer type",
+    # Offset internals
+    "Offset ≤ Sz",
 ]
 
 
@@ -199,12 +225,13 @@ def get_axioms_for_file(
         for call in call_graph:
             line = call.get("line", 0)
             callee = call.get("callee", "")
+            signature = call.get("callee_signature")  # For semantic search
 
             if not callee:
                 continue
 
-            # Get axioms for this callee
-            callee_axioms = server.get_axioms_for_callee(callee)
+            # Get axioms for this callee (uses semantic search if signature available)
+            callee_axioms = server.get_axioms_for_callee(callee, signature)
 
             if callee_axioms:
                 if line not in axioms_by_line:

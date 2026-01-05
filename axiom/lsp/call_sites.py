@@ -16,7 +16,8 @@ from typing import TYPE_CHECKING, Callable
 if TYPE_CHECKING:
     from axiom.models import Axiom
 
-AxiomLookup = Callable[[str], list["Axiom"]]
+# Axiom lookup takes (callee, signature) and returns axioms
+AxiomLookup = Callable[[str, str | None], list["Axiom"]]
 
 
 @dataclass
@@ -109,15 +110,17 @@ def build_axiom_tree(
     axiom_lookup: AxiomLookup,
     max_depth: int = 3,
     visited: set[str] | None = None,
+    callee_signature: str | None = None,
 ) -> AxiomTreeNode:
     """Build an axiom tree for a function and its callees.
 
     Args:
         function_name: Name of the function to build tree for.
         index: CallSiteIndex with call graph data.
-        axiom_lookup: Callable that takes function name and returns axioms.
+        axiom_lookup: Callable that takes (callee, signature) and returns axioms.
         max_depth: Maximum depth to traverse.
         visited: Set of already-visited functions (for cycle detection).
+        callee_signature: Optional signature for semantic search context.
 
     Returns:
         AxiomTreeNode with function's axioms and children.
@@ -136,12 +139,12 @@ def build_axiom_tree(
 
     visited.add(function_name)
 
-    # Get axioms for this function (via function name or tags)
-    axioms = axiom_lookup(function_name)
+    # Get axioms for this function (via semantic search if signature available)
+    axioms = axiom_lookup(function_name, callee_signature)
 
     # Get signature from first axiom if available
-    signature = None
-    if axioms and axioms[0].signature:
+    signature = callee_signature
+    if not signature and axioms and axioms[0].signature:
         signature = axioms[0].signature
 
     # Build children if not at max depth
@@ -151,6 +154,7 @@ def build_axiom_tree(
         calls = index.get_calls_by_function(function_name)
         for call in calls:
             callee = call.get("callee")
+            child_sig = call.get("callee_signature")
             if callee and callee not in visited:
                 child = build_axiom_tree(
                     callee,
@@ -158,6 +162,7 @@ def build_axiom_tree(
                     axiom_lookup,
                     max_depth=max_depth - 1,
                     visited=visited.copy(),  # Copy to allow different paths
+                    callee_signature=child_sig,
                 )
                 # Only add if the child has axioms or children
                 if child.axioms or child.children:

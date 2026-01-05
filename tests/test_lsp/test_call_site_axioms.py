@@ -124,7 +124,7 @@ class TestCallSiteDiagnostics:
 
         axioms_by_function = {"divide": [divide_axiom]}
 
-        def axiom_lookup(callee: str) -> list:
+        def axiom_lookup(callee: str, signature: str | None = None) -> list:
             return axioms_by_function.get(callee, [])
 
         diagnostics = call_site_diagnostics(
@@ -173,7 +173,7 @@ class TestAxiomTree:
 
         axioms_by_function = {"b": [axiom_b], "c": [axiom_c]}
 
-        def axiom_lookup(callee: str) -> list:
+        def axiom_lookup(callee: str, signature: str | None = None) -> list:
             return axioms_by_function.get(callee, [])
 
         index = CallSiteIndex()

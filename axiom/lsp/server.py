@@ -39,7 +39,9 @@ from axiom.graph import Neo4jLoader
 from axiom.lsp.call_sites import CallSiteIndex, build_axiom_tree
 from axiom.lsp.diagnostics import DiagnosticMode, call_site_diagnostics
 from axiom.lsp.hover import format_hover, format_axiom_tree
+from axiom.lsp.query_builder import build_axiom_query
 from axiom.models import Axiom, AxiomType, SourceLocation
+from axiom.vectors import LanceDBLoader
 from axiom.watcher.extractor import AxiomExtractor
 from axiom.watcher.store import InMemoryAxiomStore
 
@@ -293,6 +295,19 @@ class AxiomLanguageServer(LanguageServer):
         # Load foundation axioms from Neo4j
         self._load_foundation_axioms()
 
+        # Initialize LanceDB for semantic search (optional, used when available)
+        self._lance: LanceDBLoader | None = None
+        try:
+            self._lance = LanceDBLoader()
+            if self._lance.count() > 0:
+                logger.info("LanceDB loaded with %d axioms for semantic search", self._lance.count())
+            else:
+                logger.warning("LanceDB is empty, falling back to tag-based lookup")
+                self._lance = None
+        except Exception as e:
+            logger.warning("Could not load LanceDB: %s, falling back to tag-based lookup", e)
+            self._lance = None
+
         # Register handlers
         self._register_handlers()
 
@@ -376,13 +391,63 @@ class AxiomLanguageServer(LanguageServer):
             depends_on=data.get("depends_on", []) or [],
         )
 
-    def get_axioms_for_callee(self, callee: str) -> list[Axiom]:
-        """Get axioms for a callee by function name or tags.
+    def get_axioms_for_callee(
+        self, callee: str, signature: str | None = None
+    ) -> list[Axiom]:
+        """Get axioms for a callee using semantic search or fallback to tags.
 
         Lookup order:
-        1. Direct function name match
-        2. Exact operator match (e.g., "operator+=")
-        3. Method suffix match (e.g., "std::vector<int>::size" -> "::size")
+        1. Direct function name match (for std library functions)
+        2. Semantic search using LanceDB (if available)
+        3. Fallback to tag-based lookup (legacy)
+
+        Args:
+            callee: The callee name (function name or operator).
+            signature: Optional signature with type info (e.g., "int operator/ int").
+
+        Returns:
+            List of matching axioms (deduplicated).
+        """
+        # 1. Check function name directly (fast path for std library)
+        if callee in self._axioms_by_function:
+            return self._axioms_by_function[callee]
+
+        # 2. Try semantic search if LanceDB is available
+        if self._lance is not None:
+            query = build_axiom_query(callee, signature)
+            results = self._lance.search(query, limit=10)
+
+            if results:
+                axioms = []
+                seen_ids: set[str] = set()
+
+                for r in results:
+                    # Filter to preconditions/postconditions only
+                    axiom_type = r.get("axiom_type", "")
+                    if axiom_type.upper() not in ("PRECONDITION", "POSTCONDITION", "INVARIANT"):
+                        continue
+
+                    axiom_id = r.get("id", "")
+                    if axiom_id in seen_ids:
+                        continue
+                    seen_ids.add(axiom_id)
+
+                    # Convert dict to Axiom
+                    axiom = self._dict_to_axiom(r)
+                    axioms.append(axiom)
+
+                if axioms:
+                    logger.debug(
+                        "Semantic search for '%s' (sig=%s) found %d axioms",
+                        callee, signature, len(axioms)
+                    )
+                    return axioms
+
+        # 3. Fallback to tag-based lookup
+        return self._get_axioms_by_tags(callee)
+
+    def _get_axioms_by_tags(self, callee: str) -> list[Axiom]:
+        """Legacy tag-based axiom lookup (fallback).
 
         Args:
             callee: The callee name (function name or operator).
@@ -403,17 +468,12 @@ class AxiomLanguageServer(LanguageServer):
                 for axiom in self._axioms_by_tag[tag]:
                     add_axiom(axiom)
 
-        # 1. Check function name directly
-        if callee in self._axioms_by_function:
-            for axiom in self._axioms_by_function[callee]:
-                add_axiom(axiom)
-
-        # 2. Check tags via exact operator mapping
+        # Check tags via exact operator mapping
         if callee in self._operator_to_tags:
             for tag in self._operator_to_tags[callee]:
                 add_axioms_for_tag(tag)
 
-        # 3. Check method suffix patterns (e.g., std::vector<int>::size -> ::size)
+        # Check method suffix patterns (e.g., std::vector<int>::size -> ::size)
         for suffix, tags in self._method_suffix_to_tags.items():
             if callee.endswith(suffix):
                 for tag in tags:

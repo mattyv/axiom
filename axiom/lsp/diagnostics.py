@@ -95,7 +95,8 @@ def axioms_to_diagnostics(
 
 from typing import Callable
 
-AxiomLookup = Callable[[str], list["Axiom"]]
+# Axiom lookup takes (callee, signature) and returns axioms
+AxiomLookup = Callable[[str, str | None], list["Axiom"]]
 
 
 def call_site_diagnostics(
@@ -112,7 +113,7 @@ def call_site_diagnostics(
     Args:
         file_path: Source file path.
         index: CallSiteIndex with call graph data.
-        axiom_lookup: Callable that takes callee name and returns axioms.
+        axiom_lookup: Callable that takes (callee, signature) and returns axioms.
         mode: Diagnostic mode. "human" suppresses context hints.
 
     Returns:
@@ -132,8 +133,11 @@ def call_site_diagnostics(
             if not callee:
                 continue
 
-            # Get axioms for this callee (by function name or tags)
-            callee_axioms = axiom_lookup(callee)
+            # Get signature for semantic search context
+            signature = call.get("callee_signature")
+
+            # Get axioms for this callee (using semantic search if available)
+            callee_axioms = axiom_lookup(callee, signature)
 
             # Create range at call site line (LSP is 0-indexed)
             range_ = Range(
