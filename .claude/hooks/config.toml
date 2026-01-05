@@ -2,9 +2,10 @@
 
 [axiom_injection]
 # Mode for axiom injection:
-#   "selection" - Only inject axioms for IDE-selected code (default)
+#   "edit" - Only inject axioms for edited/written lines (recommended)
+#   "selection" - Only inject axioms for IDE-selected code
 #   "comprehensive" - Inject axioms for entire files mentioned
-mode = "comprehensive"
+mode = "edit"
 
 # Maximum number of axioms to inject per file (in comprehensive mode)
 max_axioms = 30

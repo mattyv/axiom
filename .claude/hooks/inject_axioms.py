@@ -19,6 +19,24 @@ sys.path.insert(0, str(PROJECT_DIR))
 # C++ file extensions
 CPP_EXTENSIONS = {".cpp", ".cc", ".cxx", ".c", ".hpp", ".hh", ".hxx", ".h"}
 
+# Internal K Framework patterns to filter out (not useful for developers)
+INTERNAL_PATTERNS = [
+    "in_keys(", "Debug()", "isLinkerLoc", "fileScope", "in Opts",
+    "NoNativeFallback", "isNativeLoc", "isBlockScope", "isMainScope",
+    "ExtTypes", "in_keys(Env)", "in_keys(Mem)", "in_keys(Exts)",
+    "caseLabel(", "SwitchNum", "popLocals", "structOrUnionAtTop",
+    "isInFieldInit", "isAtIndexInit", "byteAlignofType", "wstring(",
+    "ordChar(", "lengthString(", "=/=String", "==String", "isSign(",
+    "isDigit(", "isCPP", "isPRExpr", "in_keys(M)", "in_keys(S)",
+    "isAggregateOrUnionType", "handlerMatches", "FOffset", "isInt(V)",
+    "W ≠ \"\"", "I > 0", "expression is held for evaluation",
+]
+
+
+def is_internal_axiom(content: str) -> bool:
+    """Check if axiom content contains internal K Framework symbols."""
+    return any(pattern in content for pattern in INTERNAL_PATTERNS)
+
 
 def load_config() -> dict:
     """Load hook configuration."""
@@ -41,7 +59,30 @@ def load_config() -> dict:
     return defaults
 
 
-def find_cpp_files_in_context(context: dict) -> list[tuple[str, int | None, int | None]]:
+def find_edited_lines(file_path: str, new_string: str) -> tuple[int | None, int | None]:
+    """Find the line range where new_string appears in the file."""
+    if not new_string or not os.path.exists(file_path):
+        return None, None
+
+    try:
+        with open(file_path, "r") as f:
+            content = f.read()
+
+        # Find where new_string starts in the file
+        start_pos = content.find(new_string)
+        if start_pos == -1:
+            return None, None
+
+        # Count lines
+        start_line = content[:start_pos].count("\n") + 1
+        end_line = start_line + new_string.count("\n")
+
+        return start_line, end_line
+    except Exception:
+        return None, None
+
+
+def find_cpp_files_in_context(context: dict, mode: str = "comprehensive") -> list[tuple[str, int | None, int | None]]:
     """Find C++ files mentioned in the conversation context.
 
     Returns list of (file_path, start_line, end_line) tuples.
@@ -55,7 +96,15 @@ def find_cpp_files_in_context(context: dict) -> list[tuple[str, int | None, int 
         file_path = tool_input.get("file_path", "")
         if file_path and any(file_path.endswith(ext) for ext in CPP_EXTENSIONS):
             if os.path.exists(file_path):
-                files.append((file_path, None, None))
+                start_line, end_line = None, None
+
+                # In edit mode, find the lines that were edited
+                if mode == "edit":
+                    new_string = tool_input.get("new_string", "")
+                    if new_string:
+                        start_line, end_line = find_edited_lines(file_path, new_string)
+
+                files.append((file_path, start_line, end_line))
 
     # Get the user's prompt
     prompt = context.get("prompt", "")
@@ -157,14 +206,21 @@ def get_axioms_for_file(
                 for axiom in callee_axioms:
                     # Only include PRECONDITION and POSTCONDITION for relevance
                     axiom_type = axiom.axiom_type.value if axiom.axiom_type else ""
-                    if axiom_type.upper() in ("PRECONDITION", "POSTCONDITION", "INVARIANT"):
-                        axioms_by_line[line].append({
-                            "line": line,
-                            "callee": callee,
-                            "type": axiom_type,
-                            "content": axiom.content,
-                            "formal": axiom.formal_spec if config.get("show_formal") else None,
-                        })
+                    if axiom_type.upper() not in ("PRECONDITION", "POSTCONDITION", "INVARIANT"):
+                        continue
+
+                    # Filter out internal K Framework axioms
+                    content = axiom.content or ""
+                    if is_internal_axiom(content):
+                        continue
+
+                    axioms_by_line[line].append({
+                        "line": line,
+                        "callee": callee,
+                        "type": axiom_type,
+                        "content": content,
+                        "formal": axiom.formal_spec if config.get("show_formal") else None,
+                    })
 
         # Flatten and limit
         all_axioms = []
@@ -235,9 +291,10 @@ def main():
 
     # Load configuration
     config = load_config()
+    mode = config.get("mode", "edit")
 
     # Find C++ files in context
-    cpp_files = find_cpp_files_in_context(context)
+    cpp_files = find_cpp_files_in_context(context, mode)
 
     if not cpp_files:
         # No C++ files, nothing to inject
@@ -246,8 +303,8 @@ def main():
     # Get axioms for each file
     output_parts = []
     for file_path, start_line, end_line in cpp_files:
-        # In selection mode, skip files without line selection
-        if config.get("mode") == "selection" and start_line is None:
+        # In selection/edit mode, skip files without line range
+        if mode in ("selection", "edit") and start_line is None:
             continue
 
         axioms = get_axioms_for_file(file_path, start_line, end_line, config)
