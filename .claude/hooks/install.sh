@@ -57,6 +57,26 @@ else
     echo "⚠ Could not verify Neo4j - hooks may have limited functionality"
 fi
 
+# Check for LanceDB (used for semantic search)
+echo "Checking LanceDB..."
+if python3 -c "
+from axiom.vectors import LanceDBLoader
+try:
+    lance = LanceDBLoader()
+    count = lance.count()
+    if count > 0:
+        print(f'✓ LanceDB loaded with {count} axioms for semantic search')
+    else:
+        print('⚠ LanceDB is empty - run ingestion to enable semantic search')
+except Exception as e:
+    print(f'⚠ LanceDB not available: {e}')
+    print('  Hooks will fall back to tag-based lookup')
+" 2>/dev/null; then
+    :
+else
+    echo "⚠ Could not verify LanceDB - semantic search may be unavailable"
+fi
+
 # Make hook script executable
 chmod +x "$SCRIPT_DIR/inject_axioms.py"
 
