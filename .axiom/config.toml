@@ -31,7 +31,7 @@ lancedb_path = "data/lancedb"
 # "default" = emit all, let client filter
 # "llm" = emit all (explicit, same as default)
 # "human" = suppress axiom-context hints server-side
-mode = "default"
+mode = "llm"
 
 [hover]
 # Maximum depth for dependency chain in hover
@@ -50,5 +50,7 @@ static = []
 # Force specific paths to be treated as live layer
 # (even if they don't appear in compile_commands.json)
 live = [
-    "examples/"
+    "examples/",
+    "/home/mvarendorff/Documents/Code/cpp/market-data",
+    "/tmp/ilp_test"
 ]

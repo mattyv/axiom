@@ -216,27 +216,87 @@ verify_install() {
     echo ""
 }
 
+# Configure VSCode extension
+configure_vscode() {
+    echo "Configuring VSCode extension..."
+
+    AXIOM_LSP_PATH="$PROJECT_ROOT/.venv/bin/axiom-lsp"
+    VSCODE_SETTINGS="$HOME/.config/Code/User/settings.json"
+
+    # macOS uses different path
+    if [ "$PLATFORM" = "macos" ]; then
+        VSCODE_SETTINGS="$HOME/Library/Application Support/Code/User/settings.json"
+    fi
+
+    # Create settings directory if needed
+    mkdir -p "$(dirname "$VSCODE_SETTINGS")"
+
+    if [ -f "$VSCODE_SETTINGS" ]; then
+        # Check if axiom-lsp.path already configured
+        if grep -q "axiom-lsp.path" "$VSCODE_SETTINGS"; then
+            echo "  axiom-lsp.path already configured in VSCode settings"
+        else
+            # Add axiom-lsp.path to existing settings (before final brace)
+            # Use temp file for portability
+            TMP_FILE=$(mktemp)
+            sed '$ s/}$/,\n    "axiom-lsp.path": "'"$AXIOM_LSP_PATH"'"\n}/' "$VSCODE_SETTINGS" > "$TMP_FILE"
+            mv "$TMP_FILE" "$VSCODE_SETTINGS"
+            echo "  Added axiom-lsp.path to VSCode settings"
+        fi
+    else
+        # Create new settings file
+        cat > "$VSCODE_SETTINGS" << EOF
+{
+    "axiom-lsp.path": "$AXIOM_LSP_PATH"
+}
+EOF
+        echo "  Created VSCode settings with axiom-lsp.path"
+    fi
+
+    # Install/link VSCode extension
+    VSCODE_EXT_DIR="$HOME/.vscode/extensions"
+    mkdir -p "$VSCODE_EXT_DIR"
+
+    EXT_LINK="$VSCODE_EXT_DIR/axiom-lsp-0.1.0"
+    EXT_SRC="$PROJECT_ROOT/editors/vscode-axiom"
+
+    if [ -L "$EXT_LINK" ] || [ -d "$EXT_LINK" ]; then
+        echo "  VSCode extension already installed"
+    else
+        # Build extension if needed
+        if [ ! -f "$EXT_SRC/out/extension.js" ]; then
+            echo "  Building VSCode extension..."
+            cd "$EXT_SRC"
+            npm install --quiet 2>/dev/null
+            npm run compile --quiet 2>/dev/null
+            cd "$PROJECT_ROOT"
+        fi
+
+        ln -sfn "$EXT_SRC" "$EXT_LINK"
+        echo "  Linked VSCode extension"
+    fi
+
+    echo ""
+}
+
 # Print usage instructions
 print_usage() {
     echo "=== Installation Complete ==="
     echo ""
-    echo "To use Axiom LSP:"
+    echo "Axiom LSP is now configured for VSCode."
     echo ""
-    echo "1. Activate the virtual environment:"
-    echo "   source .venv/bin/activate"
+    echo "Reload VSCode to activate the extension."
+    echo "The LSP will automatically start for any C/C++ file."
     echo ""
-    echo "2. Start the LSP server:"
-    echo "   axiom-lsp"
+    echo "Manual usage (if needed):"
     echo ""
-    echo "   Options:"
-    echo "     --mode human     Suppress axiom-context hints (for human use)"
-    echo "     --mode llm       Emit all diagnostics (default, for LLM use)"
-    echo "     -v, --verbose    Enable debug logging"
-    echo ""
-    echo "3. Configure your editor to use axiom-lsp for C/C++ files"
+    echo "  axiom-lsp                    # Start LSP server"
+    echo "  axiom-lsp --mode human       # Suppress axiom-context hints"
+    echo "  axiom-lsp --mode llm         # Emit all diagnostics (default)"
+    echo "  axiom-lsp -v                 # Enable debug logging"
     echo ""
     echo "For file watching (live extraction):"
-    echo "   axiom-watcher -v"
+    echo "  axiom-watcher -v"
     echo ""
 }
 
@@ -249,6 +309,7 @@ main() {
     install_python_deps
     create_compile_commands
     verify_install
+    configure_vscode
     print_usage
 }
 

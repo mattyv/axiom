@@ -125,8 +125,20 @@ class InMemoryAxiomStore:
         return [self._axioms[aid] for aid in axiom_ids if aid in self._axioms]
 
     def query_by_file(self, file_path: str) -> list[Axiom]:
-        """Get all axioms extracted from a file."""
+        """Get all axioms extracted from a file.
+
+        Checks both full path and basename to handle axioms
+        stored with just filename (e.g., from axiom-extract).
+        """
+        from pathlib import Path
+
         axiom_ids = self._by_file.get(file_path, set())
+
+        # Also try basename if full path didn't match
+        if not axiom_ids:
+            basename = Path(file_path).name
+            axiom_ids = self._by_file.get(basename, set())
+
         return [self._axioms[aid] for aid in axiom_ids if aid in self._axioms]
 
     def delete_by_file(self, file_path: str) -> None:
