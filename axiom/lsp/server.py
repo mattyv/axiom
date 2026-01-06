@@ -425,9 +425,12 @@ class AxiomLanguageServer(LanguageServer):
                 seen_ids: set[str] = set()
 
                 for r in results:
-                    # Filter to preconditions/postconditions only
-                    axiom_type = r.get("axiom_type", "")
-                    if axiom_type.upper() not in ("PRECONDITION", "POSTCONDITION", "INVARIANT"):
+                    # Filter to preconditions/postconditions/invariants, or untyped axioms
+                    # (untyped axioms are language semantics rules from C++ spec)
+                    axiom_type = r.get("axiom_type", "") or ""
+                    if axiom_type and axiom_type.upper() not in (
+                        "PRECONDITION", "POSTCONDITION", "INVARIANT"
+                    ):
                         continue
 
                     axiom_id = r.get("id", "")

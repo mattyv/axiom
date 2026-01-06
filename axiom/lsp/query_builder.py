@@ -117,6 +117,33 @@ TYPE_SEMANTICS = {
 }
 
 
+def extract_operator_from_callee(callee: str) -> str | None:
+    """Extract the operator name from a callee, handling class methods.
+
+    Examples:
+        "operator<=>" -> "operator<=>"
+        "Point::operator<=>" -> "operator<=>"
+        "std::vector<int>::operator[]" -> "operator[]"
+        "std::mutex::lock" -> None (not an operator)
+
+    Args:
+        callee: The callee name
+
+    Returns:
+        The operator name (e.g., "operator<=>") or None if not an operator.
+    """
+    # Check for "operator" anywhere in the callee
+    if "operator" not in callee:
+        return None
+
+    # Find the operator part - look for "operator" followed by symbol(s)
+    # Handle both "operator<=>" and "Class::operator<=>"
+    match = re.search(r"(operator[^\s(]+)", callee)
+    if match:
+        return match.group(1)
+    return None
+
+
 def build_axiom_query(callee: str, signature: str | None) -> str:
     """Build a semantic search query from call context.
 
@@ -139,11 +166,20 @@ def build_axiom_query(callee: str, signature: str | None) -> str:
             -> "array subscript index bounds precondition"
         ("std::mutex::lock", None)
             -> "mutex lock precondition"
+        ("Point::operator<=>", "std::strong_ordering Point::operator<=>(const Point&)")
+            -> "comparison precondition three-way spaceship"
     """
     parts: list[str] = []
 
     # Parse the signature to get types
     operator, left_type, right_type = parse_signature_types(callee, signature)
+
+    # If callee is a class method operator (e.g., Point::operator<=>),
+    # extract the operator name for semantic lookup
+    extracted_op = extract_operator_from_callee(callee)
+    if extracted_op and operator == callee:
+        # The signature didn't parse, but we have a class operator method
+        operator = extracted_op
 
     # Add type context if available
     if left_type:
@@ -190,5 +226,18 @@ def build_axiom_query(callee: str, signature: str | None) -> str:
     # For dereference, add "null" hint
     if operator == "operator*" and right_type == "pointer":
         parts.append("null")
+
+    # For spaceship operator, add "three-way" and "spaceship" to find C++20 axioms
+    if operator == "operator<=>":
+        parts.append("three-way")
+        parts.append("spaceship")
+
+    # For ranges pipe operator, use range-specific terms instead of bitwise
+    # Detect by checking if callee contains "ranges" or "views"
+    if operator == "operator|" and ("ranges" in callee or "views" in callee):
+        # Replace "bitwise or" with range adaptor terms
+        if "bitwise or" in parts:
+            parts.remove("bitwise or")
+        parts.extend(["range", "adaptor", "pipe", "composition"])
 
     return " ".join(parts)

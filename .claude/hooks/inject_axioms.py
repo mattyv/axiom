@@ -265,9 +265,10 @@ def get_axioms_for_file(
                     axioms_by_line[line] = []
 
                 for axiom in callee_axioms:
-                    # Only include PRECONDITION and POSTCONDITION for relevance
+                    # Include PRECONDITION, POSTCONDITION, INVARIANT, or untyped axioms
+                    # (untyped axioms are language semantics rules from C++ spec)
                     axiom_type = axiom.axiom_type.value if axiom.axiom_type else ""
-                    if axiom_type.upper() not in ("PRECONDITION", "POSTCONDITION", "INVARIANT"):
+                    if axiom_type and axiom_type.upper() not in ("PRECONDITION", "POSTCONDITION", "INVARIANT"):
                         continue
 
                     # Filter out internal K Framework axioms

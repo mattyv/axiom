@@ -246,9 +246,14 @@ class AxiomExtractor:
             str(file_path),
         ]
 
-        # Add compile_commands.json if it exists
-        if self.compile_commands_path.exists():
+        # Check if file is in compile_commands.json
+        file_in_compile_commands = str(file_path) in self._load_compile_commands_files()
+
+        # Add compile_commands.json if file is in it, else fallback to C++20
+        if self.compile_commands_path.exists() and file_in_compile_commands:
             cmd.extend(["-p", str(self.compile_commands_path.parent)])
+        else:
+            cmd.extend(["--", "-std=c++20"])
 
         logger.debug("Running axiom-extract: %s", " ".join(cmd))
 
@@ -309,9 +314,14 @@ class AxiomExtractor:
             str(file_path),
         ]
 
-        # Add compile_commands.json if it exists
-        if self.compile_commands_path.exists():
+        # Check if file is in compile_commands.json
+        file_in_compile_commands = str(file_path) in self._load_compile_commands_files()
+
+        # Add compile_commands.json if file is in it, else fallback to C++20
+        if self.compile_commands_path.exists() and file_in_compile_commands:
             cmd.extend(["-p", str(self.compile_commands_path.parent)])
+        else:
+            cmd.extend(["--", "-std=c++20"])
 
         logger.debug("Running axiom-extract: %s", " ".join(cmd))
 

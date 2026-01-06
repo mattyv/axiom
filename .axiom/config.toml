@@ -52,5 +52,5 @@ static = []
 live = [
     "examples/",
     "/home/mvarendorff/Documents/Code/cpp/market-data",
-    "/tmp/ilp_test"
+    "/tmp"
 ]
