@@ -37,10 +37,18 @@ class LiveConfig:
 class StaticConfig:
     """Static layer configuration."""
 
-    neo4j_uri: str = "bolt://localhost:7687"
-    neo4j_user: str = "neo4j"
-    neo4j_password: str = "axiompass"
-    lancedb_path: str = "data/lancedb"
+    neo4j_uri: str = field(
+        default_factory=lambda: os.environ.get("AXIOM_NEO4J_URI", "bolt://localhost:7687")
+    )
+    neo4j_user: str = field(
+        default_factory=lambda: os.environ.get("AXIOM_NEO4J_USER", "neo4j")
+    )
+    neo4j_password: str = field(
+        default_factory=lambda: os.environ.get("AXIOM_NEO4J_PASSWORD", "axiompass")
+    )
+    lancedb_path: str = field(
+        default_factory=lambda: os.environ.get("AXIOM_LANCEDB_PATH", "data/lancedb")
+    )
 
 
 @dataclass
@@ -133,10 +141,10 @@ class AxiomConfig:
                 sqlite_path=live_data.get("sqlite_path", ".axiom/live.db"),
             ),
             static=StaticConfig(
-                neo4j_uri=static_data.get("neo4j_uri", "bolt://localhost:7687"),
-                neo4j_user=static_data.get("neo4j_user", "neo4j"),
-                neo4j_password=static_data.get("neo4j_password", "axiompass"),
-                lancedb_path=static_data.get("lancedb_path", "data/lancedb"),
+                neo4j_uri=os.environ.get("AXIOM_NEO4J_URI") or static_data.get("neo4j_uri", "bolt://localhost:7687"),
+                neo4j_user=os.environ.get("AXIOM_NEO4J_USER") or static_data.get("neo4j_user", "neo4j"),
+                neo4j_password=os.environ.get("AXIOM_NEO4J_PASSWORD") or static_data.get("neo4j_password", "axiompass"),
+                lancedb_path=os.environ.get("AXIOM_LANCEDB_PATH") or static_data.get("lancedb_path", "data/lancedb"),
             ),
             diagnostics=DiagnosticsConfig(
                 mode=diag_data.get("mode", "default"),

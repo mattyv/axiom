@@ -1,0 +1,30 @@
+FROM python:3.12-slim
+
+# Install build deps for sentence-transformers
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    gcc g++ \
+    && rm -rf /var/lib/apt/lists/*
+
+# Create non-root user
+RUN useradd -m -s /bin/bash axiom
+WORKDIR /home/axiom/app
+
+# Install Python deps
+COPY pyproject.toml .
+RUN pip install --no-cache-dir ".[full,lsp]"
+
+# Copy app code and TOML knowledge files (NOT pre-loaded DBs)
+COPY axiom/ axiom/
+COPY scripts/ scripts/
+COPY knowledge/ knowledge/
+# Note: data/lancedb/ is NOT copied - will be created on first startup
+
+# Fix permissions
+RUN chown -R axiom:axiom /home/axiom
+
+USER axiom
+
+COPY --chown=axiom:axiom containers/entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
+
+ENTRYPOINT ["/entrypoint.sh"]
