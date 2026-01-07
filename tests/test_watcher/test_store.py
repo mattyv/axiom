@@ -4,7 +4,6 @@
 
 """Tests for the live axiom store."""
 
-import pytest
 
 from axiom.models import Axiom, AxiomType, SourceLocation
 from axiom.watcher.store import AxiomStore, InMemoryAxiomStore

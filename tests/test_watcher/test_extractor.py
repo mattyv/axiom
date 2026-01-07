@@ -4,10 +4,7 @@
 
 """Tests for the axiom extractor wrapper."""
 
-import tempfile
 from pathlib import Path
-
-import pytest
 
 from axiom.config import AxiomConfig, ExtractConfig, OverridesConfig
 from axiom.watcher.extractor import AxiomExtractor

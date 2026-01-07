@@ -4,7 +4,6 @@
 
 """Tests for the axiom query service."""
 
-import pytest
 
 from axiom.models import Axiom, AxiomType, SourceLocation
 from axiom.query.service import AxiomQueryService, AxiomResult

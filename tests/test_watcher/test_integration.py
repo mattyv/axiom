@@ -143,7 +143,7 @@ class TestEndToEndFlow:
         if not extractor.axiom_extract_path.exists():
             pytest.skip("axiom-extract not built")
 
-        watcher = AxiomWatcher(
+        _watcher = AxiomWatcher(  # noqa: F841 - verifying constructor works
             watch_paths=[Path.cwd() / "examples"],
             store=store,
             extractor=extractor,
