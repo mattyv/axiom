@@ -10,8 +10,9 @@ the axioms for `divide` and its transitive callees.
 
 from __future__ import annotations
 
+from collections.abc import Callable
 from dataclasses import dataclass, field
-from typing import TYPE_CHECKING, Callable
+from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from axiom.models import Axiom
@@ -177,8 +178,8 @@ def build_axiom_tree(
 
 
 def get_axioms_for_callee(
-    callee: str, axioms_by_function: dict[str, list["Axiom"]]
-) -> list["Axiom"]:
+    callee: str, axioms_by_function: dict[str, list[Axiom]]
+) -> list[Axiom]:
     """Get axioms for a callee from a function-to-axioms dict.
 
     Simple helper for tests and basic lookups. The LSP server uses

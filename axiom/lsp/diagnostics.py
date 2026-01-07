@@ -15,6 +15,7 @@ The mode parameter controls filtering:
 
 from __future__ import annotations
 
+from collections.abc import Callable
 from typing import TYPE_CHECKING, Literal
 
 from lsprotocol.types import Diagnostic, DiagnosticSeverity, Position, Range
@@ -92,8 +93,6 @@ def axioms_to_diagnostics(
         diagnostics.extend(axiom_to_diagnostics(axiom, mode=mode))
     return diagnostics
 
-
-from typing import Callable
 
 # Axiom lookup takes (callee, signature) and returns axioms
 AxiomLookup = Callable[[str, str | None], list["Axiom"]]

@@ -17,7 +17,7 @@ from __future__ import annotations
 import argparse
 import logging
 from pathlib import Path
-from typing import TYPE_CHECKING, Literal
+from typing import TYPE_CHECKING
 
 from lsprotocol.types import (
     TEXT_DOCUMENT_DID_OPEN,
@@ -38,7 +38,7 @@ from axiom.config import AxiomConfig
 from axiom.graph import Neo4jLoader
 from axiom.lsp.call_sites import CallSiteIndex, build_axiom_tree
 from axiom.lsp.diagnostics import DiagnosticMode, call_site_diagnostics
-from axiom.lsp.hover import format_hover, format_axiom_tree
+from axiom.lsp.hover import format_axiom_tree, format_hover
 from axiom.lsp.query_builder import build_axiom_query
 from axiom.models import Axiom, AxiomType, SourceLocation
 from axiom.vectors import LanceDBLoader
@@ -46,7 +46,7 @@ from axiom.watcher.extractor import AxiomExtractor
 from axiom.watcher.store import InMemoryAxiomStore
 
 if TYPE_CHECKING:
-    from axiom.models import AxiomCollection
+    pass
 
 logger = logging.getLogger(__name__)
 
@@ -186,7 +186,6 @@ class AxiomLanguageServer(LanguageServer):
             "type:void": ["void"],
             "type:pointer": ["pointer"],
             "type:reference": ["reference"],
-            "type:array": ["array"],
             "type:enum": ["enum", "enumeration"],
             # Fixed-width integers
             "type:int8_t": ["integer", "integral", "signed"],
