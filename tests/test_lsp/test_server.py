@@ -4,7 +4,19 @@
 
 """Tests for the Axiom LSP server."""
 
+import pytest
+
 from axiom.models import Axiom, AxiomType, SourceLocation
+
+# Skip all tests in this module if neo4j is not available
+try:
+    import neo4j  # noqa: F401
+
+    NEO4J_AVAILABLE = True
+except ImportError:
+    NEO4J_AVAILABLE = False
+
+pytestmark = pytest.mark.skipif(not NEO4J_AVAILABLE, reason="neo4j not installed")
 
 
 class TestAxiomLanguageServer:

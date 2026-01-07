@@ -13,7 +13,15 @@ from axiom.query.server import AxiomQueryServer
 from axiom.query.service import AxiomQueryService
 from axiom.watcher.extractor import AxiomExtractor
 from axiom.watcher.store import InMemoryAxiomStore
-from axiom.watcher.watcher import AxiomWatcher
+
+# Skip tests that require watchdog if not available
+try:
+    from axiom.watcher.watcher import AxiomWatcher
+
+    WATCHDOG_AVAILABLE = True
+except ImportError:
+    WATCHDOG_AVAILABLE = False
+    AxiomWatcher = None  # type: ignore
 
 
 class TestLiveLayerIntegration:
@@ -134,6 +142,7 @@ class TestQueryServerProtocol:
 class TestEndToEndFlow:
     """End-to-end tests for the complete LSP flow."""
 
+    @pytest.mark.skipif(not WATCHDOG_AVAILABLE, reason="watchdog not installed")
     def test_watcher_extracts_demo_file(self) -> None:
         """Watcher should extract axioms from demo file."""
         config = AxiomConfig.load(Path.cwd())
