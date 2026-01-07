@@ -64,6 +64,16 @@ full = [
     "tree-sitter>=0.21.0",
     "tree-sitter-c>=0.21.0",
     "tree-sitter-cpp>=0.21.0",
+    # File watching for live layer
+    "watchdog>=3.0.0",
+]
+
+lsp = [
+    # LSP server library
+    "pygls>=1.3.0",
+    "lsprotocol>=2023.0.0",
+    # File watching for live layer
+    "watchdog>=3.0.0",
 ]
 
 dev = [
@@ -84,6 +94,9 @@ test = [
     "tree-sitter>=0.21.0",
     "tree-sitter-c>=0.21.0",
     "tree-sitter-cpp>=0.21.0",
+    # LSP testing
+    "pygls>=1.3.0",
+    "lsprotocol>=2023.0.0",
 ]
 
 [project.scripts]
@@ -91,6 +104,9 @@ axiom-api = "axiom.api.main:run"
 axiom-mcp = "axiom.mcp.server:main"
 axiom-extract = "scripts.extract_all:main"
 axiom-bootstrap = "scripts.bootstrap:main"
+axiom-query-server = "axiom.query.server:main"
+axiom-lsp = "axiom.lsp.server:main"
+axiom-watcher = "axiom.watcher.watcher:main"
 
 [tool.setuptools.packages.find]
 where = ["."]

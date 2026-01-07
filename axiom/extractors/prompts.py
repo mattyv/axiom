@@ -1,5 +1,5 @@
 # Axiom - Grounded truth validation for LLMs
-# Copyright (c) 2025 Matt Varendorff
+# Copyright (c) 2026 Matt Varendorff
 # https://github.com/mattyv/axiom
 # SPDX-License-Identifier: BSL-1.0
 
@@ -243,6 +243,7 @@ HIGH_SIGNAL_SECTIONS = [
     "expr.shift",
     "expr.rel",
     "expr.eq",
+    "expr.spaceship",  # Three-way comparison operator <=>
     "expr.new",     # new expressions
     "expr.delete",  # delete expressions
 
@@ -344,6 +345,17 @@ HIGH_SIGNAL_LIBRARY_SECTIONS = [
     # Ranges (C++20)
     "range.access",
     "range.req",
+    "range.adaptor.object",  # Pipe operator | and adaptor composition
+    "range.transform",       # views::transform
+    "range.filter",          # views::filter
+    "range.take",            # views::take
+    "range.drop",            # views::drop
+    "range.join",            # views::join
+    "range.split",           # views::split
+    "range.reverse",         # views::reverse
+    "range.elements",        # views::elements, views::keys, views::values
+    "range.zip",             # views::zip (C++23)
+    "range.enumerate",       # views::enumerate (C++23)
 
     # Concurrency
     "thread.mutex",

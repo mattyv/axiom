@@ -1,5 +1,5 @@
 # Axiom - Grounded truth validation for LLMs
-# Copyright (c) 2025 Matt Varendorff
+# Copyright (c) 2026 Matt Varendorff
 # https://github.com/mattyv/axiom
 # SPDX-License-Identifier: BSL-1.0
 
@@ -30,7 +30,7 @@ class TestSearchWithPairings:
         ]
 
         mock_db = MagicMock()
-        mock_db.table_names.return_value = ["axioms"]
+        mock_db.list_tables.return_value = MagicMock(tables=["axioms"])
         mock_db.open_table.return_value = mock_table
 
         # Mock Neo4j loader
@@ -60,7 +60,7 @@ class TestSearchWithPairings:
         ]
 
         mock_db = MagicMock()
-        mock_db.table_names.return_value = ["axioms"]
+        mock_db.list_tables.return_value = MagicMock(tables=["axioms"])
         mock_db.open_table.return_value = mock_table
 
         # Mock Neo4j to return paired axiom
@@ -94,7 +94,7 @@ class TestSearchWithPairings:
         ]
 
         mock_db = MagicMock()
-        mock_db.table_names.return_value = ["axioms"]
+        mock_db.list_tables.return_value = MagicMock(tables=["axioms"])
         mock_db.open_table.return_value = mock_table
 
         mock_neo4j = MagicMock()
@@ -127,7 +127,7 @@ class TestSearchWithPairings:
         ]
 
         mock_db = MagicMock()
-        mock_db.table_names.return_value = ["axioms"]
+        mock_db.list_tables.return_value = MagicMock(tables=["axioms"])
         mock_db.open_table.return_value = mock_table
 
         mock_neo4j = MagicMock()
@@ -166,7 +166,7 @@ class TestSearchWithPairings:
         ]
 
         mock_db = MagicMock()
-        mock_db.table_names.return_value = ["axioms"]
+        mock_db.list_tables.return_value = MagicMock(tables=["axioms"])
         mock_db.open_table.return_value = mock_table
 
         # Pairs: lock -> unlock, unlock -> lock
@@ -201,7 +201,7 @@ class TestSearchWithPairings:
         ]
 
         mock_db = MagicMock()
-        mock_db.table_names.return_value = ["axioms"]
+        mock_db.list_tables.return_value = MagicMock(tables=["axioms"])
         mock_db.open_table.return_value = mock_table
 
         with patch.object(LanceDBLoader, "__init__", lambda self, **kwargs: None):

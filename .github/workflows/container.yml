@@ -1,0 +1,33 @@
+name: Container Build
+
+on:
+  push:
+    branches: [main]
+    tags: ['v*']
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Log in to GHCR
+        run: echo "${{ secrets.GITHUB_TOKEN }}" | podman login ghcr.io -u ${{ github.actor }} --password-stdin
+
+      - name: Build image
+        run: podman build -t ghcr.io/mattyv/axiom:${{ github.sha }} -f containers/Containerfile .
+
+      - name: Test MCP server imports
+        run: |
+          podman run --rm ghcr.io/mattyv/axiom:${{ github.sha }} \
+            python -c "from axiom.mcp.server import main"
+
+      - name: Push
+        run: |
+          podman push ghcr.io/mattyv/axiom:${{ github.sha }}
+          podman tag ghcr.io/mattyv/axiom:${{ github.sha }} ghcr.io/mattyv/axiom:latest
+          podman push ghcr.io/mattyv/axiom:latest

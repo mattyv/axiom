@@ -76,3 +76,4 @@ extracted_axioms.toml
 # Temporary extraction files
 *.toml.backup
 *.toml.tmp
+node_modules/

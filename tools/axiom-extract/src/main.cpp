@@ -1,5 +1,5 @@
 // Axiom - Grounded truth validation for LLMs
-// Copyright (c) 2025 Matt Varendorff
+// Copyright (c) 2026 Matt Varendorff
 // https://github.com/mattyv/axiom
 // SPDX-License-Identifier: BSL-1.0
 
@@ -504,11 +504,26 @@ std::vector<axiom::Axiom> createMacroAxioms(const axiom::MacroDefinition& macro)
     return axioms;
 }
 
-// PPCallbacks implementation to capture macro definitions
+// Global counter for missing headers (for warning output)
+static std::atomic<int> globalMissingHeaderCount{0};
+static std::mutex missingHeadersMutex;
+static std::set<std::string> globalMissingHeaders;
+
+// PPCallbacks implementation to capture macro definitions and track missing headers
 class MacroPPCallbacks : public PPCallbacks {
 public:
     MacroPPCallbacks(SourceManager& sm, std::vector<axiom::MacroDefinition>& macros)
         : sm_(sm), macros_(macros) {}
+
+    // Called when an #include cannot be resolved
+    bool FileNotFound(llvm::StringRef FileName) override {
+        globalMissingHeaderCount++;
+        {
+            std::lock_guard<std::mutex> lock(missingHeadersMutex);
+            globalMissingHeaders.insert(FileName.str());
+        }
+        return false;  // Let the preprocessor handle it (suppressed if IgnoreMissingHeaders)
+    }
 
     void MacroDefined(const Token& MacroNameTok,
                       const MacroDirective* MD) override {
@@ -572,7 +587,15 @@ private:
     std::vector<axiom::MacroDefinition>& macros_;
 };
 
-// Custom FrontendAction that adds macro extraction
+// Command line option for suppressing missing header errors (default: true for resilience)
+static llvm::cl::opt<bool> IgnoreMissingHeaders(
+    "ignore-missing-headers",
+    llvm::cl::desc("Continue extraction even when headers are missing (default: true)"),
+    llvm::cl::init(true),
+    llvm::cl::cat(AxiomExtractCategory)
+);
+
+// Custom FrontendAction that adds macro extraction and optional header error suppression
 class MacroExtractAction : public ASTFrontendAction {
 public:
     MacroExtractAction(std::vector<axiom::MacroDefinition>& macros)
@@ -585,6 +608,12 @@ protected:
         auto& PP = CI.getPreprocessor();
         auto& SM = CI.getSourceManager();
         PP.addPPCallbacks(std::make_unique<MacroPPCallbacks>(SM, macros_));
+
+        // Suppress include-not-found errors if requested
+        // This allows extraction to continue even when some headers are missing
+        if (IgnoreMissingHeaders) {
+            PP.SetSuppressIncludeNotFoundError(true);
+        }
 
         // Return empty consumer - we just want the preprocessor callbacks
         return std::make_unique<ASTConsumer>();
@@ -605,6 +634,38 @@ public:
 
 private:
     std::vector<axiom::MacroDefinition>& macros_;
+};
+
+// Custom FrontendAction that wraps MatchFinder action with header error suppression
+class ResilientMatchFinderAction : public ASTFrontendAction {
+public:
+    ResilientMatchFinderAction(MatchFinder* finder) : finder_(finder) {}
+
+protected:
+    std::unique_ptr<ASTConsumer> CreateASTConsumer(CompilerInstance& CI,
+                                                    llvm::StringRef InFile) override {
+        // Suppress include-not-found errors if requested
+        if (IgnoreMissingHeaders) {
+            CI.getPreprocessor().SetSuppressIncludeNotFoundError(true);
+        }
+
+        return finder_->newASTConsumer();
+    }
+
+private:
+    MatchFinder* finder_;
+};
+
+class ResilientMatchFinderActionFactory : public FrontendActionFactory {
+public:
+    ResilientMatchFinderActionFactory(MatchFinder* finder) : finder_(finder) {}
+
+    std::unique_ptr<FrontendAction> create() override {
+        return std::make_unique<ResilientMatchFinderAction>(finder_);
+    }
+
+private:
+    MatchFinder* finder_;
 };
 
 namespace {
@@ -761,10 +822,11 @@ public:
 
         // Check for requires clause (C++20 concepts)
         // Check trailing requires clause on the function itself
-        if (auto req = func->getTrailingRequiresClause(); req.ConstraintExpr) {
+        // Note: LLVM 20+ changed API from returning struct to returning Expr*
+        if (const auto* req = func->getTrailingRequiresClause()) {
             std::string reqStr;
             llvm::raw_string_ostream reqStream(reqStr);
-            req.ConstraintExpr->printPretty(reqStream, nullptr, result.Context->getPrintingPolicy());
+            req->printPretty(reqStream, nullptr, result.Context->getPrintingPolicy());
             info.requires_clause = reqStr;
         }
 
@@ -1451,7 +1513,22 @@ BatchResult processBatch(
 
     // Process files for AST extraction
     ClangTool tool(compDb, files);
-    batch.exitCode = tool.run(newFrontendActionFactory(&finder).get());
+
+    // Add arguments to make parsing more resilient to missing headers
+    // -ferror-limit=0: Don't stop after N errors
+    // -Wno-everything: Suppress warnings to reduce noise
+    tool.appendArgumentsAdjuster(getInsertArgumentAdjuster(
+        {"-ferror-limit=0", "-Wno-everything"},
+        ArgumentInsertPosition::END
+    ));
+
+    // Use resilient action factory if ignoring missing headers, otherwise use default
+    if (IgnoreMissingHeaders) {
+        ResilientMatchFinderActionFactory resilientFactory(&finder);
+        batch.exitCode = tool.run(&resilientFactory);
+    } else {
+        batch.exitCode = tool.run(newFrontendActionFactory(&finder).get());
+    }
 
     // Run macro extraction pass
     std::vector<axiom::MacroDefinition> localMacros;
@@ -1736,6 +1813,27 @@ int main(int argc, const char** argv) {
     if (TestMode) {
         output["test_mode"] = true;
         output["test_framework"] = TestFrameworkOpt.getValue();
+    }
+
+    // Add missing headers info and emit warning
+    if (globalMissingHeaderCount > 0) {
+        output["missing_headers_count"] = globalMissingHeaderCount.load();
+
+        // Convert set to vector for JSON
+        std::vector<std::string> missingList;
+        {
+            std::lock_guard<std::mutex> lock(missingHeadersMutex);
+            missingList.assign(globalMissingHeaders.begin(), globalMissingHeaders.end());
+        }
+        output["missing_headers"] = missingList;
+
+        // Emit warning to stderr
+        llvm::errs() << "Warning: " << globalMissingHeaderCount.load()
+                     << " missing header(s) were skipped during extraction:\n";
+        for (const auto& h : missingList) {
+            llvm::errs() << "  - " << h << "\n";
+        }
+        llvm::errs() << "Some axioms may be incomplete. Use --no-ignore-missing-headers to fail on missing includes.\n";
     }
 
     // Output
