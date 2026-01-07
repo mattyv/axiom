@@ -7,6 +7,8 @@
 #include "Extractors.h"
 #include "IgnoreFilter.h"
 
+#include <llvm/Config/llvm-config.h>
+
 #include <clang/AST/DeclTemplate.h>
 #include <clang/ASTMatchers/ASTMatchFinder.h>
 #include <clang/ASTMatchers/ASTMatchers.h>
@@ -822,13 +824,22 @@ public:
 
         // Check for requires clause (C++20 concepts)
         // Check trailing requires clause on the function itself
-        // Note: LLVM 20+ changed API from returning struct to returning Expr*
+        // Note: LLVM 21+ changed getTrailingRequiresClause() to return AssociatedConstraint struct
+#if LLVM_VERSION_MAJOR >= 21
+        if (auto req = func->getTrailingRequiresClause(); req.ConstraintExpr) {
+            std::string reqStr;
+            llvm::raw_string_ostream reqStream(reqStr);
+            req.ConstraintExpr->printPretty(reqStream, nullptr, result.Context->getPrintingPolicy());
+            info.requires_clause = reqStr;
+        }
+#else
         if (const auto* req = func->getTrailingRequiresClause()) {
             std::string reqStr;
             llvm::raw_string_ostream reqStream(reqStr);
             req->printPretty(reqStream, nullptr, result.Context->getPrintingPolicy());
             info.requires_clause = reqStr;
         }
+#endif
 
         // Check if this is a template function
         if (const auto* ftd = func->getDescribedFunctionTemplate()) {

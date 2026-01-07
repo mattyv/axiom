@@ -5,6 +5,8 @@
 
 #include "Extractors.h"
 
+#include <llvm/Config/llvm-config.h>
+
 #include <clang/AST/ASTContext.h>
 #include <clang/AST/Attr.h>
 #include <clang/AST/DeclCXX.h>
@@ -215,13 +217,22 @@ private:
         info.is_defaulted = decl->isDefaulted();
 
         // requires clause (C++20)
-        // Note: LLVM 20+ changed API from returning struct to returning Expr*
+        // Note: LLVM 21+ changed getTrailingRequiresClause() to return AssociatedConstraint struct
+#if LLVM_VERSION_MAJOR >= 21
+        if (auto trail = decl->getTrailingRequiresClause(); trail.ConstraintExpr) {
+            std::string requiresStr;
+            llvm::raw_string_ostream os(requiresStr);
+            trail.ConstraintExpr->printPretty(os, nullptr, ctx_->getPrintingPolicy());
+            info.requires_clause = os.str();
+        }
+#else
         if (const auto* trail = decl->getTrailingRequiresClause()) {
             std::string requiresStr;
             llvm::raw_string_ostream os(requiresStr);
             trail->printPretty(os, nullptr, ctx_->getPrintingPolicy());
             info.requires_clause = os.str();
         }
+#endif
 
         // Template info
         if (const auto* ftd = decl->getDescribedFunctionTemplate()) {
