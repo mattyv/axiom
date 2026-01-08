@@ -11,13 +11,11 @@ Reads .axiom/config.toml from workspace root.
 from __future__ import annotations
 
 import os
+import shutil
 import tomllib
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
-
-
-import shutil
 
 
 def _find_axiom_extract() -> str:
