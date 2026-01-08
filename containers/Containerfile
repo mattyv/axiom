@@ -26,8 +26,12 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && rm -rf /var/lib/apt/lists/*
 
 # Copy axiom-extract-clang and Clang's builtin headers from builder
-COPY --from=builder /usr/local/bin/axiom-extract-clang /usr/local/bin/
+COPY --from=builder /usr/local/bin/axiom-extract-clang /usr/local/bin/axiom-extract-clang-bin
 COPY --from=builder /usr/lib/llvm-19/lib/clang/ /usr/lib/llvm-19/lib/clang/
+
+# Install wrapper script that adds resource-dir flag automatically
+COPY containers/axiom-extract-wrapper.sh /usr/local/bin/axiom-extract-clang
+RUN chmod +x /usr/local/bin/axiom-extract-clang
 
 # Create non-root user
 RUN useradd -m -s /bin/bash axiom
