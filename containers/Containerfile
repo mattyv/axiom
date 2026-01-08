@@ -37,16 +37,16 @@ RUN chmod +x /usr/local/bin/axiom-extract-clang
 RUN useradd -m -s /bin/bash axiom
 WORKDIR /home/axiom/app
 
-# Install Python deps with CPU-only PyTorch (avoids multi-GB CUDA packages)
+# Copy app code first, then install (so pip installs from local source)
 COPY pyproject.toml .
-RUN pip install --no-cache-dir torch --index-url https://download.pytorch.org/whl/cpu && \
-    pip install --no-cache-dir ".[full,lsp]"
-
-# Copy app code and TOML knowledge files (NOT pre-loaded DBs)
 COPY axiom/ axiom/
 COPY scripts/ scripts/
 COPY knowledge/ knowledge/
 # Note: data/lancedb/ is NOT copied - will be created on first startup
+
+# Install Python deps with CPU-only PyTorch (avoids multi-GB CUDA packages)
+RUN pip install --no-cache-dir torch --index-url https://download.pytorch.org/whl/cpu && \
+    pip install --no-cache-dir ".[full,lsp]"
 
 # Fix permissions
 RUN chown -R axiom:axiom /home/axiom
