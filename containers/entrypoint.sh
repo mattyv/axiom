@@ -19,9 +19,9 @@ echo "Neo4j ready!"
 if [ ! -f "$INITIALIZED_FLAG" ]; then
     echo "First startup - initializing axiom database..."
 
-    # Download embedding model
+    # Download embedding model (must match axiom/vectors/loader.py default)
     echo "Downloading embedding model..."
-    python -c "from sentence_transformers import SentenceTransformer; SentenceTransformer('all-MiniLM-L6-v2')"
+    python -c "from sentence_transformers import SentenceTransformer; SentenceTransformer('all-mpnet-base-v2')"
 
     # Run ingestion from TOML files into both LanceDB and Neo4j
     echo "Ingesting axioms from TOML files..."
