@@ -14,13 +14,12 @@ from axiom.query.service import AxiomQueryService
 from axiom.watcher.extractor import AxiomExtractor
 from axiom.watcher.store import InMemoryAxiomStore
 
-# Skip tests that require watchdog if not available
-try:
-    from axiom.watcher.watcher import AxiomWatcher
+# Import WATCHDOG_AVAILABLE from watcher module to correctly detect availability
+from axiom.watcher.watcher import WATCHDOG_AVAILABLE
 
-    WATCHDOG_AVAILABLE = True
-except ImportError:
-    WATCHDOG_AVAILABLE = False
+if WATCHDOG_AVAILABLE:
+    from axiom.watcher.watcher import AxiomWatcher
+else:
     AxiomWatcher = None  # type: ignore
 
 
