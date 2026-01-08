@@ -19,9 +19,10 @@ RUN cd tools/axiom-extract && \
 FROM python:3.12-slim
 
 # Install runtime deps for axiom-extract (needs C++ headers to parse code)
+# Using libc++ instead of libstdc++ for Clang compatibility
 RUN apt-get update && apt-get install -y --no-install-recommends \
     gcc g++ \
-    libclang1 libstdc++-14-dev \
+    libclang1 libc++-dev libc++abi-dev \
     && rm -rf /var/lib/apt/lists/*
 
 # Copy axiom-extract-clang and Clang's builtin headers from builder
