@@ -17,12 +17,27 @@ from pathlib import Path
 from typing import Any
 
 
+import shutil
+
+
+def _find_axiom_extract() -> str:
+    """Find axiom-extract binary, checking multiple locations."""
+    # Check environment variable first
+    if env_path := os.environ.get("AXIOM_EXTRACT_PATH"):
+        return env_path
+    # Check for axiom-extract-clang in PATH (container install)
+    if clang_path := shutil.which("axiom-extract-clang"):
+        return clang_path
+    # Default to local build path
+    return "tools/axiom-extract/build/axiom-extract"
+
+
 @dataclass
 class ExtractConfig:
     """Extraction configuration."""
 
     compile_commands: str = "build/compile_commands.json"
-    axiom_extract_path: str = "tools/axiom-extract/build/axiom-extract"
+    axiom_extract_path: str = field(default_factory=_find_axiom_extract)
 
 
 @dataclass

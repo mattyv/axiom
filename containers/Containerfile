@@ -13,7 +13,7 @@ COPY tools/axiom-extract/ ./tools/axiom-extract/
 RUN cd tools/axiom-extract && \
     cmake -B build -G Ninja -DCMAKE_BUILD_TYPE=Release && \
     cmake --build build && \
-    cp build/axiom-extract /usr/local/bin/
+    cp build/axiom-extract /usr/local/bin/axiom-extract-clang
 
 # Final image
 FROM python:3.12-slim
@@ -24,8 +24,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libclang1 \
     && rm -rf /var/lib/apt/lists/*
 
-# Copy axiom-extract from builder
-COPY --from=builder /usr/local/bin/axiom-extract /usr/local/bin/
+# Copy axiom-extract-clang from builder (C++ Clang-based extractor)
+COPY --from=builder /usr/local/bin/axiom-extract-clang /usr/local/bin/
 
 # Create non-root user
 RUN useradd -m -s /bin/bash axiom
