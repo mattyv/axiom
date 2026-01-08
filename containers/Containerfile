@@ -9,9 +9,10 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 RUN useradd -m -s /bin/bash axiom
 WORKDIR /home/axiom/app
 
-# Install Python deps
+# Install Python deps with CPU-only PyTorch (avoids multi-GB CUDA packages)
 COPY pyproject.toml .
-RUN pip install --no-cache-dir ".[full,lsp]"
+RUN pip install --no-cache-dir torch --index-url https://download.pytorch.org/whl/cpu && \
+    pip install --no-cache-dir ".[full,lsp]"
 
 # Copy app code and TOML knowledge files (NOT pre-loaded DBs)
 COPY axiom/ axiom/
