@@ -18,14 +18,15 @@ RUN cd tools/axiom-extract && \
 # Final image
 FROM python:3.12-slim
 
-# Install runtime deps for axiom-extract
+# Install runtime deps for axiom-extract (needs C++ headers to parse code)
 RUN apt-get update && apt-get install -y --no-install-recommends \
     gcc g++ \
-    libclang1 \
+    libclang1 libstdc++-14-dev \
     && rm -rf /var/lib/apt/lists/*
 
-# Copy axiom-extract-clang from builder (C++ Clang-based extractor)
+# Copy axiom-extract-clang and Clang's builtin headers from builder
 COPY --from=builder /usr/local/bin/axiom-extract-clang /usr/local/bin/
+COPY --from=builder /usr/lib/llvm-19/lib/clang/ /usr/lib/llvm-19/lib/clang/
 
 # Create non-root user
 RUN useradd -m -s /bin/bash axiom
