@@ -1,9 +1,30 @@
+FROM python:3.12-slim AS builder
+
+# Install build deps for axiom-extract (Clang LibTooling)
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    cmake ninja-build \
+    llvm-dev libclang-dev clang \
+    && rm -rf /var/lib/apt/lists/*
+
+# Build axiom-extract
+WORKDIR /build
+COPY tools/axiom-extract/ ./tools/axiom-extract/
+RUN cd tools/axiom-extract && \
+    cmake -B build -G Ninja -DCMAKE_BUILD_TYPE=Release && \
+    cmake --build build && \
+    cp build/axiom-extract /usr/local/bin/
+
+# Final image
 FROM python:3.12-slim
 
-# Install build deps for sentence-transformers
+# Install runtime deps for axiom-extract
 RUN apt-get update && apt-get install -y --no-install-recommends \
     gcc g++ \
+    libclang1 \
     && rm -rf /var/lib/apt/lists/*
+
+# Copy axiom-extract from builder
+COPY --from=builder /usr/local/bin/axiom-extract /usr/local/bin/
 
 # Create non-root user
 RUN useradd -m -s /bin/bash axiom
