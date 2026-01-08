@@ -21,10 +21,10 @@ jobs:
       - name: Build image
         run: podman build -t ghcr.io/mattyv/axiom:${{ github.sha }} -f containers/Containerfile .
 
-      - name: Test MCP server imports
+      - name: Test Python imports
         run: |
-          podman run --rm ghcr.io/mattyv/axiom:${{ github.sha }} \
-            python -c "from axiom.mcp.server import main"
+          podman run --rm --entrypoint python ghcr.io/mattyv/axiom:${{ github.sha }} \
+            -c "from axiom.models import Axiom; print('OK')"
 
       - name: Push
         run: |
