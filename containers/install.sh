@@ -85,6 +85,11 @@ IFS=',' read -ra PATHS <<< "$WORKSPACE_PATHS"
 for path in "${PATHS[@]}"; do
     # Trim whitespace
     path=$(echo "$path" | xargs)
+    # Skip /tmp as it's already mounted as tmpfs in the container
+    if [ "$path" = "/tmp" ]; then
+        echo "Warning: /tmp is already mounted as tmpfs in container, skipping"
+        continue
+    fi
     if [ -d "$path" ]; then
         WORKSPACE_MOUNTS="${WORKSPACE_MOUNTS}      - ${path}:${path}:ro
 "

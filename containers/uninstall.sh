@@ -37,6 +37,15 @@ if [ -f "$COMPOSE_FILE" ]; then
     podman-compose -f "$COMPOSE_FILE" down 2>/dev/null || true
 fi
 
+# Also remove containers by name (in case compose file is missing/corrupt)
+echo "Removing axiom containers..."
+podman rm -f axiom-app 2>/dev/null || true
+podman rm -f axiom-neo4j 2>/dev/null || true
+
+# Remove network
+echo "Removing axiom network..."
+podman network rm axiom-network 2>/dev/null || true
+
 # Remove wrapper scripts
 echo "Removing wrapper scripts..."
 rm -f ~/.local/bin/axiom-mcp
