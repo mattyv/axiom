@@ -1,3 +1,28 @@
+[ ] - Optimize Neo4j bulk ingestion (see docs/neo4j-bulk-ingestion.md)
+
+    ## Problem
+    Current Neo4j loader processes axioms one at a time with ~12,000 individual
+    transactions for a full ingestion. Takes 3-5 minutes when it could take seconds.
+
+    ## Issues
+    1. Individual `execute_write()` per axiom (lines 53-54)
+    2. Multiple `tx.run()` calls per axiom (3 queries each)
+    3. No `UNWIND` bulk operations
+
+    ## Solution
+    Use UNWIND-based bulk inserts:
+    - Convert all axioms to dicts upfront
+    - Single UNWIND query creates all nodes + relationships
+    - Reduces ~12,000 transactions to ~3
+
+    ## Expected Improvement
+    - Before: 3-5 minutes for 4,000 axioms
+    - After: 5-10 seconds
+
+    See `docs/neo4j-bulk-ingestion.md` for implementation details.
+
+---
+
 [ ] - distinguish "undefined" vs "implementation-defined" behavior in axioms (e.g., realloc(ptr, 0) is implementation-defined in C11 but the current axiom flags it as an error condition without this distinction)
 
 [ ] - Validator returns false positives for contradictory claims (CRITICAL)
