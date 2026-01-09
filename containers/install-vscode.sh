@@ -4,6 +4,8 @@ set -e
 
 CONTAINER_NAME="${AXIOM_CONTAINER_NAME:-axiom-app}"
 WRAPPER_PATH="$HOME/.local/bin/axiom-lsp"
+HOST_WORKSPACE="${AXIOM_HOST_WORKSPACE:-$(pwd)}"
+CONTAINER_WORKSPACE="${AXIOM_CONTAINER_WORKSPACE:-/workspace}"
 
 # Detect OS for correct settings path
 case "$(uname -s)" in
@@ -43,7 +45,11 @@ mkdir -p "$(dirname "$WRAPPER_PATH")"
 cat > "$WRAPPER_PATH" << EOF
 #!/bin/bash
 # Wrapper to run axiom-lsp from container
-exec $CONTAINER_CMD exec -i -e AXIOM_LANCEDB_PATH=/home/axiom/data/lancedb $CONTAINER_NAME axiom-lsp "\$@"
+exec $CONTAINER_CMD exec -i \\
+  -e AXIOM_LANCEDB_PATH=/home/axiom/data/lancedb \\
+  -e AXIOM_HOST_WORKSPACE="$HOST_WORKSPACE" \\
+  -e AXIOM_CONTAINER_WORKSPACE="$CONTAINER_WORKSPACE" \\
+  $CONTAINER_NAME axiom-lsp "\$@"
 EOF
 chmod +x "$WRAPPER_PATH"
 echo "Created wrapper script at $WRAPPER_PATH"
