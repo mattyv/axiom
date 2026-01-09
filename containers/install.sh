@@ -23,21 +23,23 @@ while [[ $# -gt 0 ]]; do
             shift 2
             ;;
         --help|-h)
-            echo "Usage: ./install.sh [OPTIONS]"
+            echo "Usage: ./install.sh --workspace PATHS [OPTIONS]"
+            echo ""
+            echo "Required:"
+            echo "  --workspace PATHS    Comma-separated paths to mount in the container"
+            echo "                       These directories will be accessible to axiom for analysis"
             echo ""
             echo "Options:"
             echo "  --build              Build container from local source (for development)"
             echo "                       Without this flag, pulls pre-built images from registry"
             echo "  --branch NAME        Use specific branch/tag for compose file and image"
             echo "                       (default: main)"
-            echo "  --workspace PATHS    Comma-separated paths to mount in the container"
-            echo "                       (default: /Users on macOS, /home on Linux)"
             echo ""
             echo "Examples:"
-            echo "  ./install.sh                                  # Pull from main, default mounts"
-            echo "  ./install.sh --branch rc/v0.3                 # Pull from rc/v0.3 branch"
-            echo "  ./install.sh --build                          # Build from local source"
-            echo "  ./install.sh --workspace /projects,/data      # Custom mount paths"
+            echo "  ./install.sh --workspace /Users/me/projects"
+            echo "  ./install.sh --workspace /home/me/code,/opt/projects"
+            echo "  ./install.sh --workspace /Users --branch rc/v0.3"
+            echo "  ./install.sh --workspace /Users --build"
             echo ""
             exit 0
             ;;
@@ -69,45 +71,36 @@ mkdir -p ~/.local/share/axiom
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(dirname "$SCRIPT_DIR")"
 
-# Determine host mounts
-if [ -n "$WORKSPACE_PATHS" ]; then
-    # User specified custom paths
-    HOST_HOME_MOUNT=""
-    IFS=',' read -ra PATHS <<< "$WORKSPACE_PATHS"
-    for path in "${PATHS[@]}"; do
-        # Trim whitespace and add mount
-        path=$(echo "$path" | xargs)
-        if [ -d "$path" ]; then
-            if [ -n "$HOST_HOME_MOUNT" ]; then
-                HOST_HOME_MOUNT="$HOST_HOME_MOUNT\n      - $path:$path:ro"
-            else
-                HOST_HOME_MOUNT="$path:$path:ro"
-            fi
-        else
-            echo "Warning: Path does not exist, skipping: $path"
-        fi
-    done
-    if [ -z "$HOST_HOME_MOUNT" ]; then
-        echo "Error: No valid workspace paths specified"
-        exit 1
-    fi
-else
-    # Default based on OS
-    case "$(uname -s)" in
-      Darwin)
-        HOST_HOME_MOUNT="/Users:/Users:ro"
-        ;;
-      Linux)
-        HOST_HOME_MOUNT="/home:/home:ro"
-        ;;
-      *)
-        echo "Warning: Unknown OS, using /home mount"
-        HOST_HOME_MOUNT="/home:/home:ro"
-        ;;
-    esac
+# Determine host mounts - build proper YAML volume entries
+if [ -z "$WORKSPACE_PATHS" ]; then
+    echo "Error: --workspace is required"
+    echo "Specify the paths that contain your source code, e.g.:"
+    echo "  ./install.sh --workspace /Users/you/projects"
+    echo "  ./install.sh --workspace /home/you/code,/opt/projects"
+    exit 1
 fi
 
-echo "Workspace mounts: $(echo -e "$HOST_HOME_MOUNT" | tr '\n' ' ')"
+WORKSPACE_MOUNTS=""
+IFS=',' read -ra PATHS <<< "$WORKSPACE_PATHS"
+for path in "${PATHS[@]}"; do
+    # Trim whitespace
+    path=$(echo "$path" | xargs)
+    if [ -d "$path" ]; then
+        WORKSPACE_MOUNTS="${WORKSPACE_MOUNTS}      - ${path}:${path}:ro
+"
+    else
+        echo "Warning: Path does not exist, skipping: $path"
+    fi
+done
+
+if [ -z "$WORKSPACE_MOUNTS" ]; then
+    echo "Error: No valid workspace paths specified"
+    exit 1
+fi
+
+# Remove trailing newline for display
+MOUNTS_DISPLAY=$(echo "$WORKSPACE_MOUNTS" | sed 's/^      - //g' | tr '\n' ' ')
+echo "Workspace mounts: $MOUNTS_DISPLAY"
 
 if [ "$BUILD_LOCAL" = true ]; then
     echo "Building axiom container from local source..."
@@ -123,9 +116,18 @@ if [ "$BUILD_LOCAL" = true ]; then
     podman build -t axiom:latest -f "$SCRIPT_DIR/Containerfile" "$REPO_ROOT"
 
     # Copy compose file and update image reference for local build
-    sed -e 's|ghcr.io/mattyv/axiom:latest|localhost/axiom:latest|g' \
-        -e "s|HOST_HOME_MOUNT|$HOST_HOME_MOUNT|g" \
+    # Write mounts to temp file, then use sed to replace placeholder
+    MOUNTS_FILE=$(mktemp)
+    printf '%s' "$WORKSPACE_MOUNTS" > "$MOUNTS_FILE"
+
+    # Replace placeholder with mounts file content, then fix image reference
+    sed -e '/# WORKSPACE_MOUNTS_PLACEHOLDER/{
+        r '"$MOUNTS_FILE"'
+        d
+    }' -e 's|ghcr.io/mattyv/axiom:latest|localhost/axiom:latest|g' \
         "$SCRIPT_DIR/podman-compose.yml" > ~/.local/share/axiom/podman-compose.yml
+
+    rm -f "$MOUNTS_FILE"
 
     echo "Built local image: localhost/axiom:latest"
 else
@@ -141,10 +143,16 @@ else
         exit 1
     fi
 
-    # Replace host mount placeholder with correct path for this OS
-    sed "s|HOST_HOME_MOUNT|$HOST_HOME_MOUNT|g" \
-        ~/.local/share/axiom/podman-compose.yml.tmp > ~/.local/share/axiom/podman-compose.yml
-    rm -f ~/.local/share/axiom/podman-compose.yml.tmp
+    # Replace placeholder comment with actual mount lines
+    MOUNTS_FILE=$(mktemp)
+    printf '%s' "$WORKSPACE_MOUNTS" > "$MOUNTS_FILE"
+
+    sed -e '/# WORKSPACE_MOUNTS_PLACEHOLDER/{
+        r '"$MOUNTS_FILE"'
+        d
+    }' ~/.local/share/axiom/podman-compose.yml.tmp > ~/.local/share/axiom/podman-compose.yml
+
+    rm -f "$MOUNTS_FILE" ~/.local/share/axiom/podman-compose.yml.tmp
 
     # Determine image tag based on branch
     if [ "$BRANCH" = "main" ]; then
