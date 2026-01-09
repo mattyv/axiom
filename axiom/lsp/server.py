@@ -578,10 +578,25 @@ class AxiomLanguageServer(LanguageServer):
         )
 
     def _uri_to_path(self, uri: str) -> str:
-        """Convert file:// URI to file path."""
+        """Convert file:// URI to file path.
+
+        Also translates host paths to container paths when running in a container
+        with AXIOM_HOST_WORKSPACE and AXIOM_CONTAINER_WORKSPACE set.
+        """
+        import os
+
         if uri.startswith("file://"):
-            return uri[7:]
-        return uri
+            path = uri[7:]
+        else:
+            path = uri
+
+        # Translate host workspace to container workspace if configured
+        host_ws = os.environ.get("AXIOM_HOST_WORKSPACE")
+        container_ws = os.environ.get("AXIOM_CONTAINER_WORKSPACE")
+        if host_ws and container_ws and path.startswith(host_ws):
+            path = container_ws + path[len(host_ws):]
+
+        return path
 
     def _is_cpp_file(self, file_path: str) -> bool:
         """Check if file is a C++ source file."""
