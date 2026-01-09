@@ -43,7 +43,7 @@ mkdir -p "$(dirname "$WRAPPER_PATH")"
 cat > "$WRAPPER_PATH" << EOF
 #!/bin/bash
 # Wrapper to run axiom-lsp from container
-exec $CONTAINER_CMD exec -i $CONTAINER_NAME axiom-lsp "\$@"
+exec $CONTAINER_CMD exec -i -e AXIOM_LANCEDB_PATH=/home/axiom/data/lancedb $CONTAINER_NAME axiom-lsp "\$@"
 EOF
 chmod +x "$WRAPPER_PATH"
 echo "Created wrapper script at $WRAPPER_PATH"
