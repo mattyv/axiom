@@ -26,7 +26,11 @@ if [ ! -f "$INITIALIZED_FLAG" ]; then
     # Run ingestion from TOML files into both LanceDB and Neo4j
     echo "Ingesting axioms from TOML files..."
     cd /home/axiom/app
-    python -m scripts.ingest --lancedb-path "$LANCEDB_DIR"
+    python -m scripts.ingest \
+        --lancedb-path "$LANCEDB_DIR" \
+        --neo4j-uri "$AXIOM_NEO4J_URI" \
+        --neo4j-user "$AXIOM_NEO4J_USER" \
+        --neo4j-password "$AXIOM_NEO4J_PASSWORD"
 
     touch "$INITIALIZED_FLAG"
     echo "Initialization complete!"

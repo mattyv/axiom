@@ -7,6 +7,7 @@ echo "=== Axiom Installation ==="
 # Parse arguments
 BUILD_LOCAL=false
 BRANCH="main"
+WORKSPACE_PATHS=""
 while [[ $# -gt 0 ]]; do
     case $1 in
         --build)
@@ -17,19 +18,26 @@ while [[ $# -gt 0 ]]; do
             BRANCH="$2"
             shift 2
             ;;
+        --workspace)
+            WORKSPACE_PATHS="$2"
+            shift 2
+            ;;
         --help|-h)
             echo "Usage: ./install.sh [OPTIONS]"
             echo ""
             echo "Options:"
-            echo "  --build          Build container from local source (for development)"
-            echo "                   Without this flag, pulls pre-built images from registry"
-            echo "  --branch NAME    Use specific branch/tag for compose file and image"
-            echo "                   (default: main)"
+            echo "  --build              Build container from local source (for development)"
+            echo "                       Without this flag, pulls pre-built images from registry"
+            echo "  --branch NAME        Use specific branch/tag for compose file and image"
+            echo "                       (default: main)"
+            echo "  --workspace PATHS    Comma-separated paths to mount in the container"
+            echo "                       (default: /Users on macOS, /home on Linux)"
             echo ""
             echo "Examples:"
-            echo "  ./install.sh                    # Pull from main branch"
-            echo "  ./install.sh --branch rc/v0.3   # Pull from rc/v0.3 branch"
-            echo "  ./install.sh --build            # Build from local source"
+            echo "  ./install.sh                                  # Pull from main, default mounts"
+            echo "  ./install.sh --branch rc/v0.3                 # Pull from rc/v0.3 branch"
+            echo "  ./install.sh --build                          # Build from local source"
+            echo "  ./install.sh --workspace /projects,/data      # Custom mount paths"
             echo ""
             exit 0
             ;;
@@ -61,19 +69,45 @@ mkdir -p ~/.local/share/axiom
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(dirname "$SCRIPT_DIR")"
 
-# Determine host home mount based on OS
-case "$(uname -s)" in
-  Darwin)
-    HOST_HOME_MOUNT="/Users:/Users:ro"
-    ;;
-  Linux)
-    HOST_HOME_MOUNT="/home:/home:ro"
-    ;;
-  *)
-    echo "Warning: Unknown OS, using /home mount"
-    HOST_HOME_MOUNT="/home:/home:ro"
-    ;;
-esac
+# Determine host mounts
+if [ -n "$WORKSPACE_PATHS" ]; then
+    # User specified custom paths
+    HOST_HOME_MOUNT=""
+    IFS=',' read -ra PATHS <<< "$WORKSPACE_PATHS"
+    for path in "${PATHS[@]}"; do
+        # Trim whitespace and add mount
+        path=$(echo "$path" | xargs)
+        if [ -d "$path" ]; then
+            if [ -n "$HOST_HOME_MOUNT" ]; then
+                HOST_HOME_MOUNT="$HOST_HOME_MOUNT\n      - $path:$path:ro"
+            else
+                HOST_HOME_MOUNT="$path:$path:ro"
+            fi
+        else
+            echo "Warning: Path does not exist, skipping: $path"
+        fi
+    done
+    if [ -z "$HOST_HOME_MOUNT" ]; then
+        echo "Error: No valid workspace paths specified"
+        exit 1
+    fi
+else
+    # Default based on OS
+    case "$(uname -s)" in
+      Darwin)
+        HOST_HOME_MOUNT="/Users:/Users:ro"
+        ;;
+      Linux)
+        HOST_HOME_MOUNT="/home:/home:ro"
+        ;;
+      *)
+        echo "Warning: Unknown OS, using /home mount"
+        HOST_HOME_MOUNT="/home:/home:ro"
+        ;;
+    esac
+fi
+
+echo "Workspace mounts: $(echo -e "$HOST_HOME_MOUNT" | tr '\n' ' ')"
 
 if [ "$BUILD_LOCAL" = true ]; then
     echo "Building axiom container from local source..."
