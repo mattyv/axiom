@@ -4,6 +4,43 @@ set -e
 
 echo "=== Axiom Installation ==="
 
+# Parse arguments
+BUILD_LOCAL=false
+BRANCH="main"
+while [[ $# -gt 0 ]]; do
+    case $1 in
+        --build)
+            BUILD_LOCAL=true
+            shift
+            ;;
+        --branch)
+            BRANCH="$2"
+            shift 2
+            ;;
+        --help|-h)
+            echo "Usage: ./install.sh [OPTIONS]"
+            echo ""
+            echo "Options:"
+            echo "  --build          Build container from local source (for development)"
+            echo "                   Without this flag, pulls pre-built images from registry"
+            echo "  --branch NAME    Use specific branch/tag for compose file and image"
+            echo "                   (default: main)"
+            echo ""
+            echo "Examples:"
+            echo "  ./install.sh                    # Pull from main branch"
+            echo "  ./install.sh --branch rc/v0.3   # Pull from rc/v0.3 branch"
+            echo "  ./install.sh --build            # Build from local source"
+            echo ""
+            exit 0
+            ;;
+        *)
+            echo "Unknown option: $1"
+            echo "Use --help for usage information"
+            exit 1
+            ;;
+    esac
+done
+
 # Check for podman
 if ! command -v podman &> /dev/null; then
     echo "Error: podman not found. Install from https://podman.io"
@@ -20,14 +57,63 @@ fi
 mkdir -p ~/.local/bin
 mkdir -p ~/.local/share/axiom
 
-# Download podman-compose.yml
-echo "Downloading compose file..."
-curl -sSL https://raw.githubusercontent.com/mattyv/axiom/main/containers/podman-compose.yml \
-  -o ~/.local/share/axiom/podman-compose.yml
+# Determine script directory (for local builds)
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+REPO_ROOT="$(dirname "$SCRIPT_DIR")"
 
-# Pull images
-echo "Pulling axiom images..."
-podman pull ghcr.io/mattyv/axiom:latest
+if [ "$BUILD_LOCAL" = true ]; then
+    echo "Building axiom container from local source..."
+
+    # Verify we're in the right place
+    if [ ! -f "$SCRIPT_DIR/Containerfile" ]; then
+        echo "Error: Containerfile not found in $SCRIPT_DIR"
+        echo "Make sure you're running this from the containers/ directory"
+        exit 1
+    fi
+
+    # Build the container
+    podman build -t axiom:latest -f "$SCRIPT_DIR/Containerfile" "$REPO_ROOT"
+
+    # Copy compose file and update image reference for local build
+    sed 's|ghcr.io/mattyv/axiom:latest|localhost/axiom:latest|g' \
+        "$SCRIPT_DIR/podman-compose.yml" > ~/.local/share/axiom/podman-compose.yml
+
+    echo "Built local image: localhost/axiom:latest"
+else
+    # URL-encode the branch name (replace / with %2F)
+    BRANCH_ENCODED="${BRANCH//\//%2F}"
+
+    # Download podman-compose.yml
+    echo "Downloading compose file from branch '$BRANCH'..."
+    COMPOSE_URL="https://raw.githubusercontent.com/mattyv/axiom/${BRANCH}/containers/podman-compose.yml"
+    if ! curl -sSLf "$COMPOSE_URL" -o ~/.local/share/axiom/podman-compose.yml; then
+        echo "Error: Failed to download compose file from $COMPOSE_URL"
+        echo "Check that the branch '$BRANCH' exists and contains containers/podman-compose.yml"
+        exit 1
+    fi
+
+    # Determine image tag based on branch
+    if [ "$BRANCH" = "main" ]; then
+        IMAGE_TAG="latest"
+    else
+        # For branches like rc/v0.3, use the branch name as tag
+        IMAGE_TAG="$BRANCH_ENCODED"
+    fi
+
+    # Pull images
+    echo "Pulling axiom image (tag: $IMAGE_TAG)..."
+    if ! podman pull "ghcr.io/mattyv/axiom:$IMAGE_TAG"; then
+        echo "Warning: Could not pull ghcr.io/mattyv/axiom:$IMAGE_TAG"
+        echo "Falling back to 'latest' tag..."
+        podman pull ghcr.io/mattyv/axiom:latest
+        # Update compose file to use latest
+        sed -i '' "s|ghcr.io/mattyv/axiom:$IMAGE_TAG|ghcr.io/mattyv/axiom:latest|g" \
+            ~/.local/share/axiom/podman-compose.yml 2>/dev/null || true
+    fi
+fi
+
+# Always pull neo4j
+echo "Pulling neo4j image..."
 podman pull docker.io/library/neo4j:5.15
 
 # Create wrapper scripts
@@ -77,10 +163,22 @@ EOF
 
 chmod +x ~/.local/bin/axiom-mcp ~/.local/bin/axiom-lsp
 
-echo "Installed wrapper scripts to ~/.local/bin/"
+# Start the services
+echo "Starting axiom services..."
+podman-compose -f ~/.local/share/axiom/podman-compose.yml up -d
+
+echo ""
+echo "=== Installation Complete ==="
+echo ""
+echo "Services are starting in the background."
+echo "Check status with: podman-compose -f ~/.local/share/axiom/podman-compose.yml ps"
+echo ""
+echo "Wrapper scripts installed to ~/.local/bin/"
+echo "  - axiom-mcp: MCP server for Claude Code"
+echo "  - axiom-lsp: LSP server for VSCode"
 echo ""
 echo "Next steps:"
-echo "  - For Claude Code: run '~/.local/bin/axiom-install-mcp'"
-echo "  - For VSCode:      run '~/.local/bin/axiom-install-vscode'"
+echo "  - For Claude Code: run './install-mcp.sh'"
+echo "  - For VSCode:      run './install-vscode.sh'"
 echo ""
 echo "Note: First run will take ~30s to download model and ingest axioms."
