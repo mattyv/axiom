@@ -5,7 +5,7 @@
 
 """Tests for bulk Neo4j ingestion using UNWIND operations."""
 
-from unittest.mock import MagicMock, call
+from unittest.mock import MagicMock
 
 import pytest
 
@@ -262,7 +262,7 @@ class TestLoadCollectionBulk:
         loader.load_collection(sample_collection, bulk=True)
 
         # Verify UNWIND queries were used
-        queries = [call[0][0] for call in mock_tx.run.call_args_list]
+        queries = [c[0][0] for c in mock_tx.run.call_args_list]
         assert any("UNWIND" in q for q in queries)
 
     def test_sequential_mode(self, mock_loader, sample_collection) -> None:
