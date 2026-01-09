@@ -167,11 +167,28 @@ chmod +x ~/.local/bin/axiom-mcp ~/.local/bin/axiom-lsp
 echo "Starting axiom services..."
 podman-compose -f ~/.local/share/axiom/podman-compose.yml up -d
 
+# Wait for neo4j to be healthy
+echo "Waiting for Neo4j to be ready..."
+while ! podman exec axiom-neo4j wget --no-verbose --tries=1 --spider localhost:7474 2>/dev/null; do
+    sleep 2
+done
+echo "Neo4j is ready."
+
+# Wait for axiom initialization (model download + axiom ingestion)
+echo "Waiting for Axiom to initialize (downloading model, ingesting axioms)..."
+echo "This may take 30-60 seconds on first run..."
+while ! podman exec axiom-app test -f /home/axiom/data/.initialized 2>/dev/null; do
+    # Show progress from container logs
+    podman logs --tail 1 axiom-app 2>/dev/null | grep -v "^$" || true
+    sleep 3
+done
+echo "Axiom initialization complete."
+
 echo ""
 echo "=== Installation Complete ==="
 echo ""
-echo "Services are starting in the background."
-echo "Check status with: podman-compose -f ~/.local/share/axiom/podman-compose.yml ps"
+echo "Services are running:"
+podman-compose -f ~/.local/share/axiom/podman-compose.yml ps
 echo ""
 echo "Wrapper scripts installed to ~/.local/bin/"
 echo "  - axiom-mcp: MCP server for Claude Code"
@@ -180,5 +197,3 @@ echo ""
 echo "Next steps:"
 echo "  - For Claude Code: run './install-mcp.sh'"
 echo "  - For VSCode:      run './install-vscode.sh'"
-echo ""
-echo "Note: First run will take ~30s to download model and ingest axioms."
