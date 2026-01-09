@@ -15,6 +15,10 @@ services:
     volumes:
       - axiom-data:/home/axiom/data
       - axiom-hf-cache:/home/axiom/.cache/huggingface
+      # HOST_HOME_MOUNT will be replaced by install.sh with the correct path
+      # macOS: /Users:/Users:ro
+      # Linux: /home:/home:ro
+      - HOST_HOME_MOUNT
     read_only: true
     tmpfs:
       - /tmp

@@ -1,11 +1,11 @@
 #!/bin/bash
-# Configure Axiom LSP for VSCode (container-based)
+# Configure Axiom LSP for VSCode
 set -e
 
-CONTAINER_NAME="${AXIOM_CONTAINER_NAME:-axiom-app}"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+REPO_ROOT="$(dirname "$SCRIPT_DIR")"
 WRAPPER_PATH="$HOME/.local/bin/axiom-lsp"
-HOST_WORKSPACE="${AXIOM_HOST_WORKSPACE:-$(pwd)}"
-CONTAINER_WORKSPACE="${AXIOM_CONTAINER_WORKSPACE:-/workspace}"
+EXTENSION_DIR="$REPO_ROOT/editors/vscode-axiom"
 
 # Detect OS for correct settings path
 case "$(uname -s)" in
@@ -23,57 +23,71 @@ esac
 
 SETTINGS_FILE="$SETTINGS_DIR/settings.json"
 
-# Check if container runtime is available
-if command -v podman &> /dev/null; then
-    CONTAINER_CMD="podman"
-elif command -v docker &> /dev/null; then
-    CONTAINER_CMD="docker"
-else
-    echo "Error: Neither podman nor docker found. Please install one."
+# Check if VSCode CLI is available
+if ! command -v code &> /dev/null; then
+    echo "Error: 'code' command not found."
+    echo "Install VSCode and enable the 'code' command from the command palette."
     exit 1
 fi
 
-# Check if axiom container is running
-if ! $CONTAINER_CMD ps --format '{{.Names}}' | grep -q "^${CONTAINER_NAME}$"; then
-    echo "Warning: Container '$CONTAINER_NAME' is not running."
-    echo "Start it with: $CONTAINER_CMD start $CONTAINER_NAME"
-    echo "Or run the full stack with docker-compose/podman-compose"
+# Check if wrapper script exists
+if [ ! -f "$WRAPPER_PATH" ]; then
+    echo "Error: axiom-lsp wrapper not found at $WRAPPER_PATH"
+    echo "Run install.sh first to set up the container and wrapper scripts."
+    exit 1
 fi
 
-# Create wrapper script
-mkdir -p "$(dirname "$WRAPPER_PATH")"
-cat > "$WRAPPER_PATH" << EOF
-#!/bin/bash
-# Wrapper to run axiom-lsp from container
-exec $CONTAINER_CMD exec -i \\
-  -e AXIOM_LANCEDB_PATH=/home/axiom/data/lancedb \\
-  -e AXIOM_HOST_WORKSPACE="$HOST_WORKSPACE" \\
-  -e AXIOM_CONTAINER_WORKSPACE="$CONTAINER_WORKSPACE" \\
-  $CONTAINER_NAME axiom-lsp "\$@"
-EOF
-chmod +x "$WRAPPER_PATH"
-echo "Created wrapper script at $WRAPPER_PATH"
+# Build and install VSCode extension
+echo "Building VSCode extension..."
+if [ ! -d "$EXTENSION_DIR" ]; then
+    echo "Error: VSCode extension directory not found at $EXTENSION_DIR"
+    exit 1
+fi
+
+cd "$EXTENSION_DIR"
+
+# Check for npm
+if ! command -v npm &> /dev/null; then
+    echo "Error: npm not found. Install Node.js first."
+    exit 1
+fi
+
+# Install dependencies and compile
+npm install --silent
+npm run compile --silent
+
+# Package the extension
+echo "Packaging extension..."
+npx --yes @vscode/vsce package --out axiom-lsp.vsix 2>/dev/null
+
+# Install the extension
+echo "Installing extension..."
+code --install-extension axiom-lsp.vsix --force
+
+# Clean up
+rm -f axiom-lsp.vsix
+
+cd - > /dev/null
 
 # Update VSCode settings
+echo "Updating VSCode settings..."
 mkdir -p "$SETTINGS_DIR"
 
 if [ -f "$SETTINGS_FILE" ]; then
     cp "$SETTINGS_FILE" "$SETTINGS_FILE.bak"
     if command -v jq &> /dev/null; then
-        jq --arg cmd "$WRAPPER_PATH" \
-           '."axiom.serverPath" = $cmd | ."axiom-lsp.path" = $cmd | ."axiom-lsp.mode" = "llm"' \
+        jq --arg path "$WRAPPER_PATH" \
+           '."axiom-lsp.path" = $path | ."axiom-lsp.mode" = "llm"' \
            "$SETTINGS_FILE.bak" > "$SETTINGS_FILE"
         echo "Updated $SETTINGS_FILE (backup at $SETTINGS_FILE.bak)"
     else
         echo "Warning: jq not found. Please manually add to $SETTINGS_FILE:"
-        echo '  "axiom.serverPath": "'$WRAPPER_PATH'",'
-        echo '  "axiom-lsp.path": "'$WRAPPER_PATH'",'
-        echo '  "axiom-lsp.mode": "llm"'
+        echo "  \"axiom-lsp.path\": \"$WRAPPER_PATH\","
+        echo "  \"axiom-lsp.mode\": \"llm\""
     fi
 else
     cat > "$SETTINGS_FILE" << EOF
 {
-  "axiom.serverPath": "$WRAPPER_PATH",
   "axiom-lsp.path": "$WRAPPER_PATH",
   "axiom-lsp.mode": "llm"
 }
@@ -82,5 +96,17 @@ EOF
 fi
 
 echo ""
-echo "Axiom LSP configured for VSCode (container-based)!"
-echo "Make sure the '$CONTAINER_NAME' container is running, then restart VSCode."
+echo "=== VSCode Setup Complete ==="
+echo ""
+echo "Axiom LSP extension installed and configured!"
+echo "Restart VSCode to activate the extension."
+echo ""
+echo "Configuration:"
+echo "  Extension: Axiom LSP"
+echo "  LSP path:  $WRAPPER_PATH"
+echo "  Mode:      llm"
+echo ""
+echo "Available modes (change in settings.json):"
+echo "  - default: Shows axiom hints at call sites"
+echo "  - llm:     Compact format optimized for AI assistants"
+echo "  - human:   Detailed format with full axiom context"

@@ -61,6 +61,20 @@ mkdir -p ~/.local/share/axiom
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(dirname "$SCRIPT_DIR")"
 
+# Determine host home mount based on OS
+case "$(uname -s)" in
+  Darwin)
+    HOST_HOME_MOUNT="/Users:/Users:ro"
+    ;;
+  Linux)
+    HOST_HOME_MOUNT="/home:/home:ro"
+    ;;
+  *)
+    echo "Warning: Unknown OS, using /home mount"
+    HOST_HOME_MOUNT="/home:/home:ro"
+    ;;
+esac
+
 if [ "$BUILD_LOCAL" = true ]; then
     echo "Building axiom container from local source..."
 
@@ -75,7 +89,8 @@ if [ "$BUILD_LOCAL" = true ]; then
     podman build -t axiom:latest -f "$SCRIPT_DIR/Containerfile" "$REPO_ROOT"
 
     # Copy compose file and update image reference for local build
-    sed 's|ghcr.io/mattyv/axiom:latest|localhost/axiom:latest|g' \
+    sed -e 's|ghcr.io/mattyv/axiom:latest|localhost/axiom:latest|g' \
+        -e "s|HOST_HOME_MOUNT|$HOST_HOME_MOUNT|g" \
         "$SCRIPT_DIR/podman-compose.yml" > ~/.local/share/axiom/podman-compose.yml
 
     echo "Built local image: localhost/axiom:latest"
@@ -86,11 +101,16 @@ else
     # Download podman-compose.yml
     echo "Downloading compose file from branch '$BRANCH'..."
     COMPOSE_URL="https://raw.githubusercontent.com/mattyv/axiom/${BRANCH}/containers/podman-compose.yml"
-    if ! curl -sSLf "$COMPOSE_URL" -o ~/.local/share/axiom/podman-compose.yml; then
+    if ! curl -sSLf "$COMPOSE_URL" -o ~/.local/share/axiom/podman-compose.yml.tmp; then
         echo "Error: Failed to download compose file from $COMPOSE_URL"
         echo "Check that the branch '$BRANCH' exists and contains containers/podman-compose.yml"
         exit 1
     fi
+
+    # Replace host mount placeholder with correct path for this OS
+    sed "s|HOST_HOME_MOUNT|$HOST_HOME_MOUNT|g" \
+        ~/.local/share/axiom/podman-compose.yml.tmp > ~/.local/share/axiom/podman-compose.yml
+    rm -f ~/.local/share/axiom/podman-compose.yml.tmp
 
     # Determine image tag based on branch
     if [ "$BRANCH" = "main" ]; then
@@ -122,7 +142,7 @@ cat > ~/.local/bin/axiom-mcp << 'EOF'
 COMPOSE_FILE="$HOME/.local/share/axiom/podman-compose.yml"
 
 if [ ! -f "$COMPOSE_FILE" ]; then
-    echo "Error: $COMPOSE_FILE not found. Run axiom-install first." >&2
+    echo "Error: $COMPOSE_FILE not found. Run install.sh first." >&2
     exit 1
 fi
 
@@ -136,7 +156,7 @@ while ! podman exec axiom-app test -f /home/axiom/data/.initialized 2>/dev/null;
 done
 
 # Run MCP server
-podman exec -i axiom-app python -m axiom.mcp.server
+exec podman exec -i axiom-app axiom-mcp
 EOF
 
 cat > ~/.local/bin/axiom-lsp << 'EOF'
@@ -144,7 +164,7 @@ cat > ~/.local/bin/axiom-lsp << 'EOF'
 COMPOSE_FILE="$HOME/.local/share/axiom/podman-compose.yml"
 
 if [ ! -f "$COMPOSE_FILE" ]; then
-    echo "Error: $COMPOSE_FILE not found. Run axiom-install first." >&2
+    echo "Error: $COMPOSE_FILE not found. Run install.sh first." >&2
     exit 1
 fi
 
@@ -158,7 +178,7 @@ while ! podman exec axiom-app test -f /home/axiom/data/.initialized 2>/dev/null;
 done
 
 # Run LSP server
-podman exec -i axiom-app python -m axiom.lsp.server "$@"
+exec podman exec -i axiom-app axiom-lsp "$@"
 EOF
 
 chmod +x ~/.local/bin/axiom-mcp ~/.local/bin/axiom-lsp
@@ -197,3 +217,18 @@ echo ""
 echo "Next steps:"
 echo "  - For Claude Code: run './install-mcp.sh'"
 echo "  - For VSCode:      run './install-vscode.sh'"
+echo ""
+echo "=== LSP Configuration ==="
+echo ""
+echo "VSCode settings (add to settings.json):"
+echo "  \"axiom-lsp.path\": \"$HOME/.local/bin/axiom-lsp\""
+echo "  \"axiom-lsp.mode\": \"llm\"      # or \"human\" or \"default\""
+echo ""
+echo "Diagnostic modes:"
+echo "  - default: Shows axiom hints at call sites"
+echo "  - llm:     Compact format optimized for AI assistants"
+echo "  - human:   Detailed format with full axiom context"
+echo ""
+echo "Settings file locations:"
+echo "  macOS:  ~/Library/Application Support/Code/User/settings.json"
+echo "  Linux:  ~/.config/Code/User/settings.json"
