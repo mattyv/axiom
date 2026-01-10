@@ -63,29 +63,31 @@ if ! command -v podman-compose &> /dev/null; then
     exit 1
 fi
 
-# Check podman machine memory (macOS only)
-if [[ "$(uname)" == "Darwin" ]]; then
-    # Get memory in bytes from podman info
-    PODMAN_MEM=$(podman info --format '{{.Host.MemTotal}}' 2>/dev/null || echo "0")
-    PODMAN_MEM_GB=$((PODMAN_MEM / 1024 / 1024 / 1024))
+# Check available memory for container runtime
+PODMAN_MEM=$(podman info --format '{{.Host.MemTotal}}' 2>/dev/null || echo "0")
+PODMAN_MEM_GB=$((PODMAN_MEM / 1024 / 1024 / 1024))
 
-    if [ "$PODMAN_MEM_GB" -lt 4 ]; then
+if [ "$PODMAN_MEM_GB" -lt 4 ]; then
+    echo ""
+    echo "Warning: Container runtime has ${PODMAN_MEM_GB}GB RAM (4GB+ recommended)"
+    echo "The embedding model requires ~2GB RAM."
+
+    if [[ "$(uname)" == "Darwin" ]]; then
         echo ""
-        echo "Warning: Podman machine has ${PODMAN_MEM_GB}GB RAM (4GB+ recommended)"
-        echo "The embedding model requires ~2GB RAM. To increase:"
-        echo ""
+        echo "To increase podman machine memory:"
         echo "  podman machine stop"
         echo "  podman machine set --memory 4096"
         echo "  podman machine start"
-        echo ""
-        read -p "Continue anyway? [y/N] " -n 1 -r
-        echo
-        if [[ ! $REPLY =~ ^[Yy]$ ]]; then
-            exit 1
-        fi
-    else
-        echo "Podman machine memory: ${PODMAN_MEM_GB}GB (OK)"
     fi
+
+    echo ""
+    read -p "Continue anyway? [y/N] " -n 1 -r
+    echo
+    if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+        exit 1
+    fi
+else
+    echo "Container runtime memory: ${PODMAN_MEM_GB}GB (OK)"
 fi
 
 # Create directories
