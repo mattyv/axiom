@@ -65,7 +65,8 @@ fi
 
 # Check available memory for container runtime
 PODMAN_MEM=$(podman info --format '{{.Host.MemTotal}}' 2>/dev/null || echo "0")
-PODMAN_MEM_GB=$((PODMAN_MEM / 1024 / 1024 / 1024))
+# Convert to GB with rounding (add half a GB before dividing)
+PODMAN_MEM_GB=$(( (PODMAN_MEM + 536870912) / 1024 / 1024 / 1024 ))
 
 if [ "$PODMAN_MEM_GB" -lt 4 ]; then
     echo ""
