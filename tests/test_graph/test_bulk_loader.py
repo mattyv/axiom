@@ -9,8 +9,7 @@ from unittest.mock import MagicMock
 
 import pytest
 
-from axiom.models import Axiom, AxiomCollection, AxiomSource, ErrorCode
-from axiom.models.error import ErrorType
+from axiom.models import Axiom, AxiomCollection, AxiomSource, ErrorCode, ErrorType
 
 # Skip all tests in this module if neo4j is not installed
 neo4j = pytest.importorskip("neo4j")
