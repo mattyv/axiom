@@ -159,12 +159,30 @@ else
 
     rm -f "$MOUNTS_FILE" ~/.local/share/axiom/podman-compose.yml.tmp
 
-    # Determine image tag based on branch
-    if [ "$BRANCH" = "main" ]; then
-        IMAGE_TAG="latest"
-    else
-        # For branches like rc/v0.3, use the branch name as tag
+    # Get the latest commit SHA from the branch
+    echo "Fetching latest commit from branch '$BRANCH'..."
+    COMMIT_SHA=$(curl -sSL "https://api.github.com/repos/mattyv/axiom/commits/$BRANCH_ENCODED" | grep '"sha"' | head -1 | cut -d'"' -f4)
+
+    if [ -z "$COMMIT_SHA" ]; then
+        echo "Warning: Could not fetch commit SHA, trying branch name as tag..."
         IMAGE_TAG="$BRANCH_ENCODED"
+    else
+        # Detect architecture
+        ARCH=$(uname -m)
+        case "$ARCH" in
+            x86_64|amd64)
+                ARCH_SUFFIX="amd64"
+                ;;
+            arm64|aarch64)
+                ARCH_SUFFIX="arm64"
+                ;;
+            *)
+                echo "Warning: Unknown architecture $ARCH, defaulting to amd64"
+                ARCH_SUFFIX="amd64"
+                ;;
+        esac
+        IMAGE_TAG="${COMMIT_SHA}-${ARCH_SUFFIX}"
+        echo "Using image tag: $IMAGE_TAG"
     fi
 
     # Pull images
@@ -172,11 +190,18 @@ else
     if ! podman pull "ghcr.io/mattyv/axiom:$IMAGE_TAG"; then
         echo "Warning: Could not pull ghcr.io/mattyv/axiom:$IMAGE_TAG"
         echo "Falling back to 'latest' tag..."
-        podman pull ghcr.io/mattyv/axiom:latest
-        # Update compose file to use latest
-        sed -i '' "s|ghcr.io/mattyv/axiom:$IMAGE_TAG|ghcr.io/mattyv/axiom:latest|g" \
-            ~/.local/share/axiom/podman-compose.yml 2>/dev/null || true
+        if ! podman pull ghcr.io/mattyv/axiom:latest; then
+            echo "Error: Could not pull any axiom image"
+            exit 1
+        fi
+        IMAGE_TAG="latest"
     fi
+
+    # Update compose file with the actual image tag
+    sed -i '' "s|ghcr.io/mattyv/axiom:latest|ghcr.io/mattyv/axiom:$IMAGE_TAG|g" \
+        ~/.local/share/axiom/podman-compose.yml 2>/dev/null || \
+    sed -i "s|ghcr.io/mattyv/axiom:latest|ghcr.io/mattyv/axiom:$IMAGE_TAG|g" \
+        ~/.local/share/axiom/podman-compose.yml 2>/dev/null || true
 fi
 
 # Always pull neo4j
