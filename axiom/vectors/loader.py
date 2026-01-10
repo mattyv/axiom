@@ -72,16 +72,19 @@ class LanceDBLoader:
         self,
         collection: AxiomCollection,
         table_name: str = "axioms",
-        batch_size: int = 64,
+        batch_size: int = 32,
+        chunk_size: int = 500,
     ) -> int:
         """Load axiom collection into LanceDB.
 
-        Uses batch embedding for much faster processing.
+        Uses batch embedding for much faster processing. Processes in chunks
+        to avoid OOM on large collections.
 
         Args:
             collection: AxiomCollection to load.
             table_name: Name of the LanceDB table.
-            batch_size: Number of axioms to embed at once.
+            batch_size: Number of axioms to embed at once (within a chunk).
+            chunk_size: Number of axioms to process before writing to DB.
 
         Returns:
             Number of records loaded.
@@ -89,30 +92,37 @@ class LanceDBLoader:
         if not collection.axioms:
             return 0
 
-        # Prepare all embedding texts first
         axioms = list(collection.axioms)
-        embedding_texts = [self._create_embedding_text(a) for a in axioms]
+        total_loaded = 0
 
-        # Batch encode all texts at once (much faster than one-by-one)
-        all_vectors = self.model.encode(
-            embedding_texts,
-            batch_size=batch_size,
-            show_progress_bar=True,
-        )
+        # Process in chunks to avoid OOM
+        for i in range(0, len(axioms), chunk_size):
+            chunk = axioms[i : i + chunk_size]
+            embedding_texts = [self._create_embedding_text(a) for a in chunk]
 
-        # Build records with pre-computed vectors
-        records = []
-        for axiom, vector in zip(axioms, all_vectors, strict=True):
-            record = self._axiom_to_record_with_vector(axiom, vector.tolist())
-            records.append(record)
+            # Batch encode this chunk
+            vectors = self.model.encode(
+                embedding_texts,
+                batch_size=batch_size,
+                show_progress_bar=len(axioms) > chunk_size,
+            )
 
-        # Add to existing table or create new one
-        if table_name in self._get_table_names():
-            table = self.db.open_table(table_name)
-            table.add(records)
-        else:
-            self.db.create_table(table_name, records)
-        return len(records)
+            # Build records with pre-computed vectors
+            records = []
+            for axiom, vector in zip(chunk, vectors, strict=True):
+                record = self._axiom_to_record_with_vector(axiom, vector.tolist())
+                records.append(record)
+
+            # Add to existing table or create new one
+            if table_name in self._get_table_names():
+                table = self.db.open_table(table_name)
+                table.add(records)
+            else:
+                self.db.create_table(table_name, records)
+
+            total_loaded += len(records)
+
+        return total_loaded
 
     def load_axiom(
         self,
