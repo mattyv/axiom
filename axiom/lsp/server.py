@@ -689,8 +689,47 @@ class AxiomLanguageServer(LanguageServer):
         self._diagnostic_mode = mode
 
 
+def _check_stdin() -> bool:
+    """Check if stdin is connected and ready for LSP communication.
+
+    Returns True if stdin appears to be connected to a proper client,
+    False if stdin is closed, connected to /dev/null, or otherwise
+    unsuitable for LSP communication.
+    """
+    import select
+    import sys
+
+    # Check if stdin is a valid file descriptor
+    try:
+        fileno = sys.stdin.fileno()
+        if fileno < 0:
+            return False
+    except (ValueError, OSError):
+        return False
+
+    # Use select to check if stdin is immediately readable (EOF or data)
+    # A real LSP client won't have data ready until we start the protocol
+    readable, _, _ = select.select([sys.stdin], [], [], 0)
+
+    if readable:
+        # If stdin is immediately readable, peek to see if it's EOF
+        # For a real LSP client, stdin should be blocking until the client sends
+        try:
+            data = sys.stdin.buffer.peek(1)
+            if not data:
+                # Empty peek means EOF - stdin is closed/disconnected
+                return False
+        except (OSError, AttributeError):
+            # peek not available or error, try non-blocking read approach
+            pass
+
+    return True
+
+
 def main() -> None:
     """Entry point for axiom-lsp command."""
+    import sys
+
     parser = argparse.ArgumentParser(description="Axiom LSP server")
     parser.add_argument(
         "-v",
@@ -712,6 +751,19 @@ def main() -> None:
         level=logging.DEBUG if args.verbose else logging.INFO,
         format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
     )
+
+    # Check if stdin is properly connected before starting server
+    if not _check_stdin():
+        print(
+            "Error: stdin is not connected. The LSP server requires a client "
+            "to communicate with over stdin/stdout.",
+            file=sys.stderr,
+        )
+        print(
+            "If running in a container, use: podman exec -i <container> axiom-lsp",
+            file=sys.stderr,
+        )
+        sys.exit(1)
 
     # Create and configure server
     server = AxiomLanguageServer()
