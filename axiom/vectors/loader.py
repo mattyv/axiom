@@ -102,7 +102,7 @@ class LanceDBLoader:
 
         # Build records with pre-computed vectors
         records = []
-        for axiom, vector in zip(axioms, all_vectors):
+        for axiom, vector in zip(axioms, all_vectors, strict=True):
             record = self._axiom_to_record_with_vector(axiom, vector.tolist())
             records.append(record)
 
