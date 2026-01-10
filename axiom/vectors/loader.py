@@ -72,24 +72,39 @@ class LanceDBLoader:
         self,
         collection: AxiomCollection,
         table_name: str = "axioms",
+        batch_size: int = 64,
     ) -> int:
         """Load axiom collection into LanceDB.
+
+        Uses batch embedding for much faster processing.
 
         Args:
             collection: AxiomCollection to load.
             table_name: Name of the LanceDB table.
+            batch_size: Number of axioms to embed at once.
 
         Returns:
             Number of records loaded.
         """
-        records = []
-
-        for axiom in collection.axioms:
-            record = self._axiom_to_record(axiom)
-            records.append(record)
-
-        if not records:
+        if not collection.axioms:
             return 0
+
+        # Prepare all embedding texts first
+        axioms = list(collection.axioms)
+        embedding_texts = [self._create_embedding_text(a) for a in axioms]
+
+        # Batch encode all texts at once (much faster than one-by-one)
+        all_vectors = self.model.encode(
+            embedding_texts,
+            batch_size=batch_size,
+            show_progress_bar=True,
+        )
+
+        # Build records with pre-computed vectors
+        records = []
+        for axiom, vector in zip(axioms, all_vectors):
+            record = self._axiom_to_record_with_vector(axiom, vector.tolist())
+            records.append(record)
 
         # Add to existing table or create new one
         if table_name in self._get_table_names():
@@ -119,7 +134,7 @@ class LanceDBLoader:
             self.db.create_table(table_name, [record])
 
     def _axiom_to_record(self, axiom: Axiom) -> dict:
-        """Convert an Axiom to a LanceDB record.
+        """Convert an Axiom to a LanceDB record (computes embedding).
 
         Args:
             axiom: Axiom to convert.
@@ -130,7 +145,18 @@ class LanceDBLoader:
         # Create combined text for embedding
         embedding_text = self._create_embedding_text(axiom)
         vector = self.model.encode(embedding_text).tolist()
+        return self._axiom_to_record_with_vector(axiom, vector)
 
+    def _axiom_to_record_with_vector(self, axiom: Axiom, vector: list) -> dict:
+        """Convert an Axiom to a LanceDB record with pre-computed vector.
+
+        Args:
+            axiom: Axiom to convert.
+            vector: Pre-computed embedding vector.
+
+        Returns:
+            Dict record with embedding vector.
+        """
         return {
             "id": axiom.id,
             "content": axiom.content,
