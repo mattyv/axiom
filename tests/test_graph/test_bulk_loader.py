@@ -9,7 +9,7 @@ from unittest.mock import MagicMock
 
 import pytest
 
-from axiom.models import Axiom, AxiomCollection, AxiomSource, ErrorCode, ErrorType
+from axiom.models import Axiom, AxiomCollection, ErrorCode, ErrorType, SourceLocation
 
 # Skip all tests in this module if neo4j is not installed
 neo4j = pytest.importorskip("neo4j")
@@ -22,7 +22,7 @@ def sample_axioms() -> list[Axiom]:
         Axiom(
             id="test_axiom_1",
             content="First test axiom",
-            source=AxiomSource(file="test.toml", module="test_module"),
+            source=SourceLocation(file="test.toml", module="test_module"),
             layer="test",
             confidence=1.0,
             tags=["test"],
@@ -31,7 +31,7 @@ def sample_axioms() -> list[Axiom]:
         Axiom(
             id="test_axiom_2",
             content="Second test axiom",
-            source=AxiomSource(file="test.toml", module="test_module"),
+            source=SourceLocation(file="test.toml", module="test_module"),
             layer="test",
             confidence=0.9,
             tags=["test", "example"],
@@ -114,7 +114,7 @@ class TestAxiomToDict:
         axiom = Axiom(
             id="no_deps",
             content="No dependencies",
-            source=AxiomSource(file="test.toml", module="test"),
+            source=SourceLocation(file="test.toml", module="test"),
             layer="test",
             depends_on=None,
         )
@@ -130,7 +130,7 @@ class TestAxiomToDict:
         axiom = Axiom(
             id="typed",
             content="Typed axiom",
-            source=AxiomSource(file="test.toml", module="test"),
+            source=SourceLocation(file="test.toml", module="test"),
             layer="test",
             axiom_type=AxiomType.PRECONDITION,
         )
