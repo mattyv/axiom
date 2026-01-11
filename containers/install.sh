@@ -281,7 +281,29 @@ done
 exec podman exec -i axiom-app axiom-lsp "$@"
 EOF
 
-chmod +x ~/.local/bin/axiom-mcp ~/.local/bin/axiom-lsp
+cat > ~/.local/bin/axiom-ingest << 'EOF'
+#!/bin/bash
+COMPOSE_FILE="$HOME/.local/share/axiom/podman-compose.yml"
+
+if [ ! -f "$COMPOSE_FILE" ]; then
+    echo "Error: $COMPOSE_FILE not found. Run install.sh first." >&2
+    exit 1
+fi
+
+# Start services if not running
+podman-compose -f "$COMPOSE_FILE" up -d 2>/dev/null
+
+# Wait for initialization on first run
+while ! podman exec axiom-app test -f /home/axiom/data/.initialized 2>/dev/null; do
+  echo "Waiting for axiom to initialize..." >&2
+  sleep 2
+done
+
+# Run ingestion script
+exec podman exec axiom-app python -m scripts.ingest "$@"
+EOF
+
+chmod +x ~/.local/bin/axiom-mcp ~/.local/bin/axiom-lsp ~/.local/bin/axiom-ingest
 
 # Start the services
 echo "Starting axiom services..."
@@ -311,8 +333,9 @@ echo "Services are running:"
 podman-compose -f ~/.local/share/axiom/podman-compose.yml ps
 echo ""
 echo "Wrapper scripts installed to ~/.local/bin/"
-echo "  - axiom-mcp: MCP server for Claude Code"
-echo "  - axiom-lsp: LSP server for VSCode"
+echo "  - axiom-mcp:    MCP server for Claude Code"
+echo "  - axiom-lsp:    LSP server for VSCode"
+echo "  - axiom-ingest: Ingest library axioms into databases"
 echo ""
 echo "Next steps (run from this directory):"
 echo ""
@@ -328,8 +351,13 @@ echo ""
 echo "=== Configuration ==="
 echo ""
 echo "Wrapper scripts: ~/.local/bin/"
-echo "  - axiom-mcp: MCP server for Claude Code"
-echo "  - axiom-lsp: LSP server for VSCode"
+echo "  - axiom-mcp:    MCP server for Claude Code"
+echo "  - axiom-lsp:    LSP server for VSCode"
+echo "  - axiom-ingest: Ingest library axioms into databases"
+echo ""
+echo "Ingesting library axioms:"
+echo "  axiom-ingest /path/to/mylib.toml      # Add axioms (additive)"
+echo "  axiom-ingest --clear                  # Reset to foundations only"
 echo ""
 echo "Diagnostic modes (set in VSCode settings or hook config):"
 echo "  - default: Shows axiom hints at call sites"
