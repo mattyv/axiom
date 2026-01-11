@@ -4,26 +4,20 @@
 # https://github.com/mattyv/axiom
 # SPDX-License-Identifier: BSL-1.0
 
-"""Load function pairings into Neo4j.
-
-This script extracts pairing relationships from multiple sources:
-1. K semantics cell access patterns (e.g., malloc/free via <malloced> cell)
-2. TOML manifest files (e.g., knowledge/pairings/cpp20_stdlib.toml)
-3. Naming heuristics (e.g., push_back/pop_back)
+"""Load function pairings into Neo4j from TOML manifest files.
 
 Usage:
-    # Load from K semantics
-    python scripts/load_pairings.py [--dry-run]
-
-    # Load from TOML manifest
     python scripts/load_pairings.py --toml knowledge/pairings/cpp20_stdlib.toml [--dry-run]
 
 The pairings connect existing axiom nodes - no re-extraction of axioms needed.
 """
 
 import argparse
+import sys
 import tomllib
 from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from axiom.models.pairing import Idiom, Pairing
 
@@ -117,7 +111,7 @@ def load_axiom_toml(toml_path: Path) -> tuple[list[Pairing], list[Idiom], list]:
 
 def main() -> None:
     parser = argparse.ArgumentParser(
-        description="Load function pairings into Neo4j from K semantics or TOML files"
+        description="Load function pairings into Neo4j from TOML files"
     )
     parser.add_argument(
         "--dry-run",
@@ -127,61 +121,29 @@ def main() -> None:
     parser.add_argument(
         "--toml",
         type=Path,
-        help="Load pairings from a TOML manifest file instead of K semantics",
-    )
-    parser.add_argument(
-        "--semantics-root",
-        type=Path,
-        default=Path("external/c-semantics/semantics"),
-        help="Root directory of K semantics files (ignored if --toml is used)",
+        required=True,
+        help="Load pairings from a TOML manifest file",
     )
     args = parser.parse_args()
 
     all_pairings: list[Pairing] = []
     all_idioms: list[Idiom] = []
 
-    # Load from TOML manifest if specified
-    if args.toml:
-        if not args.toml.exists():
-            print(f"Error: TOML file not found: {args.toml}")
-            return
+    if not args.toml.exists():
+        print(f"Error: TOML file not found: {args.toml}")
+        return
 
-        print(f"Loading pairings from: {args.toml}")
-        pairings, idioms = load_pairings_from_toml(args.toml)
-        print(f"  Found {len(pairings)} pairings and {len(idioms)} idioms")
-        all_pairings.extend(pairings)
-        all_idioms.extend(idioms)
-
-    else:
-        # Load from K semantics
-        from axiom.extractors import KSemanticsExtractor
-
-        semantics_root = args.semantics_root
-        if not semantics_root.exists():
-            print(f"Error: Semantics root not found: {semantics_root}")
-            print("Clone the K-Framework C semantics repository first:")
-            print("  git clone https://github.com/kframework/c-semantics external/c-semantics")
-            return
-
-        print(f"Extracting pairings from: {semantics_root}")
-
-        c_lib = semantics_root / "c" / "library"
-        cpp_lib = semantics_root / "cpp" / "library"
-
-        for lib_path in [c_lib, cpp_lib]:
-            if lib_path.exists():
-                print(f"\nProcessing: {lib_path}")
-                extractor = KSemanticsExtractor(lib_path)
-                pairings = extractor.extract_all_pairings()
-                print(f"  Found {len(pairings)} pairings")
-                all_pairings.extend(pairings)
+    print(f"Loading pairings from: {args.toml}")
+    pairings, idioms = load_pairings_from_toml(args.toml)
+    print(f"  Found {len(pairings)} pairings and {len(idioms)} idioms")
+    all_pairings.extend(pairings)
+    all_idioms.extend(idioms)
 
     if not all_pairings and not all_idioms:
         print("\nNo pairings or idioms found.")
         return
 
-    # For K semantics, we need to resolve placeholder IDs to actual axiom IDs
-    # For TOML, the IDs are function names that need to be resolved
+    # Resolve function names to axiom IDs
     from axiom.graph.loader import Neo4jLoader
 
     print("\nResolving function names to axiom IDs...")
@@ -192,30 +154,17 @@ def main() -> None:
         print("Make sure Neo4j is running.")
         return
 
-    # Map internal K function names to C function names
-    k_to_c_function = {
-        "alignedAlloc": "malloc",
-    }
-
     # Build function -> axiom ID mapping
     func_to_axiom: dict[str, str] = {}
     functions_needed = set()
 
     for p in all_pairings:
-        # Extract function name from placeholder ID or use directly
-        opener_func = p.opener_id.replace("axiom_for_", "")
-        closer_func = p.closer_id.replace("axiom_for_", "")
-        # Map K names to C names
-        opener_func = k_to_c_function.get(opener_func, opener_func)
-        closer_func = k_to_c_function.get(closer_func, closer_func)
-        functions_needed.add(opener_func)
-        functions_needed.add(closer_func)
+        functions_needed.add(p.opener_id)
+        functions_needed.add(p.closer_id)
 
     for idiom in all_idioms:
         for participant in idiom.participants:
-            func = participant.replace("axiom_for_", "")
-            func = k_to_c_function.get(func, func)
-            functions_needed.add(func)
+            functions_needed.add(participant)
 
     for func in sorted(functions_needed):
         axioms = neo4j.get_axioms_by_function(func)
@@ -231,13 +180,8 @@ def main() -> None:
     seen = set()
     unique_pairings = []
     for p in all_pairings:
-        opener_func = p.opener_id.replace("axiom_for_", "")
-        closer_func = p.closer_id.replace("axiom_for_", "")
-        opener_func = k_to_c_function.get(opener_func, opener_func)
-        closer_func = k_to_c_function.get(closer_func, closer_func)
-
-        opener_id = func_to_axiom.get(opener_func)
-        closer_id = func_to_axiom.get(closer_func)
+        opener_id = func_to_axiom.get(p.opener_id)
+        closer_id = func_to_axiom.get(p.closer_id)
 
         if not opener_id or not closer_id:
             continue
@@ -261,9 +205,7 @@ def main() -> None:
     for idiom in all_idioms:
         resolved_participants = []
         for participant in idiom.participants:
-            func = participant.replace("axiom_for_", "")
-            func = k_to_c_function.get(func, func)
-            axiom_id = func_to_axiom.get(func)
+            axiom_id = func_to_axiom.get(participant)
             if axiom_id:
                 resolved_participants.append(axiom_id)
 
@@ -294,7 +236,11 @@ def main() -> None:
             for idiom in unique_idioms:
                 print(f"  Idiom: {idiom.name}")
                 print(f"    Participants: {idiom.participants}")
-                print(f"    Template: {idiom.template[:80]}..." if len(idiom.template) > 80 else f"    Template: {idiom.template}")
+                print(
+                    f"    Template: {idiom.template[:80]}..."
+                    if len(idiom.template) > 80
+                    else f"    Template: {idiom.template}"
+                )
                 print()
         return
 

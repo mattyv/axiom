@@ -6,6 +6,17 @@ When rebuilding the knowledge base from scratch, axioms must be extracted and lo
 
 Most of the time you just need to re-ingest the existing TOML files. The foundation axioms are already extracted and stored in `knowledge/foundations/`.
 
+### Current Foundation Structure
+
+```
+knowledge/foundations/
+├── c11_error_codes.toml   # 248 C11 undefined behavior codes with standard refs
+├── cpp20_language.toml    # 633 axioms from C++ draft spec (eel.is/c++draft)
+└── cpp20_stdlib.toml      # 1,134 axioms from C++ draft spec
+```
+
+**Note:** K-framework axiom files were dropped as they contained mostly internal K evaluation guards (~70%), not useful for code validation. The 248 error codes (C11 undefined behaviors with standard refs) are preserved.
+
 ### Prerequisites
 
 Install Podman or Docker to run Neo4j:
@@ -42,7 +53,7 @@ python scripts/ingest.py --clear   # Clear Neo4j and LanceDB
 python scripts/ingest.py           # Ingest all foundation TOMLs
 ```
 
-This loads ~2,500+ axioms from `knowledge/foundations/*.toml` into both databases.
+This loads ~1,767 axioms + 248 error codes from `knowledge/foundations/*.toml` into both databases.
 
 ---
 
@@ -50,7 +61,7 @@ This loads ~2,500+ axioms from `knowledge/foundations/*.toml` into both database
 
 | Script | Purpose |
 |--------|---------|
-| `scripts/bootstrap.py` | Extract axioms from K-Framework semantics (*.k files) |
+| `scripts/bootstrap.py` | Extract C11 error codes from K-Framework semantics |
 | `scripts/extract_cpp20.py` | Extract axioms from C++ draft spec (eel.is/c++draft) |
 | `scripts/ingest.py` | Load TOML axioms into Neo4j and LanceDB |
 | `scripts/extract_clang.py` | **Native Clang extraction** from C/C++ libraries (recommended) |
@@ -58,42 +69,29 @@ This loads ~2,500+ axioms from `knowledge/foundations/*.toml` into both database
 | `scripts/extract_stdlib.py` | Extract axioms from C++ stdlib headers |
 | `scripts/link_depends_on.py` | Regex-based linking (types from signatures) |
 | `scripts/link_semantic.py` | LLM-based linking (semantic grounding to foundations) |
-| `scripts/load_pairings.py` | Load function pairings into Neo4j (K semantics or TOML) |
+| `scripts/load_pairings.py` | Load function pairings into Neo4j (TOML manifest) |
 
-## 1. Foundation Axioms (K-semantics based)
+## 1. C11 Error Codes (from K-semantics)
 
 **Script**: `scripts/bootstrap.py`
 
-These are extracted from the K-Framework C/C++ semantics and provide the ground truth for language behavior.
+Extracts C11 undefined behavior error codes from the K-Framework C semantics. These are a curated catalog of 248 undefined behaviors with direct C11 standard references.
 
-- `c11_core` - C11 language semantics
-- `c11_stdlib` - C11 standard library (includes C function signatures from profile headers)
-- `cpp_core` - C++ core language semantics
-- `cpp_stdlib` - C++ standard library (minimal - K-Framework only has `new.k`)
-
-### Extraction Commands
+### Extraction Command
 
 ```bash
 # Clone K-Framework C semantics (if not already done)
-git clone https://github.com/kframework/c-semantics /tmp/c-semantics
+git clone https://github.com/kframework/c-semantics external/c-semantics
 
-# Extract each layer (bootstrap.py also loads into Neo4j and LanceDB)
-python scripts/bootstrap.py --layer c11_core --output knowledge/foundations/c11_core.toml
-python scripts/bootstrap.py --layer c11_stdlib --output knowledge/foundations/c11_stdlib.toml
-python scripts/bootstrap.py --layer cpp_core --output knowledge/foundations/cpp_core.toml
-python scripts/bootstrap.py --layer cpp_stdlib --output knowledge/foundations/cpp_stdlib.toml
+# Extract error codes
+python scripts/bootstrap.py
 ```
 
-**IMPORTANT**: Do NOT use `--skip-graph` or `--skip-vectors` flags during extraction.
-These flags skip the `depends_on` linking step, which is required for axiom relationships.
-The TOML files in git already have `depends_on` computed - if you re-extract with skip flags,
-you'll lose those links.
+### Expected Output
+- 248 error codes in `knowledge/foundations/c11_error_codes.toml`
+- Each with C standard refs (e.g., `6.5.8:5`, `J.2:1 item 53`)
 
-### Expected Axiom Counts
-- c11_core: ~890 axioms (includes ~53 human-readable axioms from `\fromStandard` comments)
-- c11_stdlib: ~590 axioms
-- cpp_core: ~825 axioms
-- cpp_stdlib: ~1 axiom (K-Framework C++ stdlib is minimal)
+**Note:** K-framework axioms are no longer extracted. They were ~70% internal K evaluation guards (e.g., `isLocation`, `isKResult`) not useful for code validation. The error codes remain valuable.
 
 ## 2. C++20 Axioms (LLM-extracted from eel.is/c++draft)
 
@@ -140,8 +138,8 @@ python scripts/ingest.py knowledge/foundations/cpp20_stdlib.toml
 - Library axioms: `knowledge/foundations/cpp20_stdlib.toml`
 
 ### Expected Axiom Counts
-- cpp20_language: ~300-400 axioms
-- cpp20_stdlib: ~200-300 axioms
+- cpp20_language: ~633 axioms
+- cpp20_stdlib: ~1,134 axioms
 
 ### Post-Extraction Dependency Linking
 
@@ -399,18 +397,9 @@ This allows `depends_on` links to reference axioms from previous layers.
 # 1. Clear databases
 python scripts/ingest.py --clear
 
-# 2. Extract and ingest K foundation axioms (each layer before the next)
-python scripts/bootstrap.py --layer c11_core --output knowledge/foundations/c11_core.toml
-python scripts/ingest.py knowledge/foundations/c11_core.toml
-
-python scripts/bootstrap.py --layer c11_stdlib --output knowledge/foundations/c11_stdlib.toml
-python scripts/ingest.py knowledge/foundations/c11_stdlib.toml
-
-python scripts/bootstrap.py --layer cpp_core --output knowledge/foundations/cpp_core.toml
-python scripts/ingest.py knowledge/foundations/cpp_core.toml
-
-python scripts/bootstrap.py --layer cpp_stdlib --output knowledge/foundations/cpp_stdlib.toml
-python scripts/ingest.py knowledge/foundations/cpp_stdlib.toml
+# 2. Extract and ingest C11 error codes
+python scripts/bootstrap.py
+python scripts/ingest.py knowledge/foundations/c11_error_codes.toml
 
 # 3. Extract and ingest C++20 language axioms
 python scripts/extract_cpp20.py --batch-language
@@ -440,9 +429,9 @@ python scripts/ingest.py mylib_axioms.toml
 ### Layer Dependency Chain
 
 ```
-c11_core → c11_stdlib → cpp_core → cpp_stdlib → cpp20_language → cpp20_stdlib → user_library
-    ↓           ↓           ↓           ↓              ↓               ↓
- [ingest]   [ingest]    [ingest]    [ingest]       [ingest]        [ingest]
+c11_error_codes → cpp20_language → cpp20_stdlib → user_library
+       ↓                ↓               ↓              ↓
+   [ingest]         [ingest]        [ingest]       [ingest]
 ```
 
 Each extraction can use `depends_on` to link to any previously ingested layer.
@@ -452,18 +441,6 @@ Each extraction can use `depends_on` to link to any previously ingested layer.
 **Script**: `scripts/load_pairings.py`
 
 Pairings connect axioms that represent functions that must be used together (e.g., malloc/free, lock/unlock). These are loaded AFTER axioms are ingested.
-
-### Loading C11 Pairings (from K semantics)
-
-```bash
-# Dry run - see what pairings would be created
-python scripts/load_pairings.py --dry-run
-
-# Load pairings into Neo4j
-python scripts/load_pairings.py
-```
-
-This extracts pairings from K semantics cell access patterns (functions that share a configuration cell like `<malloced>`).
 
 ### Loading C++20 Pairings (from TOML manifest)
 
@@ -500,13 +477,6 @@ auto ptr = std::make_shared<T>(args...);
 '''
 ```
 
-### Pairing Sources
-
-| Source | Script/Flag | Confidence |
-|--------|-------------|------------|
-| K semantics | `--semantics-root` (default) | 1.0 |
-| TOML manifest | `--toml <file>` | 1.0 |
-
 ### Full Rebuild with Pairings
 
 Add these steps to the full rebuild example:
@@ -515,18 +485,17 @@ Add these steps to the full rebuild example:
 # ... after all axioms are ingested ...
 
 # 6. Load function pairings
-python scripts/load_pairings.py  # C11 from K semantics
-python scripts/load_pairings.py --toml knowledge/pairings/cpp20_stdlib.toml  # C++20
+python scripts/load_pairings.py --toml knowledge/pairings/cpp20_stdlib.toml
 ```
 
 ### Layer Dependency Chain (Updated)
 
 ```
-c11_core → c11_stdlib → cpp_core → cpp_stdlib → cpp20_language → cpp20_stdlib → user_library
-    ↓           ↓           ↓           ↓              ↓               ↓              ↓
- [ingest]   [ingest]    [ingest]    [ingest]       [ingest]        [ingest]       [ingest]
-                                                                                      ↓
-                                                                            [load_pairings]
+c11_error_codes → cpp20_language → cpp20_stdlib → user_library
+       ↓                ↓               ↓              ↓
+   [ingest]         [ingest]        [ingest]       [ingest]
+                                                       ↓
+                                                [load_pairings]
 ```
 
 Pairings are loaded last since they create PAIRS_WITH relationships between existing axiom nodes.

@@ -25,11 +25,11 @@ from axiom.models import AxiomCollection
 from axiom.vectors import LanceDBLoader
 
 # Default TOML files to load (in order)
+# Note: K-framework axiom files (c11_core, c11_stdlib, cpp_core, cpp_stdlib) were
+# dropped as they contained mostly internal K evaluation guards, not useful for
+# code validation. Error codes are preserved in c11_error_codes.toml.
 DEFAULT_TOML_FILES = [
-    "knowledge/foundations/c11_core.toml",
-    "knowledge/foundations/c11_stdlib.toml",
-    "knowledge/foundations/cpp_core.toml",
-    "knowledge/foundations/cpp_stdlib.toml",
+    "knowledge/foundations/c11_error_codes.toml",
     "knowledge/foundations/cpp20_language.toml",
     "knowledge/foundations/cpp20_stdlib.toml",
 ]

@@ -22,6 +22,7 @@ def sample_axioms() -> list[Axiom]:
         Axiom(
             id="test_axiom_1",
             content="First test axiom",
+            formal_spec="",
             source=SourceLocation(file="test.toml", module="test_module"),
             layer="test",
             confidence=1.0,
@@ -31,6 +32,7 @@ def sample_axioms() -> list[Axiom]:
         Axiom(
             id="test_axiom_2",
             content="Second test axiom",
+            formal_spec="",
             source=SourceLocation(file="test.toml", module="test_module"),
             layer="test",
             confidence=0.9,
@@ -47,13 +49,13 @@ def sample_errors() -> list[ErrorCode]:
         ErrorCode(
             code="TEST001",
             internal_code="test_error_1",
-            type=ErrorType.ERROR,
+            type=ErrorType.UNDEFINED_BEHAVIOR,
             description="Test error 1",
         ),
         ErrorCode(
             code="TEST002",
             internal_code="test_error_2",
-            type=ErrorType.WARNING,
+            type=ErrorType.CONSTRAINT_VIOLATION,
             description="Test error 2",
         ),
     ]
@@ -114,9 +116,10 @@ class TestAxiomToDict:
         axiom = Axiom(
             id="no_deps",
             content="No dependencies",
+            formal_spec="",
             source=SourceLocation(file="test.toml", module="test"),
             layer="test",
-            depends_on=None,
+            depends_on=[],
         )
 
         result = Neo4jLoader._axiom_to_dict(axiom)
@@ -130,6 +133,7 @@ class TestAxiomToDict:
         axiom = Axiom(
             id="typed",
             content="Typed axiom",
+            formal_spec="",
             source=SourceLocation(file="test.toml", module="test"),
             layer="test",
             axiom_type=AxiomType.PRECONDITION,
@@ -151,7 +155,7 @@ class TestErrorToDict:
 
         assert result["code"] == "TEST001"
         assert result["internal_code"] == "test_error_1"
-        assert result["type"] == "error"
+        assert result["type"] == "undefined_behavior"
         assert result["description"] == "Test error 1"
 
 
