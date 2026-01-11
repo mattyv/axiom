@@ -127,6 +127,16 @@ def call_site_diagnostics(
     file_index = index._index.get(file_path, {})
 
     for line, calls in file_index.items():
+        # Track seen axiom IDs per line to avoid duplicates
+        # (e.g., multiple additions on same line returning same axiom)
+        seen_axiom_ids: set[str] = set()
+
+        # Create range at call site line (LSP is 0-indexed)
+        range_ = Range(
+            start=Position(line=line - 1, character=0),
+            end=Position(line=line - 1, character=999),
+        )
+
         for call in calls:
             callee = call.get("callee")
             if not callee:
@@ -138,13 +148,12 @@ def call_site_diagnostics(
             # Get axioms for this callee (using semantic search if available)
             callee_axioms = axiom_lookup(callee, signature)
 
-            # Create range at call site line (LSP is 0-indexed)
-            range_ = Range(
-                start=Position(line=line - 1, character=0),
-                end=Position(line=line - 1, character=999),
-            )
-
             for axiom in callee_axioms:
+                # Skip if we've already added this axiom for this line
+                if axiom.id in seen_axiom_ids:
+                    continue
+                seen_axiom_ids.add(axiom.id)
+
                 axiom_type = axiom.axiom_type.value.upper() if axiom.axiom_type else "AXIOM"
                 message = f"{callee} — {axiom_type}: {axiom.content}"
 
