@@ -303,7 +303,127 @@ done
 exec podman exec axiom-app python -m scripts.ingest "$@"
 EOF
 
-chmod +x ~/.local/bin/axiom-mcp ~/.local/bin/axiom-lsp ~/.local/bin/axiom-ingest
+cat > ~/.local/bin/axiom-workspace << 'EOF'
+#!/bin/bash
+# Manage workspace mounts for axiom container
+
+COMPOSE_FILE="$HOME/.local/share/axiom/podman-compose.yml"
+
+if [ ! -f "$COMPOSE_FILE" ]; then
+    echo "Error: $COMPOSE_FILE not found. Run install.sh first." >&2
+    exit 1
+fi
+
+show_help() {
+    echo "Usage: axiom-workspace <command> [path]"
+    echo ""
+    echo "Commands:"
+    echo "  list          Show current workspace mounts"
+    echo "  add <path>    Add a new workspace path"
+    echo "  remove <path> Remove a workspace path"
+    echo ""
+    echo "Examples:"
+    echo "  axiom-workspace list"
+    echo "  axiom-workspace add /Users/me/projects"
+    echo "  axiom-workspace remove /Users/me/old-projects"
+}
+
+list_workspaces() {
+    echo "Current workspace mounts:"
+    grep -E '^\s+- /.*:.*:ro$' "$COMPOSE_FILE" | sed 's/^[[:space:]]*- /  /' | sed 's/:ro$//'
+}
+
+add_workspace() {
+    local path="$1"
+
+    # Validate path exists
+    if [ ! -d "$path" ]; then
+        echo "Error: Directory does not exist: $path" >&2
+        exit 1
+    fi
+
+    # Get absolute path
+    path=$(cd "$path" && pwd)
+
+    # Check if already mounted
+    if grep -q "- ${path}:${path}:ro" "$COMPOSE_FILE"; then
+        echo "Workspace already mounted: $path"
+        exit 0
+    fi
+
+    # Find the line with axiom-hf-cache volume and add after it
+    if grep -q "axiom-hf-cache" "$COMPOSE_FILE"; then
+        sed -i.bak "/axiom-hf-cache/a\\
+      - ${path}:${path}:ro" "$COMPOSE_FILE"
+        rm -f "$COMPOSE_FILE.bak"
+    else
+        echo "Error: Could not find insertion point in compose file" >&2
+        exit 1
+    fi
+
+    echo "Added workspace: $path"
+    echo ""
+    echo "Restart services to apply:"
+    echo "  podman-compose -f $COMPOSE_FILE down"
+    echo "  podman-compose -f $COMPOSE_FILE up -d"
+}
+
+remove_workspace() {
+    local path="$1"
+
+    # Get absolute path if it exists
+    if [ -d "$path" ]; then
+        path=$(cd "$path" && pwd)
+    fi
+
+    # Check if mounted
+    if ! grep -q "- ${path}:${path}:ro" "$COMPOSE_FILE"; then
+        echo "Workspace not found: $path" >&2
+        exit 1
+    fi
+
+    # Remove the line
+    sed -i.bak "\|- ${path}:${path}:ro|d" "$COMPOSE_FILE"
+    rm -f "$COMPOSE_FILE.bak"
+
+    echo "Removed workspace: $path"
+    echo ""
+    echo "Restart services to apply:"
+    echo "  podman-compose -f $COMPOSE_FILE down"
+    echo "  podman-compose -f $COMPOSE_FILE up -d"
+}
+
+case "${1:-}" in
+    list)
+        list_workspaces
+        ;;
+    add)
+        if [ -z "${2:-}" ]; then
+            echo "Error: Path required" >&2
+            show_help
+            exit 1
+        fi
+        add_workspace "$2"
+        ;;
+    remove)
+        if [ -z "${2:-}" ]; then
+            echo "Error: Path required" >&2
+            show_help
+            exit 1
+        fi
+        remove_workspace "$2"
+        ;;
+    -h|--help|help)
+        show_help
+        ;;
+    *)
+        show_help
+        exit 1
+        ;;
+esac
+EOF
+
+chmod +x ~/.local/bin/axiom-mcp ~/.local/bin/axiom-lsp ~/.local/bin/axiom-ingest ~/.local/bin/axiom-workspace
 
 # Start the services
 echo "Starting axiom services..."
@@ -333,9 +453,10 @@ echo "Services are running:"
 podman-compose -f ~/.local/share/axiom/podman-compose.yml ps
 echo ""
 echo "Wrapper scripts installed to ~/.local/bin/"
-echo "  - axiom-mcp:    MCP server for Claude Code"
-echo "  - axiom-lsp:    LSP server for VSCode"
-echo "  - axiom-ingest: Ingest library axioms into databases"
+echo "  - axiom-mcp:       MCP server for Claude Code"
+echo "  - axiom-lsp:       LSP server for VSCode"
+echo "  - axiom-ingest:    Ingest library axioms into databases"
+echo "  - axiom-workspace: Manage workspace mounts"
 echo ""
 echo "Next steps (run from this directory):"
 echo ""
@@ -351,9 +472,15 @@ echo ""
 echo "=== Configuration ==="
 echo ""
 echo "Wrapper scripts: ~/.local/bin/"
-echo "  - axiom-mcp:    MCP server for Claude Code"
-echo "  - axiom-lsp:    LSP server for VSCode"
-echo "  - axiom-ingest: Ingest library axioms into databases"
+echo "  - axiom-mcp:       MCP server for Claude Code"
+echo "  - axiom-lsp:       LSP server for VSCode"
+echo "  - axiom-ingest:    Ingest library axioms into databases"
+echo "  - axiom-workspace: Manage workspace mounts"
+echo ""
+echo "Managing workspaces:"
+echo "  axiom-workspace list                  # Show current mounts"
+echo "  axiom-workspace add /path/to/code     # Add workspace"
+echo "  axiom-workspace remove /path/to/code  # Remove workspace"
 echo ""
 echo "Ingesting library axioms:"
 echo "  axiom-ingest /path/to/mylib.toml      # Add axioms (additive)"
