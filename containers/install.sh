@@ -299,8 +299,13 @@ while ! podman exec axiom-app test -f /home/axiom/data/.initialized 2>/dev/null;
   sleep 2
 done
 
-# Run ingestion script
-exec podman exec axiom-app python -m scripts.ingest "$@"
+# Run ingestion script with container's database paths
+exec podman exec axiom-app python -m scripts.ingest \
+    --lancedb-path /home/axiom/data/lancedb \
+    --neo4j-uri bolt://neo4j:7687 \
+    --neo4j-user neo4j \
+    --neo4j-password axiompass \
+    "$@"
 EOF
 
 cat > ~/.local/bin/axiom-workspace << 'EOF'
