@@ -26,6 +26,9 @@ venv/
 ENV/
 env/
 
+# uv
+uv.lock
+
 # IDE
 .vscode/
 .idea/
