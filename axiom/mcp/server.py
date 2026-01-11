@@ -8,6 +8,7 @@
 This server exposes axiom validation tools to LLMs via the Model Context Protocol.
 """
 
+import os
 from typing import Any
 
 from mcp.server import Server
@@ -38,7 +39,8 @@ def _get_lance() -> LanceDBLoader | None:
     if _lance is None:
         try:
             neo4j = _get_neo4j()
-            _lance = LanceDBLoader(neo4j=neo4j)
+            db_path = os.environ.get("AXIOM_LANCEDB_PATH", "./data/lancedb")
+            _lance = LanceDBLoader(db_path=db_path, neo4j=neo4j)
         except Exception:
             pass
     return _lance
@@ -49,7 +51,10 @@ def _get_neo4j() -> Neo4jLoader | None:
     global _neo4j
     if _neo4j is None:
         try:
-            _neo4j = Neo4jLoader()
+            uri = os.environ.get("AXIOM_NEO4J_URI", "bolt://localhost:7687")
+            user = os.environ.get("AXIOM_NEO4J_USER", "neo4j")
+            password = os.environ.get("AXIOM_NEO4J_PASSWORD", "axiompass")
+            _neo4j = Neo4jLoader(uri=uri, user=user, password=password)
         except Exception:
             pass
     return _neo4j

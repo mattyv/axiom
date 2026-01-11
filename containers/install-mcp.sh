@@ -2,11 +2,6 @@
 # Configure Axiom MCP for Claude Code
 set -e
 
-MCP_DIR="$HOME/.config/claude-code"
-MCP_FILE="$MCP_DIR/mcp.json"
-
-mkdir -p "$MCP_DIR"
-
 # Get path to axiom-mcp
 AXIOM_MCP="$HOME/.local/bin/axiom-mcp"
 if [ ! -x "$AXIOM_MCP" ]; then
@@ -14,29 +9,22 @@ if [ ! -x "$AXIOM_MCP" ]; then
     exit 1
 fi
 
-# Create or merge mcp.json
-if [ -f "$MCP_FILE" ]; then
-    cp "$MCP_FILE" "$MCP_FILE.bak"
-    if command -v jq &> /dev/null; then
-        jq --arg cmd "$AXIOM_MCP" '.mcpServers.axiom = {"command": $cmd}' "$MCP_FILE.bak" > "$MCP_FILE"
-        echo "Updated $MCP_FILE (backup at $MCP_FILE.bak)"
-    else
-        echo "Warning: jq not found. Please manually add to $MCP_FILE:"
-        echo '  "axiom": {"command": "'$AXIOM_MCP'"}'
-    fi
-else
-    cat > "$MCP_FILE" << EOF
-{
-  "mcpServers": {
-    "axiom": {
-      "command": "$AXIOM_MCP"
-    }
-  }
-}
-EOF
-    echo "Created $MCP_FILE"
+# Check if claude CLI is available
+if ! command -v claude &> /dev/null; then
+    echo "Error: claude CLI not found."
+    echo "Install Claude Code from https://claude.ai/code"
+    exit 1
 fi
+
+# Remove existing axiom server if present (to allow re-running)
+claude mcp remove axiom 2>/dev/null || true
+
+# Add axiom MCP server at user scope
+echo "Adding axiom MCP server..."
+claude mcp add -s user axiom "$AXIOM_MCP"
 
 echo ""
 echo "Axiom MCP configured for Claude Code!"
-echo "Restart Claude Code to activate."
+echo "Run 'claude' or restart VSCode Claude extension to use."
+echo ""
+echo "Verify with: claude mcp list"
