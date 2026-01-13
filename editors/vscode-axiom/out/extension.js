@@ -39,7 +39,44 @@ const path = __importStar(require("path"));
 const vscode_1 = require("vscode");
 const node_1 = require("vscode-languageclient/node");
 let client;
-function activate(_context) {
+let statusBarItem;
+function updateStatusBar(state, message) {
+    if (!statusBarItem) {
+        return;
+    }
+    switch (state) {
+        case 'starting':
+            statusBarItem.text = '$(sync~spin) Axiom: Initializing...';
+            statusBarItem.tooltip = 'Axiom LSP is starting up and loading axiom database';
+            statusBarItem.backgroundColor = undefined;
+            statusBarItem.show();
+            break;
+        case 'running':
+            statusBarItem.text = '$(check) Axiom: Ready';
+            statusBarItem.tooltip = 'Axiom LSP is ready - hover over C++ code to see axioms';
+            statusBarItem.backgroundColor = undefined;
+            statusBarItem.show();
+            break;
+        case 'stopped':
+            statusBarItem.text = '$(circle-slash) Axiom: Stopped';
+            statusBarItem.tooltip = 'Axiom LSP is not running';
+            statusBarItem.backgroundColor = undefined;
+            statusBarItem.show();
+            break;
+        case 'error':
+            statusBarItem.text = '$(error) Axiom: Error';
+            statusBarItem.tooltip = message || 'Axiom LSP encountered an error';
+            statusBarItem.backgroundColor = undefined;
+            statusBarItem.show();
+            break;
+    }
+}
+function activate(context) {
+    // Create status bar item
+    statusBarItem = vscode_1.window.createStatusBarItem(vscode_1.StatusBarAlignment.Right, 100);
+    statusBarItem.name = 'Axiom LSP Status';
+    context.subscriptions.push(statusBarItem);
+    updateStatusBar('starting');
     const config = vscode_1.workspace.getConfiguration('axiom-lsp');
     const mode = config.get('mode', 'default');
     // Try to find axiom-lsp in the workspace's .venv
@@ -63,9 +100,28 @@ function activate(_context) {
         },
     };
     client = new node_1.LanguageClient('axiom-lsp', 'Axiom LSP', serverOptions, clientOptions);
-    client.start();
+    // Track client state changes
+    client.onDidChangeState((event) => {
+        switch (event.newState) {
+            case node_1.State.Starting:
+                updateStatusBar('starting');
+                break;
+            case node_1.State.Running:
+                updateStatusBar('running');
+                break;
+            case node_1.State.Stopped:
+                updateStatusBar('stopped');
+                break;
+        }
+    });
+    client.start().catch((error) => {
+        updateStatusBar('error', `Failed to start: ${error.message}`);
+    });
 }
 function deactivate() {
+    if (statusBarItem) {
+        statusBarItem.dispose();
+    }
     if (!client) {
         return undefined;
     }

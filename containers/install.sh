@@ -268,8 +268,8 @@ if [ ! -f "$COMPOSE_FILE" ]; then
     exit 1
 fi
 
-# Start services if not running
-podman-compose -f "$COMPOSE_FILE" up -d 2>/dev/null
+# Start services if not running (redirect ALL output to /dev/null to avoid corrupting LSP protocol)
+podman-compose -f "$COMPOSE_FILE" up -d >/dev/null 2>&1
 
 # Wait for initialization on first run
 while ! podman exec axiom-app test -f /home/axiom/data/.initialized 2>/dev/null; do
