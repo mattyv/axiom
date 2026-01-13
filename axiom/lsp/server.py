@@ -20,17 +20,27 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 
 from lsprotocol.types import (
+    INITIALIZED,
     TEXT_DOCUMENT_DID_OPEN,
     TEXT_DOCUMENT_DID_SAVE,
     TEXT_DOCUMENT_HOVER,
     Diagnostic,
+    DiagnosticSeverity,
     DidOpenTextDocumentParams,
     DidSaveTextDocumentParams,
     Hover,
     HoverParams,
+    InitializedParams,
     MarkupContent,
     MarkupKind,
+    MessageType,
+    Position,
+    ProgressToken,
     PublishDiagnosticsParams,
+    Range,
+    WorkDoneProgressBegin,
+    WorkDoneProgressEnd,
+    WorkDoneProgressReport,
 )
 from pygls.lsp.server import LanguageServer
 
@@ -40,7 +50,7 @@ from axiom.lsp.call_sites import CallSiteIndex, build_axiom_tree
 from axiom.lsp.diagnostics import DiagnosticMode, call_site_diagnostics
 from axiom.lsp.hover import format_axiom_tree, format_hover
 from axiom.lsp.query_builder import build_axiom_query
-from axiom.models import Axiom, AxiomType, SourceLocation
+from axiom.models import Axiom, AxiomCollection, AxiomType, SourceLocation
 from axiom.vectors import LanceDBLoader
 from axiom.watcher.extractor import AxiomExtractor
 from axiom.watcher.store import InMemoryAxiomStore
@@ -63,14 +73,17 @@ class AxiomLanguageServer(LanguageServer):
         """Initialize the Axiom language server."""
         super().__init__(name="axiom-lsp", version="0.1.0")
 
-        # Load config
+        # Track initialization state - heavy loading deferred to post-initialize
+        self._initialized = False
+
+        # Load config (lightweight)
         try:
             self._config = AxiomConfig.load()
         except Exception as e:
             logger.warning("Could not load config: %s", e)
             self._config = AxiomConfig()
 
-        # Initialize extractor
+        # Initialize extractor (lightweight)
         self._extractor = AxiomExtractor(config=self._config)
 
         # In-memory store for extracted axioms
@@ -78,6 +91,11 @@ class AxiomLanguageServer(LanguageServer):
 
         # Call site index for tracking function calls
         self._call_site_index = CallSiteIndex()
+
+        # Track file extraction status for error reporting
+        # Maps file_path -> (status, message) where status is one of:
+        # "ok", "no_compile_commands", "parse_errors", "extractor_error"
+        self._file_status: dict[str, tuple[str, str]] = {}
 
         # Axioms indexed by function name for call site lookups
         self._axioms_by_function: dict[str, list[Axiom]] = {}
@@ -291,11 +309,90 @@ class AxiomLanguageServer(LanguageServer):
         # Diagnostic mode
         self._diagnostic_mode: DiagnosticMode = "default"
 
-        # Load foundation axioms from Neo4j
-        self._load_foundation_axioms()
-
-        # Initialize LanceDB for semantic search (optional, used when available)
+        # LanceDB initialized lazily in _do_heavy_initialization
         self._lance: LanceDBLoader | None = None
+
+        # Register handlers
+        self._register_handlers()
+
+    def _send_progress(
+        self,
+        token: ProgressToken,
+        value: WorkDoneProgressBegin | WorkDoneProgressReport | WorkDoneProgressEnd,
+    ) -> None:
+        """Send a progress notification to the client."""
+        self.progress.notify(token, value)
+
+    def _do_heavy_initialization(self) -> None:
+        """Perform heavy initialization with progress reporting.
+
+        Called after the client sends 'initialized' notification, so we can
+        send progress updates to show status in the IDE.
+        """
+        if self._initialized:
+            return
+
+        # Use a fixed token for initialization progress
+        token: ProgressToken = "axiom-init"
+
+        # Create progress token
+        try:
+            self.progress.create(token)
+        except Exception as e:
+            logger.debug("Could not create progress token: %s", e)
+
+        # Begin progress
+        self._send_progress(
+            token,
+            WorkDoneProgressBegin(
+                title="Axiom LSP",
+                message="Initializing...",
+                cancellable=False,
+                percentage=0,
+            ),
+        )
+
+        try:
+            # Load Neo4j axioms (40%)
+            self._send_progress(
+                token,
+                WorkDoneProgressReport(
+                    message="Loading axioms from Neo4j...",
+                    percentage=10,
+                ),
+            )
+            self._load_foundation_axioms()
+
+            # Load LanceDB (40%)
+            self._send_progress(
+                token,
+                WorkDoneProgressReport(
+                    message="Loading semantic search index...",
+                    percentage=50,
+                ),
+            )
+            self._load_lancedb()
+
+            # Done
+            self._send_progress(
+                token,
+                WorkDoneProgressEnd(message="Ready"),
+            )
+
+            self._initialized = True
+            logger.info("Axiom LSP initialization complete")
+
+        except Exception as e:
+            logger.error("Initialization failed: %s", e)
+            self._send_progress(
+                token,
+                WorkDoneProgressEnd(message=f"Initialization failed: {e}"),
+            )
+            # Mark as initialized anyway to avoid repeated attempts
+            self._initialized = True
+
+    def _load_lancedb(self) -> None:
+        """Initialize LanceDB for semantic search."""
         try:
             # Resolve lancedb_path relative to config root
             lancedb_path = self._config.resolve_path(self._config.static.lancedb_path)
@@ -308,9 +405,6 @@ class AxiomLanguageServer(LanguageServer):
         except Exception as e:
             logger.warning("Could not load LanceDB: %s, falling back to tag-based lookup", e)
             self._lance = None
-
-        # Register handlers
-        self._register_handlers()
 
     def _load_foundation_axioms(self) -> None:
         """Load foundation/library axioms from Neo4j into function and tag indices."""
@@ -490,9 +584,22 @@ class AxiomLanguageServer(LanguageServer):
     def _register_handlers(self) -> None:
         """Register LSP event handlers."""
 
+        @self.feature(INITIALIZED)
+        def on_initialized(params: InitializedParams) -> None:
+            """Handle initialized notification - perform heavy initialization."""
+            # Show a status message immediately
+            self.show_message(
+                "Axiom LSP: Loading axiom database...",
+                msg_type=MessageType.Info,
+            )
+            self._do_heavy_initialization()
+
         @self.feature(TEXT_DOCUMENT_DID_OPEN)
         def did_open(params: DidOpenTextDocumentParams) -> None:
             """Handle file open - extract axioms and publish diagnostics."""
+            # Ensure initialization is complete before processing files
+            if not self._initialized:
+                self._do_heavy_initialization()
             self._handle_file_change(params.text_document.uri)
 
         @self.feature(TEXT_DOCUMENT_DID_SAVE)
@@ -527,11 +634,58 @@ class AxiomLanguageServer(LanguageServer):
         if not self._is_cpp_file(file_path):
             return
 
+        diagnostics: list[Diagnostic] = []
+
         try:
+            # Check if file is in compile_commands.json before extraction
+            file_in_compile_commands = self._extractor.is_live_layer_file(file_path)
+
             # Extract axioms and call graph
-            collection, call_graph = self._extractor.extract_file_with_call_graph(
-                Path(file_path)
-            )
+            collection, call_graph, stderr = self._extract_with_stderr(file_path)
+
+            # Determine extraction status based on results
+            if stderr and ("error:" in stderr or "fatal error:" in stderr):
+                # Parse errors occurred - count them
+                error_count = stderr.count("error:")
+                if not file_in_compile_commands:
+                    # No compile_commands.json - this is the likely cause
+                    self._file_status[file_path] = (
+                        "no_compile_commands",
+                        f"File not in compile_commands.json. Parsing failed with {error_count} error(s). "
+                        f"Run 'cmake -B build -DCMAKE_EXPORT_COMPILE_COMMANDS=ON' to generate it.",
+                    )
+                else:
+                    # Has compile_commands but still errors
+                    # Extract first error for context
+                    first_error = self._extract_first_error(stderr)
+                    self._file_status[file_path] = (
+                        "parse_errors",
+                        f"Parsing failed with {error_count} error(s): {first_error}",
+                    )
+
+                # Add a diagnostic at line 1 to inform user
+                diagnostics.append(
+                    Diagnostic(
+                        range=Range(
+                            start=Position(line=0, character=0),
+                            end=Position(line=0, character=1),
+                        ),
+                        message=f"Axiom: {self._file_status[file_path][1]}",
+                        severity=DiagnosticSeverity.Information,
+                        source="axiom",
+                    )
+                )
+            elif not collection.axioms and not call_graph:
+                # No errors but no results - might be ok or might indicate issues
+                if not file_in_compile_commands:
+                    self._file_status[file_path] = (
+                        "no_compile_commands",
+                        "File not in compile_commands.json. Include paths may be missing.",
+                    )
+                else:
+                    self._file_status[file_path] = ("ok", "No axioms extracted")
+            else:
+                self._file_status[file_path] = ("ok", "")
 
             # Update store (remove old axioms for this file, add new ones)
             self._store.delete_by_file(file_path)
@@ -549,27 +703,193 @@ class AxiomLanguageServer(LanguageServer):
                     self._axioms_by_function[axiom.function].append(axiom)
 
             # Generate diagnostics at call sites only (not definitions)
-            diagnostics = call_site_diagnostics(
+            call_diagnostics = call_site_diagnostics(
                 file_path,
                 self._call_site_index,
                 self.get_axioms_for_callee,
                 mode=self._diagnostic_mode,
             )
+            diagnostics.extend(call_diagnostics)
 
             logger.info(
-                "Extracted %d axioms, %d call sites, publishing %d diagnostics for %s (mode=%s)",
+                "Extracted %d axioms, %d call sites, publishing %d diagnostics for %s (mode=%s, status=%s)",
                 len(collection.axioms),
                 len(call_graph),
                 len(diagnostics),
                 file_path,
                 self._diagnostic_mode,
+                self._file_status.get(file_path, ("unknown", ""))[0],
             )
             self._publish_diagnostics(uri, diagnostics)
 
         except Exception as e:
-            logger.warning("Failed to extract axioms from %s: %s", file_path, e)
-            # Clear diagnostics on error
-            self._publish_diagnostics(uri, [])
+            error_msg = str(e)
+            logger.warning("Failed to extract axioms from %s: %s", file_path, error_msg)
+            self._file_status[file_path] = ("extractor_error", error_msg)
+
+            # Publish error diagnostic
+            diagnostics.append(
+                Diagnostic(
+                    range=Range(
+                        start=Position(line=0, character=0),
+                        end=Position(line=0, character=1),
+                    ),
+                    message=f"Axiom: Extraction failed - {error_msg}",
+                    severity=DiagnosticSeverity.Warning,
+                    source="axiom",
+                )
+            )
+            self._publish_diagnostics(uri, diagnostics)
+
+    def _extract_with_stderr(
+        self, file_path: str
+    ) -> tuple[AxiomCollection, list[dict], str]:
+        """Extract axioms and return stderr for error analysis.
+
+        Returns:
+            Tuple of (collection, call_graph, stderr_output).
+        """
+        import json
+        import subprocess
+
+        from axiom.extractors.clang_loader import parse_json_with_call_graph
+
+        file_path_obj = Path(file_path).resolve()
+
+        # Build command - always use --no-ignore for LSP (we want to analyze any file)
+        # and --call-graph to get function call information
+        cmd = [
+            str(self._extractor.axiom_extract_path),
+            str(file_path_obj),
+            "--no-ignore",
+            "--call-graph",
+        ]
+
+        file_in_compile_commands = (
+            str(file_path_obj) in self._extractor._load_compile_commands_files()
+        )
+
+        if (
+            self._extractor.compile_commands_path.exists()
+            and file_in_compile_commands
+        ):
+            cmd.extend(["-p", str(self._extractor.compile_commands_path.parent)])
+        else:
+            # Fallback mode: add platform-specific stdlib paths
+            cmd.extend(["--"] + self._get_fallback_compiler_args())
+
+        result = subprocess.run(
+            cmd,
+            capture_output=True,
+            text=True,
+            timeout=60,
+        )
+
+        stderr = result.stderr or ""
+
+        if not result.stdout.strip():
+            return AxiomCollection(axioms=[], source=str(file_path_obj)), [], stderr
+
+        try:
+            data = json.loads(result.stdout)
+            collection, call_graph = parse_json_with_call_graph(
+                data, source=str(file_path_obj)
+            )
+            return collection, call_graph, stderr
+        except json.JSONDecodeError:
+            return AxiomCollection(axioms=[], source=str(file_path_obj)), [], stderr
+
+    def _get_fallback_compiler_args(self) -> list[str]:
+        """Get fallback compiler arguments for files not in compile_commands.json.
+
+        On macOS with Homebrew LLVM, we need specific include paths to make
+        axiom-extract (built with libTooling) work with the system headers.
+
+        Returns:
+            List of compiler arguments.
+        """
+        import platform
+        import shutil
+
+        args = ["-std=c++20"]
+
+        if platform.system() != "Darwin":
+            return args
+
+        # On macOS, axiom-extract is built with Homebrew LLVM but needs to
+        # work with a mix of libc++ and macOS SDK headers
+        llvm_prefix = Path("/opt/homebrew/opt/llvm")
+        if not llvm_prefix.exists():
+            # Try Intel Mac path
+            llvm_prefix = Path("/usr/local/opt/llvm")
+
+        if not llvm_prefix.exists():
+            logger.debug("Homebrew LLVM not found, using basic fallback")
+            return args
+
+        # Find LLVM version for clang builtin headers
+        llvm_lib_clang = llvm_prefix / "lib" / "clang"
+        clang_version = None
+        if llvm_lib_clang.exists():
+            versions = sorted(llvm_lib_clang.iterdir(), reverse=True)
+            if versions:
+                clang_version = versions[0].name
+
+        # Get macOS SDK path
+        sdk_path = None
+        xcrun = shutil.which("xcrun")
+        if xcrun:
+            import subprocess
+            try:
+                result = subprocess.run(
+                    [xcrun, "--show-sdk-path"],
+                    capture_output=True,
+                    text=True,
+                    timeout=5,
+                )
+                if result.returncode == 0:
+                    sdk_path = result.stdout.strip()
+            except Exception:
+                pass
+
+        # Build the include path order that works:
+        # 1. -nostdinc++ to disable default C++ stdlib search
+        # 2. Homebrew libc++ headers
+        # 3. Clang builtin headers (for stddef.h, etc.)
+        # 4. macOS SDK headers (for C library)
+        args.append("-nostdinc++")
+
+        libcxx_include = llvm_prefix / "include" / "c++" / "v1"
+        if libcxx_include.exists():
+            args.extend(["-isystem", str(libcxx_include)])
+
+        if clang_version:
+            builtin_include = llvm_lib_clang / clang_version / "include"
+            if builtin_include.exists():
+                args.extend(["-isystem", str(builtin_include)])
+
+        if sdk_path:
+            args.extend(["-isystem", f"{sdk_path}/usr/include"])
+
+        logger.debug("Fallback compiler args: %s", args)
+        return args
+
+    def _extract_first_error(self, stderr: str) -> str:
+        """Extract the first error message from stderr.
+
+        Args:
+            stderr: Full stderr output.
+
+        Returns:
+            First error line, truncated if needed.
+        """
+        for line in stderr.split("\n"):
+            if "error:" in line:
+                # Truncate long error messages
+                if len(line) > 100:
+                    return line[:100] + "..."
+                return line.strip()
+        return "Unknown error"
 
     def _publish_diagnostics(self, uri: str, diagnostics: list[Diagnostic]) -> None:
         """Publish diagnostics to the client."""
@@ -632,6 +952,24 @@ class AxiomLanguageServer(LanguageServer):
         Returns:
             Markdown hover content, or None if no axioms match.
         """
+        # Check if this file has extraction issues
+        file_status = self._file_status.get(file_path)
+        if file_status and file_status[0] != "ok":
+            status_type, message = file_status
+            if status_type == "no_compile_commands":
+                return (
+                    "**Axiom: Unable to analyze file**\n\n"
+                    f"_{message}_\n\n"
+                    "To enable axiom analysis, generate `compile_commands.json`:\n"
+                    "```bash\n"
+                    "cmake -B build -DCMAKE_EXPORT_COMPILE_COMMANDS=ON\n"
+                    "```"
+                )
+            elif status_type == "parse_errors":
+                return f"**Axiom: Parse errors**\n\n_{message}_"
+            elif status_type == "extractor_error":
+                return f"**Axiom: Extraction error**\n\n_{message}_"
+
         # LSP uses 0-indexed lines, call site index uses 1-indexed
         lsp_line = line + 1
 
