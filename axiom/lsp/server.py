@@ -321,7 +321,15 @@ class AxiomLanguageServer(LanguageServer):
         value: WorkDoneProgressBegin | WorkDoneProgressReport | WorkDoneProgressEnd,
     ) -> None:
         """Send a progress notification to the client."""
-        self.progress.notify(token, value)
+        try:
+            if isinstance(value, WorkDoneProgressBegin):
+                self.progress.begin(token, value)
+            elif isinstance(value, WorkDoneProgressReport):
+                self.progress.report(token, value)
+            elif isinstance(value, WorkDoneProgressEnd):
+                self.progress.end(token, value)
+        except Exception as e:
+            logger.debug("Failed to send progress: %s", e)
 
     def _do_heavy_initialization(self) -> None:
         """Perform heavy initialization with progress reporting.
@@ -335,9 +343,12 @@ class AxiomLanguageServer(LanguageServer):
         # Use a fixed token for initialization progress
         token: ProgressToken = "axiom-init"
 
-        # Create progress token
+        # Create progress token - try both sync and async APIs
+        # pygls v2 has create_async, but we may be in sync context
         try:
-            self.progress.create(token)
+            # Try sync create first (pygls v1 style)
+            if hasattr(self.progress, "create"):
+                self.progress.create(token)
         except Exception as e:
             logger.debug("Could not create progress token: %s", e)
 
@@ -588,9 +599,9 @@ class AxiomLanguageServer(LanguageServer):
         def on_initialized(params: InitializedParams) -> None:
             """Handle initialized notification - perform heavy initialization."""
             # Show a status message immediately
-            self.show_message(
+            self.window_show_message(
+                MessageType.Info,
                 "Axiom LSP: Loading axiom database...",
-                msg_type=MessageType.Info,
             )
             self._do_heavy_initialization()
 
