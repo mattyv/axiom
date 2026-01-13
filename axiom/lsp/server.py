@@ -599,9 +599,9 @@ class AxiomLanguageServer(LanguageServer):
         def on_initialized(params: InitializedParams) -> None:
             """Handle initialized notification - perform heavy initialization."""
             # Show a status message immediately
+            from lsprotocol.types import ShowMessageParams
             self.window_show_message(
-                MessageType.Info,
-                "Axiom LSP: Loading axiom database...",
+                ShowMessageParams(type=MessageType.Info, message="Axiom LSP: Loading axiom database...")
             )
             self._do_heavy_initialization()
 
