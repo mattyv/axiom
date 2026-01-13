@@ -1,0 +1,62 @@
+FROM python:3.12-slim AS builder
+
+# Install build deps for axiom-extract (Clang LibTooling)
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    cmake ninja-build \
+    llvm-dev libclang-dev clang \
+    zlib1g-dev libzstd-dev \
+    && rm -rf /var/lib/apt/lists/*
+
+# Build axiom-extract
+WORKDIR /build
+COPY tools/axiom-extract/ ./tools/axiom-extract/
+RUN cd tools/axiom-extract && \
+    cmake -B build -G Ninja -DCMAKE_BUILD_TYPE=Release && \
+    cmake --build build && \
+    cp build/axiom-extract /usr/local/bin/axiom-extract-clang
+
+# Final image
+FROM python:3.12-slim
+
+# Install runtime deps for axiom-extract (needs C++ headers to parse code)
+# Using libc++ instead of libstdc++ for Clang compatibility
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    gcc g++ \
+    libclang1 libc++-dev libc++abi-dev \
+    && rm -rf /var/lib/apt/lists/*
+
+# Copy axiom-extract-clang and Clang's builtin headers from builder
+COPY --from=builder /usr/local/bin/axiom-extract-clang /usr/local/bin/axiom-extract-clang-bin
+COPY --from=builder /usr/lib/llvm-19/lib/clang/ /usr/lib/llvm-19/lib/clang/
+
+# Install wrapper script that adds resource-dir flag automatically
+COPY containers/axiom-extract-wrapper.sh /usr/local/bin/axiom-extract-clang
+RUN chmod +x /usr/local/bin/axiom-extract-clang
+
+# Create non-root user
+RUN useradd -m -s /bin/bash axiom
+WORKDIR /home/axiom/app
+
+# Copy app code first, then install (so pip installs from local source)
+COPY pyproject.toml .
+COPY axiom/ axiom/
+COPY scripts/ scripts/
+COPY knowledge/ knowledge/
+# Note: data/lancedb/ is NOT copied - will be created on first startup
+
+# Install Python deps with CPU-only PyTorch (avoids multi-GB CUDA packages)
+# Build wheel and install it to ensure proper package installation (not editable)
+RUN pip install --no-cache-dir torch --index-url https://download.pytorch.org/whl/cpu && \
+    pip install --no-cache-dir build && \
+    python -m build --wheel && \
+    pip install --no-cache-dir "dist/axiom-0.1.0-py3-none-any.whl[full,lsp]"
+
+# Fix permissions
+RUN chown -R axiom:axiom /home/axiom
+
+USER axiom
+
+COPY --chown=axiom:axiom containers/entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
+
+ENTRYPOINT ["/entrypoint.sh"]

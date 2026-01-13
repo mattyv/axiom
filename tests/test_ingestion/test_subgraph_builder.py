@@ -73,6 +73,62 @@ class TestSubgraphBuilderBasics:
         assert sg is not None
         assert sg.name == "add"
 
+    def test_signature_excludes_function_body(self):
+        """Test that signature only includes declaration, not implementation."""
+        code = """
+        int simple_func(int x) {
+            return x + 1;
+        }
+        """
+        builder = SubgraphBuilder(language="cpp")
+        sg = builder.build(code, "simple_func")
+
+        assert sg is not None
+        # Signature should NOT contain the body
+        assert "{" not in sg.signature
+        assert "return" not in sg.signature
+        assert sg.signature.strip() == "int simple_func(int x)"
+
+    def test_signature_excludes_constexpr_function_body(self):
+        """Test that constexpr function signatures exclude the body."""
+        code = """
+        constexpr int compute(int x) {
+            if (x < 0) return -x;
+            else return x;
+        }
+        """
+        builder = SubgraphBuilder(language="cpp")
+        sg = builder.build(code, "compute")
+
+        assert sg is not None
+        # Signature should NOT contain the body or if/else logic
+        assert "{" not in sg.signature
+        assert "if" not in sg.signature
+        assert "return" not in sg.signature
+        assert sg.signature.strip() == "constexpr int compute(int x)"
+
+    def test_signature_excludes_large_constexpr_body(self):
+        """Test that large constexpr functions only include signature."""
+        code = """
+        constexpr int factorial(int n) {
+            int result = 1;
+            for (int i = 2; i <= n; ++i) {
+                result *= i;
+            }
+            return result;
+        }
+        """
+        builder = SubgraphBuilder(language="cpp")
+        sg = builder.build(code, "factorial")
+
+        assert sg is not None
+        # Signature should be a single line
+        assert sg.signature.count('\n') == 0 or sg.signature.count('\n') == 1
+        assert "{" not in sg.signature
+        assert "for" not in sg.signature
+        assert "result" not in sg.signature
+        assert sg.signature.strip() == "constexpr int factorial(int n)"
+
 
 class TestArithmeticOperations:
     """Tests for arithmetic operation extraction."""

@@ -1,14 +1,15 @@
 #!/usr/bin/env python3
 # Axiom - Grounded truth validation for LLMs
-# Copyright (c) 2025 Matt Varendorff
+# Copyright (c) 2026 Matt Varendorff
 # https://github.com/mattyv/axiom
 # SPDX-License-Identifier: BSL-1.0
 
 """Ingest TOML axiom files into Neo4j and LanceDB.
 
 Usage:
-    python scripts/ingest.py                         # Load all TOML files
-    python scripts/ingest.py --clear                 # Clear databases first
+    python scripts/ingest.py                         # Load all default TOML files
+    python scripts/ingest.py --clear                 # Clear databases only
+    python scripts/ingest.py --clear file.toml       # Clear then load specific file
     python scripts/ingest.py knowledge/foundations/c11_core.toml  # Load specific file
 """
 
@@ -24,11 +25,11 @@ from axiom.models import AxiomCollection
 from axiom.vectors import LanceDBLoader
 
 # Default TOML files to load (in order)
+# Note: K-framework axiom files (c11_core, c11_stdlib, cpp_core, cpp_stdlib) were
+# dropped as they contained mostly internal K evaluation guards, not useful for
+# code validation. Error codes are preserved in c11_error_codes.toml.
 DEFAULT_TOML_FILES = [
-    "knowledge/foundations/c11_core.toml",
-    "knowledge/foundations/c11_stdlib.toml",
-    "knowledge/foundations/cpp_core.toml",
-    "knowledge/foundations/cpp_stdlib.toml",
+    "knowledge/foundations/c11_error_codes.toml",
     "knowledge/foundations/cpp20_language.toml",
     "knowledge/foundations/cpp20_stdlib.toml",
 ]
@@ -46,7 +47,7 @@ def main() -> int:
     parser.add_argument(
         "--clear",
         action="store_true",
-        help="Clear databases before loading",
+        help="Clear databases (if no files specified, just clears; otherwise clears then loads)",
     )
     parser.add_argument(
         "--neo4j-uri",
@@ -82,9 +83,6 @@ def main() -> int:
 
     args = parser.parse_args()
 
-    # Use default files if none specified
-    files_to_load = args.files if args.files else [Path(f) for f in DEFAULT_TOML_FILES]
-
     # Clear databases if requested
     if args.clear:
         print("Clearing databases...")
@@ -106,6 +104,14 @@ def main() -> int:
             if args.lancedb_path.exists():
                 shutil.rmtree(args.lancedb_path)
                 print("  LanceDB cleared")
+
+        # If no files specified with --clear, just clear and exit
+        if not args.files:
+            print("Done")
+            return 0
+
+    # Determine files to load
+    files_to_load = args.files if args.files else [Path(f) for f in DEFAULT_TOML_FILES]
 
     # Load all TOML files
     all_axioms = []

@@ -1,0 +1,50 @@
+version: '3.8'
+
+services:
+  axiom-app:
+    image: ghcr.io/mattyv/axiom:latest
+    container_name: axiom-app
+    depends_on:
+      neo4j:
+        condition: service_healthy
+    environment:
+      - AXIOM_NEO4J_URI=bolt://neo4j:7687
+      - AXIOM_NEO4J_USER=neo4j
+      - AXIOM_NEO4J_PASSWORD=axiompass
+      - AXIOM_LANCEDB_PATH=/home/axiom/data/lancedb
+    volumes:
+      - axiom-data:/home/axiom/data
+      - axiom-hf-cache:/home/axiom/.cache/huggingface
+      # WORKSPACE_MOUNTS_PLACEHOLDER
+    read_only: true
+    tmpfs:
+      - /tmp
+    # No ports - stdio only via podman exec
+
+  neo4j:
+    image: docker.io/library/neo4j:5.15
+    container_name: axiom-neo4j
+    environment:
+      - NEO4J_AUTH=neo4j/axiompass
+      - NEO4J_PLUGINS=["apoc"]
+      - NEO4J_dbms_memory_heap_max__size=512M
+      - NEO4J_dbms_memory_pagecache_size=256M
+    volumes:
+      - neo4j-data:/data
+      - neo4j-logs:/logs
+    healthcheck:
+      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider localhost:7474 || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    # No ports exposed by default - only accessible within network
+
+volumes:
+  axiom-data:
+  axiom-hf-cache:
+  neo4j-data:
+  neo4j-logs:
+
+networks:
+  default:
+    name: axiom-network

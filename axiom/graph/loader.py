@@ -1,5 +1,5 @@
 # Axiom - Grounded truth validation for LLMs
-# Copyright (c) 2025 Matt Varendorff
+# Copyright (c) 2026 Matt Varendorff
 # https://github.com/mattyv/axiom
 # SPDX-License-Identifier: BSL-1.0
 
@@ -42,12 +42,20 @@ class Neo4jLoader:
         """Context manager exit."""
         self.close()
 
-    def load_collection(self, collection: AxiomCollection) -> None:
+    def load_collection(self, collection: AxiomCollection, bulk: bool = True) -> None:
         """Load a complete axiom collection.
 
         Args:
             collection: AxiomCollection to load.
+            bulk: Use bulk UNWIND operations (much faster for large collections).
         """
+        if bulk:
+            self._load_collection_bulk(collection)
+        else:
+            self._load_collection_sequential(collection)
+
+    def _load_collection_sequential(self, collection: AxiomCollection) -> None:
+        """Load collection one axiom at a time (legacy, slow)."""
         with self.driver.session() as session:
             # Create axioms
             for axiom in collection.axioms:
@@ -59,6 +67,136 @@ class Neo4jLoader:
 
             # Create relationships
             session.execute_write(self._create_relationships, collection)
+
+    def _load_collection_bulk(self, collection: AxiomCollection) -> None:
+        """Load collection using bulk UNWIND operations (fast).
+
+        Uses single queries with UNWIND to insert all axioms/errors at once,
+        reducing thousands of transactions to just a few.
+        """
+        # Convert to dicts for Cypher parameters
+        axiom_data = [self._axiom_to_dict(a) for a in collection.axioms]
+        error_data = [self._error_to_dict(e) for e in collection.error_codes]
+
+        with self.driver.session() as session:
+            # Bulk create all axioms and modules
+            if axiom_data:
+                session.execute_write(self._bulk_create_axioms, axiom_data)
+
+            # Bulk create all error codes
+            if error_data:
+                session.execute_write(self._bulk_create_errors, error_data)
+
+            # Create VIOLATED_BY relationships
+            session.execute_write(self._bulk_create_violated_by)
+
+            # Create DEPENDS_ON relationships
+            session.execute_write(self._bulk_create_depends_on)
+
+    @staticmethod
+    def _axiom_to_dict(axiom: Axiom) -> dict:
+        """Convert Axiom to dict for bulk insert."""
+        return {
+            "id": axiom.id,
+            "content": axiom.content,
+            "formal_spec": axiom.formal_spec,
+            "layer": axiom.layer,
+            "confidence": axiom.confidence,
+            "source_file": axiom.source.file,
+            "module_name": axiom.source.module,
+            "tags": axiom.tags,
+            "c_refs": axiom.c_standard_refs,
+            "function": axiom.function,
+            "header": axiom.header,
+            "axiom_type": axiom.axiom_type.value if axiom.axiom_type else None,
+            "on_violation": axiom.on_violation,
+            "depends_on": axiom.depends_on or [],
+            "violated_by_codes": [v.code for v in axiom.violated_by],
+        }
+
+    @staticmethod
+    def _error_to_dict(error: ErrorCode) -> dict:
+        """Convert ErrorCode to dict for bulk insert."""
+        return {
+            "code": error.code,
+            "internal_code": error.internal_code,
+            "type": error.type.value,
+            "description": error.description,
+            "c_refs": error.c_standard_refs,
+            "validates_axioms": error.validates_axioms,
+        }
+
+    @staticmethod
+    def _bulk_create_axioms(tx, axioms: list[dict]) -> None:
+        """Bulk create all Axiom nodes and KModule relationships."""
+        tx.run(
+            """
+            UNWIND $axioms AS axiom
+            MERGE (a:Axiom {id: axiom.id})
+            SET a.content = axiom.content,
+                a.formal_spec = axiom.formal_spec,
+                a.layer = axiom.layer,
+                a.confidence = axiom.confidence,
+                a.source_file = axiom.source_file,
+                a.module_name = axiom.module_name,
+                a.tags = axiom.tags,
+                a.c_standard_refs = axiom.c_refs,
+                a.function = axiom.function,
+                a.header = axiom.header,
+                a.axiom_type = axiom.axiom_type,
+                a.on_violation = axiom.on_violation,
+                a.depends_on = axiom.depends_on,
+                a.violated_by_codes = axiom.violated_by_codes
+
+            MERGE (m:KModule {name: axiom.module_name})
+            SET m.file_path = axiom.source_file
+
+            MERGE (a)-[:DEFINED_IN]->(m)
+            """,
+            axioms=axioms,
+        )
+
+    @staticmethod
+    def _bulk_create_errors(tx, errors: list[dict]) -> None:
+        """Bulk create all ErrorCode nodes."""
+        tx.run(
+            """
+            UNWIND $errors AS error
+            MERGE (e:ErrorCode {code: error.code})
+            SET e.internal_code = error.internal_code,
+                e.type = error.type,
+                e.description = error.description,
+                e.c_standard_refs = error.c_refs,
+                e.validates_axioms = error.validates_axioms
+            """,
+            errors=errors,
+        )
+
+    @staticmethod
+    def _bulk_create_violated_by(tx) -> None:
+        """Bulk create VIOLATED_BY relationships from stored codes."""
+        tx.run(
+            """
+            MATCH (a:Axiom)
+            WHERE a.violated_by_codes IS NOT NULL AND size(a.violated_by_codes) > 0
+            UNWIND a.violated_by_codes AS code
+            MATCH (e:ErrorCode {code: code})
+            MERGE (a)-[:VIOLATED_BY]->(e)
+            """
+        )
+
+    @staticmethod
+    def _bulk_create_depends_on(tx) -> None:
+        """Bulk create DEPENDS_ON relationships from stored dependency lists."""
+        tx.run(
+            """
+            MATCH (a:Axiom)
+            WHERE a.depends_on IS NOT NULL AND size(a.depends_on) > 0
+            UNWIND a.depends_on AS dep_id
+            MATCH (foundation:Axiom {id: dep_id})
+            MERGE (a)-[:DEPENDS_ON]->(foundation)
+            """
+        )
 
     def load_axiom(self, axiom: Axiom) -> None:
         """Load a single axiom.

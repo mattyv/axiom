@@ -9,18 +9,6 @@ PROJECT_DIR="$(dirname "$SCRIPT_DIR")"
 echo "Installing Axiom MCP server..."
 echo "Project directory: $PROJECT_DIR"
 
-# Detect config file location
-if [[ "$OSTYPE" == "darwin"* ]] && [[ -d "$HOME/Library/Application Support/Claude" ]]; then
-    # macOS - Claude Desktop
-    CONFIG_FILE="$HOME/Library/Application Support/Claude/claude_desktop_config.json"
-    mkdir -p "$(dirname "$CONFIG_FILE")"
-else
-    # Claude Code - use .mcp.json in project root
-    CONFIG_FILE="$PROJECT_DIR/.mcp.json"
-fi
-
-echo "Config file: $CONFIG_FILE"
-
 # Check if Python venv exists
 if [[ ! -d "$PROJECT_DIR/.venv" ]]; then
     echo "Creating Python virtual environment..."
@@ -33,17 +21,17 @@ echo "Installing axiom package..."
 
 # Generate MCP server config
 MCP_COMMAND="$PROJECT_DIR/.venv/bin/python"
-MCP_ARGS="-m axiom.mcp.server"
 
-# Create or update config file
-if [[ -f "$CONFIG_FILE" ]]; then
-    echo "Updating existing config..."
-    # Use Python to safely update JSON
-    python3 << EOF
+# Function to update a config file
+update_config() {
+    local config_file="$1"
+
+    if [[ -f "$config_file" ]]; then
+        echo "Updating: $config_file"
+        python3 << EOF
 import json
-import sys
 
-config_file = "$CONFIG_FILE"
+config_file = "$config_file"
 
 try:
     with open(config_file, 'r') as f:
@@ -64,12 +52,10 @@ config['mcpServers']['axiom'] = {
 
 with open(config_file, 'w') as f:
     json.dump(config, f, indent=2)
-
-print(f"Updated {config_file}")
 EOF
-else
-    echo "Creating new config..."
-    cat > "$CONFIG_FILE" << EOF
+    else
+        echo "Creating: $config_file"
+        cat > "$config_file" << EOF
 {
   "mcpServers": {
     "axiom": {
@@ -82,7 +68,16 @@ else
   }
 }
 EOF
-    echo "Created $CONFIG_FILE"
+    fi
+}
+
+# Always update .mcp.json in project root (for Claude Code)
+update_config "$PROJECT_DIR/.mcp.json"
+
+# Also update Claude Desktop config on macOS if the directory exists
+if [[ "$OSTYPE" == "darwin"* ]] && [[ -d "$HOME/Library/Application Support/Claude" ]]; then
+    mkdir -p "$HOME/Library/Application Support/Claude"
+    update_config "$HOME/Library/Application Support/Claude/claude_desktop_config.json"
 fi
 
 echo ""

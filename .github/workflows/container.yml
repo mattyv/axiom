@@ -1,0 +1,64 @@
+name: Container Build
+
+on:
+  push:
+    branches: [main, 'rc/**']
+    tags: ['v*']
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        include:
+          - runner: ubuntu-latest
+            platform: linux/amd64
+            suffix: amd64
+          - runner: ubuntu-24.04-arm
+            platform: linux/arm64
+            suffix: arm64
+    runs-on: ${{ matrix.runner }}
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Log in to GHCR
+        run: echo "${{ secrets.GITHUB_TOKEN }}" | podman login ghcr.io -u ${{ github.actor }} --password-stdin
+
+      - name: Build image
+        run: podman build -t ghcr.io/mattyv/axiom:${{ github.sha }}-${{ matrix.suffix }} -f containers/Containerfile .
+
+      - name: Test Python imports
+        run: |
+          podman run --rm --entrypoint python ghcr.io/mattyv/axiom:${{ github.sha }}-${{ matrix.suffix }} \
+            -c "from axiom.models import Axiom; print('OK')"
+
+      - name: Push arch-specific image
+        run: podman push ghcr.io/mattyv/axiom:${{ github.sha }}-${{ matrix.suffix }}
+
+  manifest:
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: Log in to GHCR
+        run: echo "${{ secrets.GITHUB_TOKEN }}" | podman login ghcr.io -u ${{ github.actor }} --password-stdin
+
+      - name: Create and push multi-arch manifest
+        run: |
+          # Create manifest for commit SHA
+          podman manifest create ghcr.io/mattyv/axiom:${{ github.sha }}
+          podman manifest add ghcr.io/mattyv/axiom:${{ github.sha }} ghcr.io/mattyv/axiom:${{ github.sha }}-amd64
+          podman manifest add ghcr.io/mattyv/axiom:${{ github.sha }} ghcr.io/mattyv/axiom:${{ github.sha }}-arm64
+          podman manifest push ghcr.io/mattyv/axiom:${{ github.sha }} docker://ghcr.io/mattyv/axiom:${{ github.sha }}
+
+          # Create manifest for latest tag
+          podman manifest create ghcr.io/mattyv/axiom:latest
+          podman manifest add ghcr.io/mattyv/axiom:latest ghcr.io/mattyv/axiom:${{ github.sha }}-amd64
+          podman manifest add ghcr.io/mattyv/axiom:latest ghcr.io/mattyv/axiom:${{ github.sha }}-arm64
+          podman manifest push ghcr.io/mattyv/axiom:latest docker://ghcr.io/mattyv/axiom:latest

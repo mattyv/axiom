@@ -1,5 +1,5 @@
 # Axiom - Grounded truth validation for LLMs
-# Copyright (c) 2025 Matt Varendorff
+# Copyright (c) 2026 Matt Varendorff
 # https://github.com/mattyv/axiom
 # SPDX-License-Identifier: BSL-1.0
 
@@ -31,7 +31,7 @@ class LanceDBLoader:
     def __init__(
         self,
         db_path: str = "./data/lancedb",
-        model_name: str = "all-MiniLM-L6-v2",
+        model_name: str = "all-mpnet-base-v2",
         neo4j: "object | None" = None,
     ) -> None:
         """Initialize LanceDB connection and embedding model.
@@ -48,6 +48,19 @@ class LanceDBLoader:
         self._model_name = model_name
         self.neo4j = neo4j
 
+    def _get_table_names(self) -> list[str]:
+        """Get list of table names, handling LanceDB API changes.
+
+        Returns:
+            List of table names in the database.
+        """
+        result = self.db.list_tables()
+        # Handle new LanceDB API that returns ListTablesResponse object
+        if hasattr(result, "tables"):
+            return result.tables
+        # Handle old API that returns list directly
+        return list(result)
+
     @property
     def model(self) -> SentenceTransformer:
         """Lazy load the embedding model."""
@@ -59,32 +72,57 @@ class LanceDBLoader:
         self,
         collection: AxiomCollection,
         table_name: str = "axioms",
+        batch_size: int = 32,
+        chunk_size: int = 500,
     ) -> int:
         """Load axiom collection into LanceDB.
+
+        Uses batch embedding for much faster processing. Processes in chunks
+        to avoid OOM on large collections.
 
         Args:
             collection: AxiomCollection to load.
             table_name: Name of the LanceDB table.
+            batch_size: Number of axioms to embed at once (within a chunk).
+            chunk_size: Number of axioms to process before writing to DB.
 
         Returns:
             Number of records loaded.
         """
-        records = []
-
-        for axiom in collection.axioms:
-            record = self._axiom_to_record(axiom)
-            records.append(record)
-
-        if not records:
+        if not collection.axioms:
             return 0
 
-        # Add to existing table or create new one
-        if table_name in self.db.table_names():
-            table = self.db.open_table(table_name)
-            table.add(records)
-        else:
-            self.db.create_table(table_name, records)
-        return len(records)
+        axioms = list(collection.axioms)
+        total_loaded = 0
+
+        # Process in chunks to avoid OOM
+        for i in range(0, len(axioms), chunk_size):
+            chunk = axioms[i : i + chunk_size]
+            embedding_texts = [self._create_embedding_text(a) for a in chunk]
+
+            # Batch encode this chunk
+            vectors = self.model.encode(
+                embedding_texts,
+                batch_size=batch_size,
+                show_progress_bar=len(axioms) > chunk_size,
+            )
+
+            # Build records with pre-computed vectors
+            records = []
+            for axiom, vector in zip(chunk, vectors, strict=True):
+                record = self._axiom_to_record_with_vector(axiom, vector.tolist())
+                records.append(record)
+
+            # Add to existing table or create new one
+            if table_name in self._get_table_names():
+                table = self.db.open_table(table_name)
+                table.add(records)
+            else:
+                self.db.create_table(table_name, records)
+
+            total_loaded += len(records)
+
+        return total_loaded
 
     def load_axiom(
         self,
@@ -99,14 +137,14 @@ class LanceDBLoader:
         """
         record = self._axiom_to_record(axiom)
 
-        if table_name in self.db.table_names():
+        if table_name in self._get_table_names():
             table = self.db.open_table(table_name)
             table.add([record])
         else:
             self.db.create_table(table_name, [record])
 
     def _axiom_to_record(self, axiom: Axiom) -> dict:
-        """Convert an Axiom to a LanceDB record.
+        """Convert an Axiom to a LanceDB record (computes embedding).
 
         Args:
             axiom: Axiom to convert.
@@ -117,7 +155,18 @@ class LanceDBLoader:
         # Create combined text for embedding
         embedding_text = self._create_embedding_text(axiom)
         vector = self.model.encode(embedding_text).tolist()
+        return self._axiom_to_record_with_vector(axiom, vector)
 
+    def _axiom_to_record_with_vector(self, axiom: Axiom, vector: list) -> dict:
+        """Convert an Axiom to a LanceDB record with pre-computed vector.
+
+        Args:
+            axiom: Axiom to convert.
+            vector: Pre-computed embedding vector.
+
+        Returns:
+            Dict record with embedding vector.
+        """
         return {
             "id": axiom.id,
             "content": axiom.content,
@@ -189,7 +238,7 @@ class LanceDBLoader:
         Returns:
             List of matching axiom records.
         """
-        if table_name not in self.db.table_names():
+        if table_name not in self._get_table_names():
             return []
 
         table = self.db.open_table(table_name)
@@ -212,7 +261,7 @@ class LanceDBLoader:
         Returns:
             List of matching axiom records.
         """
-        if table_name not in self.db.table_names():
+        if table_name not in self._get_table_names():
             return []
 
         table = self.db.open_table(table_name)
@@ -231,7 +280,7 @@ class LanceDBLoader:
         Returns:
             Number of records.
         """
-        if table_name not in self.db.table_names():
+        if table_name not in self._get_table_names():
             return 0
 
         table = self.db.open_table(table_name)
@@ -251,7 +300,7 @@ class LanceDBLoader:
         Returns:
             List of matching axiom records.
         """
-        if table_name not in self.db.table_names():
+        if table_name not in self._get_table_names():
             return []
 
         table = self.db.open_table(table_name)
@@ -273,7 +322,7 @@ class LanceDBLoader:
         Returns:
             List of matching axiom records.
         """
-        if table_name not in self.db.table_names():
+        if table_name not in self._get_table_names():
             return []
 
         table = self.db.open_table(table_name)
@@ -295,7 +344,7 @@ class LanceDBLoader:
         Returns:
             List of matching axiom records.
         """
-        if table_name not in self.db.table_names():
+        if table_name not in self._get_table_names():
             return []
 
         table = self.db.open_table(table_name)
@@ -319,7 +368,7 @@ class LanceDBLoader:
         Returns:
             True if update was successful, False otherwise.
         """
-        if table_name not in self.db.table_names():
+        if table_name not in self._get_table_names():
             return False
 
         table = self.db.open_table(table_name)

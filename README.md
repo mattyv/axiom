@@ -239,6 +239,11 @@ Proof chain:
 - [Extraction Order](docs/extraction-order.md) - Step-by-step guide to rebuilding the complete knowledge base
 - [MCP Test Report](docs/mcp-test-report.md) - Sample demonstrating MCP tool functionality
 
+## Beta nature of this tool
+
+A lot of this was vibe coded over christmas 2025 with screaming kids running around. So :) :) :) sue me.
+It also uses the [C++ draft spec](https://eel.is/c++draft/). If this turns out to be beneficial I may try to get the official spec which I think I need to pay $$ for. 
+
 ## License
 
 BSL-1.0
